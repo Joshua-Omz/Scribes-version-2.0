@@ -25,7 +25,7 @@ func main() {
 		log.Fatal("JWT_SECRET is required")
 	}
 
-	db, err := database.Connect(cfg.DatabaseURL)
+	db, err := database.Connect(cfg.DatabaseURL, cfg.DBMaxOpenConns, cfg.DBMaxIdleConns)
 	if err != nil {
 		log.Fatalf("connect to database: %v", err)
 	}

@@ -71,7 +71,7 @@ func (r *postgresRepo) Delta(ctx context.Context, userID string, since time.Time
 		return nil, err
 	}
 
-	// Bookmarks created after since.
+	// Bookmarks updated after since.
 	bmRows, err := r.db.QueryContext(ctx,
 		`SELECT id, post_id, user_id, created_at
 		 FROM bookmarks WHERE user_id = $1 AND created_at > $2 ORDER BY created_at ASC`,

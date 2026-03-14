@@ -86,9 +86,9 @@ func (r *postgresRepo) Update(ctx context.Context, id, userID string, title *str
 	n := &Note{}
 	err := r.db.QueryRowContext(ctx,
 		`UPDATE notes
-		 SET title       = COALESCE($3, title),
-		     content     = COALESCE($4, content),
-		     updated_at  = NOW()
+		 SET title      = COALESCE($3, title),
+		     content    = COALESCE($4, content),
+		     updated_at = NOW()
 		 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 		   AND is_published = FALSE AND is_imported = FALSE
 		 RETURNING id, user_id, title, content, is_published, is_imported, created_at, updated_at, deleted_at`,

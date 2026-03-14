@@ -10,8 +10,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Connect opens and validates a PostgreSQL connection.
-func Connect(databaseURL string) (*sql.DB, error) {
+// Connect opens and validates a PostgreSQL connection using the given pool limits.
+func Connect(databaseURL string, maxOpen, maxIdle int) (*sql.DB, error) {
 	db, err := sql.Open("postgres", databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
@@ -19,8 +19,8 @@ func Connect(databaseURL string) (*sql.DB, error) {
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("ping database: %w", err)
 	}
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(maxOpen)
+	db.SetMaxIdleConns(maxIdle)
 	return db, nil
 }
 
