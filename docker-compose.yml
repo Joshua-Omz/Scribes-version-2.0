@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: scribes_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: scribes
+      POSTGRES_USER: scribes
+      POSTGRES_PASSWORD: scribes_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scribes -d scribes"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scribes_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://scribes:scribes_secret@db:5432/scribes?sslmode=disable
+      JWT_SECRET: change_me_in_production
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

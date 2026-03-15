@@ -1,0 +1,7 @@
+-- migrate:down
+
+DROP TABLE IF EXISTS interactions;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS drafts;
+DROP TABLE IF EXISTS notes;
+DROP TABLE IF EXISTS users;
