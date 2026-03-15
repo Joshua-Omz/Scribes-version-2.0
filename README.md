@@ -75,6 +75,47 @@ go run ./cmd/api
 
 ---
 
+## Testing
+
+### Backend (Go)
+
+Unit tests cover the pure-function logic in `auth` and the JWT middleware, and
+require **no running database**.
+
+```bash
+cd backend
+
+# Run all unit tests (with the race detector)
+go test -v -race ./...
+
+# Run a specific package only
+go test -v ./internal/auth/...
+go test -v ./pkg/middleware/...
+
+# Lint
+go vet ./...
+
+# Build
+go build ./...
+```
+
+The same commands are executed automatically in CI on every push/PR to `main`
+(see `.github/workflows/ci.yml`).
+
+### Client (Flutter)
+
+```bash
+cd client
+
+# Analyse code (catch formatting and static errors)
+flutter analyze
+
+# Run widget & unit tests
+flutter test
+```
+
+---
+
 ## API Endpoints
 
 | Method | Path | Auth | Description |
