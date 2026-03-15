@@ -1,18 +1,30 @@
-name: Docker Image CI
+name: Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
   build:
-
+    name: Build Docker Image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: scribes-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

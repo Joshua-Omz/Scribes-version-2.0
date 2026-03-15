@@ -3,6 +3,9 @@
 A local-first writing platform for thoughtful publishing.  
 **Architecture**: Go Modular Monolith API + Flutter local-first client (SQLite via Drift).
 
+[![CI](https://github.com/Joshua-Omz/Scribes-version-2.0/actions/workflows/ci.yml/badge.svg)](https://github.com/Joshua-Omz/Scribes-version-2.0/actions/workflows/ci.yml)
+[![Docker](https://github.com/Joshua-Omz/Scribes-version-2.0/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Joshua-Omz/Scribes-version-2.0/actions/workflows/docker-image.yml)
+
 ---
 
 ## Quick Start (Backend)
@@ -104,4 +107,36 @@ docs/sprints/               # Sprint documentation & tracking
 docker-compose.yml
 Dockerfile
 ROADMAP.md
+.github/workflows/
+  ci.yml                    # Lint, build, and test on every push/PR
+  docker-image.yml          # Docker image build on every push/PR
 ```
+
+---
+
+## CI/CD
+
+All workflows live in [`.github/workflows/`](.github/workflows/) and run on every push and pull request targeting `main`.
+
+### `ci.yml` — Lint, Build & Test
+
+| Job | What it does |
+|---|---|
+| **Lint & Build** | Runs `go vet ./...` to catch suspicious constructs, then `go build ./...` to verify the binary compiles cleanly. |
+| **Test** | Spins up a PostgreSQL 16 service container (matching the `docker-compose.yml` setup) and runs `go test -v -race -timeout 60s ./...` against it. The `-race` flag enables the Go data-race detector. |
+
+Environment variables injected into the **Test** job:
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | `postgres://scribes:scribes_secret@localhost:5432/scribes_test?sslmode=disable` |
+| `JWT_SECRET` | `test_secret_key_for_ci` |
+| `MIGRATIONS_PATH` | `file://migrations` |
+
+### `docker-image.yml` — Docker Build
+
+Builds the multi-stage Docker image defined in `Dockerfile` using **Docker Buildx** with GitHub Actions layer caching (`type=gha`). The image is tagged with the commit SHA (`scribes-api:<sha>`) but is **not pushed** — pushing to a registry is deferred to Sprint 6 once a deployment target is chosen (Cloud Run / DigitalOcean App Platform).
+
+### Adding tests
+
+Per the [ROADMAP](ROADMAP.md), exhaustive integration tests are required for the **Sync Engine** and **Authentication** modules. Place test files alongside the package they test (e.g. `internal/auth/handler_test.go`) and they will be picked up automatically by the CI `test` job.
