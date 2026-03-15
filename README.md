@@ -5,6 +5,44 @@ A local-first writing platform for thoughtful publishing.
 
 ---
 
+## Repository Structure
+
+```
+scribes/
+├── .github/workflows/ci.yml   # CI — Go vet/build/test + Flutter analyze/test + Docker build
+├── backend/                   # Go REST API (modular monolith)
+│   ├── cmd/api/main.go        # Entry point
+│   ├── internal/
+│   │   ├── auth/              # JWT + Argon2id auth
+│   │   ├── users/             # User repository
+│   │   ├── notes/             # Notes CRUD
+│   │   ├── drafts/            # Drafts CRUD
+│   │   ├── posts/             # Posts CRUD
+│   │   └── sync/              # Delta sync engine (pull & push)
+│   ├── pkg/
+│   │   ├── config/            # Env-based configuration
+│   │   ├── database/          # pgxpool + golang-migrate
+│   │   └── middleware/        # Logger, JWT auth middleware
+│   ├── migrations/            # SQL migration files
+│   ├── go.mod
+│   ├── go.sum
+│   └── Dockerfile
+├── client/                    # Flutter app (local-first)
+│   ├── lib/main.dart          # Entry point
+│   ├── test/                  # Widget & unit tests
+│   ├── pubspec.yaml
+│   └── pubspec.lock
+├── docs/
+│   ├── scribes_srs.md         # Software Requirements Specification
+│   ├── scribes_sdd.md         # Software Design Document
+│   ├── scribes_roadmap.md     # MVP engineering roadmap
+│   └── sprints/               # Sprint planning & tracking
+├── docker-compose.yml         # Local Postgres + API setup
+└── .gitignore
+```
+
+---
+
 ## Quick Start (Backend)
 
 ### Prerequisites
@@ -31,7 +69,8 @@ cp .env.example .env
 docker compose up -d db
 
 # 3. Run the API (migrations are applied automatically on startup)
-go run ./cmd/server
+cd backend
+go run ./cmd/api
 ```
 
 ---
@@ -66,7 +105,7 @@ go run ./cmd/server
 
 ## Project Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full MVP engineering roadmap and sprint tracking.
+See [docs/scribes_roadmap.md](docs/scribes_roadmap.md) for the full MVP engineering roadmap and sprint tracking.
 
 Sprint documentation lives in [`docs/sprints/`](docs/sprints/):
 
@@ -79,29 +118,3 @@ Sprint documentation lives in [`docs/sprints/`](docs/sprints/):
 | [Sprint 4 — Publishing Pipeline & Feeds](docs/sprints/sprint-4.md) | 🔲 Pending |
 | [Sprint 5 — Sync Worker](docs/sprints/sprint-5.md) | 🔲 Pending |
 | [Sprint 6 — Observability & Deployment](docs/sprints/sprint-6.md) | 🔲 Pending |
-
----
-
-## Repository Structure
-
-```
-cmd/server/main.go          # Entry point
-internal/
-  auth/handler.go           # JWT + Argon2 auth handlers
-  users/repository.go       # User model & data access
-  notes/                    # Notes (private workspace)
-  drafts/                   # Drafts (staging area)
-  posts/                    # Posts (public square)
-  sync/handler.go           # Delta sync engine (pull & push)
-pkg/
-  config/config.go          # Env-based configuration
-  database/database.go      # pgxpool + golang-migrate
-  middleware/middleware.go   # Logger, JWT auth middleware
-migrations/
-  000001_init_schema.up.sql
-  000001_init_schema.down.sql
-docs/sprints/               # Sprint documentation & tracking
-docker-compose.yml
-Dockerfile
-ROADMAP.md
-```
