@@ -18,6 +18,22 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
+
+    # Spin up a real PostgreSQL instance so integration tests can run against it
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: scribes_test
+          POSTGRES_USER: scribes_test
+          POSTGRES_PASSWORD: scribes_test_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U scribes_test -d scribes_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     
     steps:
       - name: Checkout Code
@@ -40,9 +56,16 @@ jobs:
           working-directory: backend
           version: latest
 
-      - name: Run Go Unit & Integration Tests
+      - name: Run Go Unit Tests
         # -race flag catches concurrency bugs (crucial for Goroutines)
         run: go test -v -race ./...
+
+      - name: Run Integration Tests
+        # Integration tests use a real PostgreSQL database.
+        # The -tags integration flag activates the //go:build integration files.
+        env:
+          TEST_DATABASE_URL: postgres://scribes_test:scribes_test_secret@localhost:5432/scribes_test?sslmode=disable
+        run: go test -v -race -tags integration ./...
 
   # ==========================================
   # CLIENT: FLUTTER (iOS/Android/Web)
