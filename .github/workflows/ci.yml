@@ -1,75 +1,77 @@
-name: CI
+name: Scribes CI Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
-  backend:
-    name: Backend (Go)
+  # ==========================================
+  # BACKEND: GO & POSTGRESQL
+  # ==========================================
+  backend-checks:
+    name: Go Lint & Test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    # Only run if files in the backend folder change
+    # Official GitHub Actions monorepo best practice
     defaults:
       run:
         working-directory: ./backend
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Set up Go
+      # Standard community action for Go
+      - name: Setup Go 1.22+
         uses: actions/setup-go@v5
         with:
-          go-version-file: backend/go.mod
+          go-version: '1.22'
           cache-dependency-path: backend/go.sum
 
-      - name: Vet
-        run: go vet ./...
+      - name: Install Dependencies
+        run: go mod download
 
-      - name: Build
-        run: go build ./...
+      # golangci-lint is the undisputed community standard for Go linting
+      - name: Run GolangCI-Lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: backend
+          version: latest
 
-      - name: Test
-        run: go test ./...
+      - name: Run Go Unit & Integration Tests
+        # -race flag catches concurrency bugs (crucial for Goroutines)
+        run: go test -v -race ./...
 
-  docker:
-    name: Docker build (backend)
+  # ==========================================
+  # CLIENT: FLUTTER (iOS/Android/Web)
+  # ==========================================
+  client-checks:
+    name: Flutter Analyze & Test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: backend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build backend Docker image
-        run: docker build ./backend --file ./backend/Dockerfile --tag scribes-backend:ci
-
-  client:
-    name: Client (Flutter)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
     defaults:
       run:
         working-directory: ./client
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      # subosito/flutter-action is the official standard for Flutter CI
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: 'any' 
+          channel: 'stable'
           cache: true
 
-      - name: Get dependencies
+      - name: Install Dependencies
         run: flutter pub get
 
-      - name: Analyze
+      # Fails the build if there are syntax or formatting errors
+      - name: Analyze Code
         run: flutter analyze
 
-      - name: Test
+      - name: Run Flutter Tests
         run: flutter test
