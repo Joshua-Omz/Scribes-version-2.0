@@ -1,6 +1,4 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
+# ── Go ────────────────────────────────────────────────────────────────────────
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -24,9 +22,30 @@ profile.cov
 go.work
 go.work.sum
 
-# env file
+# ── Flutter / Dart ────────────────────────────────────────────────────────────
+# Flutter build output
+client/build/
+client/.dart_tool/
+client/.flutter-plugins
+client/.flutter-plugins-dependencies
+client/.packages
+
+# Dart pub cache
+.pub-cache/
+.pub/
+
+# iOS/macOS/Android generated files
+client/ios/Pods/
+client/android/.gradle/
+client/android/local.properties
+client/android/captures/
+client/ios/.symlinks/
+
+# ── Secrets / Environment ────────────────────────────────────────────────────
 .env
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# ── Editor / IDE ─────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo

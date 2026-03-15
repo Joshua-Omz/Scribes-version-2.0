@@ -11,7 +11,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o scribes ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o scribes ./cmd/api
 
 ## ── runtime stage ─────────────────────────────────────────────────────────────
 FROM scratch
