@@ -53,6 +53,7 @@ func Authenticate(jwtSecret string) func(http.Handler) http.Handler {
 				return
 			}
 			tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		
 
 			claims := &Claims{}
 			token, err := jwt.ParseWithClaims(tokenStr, claims, func(_ *jwt.Token) (interface{}, error) {

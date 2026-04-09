@@ -154,7 +154,7 @@ func (h *Handler) Feed(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not fetch feed")
 		return
 	}
-	writeJSON(w, http.StatusOK, posts)
+	writeJSON(w, http.StatusOK, map[string]any{"posts": posts})
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {

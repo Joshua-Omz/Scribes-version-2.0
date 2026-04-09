@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'app_config/theme.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const ScribesApp());
@@ -10,16 +12,11 @@ class ScribesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Scribes',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Scribes'),
-        ),
-      ),
+      title: 'Scribes 2.0',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Will switch based on device settings
+      home: const HomeScreen(),
     );
   }
 }
