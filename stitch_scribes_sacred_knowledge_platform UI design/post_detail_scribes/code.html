@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Post Detail — Published Artifact | SCRIBES</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500&amp;family=EB+Garamond:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-container": "#f0eded",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "tertiary-container": "#fff1d2",
+                        "inverse-surface": "#313030",
+                        "inverse-primary": "#c9c6bf",
+                        "surface-tint": "#5f5e58",
+                        "outline": "#78776f",
+                        "secondary-container": "#e5e2e1",
+                        "on-secondary-fixed-variant": "#474646",
+                        "inverse-on-surface": "#f3f0ef",
+                        "surface-container-high": "#eae7e7",
+                        "on-background": "#1c1b1b",
+                        "tertiary": "#735c00",
+                        "on-tertiary-container": "#866b00",
+                        "surface-container-highest": "#e5e2e1",
+                        "surface-bright": "#fcf9f8",
+                        "primary-container": "#f5f2ea",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcd9d9",
+                        "outline-variant": "#c9c7bd",
+                        "primary-fixed": "#e5e2da",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#6f6e68",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-variant": "#e5e2e1",
+                        "on-primary-fixed": "#1c1c17",
+                        "surface": "#F5F0E8", // Overridden for Parchment theme
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#474741",
+                        "secondary": "#5f5e5e",
+                        "tertiary-fixed": "#ffe088",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "on-surface-variant": "#474740",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-secondary-container": "#656464",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#c9c6bf",
+                        "primary": "#5f5e58",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-error": "#ffffff",
+                        "background": "#F5F0E8" // Overridden for Parchment theme
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "container-max": "1120px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["EB Garamond"],
+                        "headline-md": ["EB Garamond"],
+                        "body-md": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "label-caps": ["Inter"],
+                        "display-lg-mobile": ["Cormorant Garamond"],
+                        "display-lg": ["Cormorant Garamond"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                        "headline-md": ["32px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["17px", {"lineHeight": "1.75", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                        "label-lg": ["16px", {"fontWeight": "600"}],
+                        "label-sm": ["12px", {"fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F5F0E8; /* Deep Parchment Base */
+            color: #1A1A1A; /* Charcoal */
+        }
+        .text-charcoal { color: #1A1A1A; }
+        .border-charcoal-10 { border-color: rgba(26, 26, 26, 0.1); }
+        .border-charcoal-15 { border-color: rgba(26, 26, 26, 0.15); }
+        .bg-charcoal { background-color: #1A1A1A; }
+        .text-parchment { color: #F5F0E8; }
+        .text-gold { color: #B08D57; } /* Burnished Gold */
+        .border-gold { border-color: #B08D57; }
+        .border-gold-muted { border-color: rgba(176, 141, 87, 0.3); }
+        .bg-gold-muted-6 { background-color: rgba(176, 141, 87, 0.06); }
+        .fleuron {
+            color: #B08D57;
+            font-size: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        .fleuron::before, .fleuron::after {
+            content: "";
+            flex: 1;
+            height: 0.5px;
+            background-color: rgba(26, 26, 26, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-lg antialiased pb-32 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<!-- Header -->
+<header class="sticky top-0 w-full bg-[#F5F0E8] z-40 py-4 flex justify-between items-center mb-6">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px] text-charcoal">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<button aria-label="Share" class="w-10 h-10 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px] text-charcoal">ios_share</span>
+</button>
+<button aria-label="More options" class="w-10 h-10 flex items-center justify-center hover:bg-black/5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px] text-charcoal">more_vert</span>
+</button>
+</div>
+</header>
+<main class="max-w-[720px] mx-auto">
+<!-- Author Row -->
+<div class="flex items-center gap-4 pb-6 border-b-[0.5px] border-charcoal-10">
+<img alt="Dr. Elias Vance" class="w-[44px] h-[44px] rounded-full object-cover border-[0.5px] border-charcoal-15" data-alt="A detailed portrait photo of Dr. Elias Vance, a scholarly older gentleman with a neat silver beard and wire-rimmed glasses, wearing a tweed jacket, set against a blurred library background with warm, natural lighting. The mood is intellectual and approachable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbhuTSTa5qAHuxRyhkoVIlwDuru44BJpcf3cgx2jNXg1g7XNnqWko9fUnugFVCV0vCpFeoJi4Gg_iGDs6IueLi9GgVZBOfEQxeBLCCPquuoMYT7f4Iia8psu1NinrGWAVkWq3Kk37RkwQCTpvJ42_hT40OrF6J4Hlx5yekHMttoojWAOdV9NfFXx_NFNzTjUSISDYHZT_oP1VJGlBeibD-CVe91UfgacUWDHmht4xJA961dBbT4mlF9UonQf7CkhiXYlzE73zAobfe"/>
+<div>
+<div class="text-[16px] font-semibold text-charcoal">Dr. Elias Vance</div>
+<div class="text-[12px] font-medium text-charcoal/60">@eliasvance · 2h ago</div>
+</div>
+</div>
+<!-- Post Header -->
+<div class="mt-[24px]">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-charcoal mb-6">The Silence Between the Syllables: Finding Rest in Divine Omnipresence</h1>
+<div class="flex items-center gap-3 overflow-x-auto pb-4 hide-scrollbar">
+<div class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full border-[1px] border-gold text-gold text-[13px] font-medium tracking-wide bg-transparent">
+<span class="material-symbols-outlined text-[14px]">menu_book</span>
+                    Psalms 46:10
+                </div>
+<div class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-full border-[1px] border-gold-muted text-charcoal/80 text-[13px] font-medium tracking-wide bg-transparent">
+                    Theology
+                </div>
+</div>
+</div>
+<!-- Divider -->
+<div class="my-[20px]">
+<div class="fleuron">
+<span class="material-symbols-outlined" style="font-size: 16px;">diamond</span>
+</div>
+</div>
+<!-- Post Body -->
+<article class="font-body-lg text-body-lg text-charcoal/90 space-y-[20px]">
+<p>We often treat silence as an absence—a void waiting to be filled with our words, our anxieties, or our plans. Yet, in the rich tapestry of scriptural contemplation, silence is rarely empty. It is deeply, profoundly full.</p>
+<blockquote class="pl-4 py-3 my-6 border-l-2 border-gold bg-gold-muted-6 font-display-lg-mobile text-[24px] italic text-charcoal/80 leading-relaxed">
+                "Be still, and know that I am God."
+            </blockquote>
+<p>The Hebrew root here implies a 'letting go' or a 'relaxing' of the hands. It is an active cessation of striving. When we encounter the divine presence, our instinct is often to perform—to offer words of contrition or petition. But the invitation here is fundamentally different.</p>
+<p>It suggests that the knowledge of God is not acquired merely through intellectual rigor, but through a surrender of our need to manage reality. In the stillness, we confront our finite nature, and in doing so, we make room for the infinite.</p>
+<p>Consider the architecture of a cathedral. It is not the stone that creates the sense of awe, but the vast, enclosed empty space that the stone defines. Similarly, establishing regular rhythms of silence in our lives creates a sanctuary within time—a space where we are not required to produce, but simply to be.</p>
+</article>
+<!-- End Ornament -->
+<div class="my-[40px] flex justify-center">
+<span class="material-symbols-outlined text-gold" style="font-size: 24px;">ac_unit</span>
+</div>
+<!-- Reaction Bar -->
+<div class="flex items-center justify-between py-6 border-y-[0.5px] border-charcoal-10 mb-10">
+<button class="flex flex-col items-center gap-1 hover:text-gold transition-colors text-charcoal/70">
+<span class="material-symbols-outlined text-[24px]">favorite</span>
+<span class="text-[12px] font-medium">Amen (124)</span>
+</button>
+<button class="flex flex-col items-center gap-1 hover:text-gold transition-colors text-charcoal/70">
+<span class="material-symbols-outlined text-[24px]">lightbulb</span>
+<span class="text-[12px] font-medium">Insightful (42)</span>
+</button>
+<button class="flex flex-col items-center gap-1 hover:text-gold transition-colors text-charcoal/70">
+<span class="material-symbols-outlined text-[24px]">psychology</span>
+<span class="text-[12px] font-medium">Thought-Provoking (18)</span>
+</button>
+</div>
+<!-- Comment Section -->
+<section class="mb-24">
+<h3 class="font-label-caps text-label-caps text-charcoal/60 mb-4 tracking-widest uppercase">Responses</h3>
+<div class="border-t-[0.5px] border-charcoal-10 pt-6 space-y-8">
+<!-- Comment 1 -->
+<div class="flex gap-4">
+<img alt="Sarah Jenkins" class="w-[32px] h-[32px] rounded-full object-cover border-[0.5px] border-charcoal-15 flex-shrink-0" data-alt="A clear headshot of a younger female scholar with glasses and dark hair, sitting in a softly lit study lined with books, conveying a thoughtful and academic atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6oMaCvzugTVeTH5Yt2eT_e8fP5L_parpPG-_0lO7YiP86mRuajU5vAkGPsiR9T8Min2SgIqzrVpZdGWVXKqaTEvYmL7v0jQZyDLZy-rmn2QydQJFGzgM3x2x5tYDHMFmM9I5b_b7JHUG92aFQNJgqO6rltGoE1grHOgYgszX3wNsFCokREB8XjVqdNZS_lr2cru_C5b9_4aiNAunfr2eB3isEI1Zh7V4VjmdceR_psTMiPLW_NkYmhCKNPXcjXSUXER6WYZ1uZB5-"/>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[14px] font-semibold text-charcoal">Sarah Jenkins</span>
+<span class="text-[12px] text-charcoal/50">1h ago</span>
+</div>
+<p class="font-body-md text-body-md text-charcoal/80">The analogy of cathedral architecture is stunning. It reframes emptiness not as a lack, but as a deliberate capacity. Thank you for this reflection.</p>
+</div>
+</div>
+<!-- Comment 2 -->
+<div class="flex gap-4">
+<img alt="Marcus Thorne" class="w-[32px] h-[32px] rounded-full object-cover border-[0.5px] border-charcoal-15 flex-shrink-0" data-alt="A portrait of a middle-aged man with kind eyes and short graying hair, wearing a simple collared shirt, set outdoors with warm afternoon sunlight filtering through trees." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS6f9YUI9dZy-L2dXV2R4K9FeoOFP0SEvIHjH8Db4t2gx_Y9aFDP_0snSC_TGl9jRlkREiiH_FPPy9W_gU0aoJNMKJcCO4HUT9cPV4JdZojLOPfEEhgze8ixJMeRUOnYq4yUBaWXejkxH3XhplRdUY3WzUr2BkTpe5Q6dtt1RINM9qAPlRtbjpcfd5MOtVo-26Sgne9wbinaAzDWIcghkrThkrT5zUK4zG5tpXkWbLrm-Dv9G6Ai1pNwpJ7zm5jOnmRfsPxOmA167L"/>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[14px] font-semibold text-charcoal">Marcus Thorne</span>
+<span class="text-[12px] text-charcoal/50">45m ago</span>
+</div>
+<p class="font-body-md text-body-md text-charcoal/80">I find the 'active cessation of striving' to be the hardest part of daily practice. We are so conditioned to earn our peace.</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Bottom Bar (Post Actions) -->
+<div class="fixed bottom-[60px] md:bottom-0 left-0 w-full bg-[#F5F0E8] border-t-[0.5px] border-charcoal-10 z-40 md:hidden">
+<div class="max-w-[720px] mx-auto flex justify-between items-center px-6 py-3">
+<button class="text-charcoal/70 hover:text-gold transition-colors"><span class="material-symbols-outlined">bookmark_border</span></button>
+<button class="text-charcoal/70 hover:text-gold transition-colors"><span class="material-symbols-outlined">download</span></button>
+<button class="text-charcoal/70 hover:text-gold transition-colors"><span class="material-symbols-outlined">ios_share</span></button>
+<button class="text-charcoal/70 hover:text-gold transition-colors"><span class="material-symbols-outlined">open_in_new</span></button>
+</div>
+</div>
+</body></html>

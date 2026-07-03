@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scribes | Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .unread-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #735c00; /* Gold/Tertiary */
+        }
+        .parchment-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+        .fleuron-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem 0;
+            color: #735c00;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#241a00",
+                      "on-secondary-fixed-variant": "#474646",
+                      "primary": "#5f5e58",
+                      "surface-container-high": "#eae7e7",
+                      "surface-container-low": "#f6f3f2",
+                      "primary-fixed": "#e5e2da",
+                      "on-primary-fixed-variant": "#474741",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#474740",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#e9c349",
+                      "on-primary-container": "#6f6e68",
+                      "outline": "#78776f",
+                      "inverse-surface": "#313030",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#5f5e5e",
+                      "primary-container": "#f5f2ea",
+                      "on-surface": "#1c1b1b",
+                      "surface": "#fcf9f8",
+                      "surface-bright": "#fcf9f8",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#e5e2e1",
+                      "tertiary-fixed": "#ffe088",
+                      "surface-variant": "#e5e2e1",
+                      "outline-variant": "#c9c7bd",
+                      "inverse-primary": "#c9c6bf",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#866b00",
+                      "surface-dim": "#dcd9d9",
+                      "inverse-on-surface": "#f3f0ef",
+                      "surface-container-highest": "#e5e2e1",
+                      "secondary-fixed-dim": "#c9c6c5",
+                      "on-secondary-container": "#656464",
+                      "on-background": "#1c1b1b",
+                      "background": "#fcf9f8",
+                      "secondary-fixed": "#e5e2e1",
+                      "on-primary-fixed": "#1c1c17",
+                      "surface-tint": "#5f5e58",
+                      "surface-container": "#f0eded",
+                      "tertiary-container": "#fff1d2",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#c9c6bf",
+                      "tertiary": "#735c00",
+                      "on-tertiary-fixed-variant": "#574500"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1120px",
+                      "unit": "8px",
+                      "margin-mobile": "20px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "display-lg": ["EB Garamond"],
+                      "headline-sm": ["EB Garamond"],
+                      "headline-md": ["EB Garamond"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "display-lg-mobile": ["EB Garamond"],
+                      "label-caps": ["Inter"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                      "headline-sm": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                      "headline-md": ["32px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                      "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background parchment-texture text-on-surface min-h-screen selection:bg-tertiary-container selection:text-on-tertiary-container">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center justify-between px-margin-mobile md:px-margin-desktop h-16 w-full max-w-container-max mx-auto">
+<button class="flex items-center text-primary hover:text-tertiary transition-colors duration-300">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md tracking-tight text-primary">Messages</h1>
+<div class="w-8"></div> <!-- Spacer for center alignment -->
+</div>
+</header>
+<main class="max-w-[700px] mx-auto px-margin-mobile md:px-margin-desktop pt-8 pb-32">
+<!-- Message Requests Banner -->
+<section class="mb-8">
+<button class="w-full flex items-center justify-between p-4 bg-[#FDFAF4] border border-[#DDD5C0] rounded-lg hover:bg-surface-container-low transition-all duration-300 group">
+<div class="flex items-center gap-4">
+<!-- Avatar Stack -->
+<div class="flex -space-x-3">
+<div class="w-7 h-7 rounded-full border-2 border-[#FDFAF4] overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of an elderly scholar with a weathered face, reading an ancient scroll. The lighting is warm and candle-lit, with deep shadows and golden highlights. The style is classical painterly, with visible brushstrokes and a muted, parchment-inspired color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPAmCB-KSV5S-j_zS8G8uFb60leILmTCXJwhkMbh6l7XAYD2ya71R3aFA_aRtqccAvkypDpqFcFpEa1K5vlkBGd-oTDNRfOTqkf3svePj2SdFVH-0CV1DgNQLZb01C3pTuJpyrkxAn-13tam2Q0k3fE21JnvY1TnlbBncl6B4SKlhU9XDQEP3yWkYiDjCvLk5eSjyAcfVnfabN4oXw81Dztve1Lp5DvDP94G_q7NcSH2UMOLRRWkRgIXxQQFDB3JycF_ZJ_ddh_W72"/>
+</div>
+<div class="w-7 h-7 rounded-full border-2 border-[#FDFAF4] overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A close-up of a young person with thoughtful eyes, looking away from the camera. The background is a softly blurred library with leather-bound books. The color palette is earth-toned and scholarly, emphasizing soft textures and high-contrast editorial lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzOlApMYCHJFLOu4cyU9LhrfisLmbZJSRWEPI3y4wRt4Ftkt3N83QXX8qIF5l-jZwxxEMQLTDm4Gry_R4jPC3-r66x4eTEr45jPr_3560GnqTyAs7VoMpxKqkt3gL1xNvnmLt9jilPG12Bd2KRog0nJEzp1rQYJwzePILrLw05UD88m-qQuhdX9ISywEzHDBcwc8fXmzOb0LqftxeVJSIuVQeS90arW_7k2124cvod7TV31ER5yy95QnTpQWmPzc5Y0YrncdUOdmEl"/>
+</div>
+<div class="w-7 h-7 rounded-full border-2 border-[#FDFAF4] overflow-hidden bg-primary-fixed flex items-center justify-center text-[10px] font-bold text-primary">
+                            +1
+                        </div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">3 message requests</span>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-tertiary transition-colors">chevron_right</span>
+</button>
+</section>
+<!-- Conversation List -->
+<section class="space-y-0">
+<!-- Row 1: Unread -->
+<div class="flex items-center py-5 border-b border-outline-variant/30 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer group">
+<div class="w-6 flex justify-center mr-2">
+<div class="unread-indicator"></div>
+</div>
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A dignified portrait of Dr. Elias Vance, an academic with grey hair and spectacles. He is wearing a dark, textured wool coat. The setting is a dimly lit archive room with dust motes dancing in a single beam of light. The aesthetic is scholarly and timeless." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCihLzwwNtdEVxM6HUXpF7nUCjfoLjt0aCGJ-qhYpRQomlilUs6woxx4JVhbQy6dgNkQ0dnrNHS-jziavS2mmmLbJdQp1QrbKROjEUudVmQjXyfiwsjYkZuEwYqPtgb8PGMLai-MxrPDW0WSpkTTlsQlsctNNzIi0ujbfBG83dGh4ulTm5Fi7gCp1rpUKvuM7rv8bKbRRueqYGYDfBZtEi-fqUJV3ms_wxiabmY9J4FRkx_rdYrk9lhyPAF0D-Y4FaTWGSQfMTf_LMN"/>
+</div>
+<div class="ml-4 flex-grow overflow-hidden">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-caps text-[13px] tracking-wide text-[#1A1612]">DR. ELIAS VANCE</h3>
+<span class="text-[11px] font-label-caps text-outline">2H</span>
+</div>
+<p class="font-body-md text-body-md text-[#6B6055] truncate pr-4">The silence you mentioned in your last reflection has stayed with me...</p>
+</div>
+</div>
+<!-- Row 2: Deleted Message -->
+<div class="flex items-center py-5 border-b border-outline-variant/30 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer group">
+<div class="w-6 mr-2"></div> <!-- Empty space for unread alignment -->
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A portrait of Sr. Maria Kostas in modest traditional attire. Her expression is serene and welcoming. The background is a soft, sun-drenched stone wall of an old cloister. The style is minimalist-classical with warm parchment tones and high-contrast lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD95kAcs9WkFDBqWBaUizRfMRvGRTsiozrb4jkGqNiQVPZJ0-tjMBlrFkOpnEJoMm3gKN6t7CIHfjrkEpn1uYqIlBo-gM_AZdkfgJg8EAO77jnpH1s_vsOZUjNTz7dNWBjJzYcVo3L3qKj2aA9AT4MD_PktLGXjlXWg0pP4HG_aH9iaxzx94H0yrE7NuScrxtzYzFlTBn7gatWWBGO8k0ZDPw8Mus98ZDoBcCctGREHwhbPjEsgnUNdWD8MhQT1ycNOdaZSY43eKQ6u"/>
+</div>
+<div class="ml-4 flex-grow overflow-hidden">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-caps text-[13px] tracking-wide text-[#1A1612]">SR. MARIA KOSTAS</h3>
+<span class="text-[11px] font-label-caps text-outline uppercase">Yesterday</span>
+</div>
+<p class="font-body-md text-body-md text-[#6B6055] italic opacity-60 truncate pr-4">[Message deleted]</p>
+</div>
+</div>
+<!-- Row 3: Read -->
+<div class="flex items-center py-5 border-b border-outline-variant/30 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer group">
+<div class="w-6 mr-2"></div>
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A cinematic portrait of Julian Thorne, a young researcher with a focused gaze. He is surrounded by stacks of old manuscripts and inkwells. The lighting is dramatic and chiaroscuro-inspired, emphasizing the texture of the paper and the ink on his hands." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDpCCcuE0XpE64nZMA9SWh_gfs9lWgTyZXYG8eLLBvy3S81MiAImqSoUaJ197byOApig1BsriMGK3M-ivcesj4MqSCiKWB6r1JL3pxk7EiV_Tu8t4Z-oFHSatAiS9itKE5WGApV_-jGtOiLekGgUUi4hYSTtvJu0FQJlIkm_C0sxGdaKKKfcRKKi6Ox6XwiANyT2VKG8rEJzdf8rbIrr3veqw2eVoE0BaXmAZdVPuZ0-K1i4UG1Zq6ktcxoLv1y5FAFHsaemrkMkOR"/>
+</div>
+<div class="ml-4 flex-grow overflow-hidden">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-caps text-[13px] tracking-wide text-[#1A1612]">JULIAN THORNE</h3>
+<span class="text-[11px] font-label-caps text-outline uppercase">Mon</span>
+</div>
+<p class="font-body-md text-body-md text-[#6B6055] truncate pr-4">I've archived the manuscript for your review. It contains the notes on the liturgical variants we discussed.</p>
+</div>
+</div>
+<!-- More rows for depth -->
+<div class="flex items-center py-5 border-b border-outline-variant/30 hover:bg-surface-container-lowest/50 transition-colors cursor-pointer group">
+<div class="w-6 mr-2"></div>
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A portrait of an artisan bookbinder, Clara Bell, in her workshop. Tools of the trade like awls and thread are visible in the background. The atmosphere is quiet and focused, with a palette of warm browns, tans, and deep charcoals." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXHtTFAkhdazGWCzS8t5QP0EMkw7kqZSdsEgXDVUGuVbSzIzV2HzcM5sX5TjrPqiI4cz7U7EPhGiNIBmGzEb9BDkjABv1Dd5yJojELdOeCEzxt5BSgcKapL_-l1koNmeEQLBdhS58eg_e0fynaoSyP25GLEP7EE3E9i8LN0pK0SgEfNYlKU8uVLtiMkO2C1VgcabdnN9Otxb-zV7KvL5IOjJiWS5SJtKDRYSyVPq4g58-9UmmlFZX8exEkhVjnwfBnKrlM-3sVKXmt"/>
+</div>
+<div class="ml-4 flex-grow overflow-hidden">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-label-caps text-[13px] tracking-wide text-[#1A1612]">CLARA BELL</h3>
+<span class="text-[11px] font-label-caps text-outline uppercase">Oct 12</span>
+</div>
+<p class="font-body-md text-body-md text-[#6B6055] truncate pr-4">The leather binding for the new collection is nearly complete.</p>
+</div>
+</div>
+</section>
+<!-- Ornaments / Empty State logic reference -->
+<div class="fleuron-divider">
+<span class="material-symbols-outlined text-xl opacity-40">grade</span>
+</div>
+<div class="text-center py-12 hidden">
+<span class="material-symbols-outlined text-4xl text-outline mb-4">mail_outline</span>
+<p class="font-headline-sm text-headline-sm text-primary">No conversations yet.</p>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs mx-auto mt-2">The parchment awaits your first stroke of the pen.</p>
+</div>
+</main>
+<!-- Reading Progress Line (Style Guidance) -->
+<div class="fixed top-0 left-0 h-1 bg-tertiary transition-all duration-300 z-[100]" id="scroll-progress" style="width: 0%"></div>
+<!-- Scroll Interaction Script -->
+<script>
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("scroll-progress").style.width = scrolled + "%";
+        };
+
+        // Micro-interaction for list rows
+        document.querySelectorAll('.conversation-row').forEach(row => {
+            row.addEventListener('mousedown', () => {
+                row.style.transform = 'scale(0.995)';
+            });
+            row.addEventListener('mouseup', () => {
+                row.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

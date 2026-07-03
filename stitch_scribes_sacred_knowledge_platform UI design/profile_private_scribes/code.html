@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scribes - Private Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#474740",
+                        "surface-variant": "#e5e2e1",
+                        "on-primary-fixed-variant": "#474741",
+                        "outline": "#78776f",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#c9c6bf",
+                        "secondary-container": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "on-secondary-container": "#656464",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e5e2e1",
+                        "outline-variant": "#c9c7bd",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-tertiary-container": "#866b00",
+                        "surface-container": "#f0eded",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "on-background": "#1c1b1b",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "tertiary-container": "#fff1d2",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-primary-container": "#6f6e68",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-container-high": "#eae7e7",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#e5e2e1",
+                        "primary": "#5f5e58",
+                        "surface-dim": "#dcd9d9",
+                        "surface-bright": "#fcf9f8",
+                        "inverse-surface": "#313030",
+                        "surface-tint": "#5f5e58",
+                        "primary-fixed": "#e5e2da",
+                        "on-error-container": "#93000a",
+                        "background": "#fcf9f8",
+                        "tertiary": "#735c00",
+                        "primary-container": "#f5f2ea",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffe088",
+                        "on-primary-fixed": "#1c1c17",
+                        "inverse-primary": "#c9c6bf"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "container-max": "1120px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["EB Garamond"],
+                        "headline-sm": ["EB Garamond"],
+                        "display-lg-mobile": ["EB Garamond"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .texture-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen texture-bg md:bg-surface-container-low">
+<div class="max-w-container-max mx-auto md:bg-surface md:shadow-sm md:min-h-screen relative pb-24 md:pb-0">
+<!-- TopAppBar (Semantic Intent: Profile - but customized for private view) -->
+<header class="w-full top-0 sticky flex justify-between items-center px-margin-mobile md:px-margin-desktop py-unit border-b border-outline-variant bg-surface z-40">
+<div class="w-10"></div> <!-- Spacer for centering -->
+<h1 class="font-label-caps text-label-caps text-secondary uppercase tracking-widest">Profile</h1>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-tertiary transition-colors duration-300 scale-95 duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="px-margin-mobile md:px-margin-desktop py-8 md:py-12 max-w-3xl mx-auto space-y-12">
+<!-- Identity Block -->
+<section class="flex flex-col items-center text-center space-y-6">
+<div class="relative">
+<img alt="Dr. Elias Vance" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border border-outline-variant shadow-sm" data-alt="A distinguished 72px circular portrait avatar of a scholarly man with a neat beard, set against a neutral, high-key warm parchment background. The lighting is soft and flattering, emphasizing a timeless, academic aesthetic. The image exudes quiet authority and contemplative depth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByhE1epyeb5jPoqN0Bm6QeyKxTWQrOi_kbf1iLzZ5LnZWJpwNa-j0rAqA6payhIxWAgZqzVMo5TiTopYAZa-crFS_SfmcaUQVVXTkqT5kGjBSNStWjlxqic-rgKHkPfhVtYHozmft0QEwGjae9E8VvNt9tROofqlU-WPiaX3TPJU6tlwITiWCxqaV_D1r7n_uHJV7X8DVwFFRpNgP029NhOwlk2zT26hVKmKINdXsY74WoBBerxou0F820J7IMMxLyL1vA0Yn1FfHG"/>
+<div class="absolute bottom-0 right-0 w-4 h-4 bg-tertiary rounded-full border-2 border-surface"></div>
+</div>
+<div class="space-y-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Dr. Elias Vance</h2>
+<p class="font-label-caps text-label-caps text-secondary">@eliasvance</p>
+</div>
+<p class="font-body-md text-body-md text-secondary max-w-md mx-auto leading-relaxed">
+                    Exploring the intersections of ancient liturgy and modern silence. Curator of the Scribes Archive.
+                </p>
+<button class="px-6 py-2 border border-tertiary text-tertiary font-label-caps text-label-caps uppercase tracking-widest hover:bg-tertiary-container transition-colors rounded">
+                    Edit Profile
+                </button>
+</section>
+<!-- Stats Row -->
+<section class="flex justify-center items-center py-6 border-y border-outline-variant bg-surface-container-lowest">
+<div class="flex-1 flex flex-col items-center border-r border-outline-variant last:border-0">
+<span class="font-headline-sm text-headline-sm text-tertiary">12</span>
+<span class="font-label-caps text-label-caps text-secondary mt-1">Posts</span>
+</div>
+<div class="flex-1 flex flex-col items-center border-r border-outline-variant last:border-0">
+<span class="font-headline-sm text-headline-sm text-tertiary">4</span>
+<span class="font-label-caps text-label-caps text-secondary mt-1">Drafts</span>
+</div>
+<div class="flex-1 flex flex-col items-center border-r border-outline-variant last:border-0">
+<span class="font-headline-sm text-headline-sm text-tertiary">28</span>
+<span class="font-label-caps text-label-caps text-secondary mt-1">Notes</span>
+</div>
+</section>
+<!-- Quick Access Row -->
+<section class="grid grid-cols-4 gap-4 px-4 md:px-0">
+<button class="flex flex-col items-center gap-2 text-on-surface-variant hover:text-tertiary transition-colors group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface group-hover:bg-surface-container-low relative">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">edit_document</span>
+<span class="absolute top-0 right-0 w-2.5 h-2.5 bg-tertiary rounded-full border border-surface"></span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary group-hover:text-tertiary">Drafts</span>
+</button>
+<button class="flex flex-col items-center gap-2 text-on-surface-variant hover:text-tertiary transition-colors group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface group-hover:bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">bookmark</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary group-hover:text-tertiary">Saved</span>
+</button>
+<button class="flex flex-col items-center gap-2 text-on-surface-variant hover:text-tertiary transition-colors group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface group-hover:bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">download</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary group-hover:text-tertiary">Imports</span>
+</button>
+<button class="flex flex-col items-center gap-2 text-on-surface-variant hover:text-tertiary transition-colors group">
+<div class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-surface group-hover:bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">sticky_note_2</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary group-hover:text-tertiary">Notes</span>
+</button>
+</section>
+<!-- Ornamental Divider -->
+<div class="flex items-center justify-center gap-4 py-4">
+<div class="h-px bg-outline-variant flex-1"></div>
+<span class="material-symbols-outlined text-tertiary text-sm">diamond</span>
+<div class="h-px bg-outline-variant flex-1"></div>
+</div>
+<!-- Feed Section -->
+<section class="space-y-8">
+<div class="flex items-center gap-4 mb-6">
+<h3 class="font-label-caps text-label-caps text-secondary tracking-widest">Teachings</h3>
+<div class="h-px bg-outline-variant flex-1"></div>
+</div>
+<!-- Post Card 1 -->
+<article class="p-6 border border-outline-variant bg-surface hover:bg-surface-container-lowest transition-colors group">
+<div class="flex items-center gap-3 mb-4">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" data-alt="A miniature 24px avatar of Dr. Elias Vance, scholarly and calm, warm parchment lighting, classic timeless style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwEoJ0-p10ZxOoSKCHUbYmpFq5zSX4rO5Ri6t6h2oHXU7l_t3kPJbin_kll0NNgwhV0l0PB1VocAfZWyLetXBIbzbKwgQAnQrYhI0RGm5-PTSAES91TR6WU17VizkG1xWZfjhuAo08POeJmxCa3Y2dChDc7zv65m_viG-VqxGpV7NfwwuQ0U-4UyhYxs4tVo94ITiDLBnVLLViUyLd9VUKe6vXiCGz-UPzDuf2FQfZLwQ8oGJh41exkO-D7k5jy53CfLOGoWyCGts2"/>
+<span class="font-label-caps text-label-caps text-secondary">Dr. Elias Vance • Oct 12</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-tertiary transition-colors">The Architecture of Silence</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 line-clamp-3">
+                        In examining the early monastic traditions, we find that silence was not merely the absence of speech, but a constructed environment. It was an architecture of the soul, built stone by stone through deliberate restraint, allowing for a deeper resonance of the divine presence.
+                    </p>
+<div class="flex items-center justify-between border-t border-outline-variant pt-4">
+<div class="inline-flex items-center px-2 py-1 bg-surface-container border border-outline-variant text-secondary font-label-caps text-[10px] uppercase">
+                            1 Kings 19:12
+                        </div>
+<div class="flex gap-4 text-secondary">
+<button class="flex items-center gap-1 hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[18px]">favorite</span> <span class="text-xs">24</span></button>
+<button class="flex items-center gap-1 hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[18px]">chat_bubble</span> <span class="text-xs">3</span></button>
+</div>
+</div>
+</article>
+<!-- Post Card 2 -->
+<article class="p-6 border border-outline-variant bg-surface hover:bg-surface-container-lowest transition-colors group">
+<div class="flex items-center gap-3 mb-4">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" data-alt="A miniature 24px avatar of Dr. Elias Vance, scholarly and calm, warm parchment lighting, classic timeless style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9oOO0w_ThPOBrGUFGdZm4vrypoJxef2kzdqKuBJ1h7_zdNRW4OUckHNQ4yOY4xTaCG5GiBUhfZW4fQINHxl_xKbeBOHUZ2E5qQotRtRL6aczmBePqAMMvqA720a46nGGXSOmsAkQ4BC6nS-8atzmnAJYIHgkEZa31hqmojl7AeHNaCNcW_2ClSf5EVrcHVsRZg4d_voEAbQ4V-XDZYkhfushwCmYevPSy2gGJKxHRzeA_LScRkfoBf8fsBBCPG1x-hX-HVY4aD5w5"/>
+<span class="font-label-caps text-label-caps text-secondary">Dr. Elias Vance • Sep 28</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-tertiary transition-colors">Liturgy as Anchor</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 line-clamp-3">
+                        When the waters of modernity turn turbulent, the ancient liturgies serve not as rigid constraints, but as heavy anchors. They hold the drifting mind steadfast to eternal truths, demanding a rhythm of remembrance that counters our culture of instant amnesia.
+                    </p>
+<div class="flex items-center justify-between border-t border-outline-variant pt-4">
+<div class="inline-flex items-center px-2 py-1 bg-surface-container border border-outline-variant text-secondary font-label-caps text-[10px] uppercase">
+                            Hebrews 6:19
+                        </div>
+<div class="flex gap-4 text-secondary">
+<button class="flex items-center gap-1 hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[18px]">favorite</span> <span class="text-xs">41</span></button>
+<button class="flex items-center gap-1 hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[18px]">chat_bubble</span> <span class="text-xs">8</span></button>
+</div>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar (Semantic Match: Profile is Active) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface px-4 pb-2 pt-2 border-t border-outline-variant z-50">
+<button class="flex flex-col items-center justify-center text-on-surface-variant pt-2 w-16 hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_stories</span>
+<span class="font-label-caps text-[10px] mt-1">Scriptures</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant pt-2 w-16 hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_balance</span>
+<span class="font-label-caps text-[10px] mt-1">Library</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant pt-2 w-16 hover:text-tertiary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">lightbulb</span>
+<span class="font-label-caps text-[10px] mt-1">Insights</span>
+</button>
+<button class="flex flex-col items-center justify-center text-tertiary border-t-2 border-tertiary pt-2 w-16 -mt-0.5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-caps text-[10px] mt-1">Profile</span>
+</button>
+</nav>
+<!-- Desktop Sidebar Nav (Hidden on Mobile) -->
+<aside class="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 p-6 gap-4 border-r border-outline-variant bg-surface z-30">
+<h2 class="font-headline-md text-headline-md text-primary mb-8 px-4">SCRIBES</h2>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-lg text-body-lg">Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-body-lg text-body-lg">The Archives</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-body-lg text-body-lg">Scholarly Works</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-tertiary font-bold bg-primary-container transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-body-lg text-body-lg">Profile</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-colors mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-lg text-body-lg">Settings</span>
+</a>
+</nav>
+</aside>
+</div>
+</body></html>

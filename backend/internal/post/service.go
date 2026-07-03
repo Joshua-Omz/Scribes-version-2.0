@@ -1,0 +1,139 @@
+package post
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+
+	"github.com/google/uuid"
+)
+
+var (
+	ErrNotFound     = errors.New("post not found")
+	ErrUnauthorized = errors.New("unauthorized to access this post")
+)
+
+type CreateInput struct {
+	Content      json.RawMessage `json:"content" binding:"required"`
+	Caption      *string         `json:"caption,omitempty"`
+	Visibility   *string         `json:"visibility,omitempty"`
+	SermonSource *string         `json:"sermon_source,omitempty"`
+}
+
+type Service struct {
+	repo *Repository
+}
+
+func NewService(repo *Repository) *Service {
+	return &Service{repo: repo}
+}
+
+func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateInput) (Post, error) {
+	// Default visibility to "public" if not specified by the client
+	visibility := "public"
+	if input.Visibility != nil {
+		visibility = *input.Visibility
+	}
+
+	return s.repo.CreatePost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource)
+}
+
+func (s *Service) Get(ctx context.Context, id uuid.UUID) (Post, error) {
+	post, err := s.repo.GetPostByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Post{}, ErrNotFound
+		}
+		return Post{}, err
+	}
+	return post, nil
+}
+
+// GetAuthorOnly fetches a post and verifies ownership. Used for mutations.
+func (s *Service) GetAuthorOnly(ctx context.Context, authorID, id uuid.UUID) (Post, error) {
+	post, err := s.Get(ctx, id)
+	if err != nil {
+		return Post{}, err
+	}
+	if post.AuthorID != authorID {
+		return Post{}, ErrUnauthorized
+	}
+	return post, nil
+}
+
+func (s *Service) List(ctx context.Context, authorID uuid.UUID) ([]Post, error) {
+	return s.repo.ListPostsByAuthor(ctx, authorID)
+}
+
+func (s *Service) Update(ctx context.Context, authorID, id uuid.UUID, input CreateInput) (Post, error) {
+	existing, err := s.GetAuthorOnly(ctx, authorID, id)
+	if err != nil {
+		return Post{}, err
+	}
+
+	// Default to existing visibility if not provided
+	visibility := existing.Visibility
+	if input.Visibility != nil {
+		visibility = *input.Visibility
+	}
+
+	return s.repo.UpdatePost(ctx, id, authorID, input.Content, input.Caption, visibility, input.SermonSource, existing.CurrentVersion)
+}
+
+func (s *Service) Delete(ctx context.Context, authorID, id uuid.UUID) error {
+	_, err := s.GetAuthorOnly(ctx, authorID, id)
+	if err != nil {
+		return err
+	}
+	return s.repo.DeletePost(ctx, id, authorID)
+}
+
+type ReviseInput struct {
+	Content json.RawMessage `json:"content" binding:"required"`
+	Caption *string         `json:"caption,omitempty"`
+}
+
+func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input ReviseInput) (Post, error) {
+	existing, err := s.GetAuthorOnly(ctx, authorID, id)
+	if err != nil {
+		return Post{}, err
+	}
+
+	return s.repo.RevisePost(ctx, id, authorID, existing.Content, existing.CurrentVersion, input.Content, input.Caption)
+}
+
+func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID uuid.UUID, input CreateInput) (Post, error) {
+	// Verify the original post exists
+	_, err := s.Get(ctx, correctsPostID)
+	if err != nil {
+		return Post{}, err
+	}
+
+	visibility := "public"
+	if input.Visibility != nil {
+		visibility = *input.Visibility
+	}
+
+	return s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID)
+}
+
+func (s *Service) ListVersions(ctx context.Context, id uuid.UUID) ([]PostVersion, error) {
+	// Verify post exists
+	_, err := s.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.ListVersionsByPost(ctx, id)
+}
+
+func (s *Service) GetVersion(ctx context.Context, id uuid.UUID, version int32) (PostVersion, error) {
+	versionInfo, err := s.repo.GetVersionByPostAndNumber(ctx, id, version)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return PostVersion{}, ErrNotFound
+		}
+		return PostVersion{}, err
+	}
+	return versionInfo, nil
+}

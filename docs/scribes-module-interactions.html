@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribes — Module Interaction Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,600;9..40,700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0B0F1A;
+    --s1:      #111827;
+    --s2:      #1A2235;
+    --border:  #1F2D45;
+    --border2: #2A3D5C;
+    --a1:      #38BDF8; /* sky */
+    --a2:      #4ADE80; /* green */
+    --a3:      #FBBF24; /* amber */
+    --a4:      #C084FC; /* purple */
+    --a5:      #FB7185; /* rose */
+    --a6:      #34D399; /* emerald */
+    --text:    #CBD5E1;
+    --muted:   #475569;
+    --white:   #F1F5F9;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px 70px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(56,189,248,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(192,132,252,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.5s ease both;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 100px;
+    padding: 4px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--a1);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(20px,4vw,32px);
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  .diagram { max-width: 1140px; margin: 0 auto; }
+
+  /* ── MODULE BLOCK ── */
+  .mod {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+  }
+  .mod:hover {
+    border-color: var(--border2);
+    box-shadow: 0 0 24px rgba(56,189,248,0.05);
+  }
+  .mod-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .mod-icon { font-size: 16px; flex-shrink: 0; }
+  .mod-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .mod-pkg {
+    margin-left: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .mod-stripe {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .mod-body { padding: 12px 16px; }
+
+  /* color variants */
+  .m-sky    .mod-stripe { background: var(--a1); }
+  .m-sky    .mod-title  { color: var(--a1); }
+  .m-green  .mod-stripe { background: var(--a2); }
+  .m-green  .mod-title  { color: var(--a2); }
+  .m-amber  .mod-stripe { background: var(--a3); }
+  .m-amber  .mod-title  { color: var(--a3); }
+  .m-purple .mod-stripe { background: var(--a4); }
+  .m-purple .mod-title  { color: var(--a4); }
+  .m-rose   .mod-stripe { background: var(--a5); }
+  .m-rose   .mod-title  { color: var(--a5); }
+  .m-emr    .mod-stripe { background: var(--a6); }
+  .m-emr    .mod-title  { color: var(--a6); }
+
+  /* ── FUNCTION LIST ── */
+  .fn-list { list-style: none; }
+  .fn-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 9.5px;
+    line-height: 1.5;
+  }
+  .fn-list li:last-child { border-bottom: none; }
+  .fn-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    color: var(--a1);
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+  .fn-desc { color: var(--muted); font-size: 9px; }
+
+  /* ── CALL ARROWS ── */
+  .call-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 9px;
+  }
+  .call-from {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .call-arrow { color: var(--muted); font-size: 14px; }
+  .call-to {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .call-method {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    color: var(--a3);
+    flex: 1;
+  }
+  .call-note { font-size: 8.5px; color: var(--muted); font-style: italic; margin-left: auto; white-space: nowrap; }
+
+  .tag-sky    { background: rgba(56,189,248,0.12);  color: var(--a1); }
+  .tag-green  { background: rgba(74,222,128,0.12);  color: var(--a2); }
+  .tag-amber  { background: rgba(251,191,36,0.12);  color: var(--a3); }
+  .tag-purple { background: rgba(192,132,252,0.12); color: var(--a4); }
+  .tag-rose   { background: rgba(251,113,133,0.12); color: var(--a5); }
+  .tag-emr    { background: rgba(52,211,153,0.12);  color: var(--a6); }
+
+  /* ── GRID ── */
+  .mg { display: grid; gap: 14px; margin-bottom: 14px; }
+  .mg2 { grid-template-columns: 1fr 1fr; }
+  .mg3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── SECTION ── */
+  .sec {
+    margin: 32px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: fadeIn 0.4s ease both;
+  }
+  .sec-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .sec-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── CALL MATRIX ── */
+  .matrix {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    animation: slideUp 0.4s ease both;
+  }
+  .matrix-header {
+    background: var(--s2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .matrix-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--a1);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .matrix-note { font-size: 8.5px; color: var(--muted); }
+
+  /* ── SEQUENCE FLOW ── */
+  .seq {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    animation: slideUp 0.5s ease both;
+  }
+  .seq-header {
+    background: var(--s2);
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .seq-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--a3);
+  }
+  .seq-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--white);
+  }
+  .seq-body { padding: 12px 16px; }
+
+  .seq-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    padding-left: 20px;
+  }
+  .seq-steps::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+  .seq-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    position: relative;
+  }
+  .seq-step::before {
+    content: '';
+    position: absolute;
+    left: -13px; top: 8px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--border2);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .seq-step.highlight::before { background: var(--a3); border-color: var(--a3); }
+  .ss-caller {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 110px;
+    text-align: center;
+  }
+  .ss-arrow { color: var(--muted); font-size: 12px; flex-shrink: 0; padding-top: 2px; }
+  .ss-callee {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 110px;
+    text-align: center;
+  }
+  .ss-detail { font-size: 9px; color: var(--muted); padding-top: 2px; }
+  .ss-note   { font-size: 8px; color: var(--a3); font-style: italic; padding-top: 2px; }
+
+  /* ── SHARED ── */
+  .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 7.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  @keyframes fadeDown  { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideUp   { from { opacity:0; transform:translateY(14px); }  to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn    { from { opacity:0; } to { opacity:1; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="pill">✦ Scribes v2.0</div>
+  <h1>Module Interaction Map</h1>
+  <p class="sub">// semi-low-level abstract · how modules call each other · data contracts</p>
+</header>
+
+<div class="diagram">
+
+  <!-- ══ CLIENT MODULES ══ -->
+  <div class="sec"><span class="sec-label">Client Modules (Flutter)</span><div class="sec-line"></div></div>
+
+  <div class="mg mg3">
+
+    <div class="mod m-sky" style="animation: slideUp 0.4s ease 0.05s both">
+      <div class="mod-header">
+        <span class="mod-icon">🗂️</span>
+        <span class="mod-title">SyncModule</span>
+        <span class="mod-pkg">client/sync</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">startSync()</span><span class="fn-desc">Entry point. Reads last server_sequence from Drift. Calls API.</span></li>
+          <li><span class="fn-name">applyDelta()</span><span class="fn-desc">Merges server records into local SQLite. Increments local sequence.</span></li>
+          <li><span class="fn-name">resolveConflict()</span><span class="fn-desc">Last-write-wins: server timestamp authoritative in v1.</span></li>
+          <li><span class="fn-name">pushPending()</span><span class="fn-desc">Sends locally-created drafts/notes that haven't been uploaded yet.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-green" style="animation: slideUp 0.4s ease 0.1s both">
+      <div class="mod-header">
+        <span class="mod-icon">✏️</span>
+        <span class="mod-title">EditorModule</span>
+        <span class="mod-pkg">client/editor</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">initEditor()</span><span class="fn-desc">Loads WYSIWYG. Accepts Note or Draft as seed content.</span></li>
+          <li><span class="fn-name">onChange()</span><span class="fn-desc">Debounced local Drift write via StorageModule. No API call.</span></li>
+          <li><span class="fn-name">onPublish()</span><span class="fn-desc">Validates categories + scripture refs, then calls PostModule.create().</span></li>
+          <li><span class="fn-name">onRevise()</span><span class="fn-desc">Calls PostModule.revise(). Triggers version snapshot on backend.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-amber" style="animation: slideUp 0.4s ease 0.15s both">
+      <div class="mod-header">
+        <span class="mod-icon">💾</span>
+        <span class="mod-title">StorageModule</span>
+        <span class="mod-pkg">client/storage (Drift)</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">write(entity)</span><span class="fn-desc">Upsert to SQLite. Tags record with local_only=true if offline.</span></li>
+          <li><span class="fn-name">read(query)</span><span class="fn-desc">Typesafe Drift query. Returns stream for Riverpod to watch.</span></li>
+          <li><span class="fn-name">getSequence()</span><span class="fn-desc">Returns last known server_sequence for sync checkpoint.</span></li>
+          <li><span class="fn-name">purge(ids)</span><span class="fn-desc">Hard-deletes local records confirmed deleted by server.</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mg mg3">
+
+    <div class="mod m-purple" style="animation: slideUp 0.4s ease 0.2s both">
+      <div class="mod-header">
+        <span class="mod-icon">📰</span>
+        <span class="mod-title">FeedModule</span>
+        <span class="mod-pkg">client/feed</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">loadFeed()</span><span class="fn-desc">Calls GET /feed. Checks if user is cold-start (no follows). Riverpod AsyncNotifier.</span></li>
+          <li><span class="fn-name">loadExplore()</span><span class="fn-desc">Calls GET /explore?categories=[]. Paginated.</span></li>
+          <li><span class="fn-name">renderPost()</span><span class="fn-desc">Emits Post widget. Links to PostDetailModule for tap.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-rose" style="animation: slideUp 0.4s ease 0.25s both">
+      <div class="mod-header">
+        <span class="mod-icon">🔔</span>
+        <span class="mod-title">NotifModule</span>
+        <span class="mod-pkg">client/notifications</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">listen()</span><span class="fn-desc">Polls GET /notifications or receives push for real-time events.</span></li>
+          <li><span class="fn-name">onMention()</span><span class="fn-desc">Real-time path. Directly surfaces in-app banner. No batching.</span></li>
+          <li><span class="fn-name">processBatch()</span><span class="fn-desc">Digest events arrive on schedule. Grouped by type and rendered.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-emr" style="animation: slideUp 0.4s ease 0.3s both">
+      <div class="mod-header">
+        <span class="mod-icon">🌐</span>
+        <span class="mod-title">APIClient</span>
+        <span class="mod-pkg">client/api</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">get/post/patch()</span><span class="fn-desc">Base HTTP methods. Attaches JWT. Handles 401 refresh.</span></li>
+          <li><span class="fn-name">onConnected()</span><span class="fn-desc">Network watcher. Fires SyncModule.startSync() on reconnect.</span></li>
+          <li><span class="fn-name">serialize()</span><span class="fn-desc">Converts Dart models to JSON request bodies.</span></li>
+          <li><span class="fn-name">deserialize()</span><span class="fn-desc">Maps JSON responses to typed Dart model classes.</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ API HANDLER MODULES ══ -->
+  <div class="sec" style="animation-delay:0.3s"><span class="sec-label">Backend Handler Modules (Go)</span><div class="sec-line"></div></div>
+
+  <div class="mg mg3">
+
+    <div class="mod m-green" style="animation: slideUp 0.4s ease 0.35s both">
+      <div class="mod-header">
+        <span class="mod-icon">📝</span>
+        <span class="mod-title">PostHandler</span>
+        <span class="mod-pkg">api/post</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">CreatePost()</span><span class="fn-desc">Validates author, categories, scripture refs. Writes post + assigns server_sequence. Enqueues follower feed invalidation.</span></li>
+          <li><span class="fn-name">RevisePost()</span><span class="fn-desc">Snapshots current content → post_versions. Writes new content. Bumps current_version. Returns updated Post.</span></li>
+          <li><span class="fn-name">GetVersionHistory()</span><span class="fn-desc">Queries post_versions by post_id. Returns ordered list.</span></li>
+          <li><span class="fn-name">SoftDeletePost()</span><span class="fn-desc">Sets is_deleted=true. Post becomes tombstone. No hard delete.</span></li>
+          <li><span class="fn-name">ExportPost()</span><span class="fn-desc">Calls ExportService. Returns .md or .txt byte stream.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-sky" style="animation: slideUp 0.4s ease 0.4s both">
+      <div class="mod-header">
+        <span class="mod-icon">🔄</span>
+        <span class="mod-title">SyncHandler</span>
+        <span class="mod-pkg">api/sync</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">GetDelta()</span><span class="fn-desc">Accepts last_seq from client. Queries notes, drafts, posts WHERE server_sequence &gt; last_seq AND owner=caller. Returns delta payload.</span></li>
+          <li><span class="fn-name">PushPending()</span><span class="fn-desc">Accepts bulk upsert of local-only records. Assigns server_sequence to each. Returns ack with server sequences.</span></li>
+          <li><span class="fn-name">assignSequence()</span><span class="fn-desc">Internal. Uses DB-level sequence (nextval). Never uses client timestamp.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-purple" style="animation: slideUp 0.4s ease 0.45s both">
+      <div class="mod-header">
+        <span class="mod-icon">📡</span>
+        <span class="mod-title">FeedHandler</span>
+        <span class="mod-pkg">api/feed</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">GetFollowingFeed()</span><span class="fn-desc">Queries posts WHERE author_id IN (user's follows). Reverse-chron. Paginated by cursor.</span></li>
+          <li><span class="fn-name">GetExploreFeed()</span><span class="fn-desc">Queries posts with interaction score = SUM(reactions + comments) in 90d. No view counts.</span></li>
+          <li><span class="fn-name">GetColdStartFeed()</span><span class="fn-desc">Called when follow count = 0. Passes user's onboarding categories to GetExploreFeed(). Same score formula.</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mg mg3">
+
+    <div class="mod m-amber" style="animation: slideUp 0.4s ease 0.5s both">
+      <div class="mod-header">
+        <span class="mod-icon">💬</span>
+        <span class="mod-title">DMHandler</span>
+        <span class="mod-pkg">api/messages</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">SendMessage()</span><span class="fn-desc">Checks mutual follow OR approved request. Text-only enforced. Writes to messages table.</span></li>
+          <li><span class="fn-name">RequestConversation()</span><span class="fn-desc">Creates pending MessageRequest. Notifies recipient. No message sent until approved.</span></li>
+          <li><span class="fn-name">BlockConversation()</span><span class="fn-desc">Sets blocked=true on conversation. Hides thread from both parties. Prevents further sends.</span></li>
+          <li><span class="fn-name">DeleteMessage()</span><span class="fn-desc">Soft-delete: body replaced with "[Message deleted]". Sender only.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-rose" style="animation: slideUp 0.4s ease 0.55s both">
+      <div class="mod-header">
+        <span class="mod-icon">🛡️</span>
+        <span class="mod-title">AuthMiddleware</span>
+        <span class="mod-pkg">api/middleware</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">ValidateJWT()</span><span class="fn-desc">Runs on every request. Extracts user_id + role. Injects into context.</span></li>
+          <li><span class="fn-name">RequireRole()</span><span class="fn-desc">Guard for admin-only routes. Returns 403 if role != SUPER_ADMIN.</span></li>
+          <li><span class="fn-name">RateLimit()</span><span class="fn-desc">Per-IP sliding window. Applied before handler execution.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mod m-emr" style="animation: slideUp 0.4s ease 0.6s both">
+      <div class="mod-header">
+        <span class="mod-icon">⚡</span>
+        <span class="mod-title">NotifWorker</span>
+        <span class="mod-pkg">worker/notifications</span>
+        <div class="mod-stripe"></div>
+      </div>
+      <div class="mod-body">
+        <ul class="fn-list">
+          <li><span class="fn-name">enqueue(event)</span><span class="fn-desc">Called by handlers. Writes to in-memory job channel (buffered goroutine).</span></li>
+          <li><span class="fn-name">dispatch()</span><span class="fn-desc">Background goroutine. Reads channel. Routes to realtime or batch path.</span></li>
+          <li><span class="fn-name">flushBatch()</span><span class="fn-desc">Runs on schedule. Groups batched notifications. Sends digest.</span></li>
+          <li><span class="fn-name">sendRealtime()</span><span class="fn-desc">@mention / admin alert. Immediate delivery. Does not wait for digest.</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ SEQUENCE FLOWS ══ -->
+  <div class="sec" style="animation-delay:0.5s"><span class="sec-label">Critical Interaction Sequences</span><div class="sec-line"></div></div>
+
+  <!-- SEQ 1 -->
+  <div class="seq" style="animation-delay:0.55s">
+    <div class="seq-header">
+      <span class="seq-num">SEQ-01</span>
+      <span class="seq-title">User publishes a Post while online</span>
+    </div>
+    <div class="seq-body">
+      <div class="seq-steps">
+        <div class="seq-step">
+          <span class="ss-caller tag tag-green">EditorModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-green">EditorModule</span>
+          <span class="ss-detail">onPublish() validates categories + scripture refs client-side</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-green">EditorModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">APIClient</span>
+          <span class="ss-detail">post(POST /posts, body: {content, caption, categories, scripture_refs})</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-emr">APIClient</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-rose">AuthMiddleware</span>
+          <span class="ss-detail">ValidateJWT() — injects user_id into request context</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-rose">AuthMiddleware</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-green">PostHandler</span>
+          <span class="ss-detail">CreatePost(ctx, req) — writes post row, assigns server_sequence via nextval()</span>
+        </div>
+        <div class="seq-step highlight">
+          <span class="ss-caller tag tag-green">PostHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">NotifWorker</span>
+          <span class="ss-note">enqueue(PostCreated) — async; does not block response</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-green">PostHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">APIClient</span>
+          <span class="ss-detail">Returns 201 {post, server_sequence}</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-emr">APIClient</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-amber">StorageModule</span>
+          <span class="ss-detail">write(post) — updates local Drift cache; sets local_only=false</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEQ 2 -->
+  <div class="seq" style="animation-delay:0.6s">
+    <div class="seq-header">
+      <span class="seq-num">SEQ-02</span>
+      <span class="seq-title">App reconnects after offline drafting</span>
+    </div>
+    <div class="seq-body">
+      <div class="seq-steps">
+        <div class="seq-step">
+          <span class="ss-caller tag tag-emr">APIClient</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-sky">SyncModule</span>
+          <span class="ss-detail">onConnected() fires → SyncModule.startSync()</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-sky">SyncModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-amber">StorageModule</span>
+          <span class="ss-detail">getSequence() → returns last known server_sequence N</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-sky">SyncModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-sky">SyncHandler</span>
+          <span class="ss-detail">GET /sync?seq=N — server returns all records with sequence &gt; N</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-sky">SyncModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-amber">StorageModule</span>
+          <span class="ss-detail">applyDelta(records) — upserts each record; updates local sequence to server max</span>
+        </div>
+        <div class="seq-step highlight">
+          <span class="ss-caller tag tag-sky">SyncModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-sky">SyncHandler</span>
+          <span class="ss-note">POST /sync/push — uploads local_only=true records; server assigns sequences</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-sky">SyncModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-amber">StorageModule</span>
+          <span class="ss-detail">write(serverAck) — stamps records with server_sequence; clears local_only flag</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEQ 3 -->
+  <div class="seq" style="animation-delay:0.65s">
+    <div class="seq-header">
+      <span class="seq-num">SEQ-03</span>
+      <span class="seq-title">Author revises a published Post</span>
+    </div>
+    <div class="seq-body">
+      <div class="seq-steps">
+        <div class="seq-step">
+          <span class="ss-caller tag tag-green">EditorModule</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">APIClient</span>
+          <span class="ss-detail">onRevise() → PATCH /posts/:id/revise  {newContent: JSONB}</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-rose">AuthMiddleware</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-green">PostHandler</span>
+          <span class="ss-detail">RevisePost(ctx) — verifies caller == post.author_id</span>
+        </div>
+        <div class="seq-step highlight">
+          <span class="ss-caller tag tag-green">PostHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-green">PostHandler</span>
+          <span class="ss-note">INSERT post_versions (snapshot current content, version_number, snapshotted_at)</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-green">PostHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-green">PostHandler</span>
+          <span class="ss-detail">UPDATE posts SET content=newContent, current_version++, server_sequence=nextval()</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-green">PostHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">APIClient</span>
+          <span class="ss-detail">Returns 200 {post: updatedPost, versionCount: N}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEQ 4 -->
+  <div class="seq" style="animation-delay:0.7s">
+    <div class="seq-header">
+      <span class="seq-num">SEQ-04</span>
+      <span class="seq-title">@mention triggers real-time notification</span>
+    </div>
+    <div class="seq-body">
+      <div class="seq-steps">
+        <div class="seq-step">
+          <span class="ss-caller tag tag-emr">APIClient</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-sky">CommentHandler</span>
+          <span class="ss-detail">POST /posts/:id/comments  {body: "...@handle..."}</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-sky">CommentHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-sky">CommentHandler</span>
+          <span class="ss-detail">parseMentions(body) → resolves @handle to user_ids</span>
+        </div>
+        <div class="seq-step highlight">
+          <span class="ss-caller tag tag-sky">CommentHandler</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">NotifWorker</span>
+          <span class="ss-note">enqueue({type: MENTION, recipients: [user_ids], ref: commentId})</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-emr">NotifWorker</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-emr">NotifWorker</span>
+          <span class="ss-detail">dispatch() reads channel: type == MENTION → sendRealtime() path</span>
+        </div>
+        <div class="seq-step">
+          <span class="ss-caller tag tag-emr">NotifWorker</span>
+          <span class="ss-arrow">→</span>
+          <span class="ss-callee tag tag-rose">NotifModule</span>
+          <span class="ss-detail">Push delivery → client NotifModule.onMention() → in-app banner</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALL MATRIX -->
+  <div class="sec" style="animation-delay:0.7s"><span class="sec-label">Cross-Module Call Reference</span><div class="sec-line"></div></div>
+
+  <div class="matrix" style="animation-delay:0.75s">
+    <div class="matrix-header">
+      <span class="matrix-title">WHO CALLS WHOM</span>
+      <span class="matrix-note">Caller → Callee · method · contract</span>
+    </div>
+    <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 6px;">
+
+      <div class="call-row">
+        <span class="call-from tag tag-emr">APIClient</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-sky">SyncModule</span>
+        <span class="call-method">startSync()</span>
+        <span class="call-note">on reconnect event</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-sky">SyncModule</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-amber">StorageModule</span>
+        <span class="call-method">getSequence() · applyDelta() · write()</span>
+        <span class="call-note">primary consumer of StorageModule</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-green">EditorModule</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-amber">StorageModule</span>
+        <span class="call-method">write(draft/note)</span>
+        <span class="call-note">debounced; offline-safe</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-green">EditorModule</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-emr">APIClient</span>
+        <span class="call-method">post(POST /posts) · patch(PATCH /posts/:id/revise)</span>
+        <span class="call-note">publish &amp; revise paths</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-purple">FeedModule</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-emr">APIClient</span>
+        <span class="call-method">get(GET /feed | /explore)</span>
+        <span class="call-note">paginated cursor</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-rose">AuthMiddleware</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to">All Handlers</span>
+        <span class="call-method">injects ctx.user_id, ctx.role</span>
+        <span class="call-note">runs before every handler</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-green">PostHandler</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-emr">NotifWorker</span>
+        <span class="call-method">enqueue(PostCreated)</span>
+        <span class="call-note">non-blocking goroutine channel write</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-sky">SyncHandler</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to" style="font-family:'Space Mono',monospace; font-size:8px; padding:2px 8px; color:var(--muted)">PostgreSQL</span>
+        <span class="call-method">sqlc: SELECT * WHERE server_sequence &gt; $1 AND user_id=$2</span>
+        <span class="call-note">server_sequence never from client</span>
+      </div>
+      <div class="call-row">
+        <span class="call-from tag tag-emr">NotifWorker</span>
+        <span class="call-arrow">→</span>
+        <span class="call-to tag tag-rose">NotifModule</span>
+        <span class="call-method">push(MENTION) immediately · flushBatch() on schedule</span>
+        <span class="call-note">two delivery paths</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,757 @@
+
+<h2 class="sr-only">Scribes backend sprint plan — 9 one-week sprints covering auth through admin and workers</h2>
+
+<style>
+  .sprint-grid { display: flex; flex-direction: column; gap: 0; }
+
+  .sprint-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .sprint-row:last-child { border-bottom: none; }
+
+  .sprint-meta {
+    padding: 16px 14px;
+    border-right: 0.5px solid var(--color-border-tertiary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sprint-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.5px;
+  }
+  .sprint-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    line-height: 1.3;
+  }
+  .sprint-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-top: 4px;
+    width: fit-content;
+  }
+
+  .sprint-body { padding: 14px 16px; }
+
+  .goal-line {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.5;
+    border-left: 2px solid var(--color-border-secondary);
+    padding-left: 8px;
+  }
+
+  .tasks { display: flex; flex-direction: column; gap: 5px; }
+
+  .task {
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    padding: 3px 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .task:hover { background: var(--color-background-secondary); }
+
+  .task-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .task-text { line-height: 1.5; }
+  .task-sub {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    display: block;
+    margin-top: 1px;
+  }
+  .task-pts {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+  }
+
+  .deliverable-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--color-border-tertiary);
+  }
+  .dv {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+
+  /* color themes */
+  .t-purple .sprint-tag { background: #EEEDFE; color: #3C3489; }
+  .t-teal   .sprint-tag { background: #E1F5EE; color: #085041; }
+  .t-amber  .sprint-tag { background: #FAEEDA; color: #633806; }
+  .t-blue   .sprint-tag { background: #E6F1FB; color: #0C447C; }
+  .t-coral  .sprint-tag { background: #FAECE7; color: #712B13; }
+  .t-green  .sprint-tag { background: #EAF3DE; color: #27500A; }
+  .t-pink   .sprint-tag { background: #FBEAF0; color: #72243E; }
+  .t-gray   .sprint-tag { background: #F1EFE8; color: #444441; }
+  .t-red    .sprint-tag { background: #FCEBEB; color: #791F1F; }
+
+  @media (prefers-color-scheme: dark) {
+    .t-purple .sprint-tag { background: #26215C; color: #CECBF6; }
+    .t-teal   .sprint-tag { background: #04342C; color: #9FE1CB; }
+    .t-amber  .sprint-tag { background: #412402; color: #FAC775; }
+    .t-blue   .sprint-tag { background: #042C53; color: #B5D4F4; }
+    .t-coral  .sprint-tag { background: #4A1B0C; color: #F5C4B3; }
+    .t-green  .sprint-tag { background: #173404; color: #C0DD97; }
+    .t-pink   .sprint-tag { background: #4B1528; color: #F4C0D1; }
+    .t-gray   .sprint-tag { background: #2C2C2A; color: #D3D1C7; }
+    .t-red    .sprint-tag { background: #501313; color: #F7C1C1; }
+  }
+
+  .dot-purple { background: #7F77DD; }
+  .dot-teal   { background: #1D9E75; }
+  .dot-amber  { background: #BA7517; }
+  .dot-blue   { background: #378ADD; }
+  .dot-coral  { background: #D85A30; }
+  .dot-green  { background: #639922; }
+  .dot-pink   { background: #D4537E; }
+  .dot-gray   { background: #888780; }
+  .dot-red    { background: #E24B4A; }
+
+  .sprint-num-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .chip-purple { background: #EEEDFE; color: #3C3489; }
+  .chip-teal   { background: #E1F5EE; color: #085041; }
+  .chip-amber  { background: #FAEEDA; color: #633806; }
+  .chip-blue   { background: #E6F1FB; color: #0C447C; }
+  .chip-coral  { background: #FAECE7; color: #712B13; }
+  .chip-green  { background: #EAF3DE; color: #27500A; }
+  .chip-pink   { background: #FBEAF0; color: #72243E; }
+  .chip-gray   { background: #F1EFE8; color: #444441; }
+  .chip-red    { background: #FCEBEB; color: #791F1F; }
+
+  @media (prefers-color-scheme: dark) {
+    .chip-purple { background: #26215C; color: #CECBF6; }
+    .chip-teal   { background: #04342C; color: #9FE1CB; }
+    .chip-amber  { background: #412402; color: #FAC775; }
+    .chip-blue   { background: #042C53; color: #B5D4F4; }
+    .chip-coral  { background: #4A1B0C; color: #F5C4B3; }
+    .chip-green  { background: #173404; color: #C0DD97; }
+    .chip-pink   { background: #4B1528; color: #F4C0D1; }
+    .chip-gray   { background: #2C2C2A; color: #D3D1C7; }
+    .chip-red    { background: #501313; color: #F7C1C1; }
+  }
+
+  .header-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    padding: 10px 0;
+    margin-bottom: 0;
+    border-bottom: 1.5px solid var(--color-border-secondary);
+  }
+  .header-meta { padding: 0 14px; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.5px; }
+  .header-body { padding: 0 16px; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.5px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    margin-bottom: 0;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+  }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+</style>
+
+<div style="padding: 1rem 0 0.5rem;">
+  <div style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px;">
+    9 sprints · 1 week each · feature-area driven · Go + sqlc + PostgreSQL + Docker
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot dot-purple"></div>Foundation</div>
+    <div class="legend-item"><div class="legend-dot dot-teal"></div>Content core</div>
+    <div class="legend-item"><div class="legend-dot dot-amber"></div>Sync & offline</div>
+    <div class="legend-item"><div class="legend-dot dot-blue"></div>Social layer</div>
+    <div class="legend-item"><div class="legend-dot dot-coral"></div>Discovery</div>
+    <div class="legend-item"><div class="legend-dot dot-green"></div>Messaging</div>
+    <div class="legend-item"><div class="legend-dot dot-pink"></div>Notifications</div>
+    <div class="legend-item"><div class="legend-dot dot-gray"></div>Admin & moderation</div>
+    <div class="legend-item"><div class="legend-dot dot-red"></div>Export & hardening</div>
+  </div>
+</div>
+
+<div style="border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; margin-top: 0.5rem;">
+
+  <div class="header-row" style="background: var(--color-background-secondary);">
+    <div class="header-meta" style="border-right: 0.5px solid var(--color-border-tertiary);">SPRINT</div>
+    <div class="header-body">TASKS &amp; DELIVERABLES</div>
+  </div>
+
+  <div class="sprint-grid">
+
+    <!-- S1: Foundation -->
+    <div class="sprint-row t-purple">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-purple">1</span>
+          <span class="sprint-num">Week 1</span>
+        </div>
+        <div class="sprint-name">Project foundation &amp; Auth</div>
+        <div class="sprint-tag">Foundation</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">Wire the Go project structure, database schema baseline, JWT auth, and a working /health endpoint. Everything else builds on this.</div>
+        <div class="tasks">
+          <div class="task" onclick="sendPrompt('Expand on the Go project layout task for Scribes sprint 1')">
+            <div class="task-dot dot-purple"></div>
+            <div class="task-text">Set up Go module, Chi router, env config, and Docker Compose (Go + PostgreSQL)
+              <span class="task-sub">internal/config, cmd/api/main.go, docker-compose.yml, .env.example</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('What tables should be in the Sprint 1 baseline schema for Scribes?')">
+            <div class="task-dot dot-purple"></div>
+            <div class="task-text">Write baseline PostgreSQL schema migrations — users, roles, server_sequence
+              <span class="task-sub">migrations/001_users.sql · goose or migrate as migration tool</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('Walk me through implementing JWT auth in Go for Scribes')">
+            <div class="task-dot dot-purple"></div>
+            <div class="task-text">POST /auth/register — hash password (bcrypt), write user row, return JWT
+              <span class="task-sub">internal/handler/auth.go → service → repository layer</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('How should the JWT middleware work in the Scribes Go backend?')">
+            <div class="task-dot dot-purple"></div>
+            <div class="task-text">POST /auth/login + JWT middleware — ValidateJWT, inject user_id + role into ctx
+              <span class="task-sub">internal/middleware/auth.go · RequireRole guard</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-purple"></div>
+            <div class="task-text">GET /health endpoint + structured JSON logger (slog)
+              <span class="task-sub">Smoke-test Docker Compose stack end-to-end</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Running Docker stack</span>
+          <span class="dv">Register + login working</span>
+          <span class="dv">JWT middleware</span>
+          <span class="dv">DB migrations wired</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2: Content Core -->
+    <div class="sprint-row t-teal">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-teal">2</span>
+          <span class="sprint-num">Week 2</span>
+        </div>
+        <div class="sprint-name">Notes, Drafts &amp; Post creation</div>
+        <div class="sprint-tag">Content core</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">The three-stage content pipeline: Notes (private workspace) → Draft (staging) → Post (published artifact). Schema, sqlc queries, and handlers for each.</div>
+        <div class="tasks">
+          <div class="task" onclick="sendPrompt('What should the notes and drafts schema look like for Scribes?')">
+            <div class="task-dot dot-teal"></div>
+            <div class="task-text">Schema migrations — notes, drafts, posts, post_categories, scripture_refs, notebooks
+              <span class="task-sub">migrations/002_content.sql · JSONB for content field</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('Walk me through the sqlc setup for Notes in Scribes')">
+            <div class="task-dot dot-teal"></div>
+            <div class="task-text">sqlc queries + generated Go types for notes and drafts
+              <span class="task-sub">db/query/notes.sql · db/query/drafts.sql · sqlc generate</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-teal"></div>
+            <div class="task-text">CRUD handlers for Notes — GET /notes, POST /notes, PATCH /notes/:id, DELETE /notes/:id
+              <span class="task-sub">Auth-guarded. owner_id == caller enforced at service layer.</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-teal"></div>
+            <div class="task-text">CRUD handlers for Drafts — POST /drafts, PATCH /drafts/:id, DELETE /drafts/:id
+              <span class="task-sub">POST /drafts/:id/publish → creates Post row, deletes Draft</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('How do I assign server_sequence in PostgreSQL for the Scribes sync system?')">
+            <div class="task-dot dot-teal"></div>
+            <div class="task-text">server_sequence assignment — nextval() on insert for notes, drafts, posts
+              <span class="task-sub">DB-level sequence · never trust client timestamp</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Notes CRUD</span>
+          <span class="dv">Draft → Post publish flow</span>
+          <span class="dv">scripture_refs attached</span>
+          <span class="dv">server_sequence on all rows</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3: Post Versioning -->
+    <div class="sprint-row t-amber">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-amber">3</span>
+          <span class="sprint-num">Week 3</span>
+        </div>
+        <div class="sprint-name">Post versioning &amp; Correction Posts</div>
+        <div class="sprint-tag">Content core</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">The versioned transparency model — revise a Post, snapshot the old version immutably, expose Version History. Plus Correction Post as a separate linked artifact.</div>
+        <div class="tasks">
+          <div class="task" onclick="sendPrompt('Design the post_versions table for Scribes')">
+            <div class="task-dot dot-amber"></div>
+            <div class="task-text">Schema migration — post_versions (immutable; never updated or deleted)
+              <span class="task-sub">migrations/003_versioning.sql · post_id FK, version_number, content_snapshot JSONB, snapshotted_at</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+          <div class="task" onclick="sendPrompt('Walk me through the PATCH /posts/:id/revise handler logic in Go')">
+            <div class="task-dot dot-amber"></div>
+            <div class="task-text">PATCH /posts/:id/revise — snapshot current → post_versions, write new content, bump current_version
+              <span class="task-sub">Must verify caller == author. Runs in a single DB transaction.</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-amber"></div>
+            <div class="task-text">GET /posts/:id/versions — return ordered version history
+              <span class="task-sub">sqlc query on post_versions ORDER BY version_number ASC</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-amber"></div>
+            <div class="task-text">Correction Post flow — POST /posts/:id/correction
+              <span class="task-sub">Creates new Post row with is_correction=true, corrects_post_id set. Links via erratum footnote in read response.</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-amber"></div>
+            <div class="task-text">Soft-delete POST — DELETE /posts/:id sets is_deleted=true, returns tombstone on GET
+              <span class="task-sub">Orphan handling: if user later deletes account, handle → [Deleted User]</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Revision + snapshot in one tx</span>
+          <span class="dv">Version history endpoint</span>
+          <span class="dv">Correction Post linked</span>
+          <span class="dv">Soft-delete tombstone</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4: Sync -->
+    <div class="sprint-row t-blue">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-blue">4</span>
+          <span class="sprint-num">Week 4</span>
+        </div>
+        <div class="sprint-name">Offline sync handler</div>
+        <div class="sprint-tag">Sync &amp; offline</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">The delta sync protocol that powers the local-first client. Server sequence is always the source of truth — client clocks are never trusted.</div>
+        <div class="tasks">
+          <div class="task" onclick="sendPrompt('How does the GET /sync delta endpoint work in Scribes?')">
+            <div class="task-dot dot-blue"></div>
+            <div class="task-text">GET /sync?seq=N — return all notes, drafts, posts WHERE server_sequence &gt; N AND owner = caller
+              <span class="task-sub">Paginated. Returns max_sequence in response so client updates its checkpoint.</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('How should the POST /sync/push bulk upsert handler work?')">
+            <div class="task-dot dot-blue"></div>
+            <div class="task-text">POST /sync/push — bulk upsert local-only records, assign server_sequence to each via nextval()
+              <span class="task-sub">Returns ack with server_sequence per record. Client stamps local rows.</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-blue"></div>
+            <div class="task-text">Conflict resolution — last-write-wins by server updated_at (v1 policy)
+              <span class="task-sub">Document the policy in a comment block. v2 deferred.</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-blue"></div>
+            <div class="task-text">Integration test — simulate offline writes, reconnect, assert delta correctness
+              <span class="task-sub">Test file: internal/sync/sync_test.go</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">GET /sync delta working</span>
+          <span class="dv">POST /sync/push ack</span>
+          <span class="dv">server_sequence authoritative</span>
+          <span class="dv">sync integration test</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5: Social Layer -->
+    <div class="sprint-row t-coral">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-coral">5</span>
+          <span class="sprint-num">Week 5</span>
+        </div>
+        <div class="sprint-name">Follows, Reactions &amp; Comments</div>
+        <div class="sprint-tag">Social layer</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">The quiet asymmetric follow model, domain-specific reactions, and the flat single-level comment stream with author moderation.</div>
+        <div class="tasks">
+          <div class="task">
+            <div class="task-dot dot-coral"></div>
+            <div class="task-text">Schema — follows (composite PK, no follower count column), reactions, comments
+              <span class="task-sub">migrations/005_social.sql</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-coral"></div>
+            <div class="task-text">Follow/unfollow — POST /users/:id/follow · DELETE /users/:id/follow
+              <span class="task-sub">Counts are never exposed in any response. Quiet asymmetric — no approval.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('How should Scribes reactions differ from a generic like system?')">
+            <div class="task-dot dot-coral"></div>
+            <div class="task-text">Reactions — POST /posts/:id/react {type: AMEN|INSIGHTFUL|THOUGHT_PROVOKING}
+              <span class="task-sub">Public response: aggregate counts. Author response: counts + reactor identities.</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-coral"></div>
+            <div class="task-text">Comments — POST /posts/:id/comments · parse @mentions into mention_ids[]
+              <span class="task-sub">GET returns flat stream. Author can PATCH is_hidden=true or DELETE.</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-coral"></div>
+            <div class="task-text">Bookmarks + Imports — POST /saved · type: BOOKMARK or IMPORT
+              <span class="task-sub">IMPORT stores a JSONB content snapshot of the Post at time of saving.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Quiet follow model</span>
+          <span class="dv">Domain reactions</span>
+          <span class="dv">@mention parsing</span>
+          <span class="dv">Author moderation on comments</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S6: Discovery & Feed -->
+    <div class="sprint-row t-green">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-green">6</span>
+          <span class="sprint-num">Week 6</span>
+        </div>
+        <div class="sprint-name">Feed, Explore &amp; Categories</div>
+        <div class="sprint-tag">Discovery</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">Three feed modes — following feed, explore (interaction-scored), and cold-start — all using only deliberate engagement signals. Taxonomy management baked in.</div>
+        <div class="tasks">
+          <div class="task">
+            <div class="task-dot dot-green"></div>
+            <div class="task-text">Schema — categories (name, is_deprecated), user_onboarding_categories
+              <span class="task-sub">migrations/006_feed.sql · only Super Admins can write to categories</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+          <div class="task" onclick="sendPrompt('How should the following feed query work in Scribes?')">
+            <div class="task-dot dot-green"></div>
+            <div class="task-text">GET /feed — posts WHERE author_id IN (user follows), reverse-chron, cursor paginated
+              <span class="task-sub">Keyset pagination on (published_at, id). No offset.</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task" onclick="sendPrompt('How is the explore feed interaction score calculated in Scribes?')">
+            <div class="task-dot dot-green"></div>
+            <div class="task-text">GET /explore?categories=[] — interaction score = SUM(reactions + comments) rolling 90d
+              <span class="task-sub">No view counts. Score query runs on indexed reactions + comments tables.</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-green"></div>
+            <div class="task-text">Cold-start detection — if follow count = 0, feed handler calls explore with onboarding categories
+              <span class="task-sub">Same score formula. Identical analytics guarantees.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-green"></div>
+            <div class="task-text">GET /categories — list active categories for client selectors
+              <span class="task-sub">Returns is_deprecated flag so client can grey out deprecated options</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Following feed</span>
+          <span class="dv">Explore with score</span>
+          <span class="dv">Cold-start path</span>
+          <span class="dv">Consistent analytics policy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S7: DMs -->
+    <div class="sprint-row t-pink">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-pink">7</span>
+          <span class="sprint-num">Week 7</span>
+        </div>
+        <div class="sprint-name">Direct messaging</div>
+        <div class="sprint-tag">Messaging</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">Mutual-only DMs with message requests, text-only content, soft-delete, blocking, and the full retention/moderation policy from the SRS v2.</div>
+        <div class="tasks">
+          <div class="task">
+            <div class="task-dot dot-pink"></div>
+            <div class="task-text">Schema — conversations, message_requests, messages (body text only, is_deleted, sent_at)
+              <span class="task-sub">migrations/007_dm.sql · conversation has blocked field</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-pink"></div>
+            <div class="task-text">POST /messages/request — create pending MessageRequest, notify recipient
+              <span class="task-sub">No message sent until approved. PATCH /messages/request/:id/approve|reject.</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-pink"></div>
+            <div class="task-text">POST /conversations/:id/messages — send message (mutual check at service layer)
+              <span class="task-sub">Text only. Max length enforced. blocked=true → 403.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-pink"></div>
+            <div class="task-text">DELETE /messages/:id — soft-delete, body → "[Message deleted]", sender only
+              <span class="task-sub">POST /conversations/:id/block — sets blocked=true, hides thread from both</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-pink"></div>
+            <div class="task-text">Retention: background job purges conversations inactive for &gt;12 months
+              <span class="task-sub">Goroutine scheduled job. Logs purge count. Part of next sprint's worker setup.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Message request flow</span>
+          <span class="dv">Mutual check enforced</span>
+          <span class="dv">Soft-delete</span>
+          <span class="dv">Block + retention policy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S8: Notifications -->
+    <div class="sprint-row t-gray">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-gray">8</span>
+          <span class="sprint-num">Week 8</span>
+        </div>
+        <div class="sprint-name">Notification worker &amp; Admin</div>
+        <div class="sprint-tag">Notifications + Admin</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">The two-path notification system (real-time for @mentions and admin alerts, batched digest for everything else) plus the Super Admin internal dashboard routes.</div>
+        <div class="tasks">
+          <div class="task" onclick="sendPrompt('How should the notification worker goroutine be structured in Go?')">
+            <div class="task-dot dot-gray"></div>
+            <div class="task-text">Notification goroutine worker — buffered channel, dispatch loop, two paths: realtime vs batch
+              <span class="task-sub">worker/notifications/worker.go · started in main.go with graceful shutdown</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-gray"></div>
+            <div class="task-text">Schema — notifications (type, recipient_id, ref_id, is_realtime, sent_at)
+              <span class="task-sub">migrations/008_notifications.sql</span>
+            </div>
+            <div class="task-pts">1 pt</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-gray"></div>
+            <div class="task-text">Handlers enqueue events — PostHandler, CommentHandler, ReactionHandler all call worker.Enqueue()
+              <span class="task-sub">Non-blocking channel write. Handlers don't wait for delivery.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-gray"></div>
+            <div class="task-text">Admin routes — GET /admin/reports, PATCH /admin/content/:id/action, taxonomy CRUD
+              <span class="task-sub">RequireRole(SUPER_ADMIN) guard on all /admin/* routes</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-gray"></div>
+            <div class="task-text">GET /admin/categories, POST /admin/categories, PATCH /admin/categories/:id/deprecate
+              <span class="task-sub">Deprecated categories remain on existing Posts. Cannot hard-delete.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">Real-time @mention path</span>
+          <span class="dv">Batch digest scheduler</span>
+          <span class="dv">Admin moderation routes</span>
+          <span class="dv">Taxonomy management</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- S9: Export + Hardening -->
+    <div class="sprint-row t-red">
+      <div class="sprint-meta">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="sprint-num-chip chip-red">9</span>
+          <span class="sprint-num">Week 9</span>
+        </div>
+        <div class="sprint-name">Export, public profiles &amp; hardening</div>
+        <div class="sprint-tag">Export &amp; hardening</div>
+      </div>
+      <div class="sprint-body">
+        <div class="goal-line">Export to .md/.txt, public profile endpoints, account deletion with orphan handling, rate limiting, and a full end-to-end integration test pass.</div>
+        <div class="tasks">
+          <div class="task" onclick="sendPrompt('How should the Scribes Post export to Markdown work in Go?')">
+            <div class="task-dot dot-red"></div>
+            <div class="task-text">GET /posts/:id/export?format=md|txt — stream file download
+              <span class="task-sub">Includes author handle, published_at, version number, deep link back to Scribes</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-red"></div>
+            <div class="task-text">GET /users/:handle — public profile (display_name, bio, public posts chronological)
+              <span class="task-sub">is_deleted users return anonymised [Deleted User] profile. Posts remain.</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-red"></div>
+            <div class="task-text">DELETE /account — soft-delete user, anonymise handle on public posts, cascade DM purge
+              <span class="task-sub">Runs in transaction. Sets is_deleted=true. Posts orphaned not deleted.</span>
+            </div>
+            <div class="task-pts">3 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-red"></div>
+            <div class="task-text">Rate limiting middleware — per-IP sliding window on all routes
+              <span class="task-sub">internal/middleware/ratelimit.go · applied in router setup before handlers</span>
+            </div>
+            <div class="task-pts">2 pts</div>
+          </div>
+          <div class="task">
+            <div class="task-dot dot-red"></div>
+            <div class="task-text">End-to-end integration tests — register → publish → revise → sync → export
+              <span class="task-sub">Test all 9 sprint deliverables together. Fix gaps before frontend sprint begins.</span>
+            </div>
+            <div class="task-pts">4 pts</div>
+          </div>
+        </div>
+        <div class="deliverable-bar">
+          <span class="dv">.md + .txt export</span>
+          <span class="dv">Public profiles</span>
+          <span class="dv">Account deletion + orphans</span>
+          <span class="dv">Rate limiting</span>
+          <span class="dv">Full e2e test suite</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 1rem;">
+  <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px;">
+    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Total sprints</div>
+    <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">9 weeks</div>
+  </div>
+  <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px;">
+    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Story points total</div>
+    <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">~107 pts</div>
+  </div>
+  <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px;">
+    <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px;">Backend complete by</div>
+    <div style="font-size: 22px; font-weight: 500; color: var(--color-text-primary);">Week 9 →  Flutter</div>
+  </div>
+</div>

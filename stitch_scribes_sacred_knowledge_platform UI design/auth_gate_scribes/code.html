@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>SCRIBES - Auth Gate</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#1c1b1b",
+                        "on-secondary-container": "#656464",
+                        "on-surface": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#474646",
+                        "on-primary-fixed": "#1c1c17",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#fff1d2",
+                        "on-primary-fixed-variant": "#474741",
+                        "primary-container": "#f5f2ea",
+                        "on-tertiary-container": "#866b00",
+                        "inverse-on-surface": "#f3f0ef",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffe088",
+                        "surface-container": "#f0eded",
+                        "on-primary-container": "#6f6e68",
+                        "tertiary": "#735c00",
+                        "surface": "#fcf9f8",
+                        "inverse-surface": "#313030",
+                        "primary-fixed-dim": "#c9c6bf",
+                        "on-tertiary-fixed": "#241a00",
+                        "primary-fixed": "#e5e2da",
+                        "primary": "#5f5e58",
+                        "surface-variant": "#e5e2e1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "secondary": "#5f5e5e",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-dim": "#dcd9d9",
+                        "surface-container-high": "#eae7e7",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#5f5e58",
+                        "inverse-primary": "#c9c6bf",
+                        "surface-bright": "#fcf9f8",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "secondary-container": "#e5e2e1",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "on-surface-variant": "#474740",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "background": "#fcf9f8",
+                        "outline-variant": "#c9c7bd",
+                        "outline": "#78776f",
+                        
+                        "brand-gold": "#9A7020",
+                        "brand-bg": "#F5F0E8",
+                        "brand-surface": "#FDFAF4",
+                        "brand-text": "#1A1612"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "input": "6px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "container-max": "1120px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "headline-md": ["EB Garamond", "serif"],
+                        "display-lg": ["EB Garamond", "serif"],
+                        "headline-sm": ["EB Garamond", "serif"],
+                        "display-lg-mobile": ["EB Garamond", "serif"],
+                        "body-md": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "input-placeholder": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F5F0E8;
+            color: #1A1612;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .tab-btn {
+            font-family: 'EB Garamond', serif;
+            font-size: 24px;
+            color: #78776f;
+            position: relative;
+            padding-bottom: 4px;
+            transition: color 0.3s ease;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .tab-btn.active {
+            color: #1A1612;
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #1A1612;
+        }
+        
+        .input-field {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(26, 22, 18, 0.15);
+            padding: 12px 0;
+            font-size: 16px;
+            color: #1A1612;
+            transition: border-color 0.3s ease;
+            border-radius: 0;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-bottom-color: #9A7020;
+            box-shadow: 0 1px 0 0 #9A7020;
+        }
+        
+        .input-field::placeholder {
+            color: #78776f;
+            font-size: 15px;
+            font-weight: 400;
+        }
+        
+        .form-section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+        
+        .form-section.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .cta-button {
+            background-color: #1c1b1b;
+            color: #F5F0E8;
+            border: 1px solid #1c1b1b;
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:active {
+            transform: scale(0.98);
+        }
+        
+        .cta-button-gold {
+            background-color: #9A7020;
+            color: #FDFAF4;
+            border: none;
+            border-radius: 6px;
+            padding: 16px 24px;
+            font-weight: 500;
+            font-size: 16px;
+            width: 100%;
+            transition: opacity 0.2s ease;
+        }
+        
+        .cta-button-gold:active {
+            opacity: 0.9;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 bg-[#F5F0E8] antialiased">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky border-b border-outline-variant bg-[#F5F0E8] z-50">
+<div class="flex justify-between items-center px-margin-mobile py-unit max-w-container-max mx-auto">
+<button aria-label="Menu" class="text-on-surface-variant hover:text-tertiary transition-colors duration-300 scale-95 duration-150 p-2 -ml-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile tracking-widest text-[#1A1612]">SCRIBES</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</div>
+</header>
+<main class="flex-grow w-full max-w-md mx-auto flex flex-col justify-center py-12 px-2">
+<!-- Tab Switcher -->
+<div class="flex space-x-8 mb-12 border-b border-outline-variant/30 pb-4">
+<button class="tab-btn active" id="tab-register" onclick="switchTab('register')">Register</button>
+<button class="tab-btn" id="tab-login" onclick="switchTab('login')">Login</button>
+</div>
+<!-- Register State -->
+<div class="form-section active space-y-8" id="form-register">
+<div class="space-y-6">
+<div>
+<input autocomplete="name" class="input-field" id="reg-name" placeholder="Display name" type="text"/>
+</div>
+<div>
+<input autocomplete="username" class="input-field" id="reg-handle" placeholder="@handle" type="text"/>
+</div>
+<div>
+<input autocomplete="email" class="input-field" id="reg-email" placeholder="Email address" type="email"/>
+</div>
+<div>
+<input autocomplete="new-password" class="input-field" id="reg-password" placeholder="Password" type="password"/>
+</div>
+</div>
+<div class="pt-8">
+<button class="cta-button-gold mb-4" type="button">Create Account</button>
+<p class="text-center font-body-md text-[13px] text-on-surface-variant leading-relaxed">
+                    Your identity on Scribes is permanent.<br/>Choose your handle carefully.
+                </p>
+</div>
+</div>
+<!-- Login State -->
+<div class="form-section space-y-8" id="form-login">
+<div class="space-y-6">
+<div>
+<input autocomplete="email" class="input-field" id="login-email" placeholder="Email address" type="email"/>
+</div>
+<div>
+<input autocomplete="current-password" class="input-field" id="login-password" placeholder="Password" type="password"/>
+</div>
+</div>
+<div class="pt-8 flex flex-col items-center">
+<button class="cta-button-gold mb-6" type="button">Enter</button>
+<button class="text-on-surface-variant hover:text-[#1A1612] text-sm transition-colors border-b border-transparent hover:border-[#1A1612]" type="button">
+                    Forgot password?
+                </button>
+</div>
+</div>
+</main>
+<script>
+        function switchTab(tabId) {
+            // Update Tab Buttons
+            document.getElementById('tab-register').classList.remove('active');
+            document.getElementById('tab-login').classList.remove('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            // Hide all forms, show selected
+            const forms = document.querySelectorAll('.form-section');
+            forms.forEach(form => {
+                form.classList.remove('active');
+                setTimeout(() => {
+                    if(!form.classList.contains('active')) {
+                        form.style.display = 'none';
+                    }
+                }, 300); // Wait for fade out
+            });
+
+            const targetForm = document.getElementById(`form-${tabId}`);
+            targetForm.style.display = 'block';
+            // slight delay to allow display:block to apply before changing opacity
+            setTimeout(() => {
+                targetForm.classList.add('active');
+            }, 10);
+        }
+    </script>
+</body></html>

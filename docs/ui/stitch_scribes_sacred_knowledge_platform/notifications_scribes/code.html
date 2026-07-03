@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scribes | Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=DM+Sans:wght@400;500;700&amp;family=EB+Garamond:wght@400;500;600&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-on-surface": "#f3f0ef",
+              "error": "#ba1a1a",
+              "on-background": "#1c1b1b",
+              "on-error": "#ffffff",
+              "on-error-container": "#93000a",
+              "surface-bright": "#fcf9f8",
+              "inverse-primary": "#c9c6bf",
+              "surface-container-low": "#f6f3f2",
+              "outline-variant": "#c9c7bd",
+              "on-tertiary-container": "#866b00",
+              "on-secondary-container": "#656464",
+              "background": "#fcf9f8",
+              "secondary-fixed": "#e5e2e1",
+              "secondary-fixed-dim": "#c9c6c5",
+              "primary-fixed-dim": "#c9c6bf",
+              "surface-variant": "#e5e2e1",
+              "on-tertiary-fixed-variant": "#574500",
+              "on-secondary-fixed": "#1c1b1b",
+              "secondary-container": "#e5e2e1",
+              "on-surface-variant": "#474740",
+              "on-surface": "#1c1b1b",
+              "on-primary-fixed": "#1c1c17",
+              "on-primary": "#ffffff",
+              "tertiary-fixed": "#ffe088",
+              "on-secondary-fixed-variant": "#474646",
+              "outline": "#78776f",
+              "inverse-surface": "#313030",
+              "on-tertiary-fixed": "#241a00",
+              "secondary": "#5f5e5e",
+              "surface": "#fcf9f8",
+              "error-container": "#ffdad6",
+              "surface-dim": "#dcd9d9",
+              "primary-container": "#f5f2ea",
+              "on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff",
+              "surface-tint": "#5f5e58",
+              "tertiary": "#735c00",
+              "surface-container-high": "#eae7e7",
+              "primary-fixed": "#e5e2da",
+              "on-primary-fixed-variant": "#474741",
+              "surface-container-highest": "#e5e2e1",
+              "surface-container": "#f0eded",
+              "surface-container-lowest": "#ffffff",
+              "primary": "#5f5e58",
+              "on-primary-container": "#6f6e68",
+              "tertiary-fixed-dim": "#e9c349",
+              "tertiary-container": "#fff1d2"
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+            spacing: {
+              "container-max": "1120px",
+              "margin-mobile": "20px",
+              "margin-desktop": "64px",
+              "unit": "8px",
+              "gutter": "24px"
+            },
+            fontFamily: {
+              "label-caps": ["Inter", "sans-serif"],
+              "body-lg": ["Inter", "sans-serif"],
+              "headline-sm": ["EB Garamond", "serif"],
+              "headline-md": ["EB Garamond", "serif"],
+              "display-lg": ["EB Garamond", "serif"],
+              "display-lg-mobile": ["EB Garamond", "serif"],
+              "body-md": ["Inter", "sans-serif"],
+              "dm-sans": ["DM Sans", "sans-serif"],
+              "cormorant": ["Cormorant Garamond", "serif"]
+            },
+            fontSize: {
+              "label-caps": ["12px", { lineHeight: "1.0", letterSpacing: "0.1em", fontWeight: "600" }],
+              "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "-0.01em", fontWeight: "400" }],
+              "headline-sm": ["24px", { lineHeight: "1.3", fontWeight: "500" }],
+              "headline-md": ["32px", { lineHeight: "1.2", fontWeight: "400" }],
+              "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "400" }],
+              "display-lg-mobile": ["32px", { lineHeight: "1.2", fontWeight: "400" }],
+              "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+      body {
+        background-color: #F5F0E8; /* Parchment background */
+        color: #1c1b1b;
+        -webkit-font-smoothing: antialiased;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      }
+      .surface-card {
+        background-color: #FDFAF4;
+      }
+      .gold-accent {
+        color: #9A7020;
+      }
+      .gold-bg {
+        background-color: #9A7020;
+      }
+      .border-gold-muted {
+        border-color: rgba(154, 112, 32, 0.4);
+      }
+      .reading-progress {
+        height: 2px;
+        background: linear-gradient(to right, #9A7020 var(--scroll), transparent 0);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface">
+<!-- Reading Progress Bar -->
+<div class="reading-progress" id="progress-bar" style="--scroll: 0%;"></div>
+<!-- Header -->
+<header class="sticky top-0 z-40 bg-[#F5F0E8] border-b border-outline-variant/30">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-4 flex items-center gap-6">
+<button class="flex items-center justify-center w-10 h-10 hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<h1 class="font-cormorant text-[32px] font-medium leading-none">Notifications</h1>
+</div>
+<!-- Tabs -->
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex gap-8">
+<button class="pb-3 border-b-2 border-on-surface font-dm-sans text-[14px] font-medium tracking-wide">All</button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant font-dm-sans text-[14px] font-medium tracking-wide hover:text-on-surface transition-colors">Mentions</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="max-w-[720px] mx-auto px-margin-mobile pt-8 pb-32">
+<!-- Section: TODAY -->
+<section class="mb-10">
+<div class="flex items-center gap-4 mb-4">
+<span class="font-dm-sans text-[11px] font-bold tracking-[0.15em] text-on-surface-variant uppercase">Today</span>
+<div class="flex-grow h-[0.5px] bg-outline-variant/40"></div>
+</div>
+<div class="space-y-1">
+<!-- Mentions Item -->
+<div class="group relative flex items-center py-4 px-4 -mx-4 hover:bg-[#FDFAF4] transition-colors border-l-2 border-[#9A7020]/40">
+<div class="absolute left-1 w-2 h-2 rounded-full gold-bg"></div>
+<div class="ml-4 flex-shrink-0 w-9 h-9 rounded-full overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="A dignified close-up portrait of a scholarly woman with salt-and-pepper hair, wearing wire-rimmed glasses and a charcoal linen scarf. The lighting is soft and natural, coming from a library window, creating a serene and intellectual atmosphere in a light-mode parchment aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsSfrrDDsRZ6VJoNr8mhRmbVTialxHQZOofagPBlrF-x7_Dq1dGhZGuKsFPVFEqvx-c73bhzLQoGYeS5UiL2wOFfi2-npfYQQqjR1lDk_W5y8mRX9kS4l9N9s2HPBzRXXnowH2IhOd4VuigPiexeIShbRh7DDkh7vXmakUtIhuRXg9YbyJBn5mP1gkEBVEzFzFSqjoEwieS6pjL3iNCh3xny5g10MQT4a6HotgLYFT_6yygnaLBKLErBdJVgTkyhoTOKRLcf6uOLXU"/>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-dm-sans text-[15px] leading-snug">
+<span class="font-bold">Evelyn Vance</span> mentioned you in <span class="italic">"The Hermeneutics of Stillness"</span>
+</p>
+</div>
+<div class="ml-4 flex-shrink-0 text-on-surface-variant font-dm-sans text-[12px]">2h</div>
+</div>
+<!-- Follow Notification (Batched) -->
+<div class="group relative flex items-center py-4 px-4 -mx-4 hover:bg-[#FDFAF4] transition-colors">
+<!-- Unread dot omitted for read status -->
+<div class="ml-4 flex-shrink-0 w-9 h-9 rounded-full gold-bg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-dm-sans text-[15px] leading-snug">
+<span class="font-bold">Julian Thorne</span> and 3 others started following your archive.
+                        </p>
+</div>
+<div class="ml-4 flex-shrink-0 text-on-surface-variant font-dm-sans text-[12px]">5h</div>
+</div>
+<!-- Admin Alert -->
+<div class="group relative flex items-center py-4 px-4 -mx-4 hover:bg-[#FDFAF4] transition-colors border-l-2 border-[#9A7020]/40">
+<div class="absolute left-1 w-2 h-2 rounded-full gold-bg"></div>
+<div class="ml-4 flex-shrink-0 w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-dm-sans text-[15px] leading-snug">
+                            Your submission <span class="font-bold">"Ancient Liturgy"</span> was curated for the Front Page.
+                        </p>
+</div>
+<div class="ml-4 flex-shrink-0 text-on-surface-variant font-dm-sans text-[12px]">8h</div>
+</div>
+</div>
+</section>
+<!-- Section: THIS WEEK -->
+<section class="mb-10">
+<div class="flex items-center gap-4 mb-4">
+<span class="font-dm-sans text-[11px] font-bold tracking-[0.15em] text-on-surface-variant uppercase">This Week</span>
+<div class="flex-grow h-[0.5px] bg-outline-variant/40"></div>
+</div>
+<div class="space-y-1">
+<!-- Reactions (Batched) -->
+<div class="group relative flex items-center py-4 px-4 -mx-4 hover:bg-[#FDFAF4] transition-colors">
+<div class="ml-4 flex-shrink-0 w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-dm-sans text-[15px] leading-snug">
+<span class="font-bold">Marcus Aurel</span> and 12 others bookmarked your latest reflection.
+                        </p>
+</div>
+<div class="ml-4 flex-shrink-0 text-on-surface-variant font-dm-sans text-[12px]">Tue</div>
+</div>
+<!-- Mentions Item -->
+<div class="group relative flex items-center py-4 px-4 -mx-4 hover:bg-[#FDFAF4] transition-colors border-l-2 border-[#9A7020]/40">
+<div class="ml-4 flex-shrink-0 w-9 h-9 rounded-full overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="A portrait of a young monk-like scholar with a thoughtful expression, wearing a simple cream-colored linen robe. The background is a warm, out-of-focus scriptorium with shelves of scrolls and old books. The mood is contemplative and quiet, using a palette of soft ambers and bone whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBybWhTY3VRVm3opBH9PyP61ZtZrlIOPm5pd4q91YzKFUoOObOGA19L7_WdNuzUKTdQ-4yV0hmgsNzCfWZKIR0aUBCII37LzAVJRj2K3CiqjBNzMxHzC18lsx8vlhyZRA_wSJclcCklSS0z3RRKqju7tHHheBC-ZSty-2URCBFHwFceFKtPFLg6mU25ETKAqPxs6RFLfOmTHiQ9rNUqUe9jHozWANaXaF1jtWtLDpYfA-L2r1o60SZlwE3Rjgs6p0YF_WR8XxwqwSir"/>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-dm-sans text-[15px] leading-snug">
+<span class="font-bold">Brother Thomas</span> cited your work in <span class="italic">"The Manuscript of Silence"</span>.
+                        </p>
+</div>
+<div class="ml-4 flex-shrink-0 text-on-surface-variant font-dm-sans text-[12px]">Mon</div>
+</div>
+</div>
+</section>
+<!-- Section: EARLIER -->
+<section class="mb-16">
+<div class="flex items-center gap-4 mb-4">
+<span class="font-dm-sans text-[11px] font-bold tracking-[0.15em] text-on-surface-variant uppercase">Earlier</span>
+<div class="flex-grow h-[0.5px] bg-outline-variant/40"></div>
+</div>
+<div class="space-y-1">
+<div class="group relative flex items-center py-4 px-4 -mx-4 hover:bg-[#FDFAF4] transition-colors opacity-70">
+<div class="ml-4 flex-shrink-0 w-9 h-9 rounded-full overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="An elderly man with a long white beard and deep facial lines of wisdom, looking directly at the camera with a kind smile. He is wearing a heavy dark wool coat. The setting is a misty, cold morning in a cobbled European village. Timeless, authoritative, and warm aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8B5QpfeXIh5x_QSx87olKkias0F-SPeJZlA5yK6Xw564vpfF8D5NzFgECSiBjnF7OBE9iex8qNTJeOAtV3kql4Mg9cB8pRyUDAnmeuZ3eRKSGqV5OnpAsAkuvPOuN6EV4QdRfyEdF3BP731ZVPoDdqOKGkru_IiLEwYEpzDmbJ-43YIruHbBXd6S1vo79ILo-RZPMzCbGCvKYssxmqW3jmWwXpSGZa0lm4w7HsLTpmLCQrxhRlPSgsjD6NQD_oy7AXwftQec6KxP2"/>
+</div>
+<div class="ml-4 flex-grow">
+<p class="font-dm-sans text-[15px] leading-snug">
+<span class="font-bold">Dr. Silas Gray</span> replied to your comment.
+                        </p>
+</div>
+<div class="ml-4 flex-shrink-0 text-on-surface-variant font-dm-sans text-[12px]">Nov 12</div>
+</div>
+</div>
+</section>
+<!-- Footer Actions -->
+<footer class="flex flex-col items-center gap-4 py-8 border-t border-outline-variant/20">
+<button class="font-dm-sans text-[12px] font-bold tracking-wider gold-accent uppercase hover:underline decoration-1 underline-offset-4">
+                Mark all as read
+            </button>
+<button class="font-dm-sans text-[12px] text-on-surface-variant hover:text-on-surface transition-colors">
+                Manage notification preferences →
+            </button>
+</footer>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center bg-[#F5F0E8] px-4 pb-4 pt-2 border-t border-outline-variant/30 md:max-w-container-max md:left-1/2 md:-translate-x-1/2 z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-[#9A7020] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[24px]">auto_stories</span>
+<span class="font-label-caps text-[10px] mt-1 uppercase tracking-widest">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-[#9A7020] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[24px]">account_balance</span>
+<span class="font-label-caps text-[10px] mt-1 uppercase tracking-widest">Explore</span>
+</a>
+<div class="relative -top-4">
+<button class="w-14 h-14 rounded-full bg-on-surface text-[#F5F0E8] flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[28px]">edit_note</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center text-[#9A7020] pt-2 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-label-caps text-[10px] mt-1 uppercase tracking-widest">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-[#9A7020] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="font-label-caps text-[10px] mt-1 uppercase tracking-widest">Profile</span>
+</a>
+</nav>
+<script>
+        // Scroll Progress Logic
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.setProperty('--scroll', scrolled + '%');
+        });
+
+        // Micro-interactions for notification rows
+        document.querySelectorAll('main section div.group').forEach(row => {
+            row.addEventListener('click', () => {
+                const dot = row.querySelector('.gold-bg.w-2');
+                if (dot) {
+                    dot.style.opacity = '0';
+                    dot.style.transform = 'scale(0)';
+                    dot.style.transition = 'all 0.3s ease';
+                    row.classList.remove('border-l-2');
+                }
+            });
+        });
+    </script>
+</body></html>

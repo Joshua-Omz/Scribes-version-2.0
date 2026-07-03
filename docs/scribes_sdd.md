@@ -23,7 +23,8 @@ scribes/
 | Component | Technology |
 |-----------|-----------|
 | Language | Go 1.24+ |
-| Router | `github.com/go-chi/chi/v5` |
+\ Framework \ Gin 
+| Router |  | Gin
 | Database | PostgreSQL 16 |
 | Driver | `github.com/jackc/pgx/v5` |
 | Migrations | `github.com/golang-migrate/migrate/v4` |

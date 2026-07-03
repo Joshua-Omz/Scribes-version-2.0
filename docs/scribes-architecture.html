@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribes — Architecture & Data Flow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #090C14;
+    --surface:   #0E1420;
+    --surface2:  #141B2D;
+    --border:    #1E2A42;
+    --accent:    #4A8FE8;
+    --accent2:   #6EC6A0;
+    --accent3:   #E8A84A;
+    --accent4:   #C46AE8;
+    --accent5:   #E86A6A;
+    --text:      #D4DCF0;
+    --muted:     #5A6A8A;
+    --glow:      rgba(74,143,232,0.15);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 30px 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* grid bg */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(74,143,232,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,143,232,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 50px;
+    animation: fadeDown 0.6s ease both;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* ── DIAGRAM CANVAS ── */
+  .diagram {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* LAYERS */
+  .layer {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 0;
+    position: relative;
+    animation: fadeUp 0.5s ease both;
+  }
+  .layer:nth-child(1) { animation-delay: 0.1s; }
+  .layer:nth-child(2) { animation-delay: 0.2s; }
+  .layer:nth-child(3) { animation-delay: 0.3s; }
+  .layer:nth-child(4) { animation-delay: 0.4s; }
+  .layer:nth-child(5) { animation-delay: 0.5s; }
+
+  .layer-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    padding-right: 10px;
+    min-width: 30px;
+    flex-shrink: 0;
+  }
+
+  /* NODE */
+  .node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: default;
+    flex: 1;
+    min-width: 120px;
+    max-width: 220px;
+  }
+  .node:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--glow), inset 0 0 20px rgba(74,143,232,0.03);
+  }
+  .node-icon {
+    font-size: 18px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .node-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .node-sub {
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .node-tag {
+    position: absolute;
+    top: -9px; right: 10px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* color variants */
+  .c-blue  { border-color: rgba(74,143,232,0.4);  }
+  .c-blue .node-icon, .c-blue .node-title { color: var(--accent); }
+  .c-blue .node-tag  { background: rgba(74,143,232,0.15); color: var(--accent); }
+
+  .c-green { border-color: rgba(110,198,160,0.4); }
+  .c-green .node-icon, .c-green .node-title { color: var(--accent2); }
+  .c-green .node-tag { background: rgba(110,198,160,0.15); color: var(--accent2); }
+
+  .c-amber { border-color: rgba(232,168,74,0.4);  }
+  .c-amber .node-icon, .c-amber .node-title { color: var(--accent3); }
+  .c-amber .node-tag { background: rgba(232,168,74,0.15); color: var(--accent3); }
+
+  .c-purple { border-color: rgba(196,106,232,0.4); }
+  .c-purple .node-icon, .c-purple .node-title { color: var(--accent4); }
+  .c-purple .node-tag { background: rgba(196,106,232,0.15); color: var(--accent4); }
+
+  .c-red   { border-color: rgba(232,106,106,0.4); }
+  .c-red .node-icon, .c-red .node-title { color: var(--accent5); }
+  .c-red .node-tag { background: rgba(232,106,106,0.15); color: var(--accent5); }
+
+  /* CONNECTOR ROWS */
+  .connectors {
+    position: relative;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .arrow-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    position: relative;
+  }
+  .arrow-line {
+    width: 2px;
+    background: linear-gradient(180deg, var(--border) 0%, var(--accent) 100%);
+    position: relative;
+  }
+  .arrow-label {
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--bg);
+    padding: 1px 5px;
+    white-space: nowrap;
+  }
+  .arrow-head {
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--accent);
+  }
+  .arrow-head.up {
+    border-top: none;
+    border-bottom: 7px solid var(--accent2);
+  }
+
+  /* FLOW ANNOTATIONS */
+  .flow-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+  }
+  .flow-nodes {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  /* CONNECTOR SVG overlay */
+  .svg-connectors {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  /* SECTION DIVIDER */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 24px;
+    opacity: 0.6;
+  }
+  .section-divider span {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .section-divider::before, .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* FLOW BANDS */
+  .flow-band {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+  .flow-band::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .flow-band.fb-blue::before  { background: var(--accent); }
+  .flow-band.fb-green::before { background: var(--accent2); }
+  .flow-band.fb-amber::before { background: var(--accent3); }
+  .flow-band.fb-purple::before { background: var(--accent4); }
+
+  .flow-band-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  .fb-blue .flow-band-title   { color: var(--accent); }
+  .fb-green .flow-band-title  { color: var(--accent2); }
+  .fb-amber .flow-band-title  { color: var(--accent3); }
+  .fb-purple .flow-band-title { color: var(--accent4); }
+
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .fs-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 9px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .fs-arrow {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .fs-note {
+    font-size: 8px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.6s ease 0.6s both;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* LAYOUT GRID */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .arch-grid.g2 { grid-template-columns: 1fr 1fr; }
+  .arch-grid.g4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .arch-grid.g5 { grid-template-columns: repeat(5, 1fr); }
+
+  /* VERTICAL CONNECTOR LINES */
+  .v-arrows {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    margin: 6px 0;
+    position: relative;
+  }
+  .v-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .v-arrow-line {
+    width: 1px;
+    height: 22px;
+    background: linear-gradient(180deg, var(--border), var(--accent));
+  }
+  .v-arrow-label {
+    font-size: 7.5px;
+    color: var(--muted);
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+  .v-arrow-head {
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid var(--accent);
+  }
+  .v-arrow-head.green { border-top-color: var(--accent2); }
+  .v-arrow-line.green { background: linear-gradient(180deg, var(--border), var(--accent2)); }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Scribes v2.0</div>
+  <h1>Architecture &amp; Data Flow</h1>
+  <p class="sub">// system overview · client → api → storage · sync &amp; delivery</p>
+</header>
+
+<div class="diagram">
+
+  <!-- ═══ TIER 1: CLIENTS ═══ -->
+  <div class="section-divider"><span>Client Tier</span></div>
+  <div class="arch-grid g2" style="animation-delay:0.1s">
+
+    <div class="node c-blue">
+      <span class="node-tag">Flutter / Wasm</span>
+      <span class="node-icon">🌐</span>
+      <div class="node-title">Web Application</div>
+      <div class="node-sub">Desktop drafting &amp; reading<br>Rich text editor · Post browse<br>Compiled to WebAssembly</div>
+    </div>
+
+    <div class="node c-blue">
+      <span class="node-tag">Flutter / Dart</span>
+      <span class="node-icon">📱</span>
+      <div class="node-title">Mobile Application</div>
+      <div class="node-sub">iOS &amp; Android native<br>Offline-first capture<br>Drift SQLite local store</div>
+    </div>
+
+  </div>
+
+  <!-- LOCAL STORAGE SUBLAYER -->
+  <div class="arch-grid g2" style="margin-top:8px; animation-delay:0.15s">
+    <div class="node" style="border-style:dashed; opacity:0.75; max-width:100%">
+      <span class="node-icon" style="font-size:13px">💾</span>
+      <div class="node-title" style="font-size:10px; color: var(--muted)">Drift / SQLite (local cache)</div>
+      <div class="node-sub">Notes · Post Drafts · Cached Posts<br>Riverpod state layer on top</div>
+    </div>
+    <div class="node" style="border-style:dashed; opacity:0.75; max-width:100%">
+      <span class="node-icon" style="font-size:13px">💾</span>
+      <div class="node-title" style="font-size:10px; color: var(--muted)">Drift / SQLite (local cache)</div>
+      <div class="node-sub">Notes · Post Drafts · Cached Posts<br>Riverpod state layer on top</div>
+    </div>
+  </div>
+
+  <!-- connectors DOWN -->
+  <div class="v-arrows" style="margin:14px 0">
+    <div class="v-arrow">
+      <div class="v-arrow-label">HTTPS REST</div>
+      <div class="v-arrow-line"></div>
+      <div class="v-arrow-head"></div>
+    </div>
+    <div class="v-arrow">
+      <div class="v-arrow-label">delta sync</div>
+      <div class="v-arrow-line green"></div>
+      <div class="v-arrow-head green"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TIER 2: API GATEWAY ═══ -->
+  <div class="section-divider"><span>API Gateway / Backend</span></div>
+
+  <div class="arch-grid" style="grid-template-columns:1fr 2fr 1fr; animation-delay:0.2s">
+
+    <div class="node c-amber">
+      <span class="node-tag">Go middleware</span>
+      <span class="node-icon">🔐</span>
+      <div class="node-title">Auth &amp; JWT</div>
+      <div class="node-sub">Token validation<br>Session management<br>Role enforcement</div>
+    </div>
+
+    <div class="node c-green" style="max-width:100%">
+      <span class="node-tag">net/http · Go</span>
+      <span class="node-icon">⚙️</span>
+      <div class="node-title">Core API Router</div>
+      <div class="node-sub">
+        /posts  /notes  /drafts  /users  /comments<br>
+        /reactions  /messages  /sync  /admin<br>
+        Request validation · Response serialisation
+      </div>
+    </div>
+
+    <div class="node c-amber">
+      <span class="node-tag">Go goroutines</span>
+      <span class="node-icon">📨</span>
+      <div class="node-title">Notification Worker</div>
+      <div class="node-sub">Batch digest queue<br>Real-time @mention<br>Admin alert dispatch</div>
+    </div>
+
+  </div>
+
+  <!-- HANDLER ROW -->
+  <div class="arch-grid g5" style="margin-top:10px; animation-delay:0.25s">
+    <div class="node" style="max-width:100%; padding:10px 12px">
+      <div class="node-title" style="font-size:10px">Post Handler</div>
+      <div class="node-sub">CRUD · versioning<br>immutability guard</div>
+    </div>
+    <div class="node" style="max-width:100%; padding:10px 12px">
+      <div class="node-title" style="font-size:10px">Sync Handler</div>
+      <div class="node-sub">server_sequence<br>delta resolution</div>
+    </div>
+    <div class="node" style="max-width:100%; padding:10px 12px">
+      <div class="node-title" style="font-size:10px">Feed Handler</div>
+      <div class="node-sub">following feed<br>explore ranking</div>
+    </div>
+    <div class="node" style="max-width:100%; padding:10px 12px">
+      <div class="node-title" style="font-size:10px">DM Handler</div>
+      <div class="node-sub">mutual check<br>message routing</div>
+    </div>
+    <div class="node" style="max-width:100%; padding:10px 12px">
+      <div class="node-title" style="font-size:10px">Admin Handler</div>
+      <div class="node-sub">moderation<br>taxonomy mgmt</div>
+    </div>
+  </div>
+
+  <!-- connectors DOWN -->
+  <div class="v-arrows" style="margin:14px 0; gap: 120px">
+    <div class="v-arrow">
+      <div class="v-arrow-label">sqlc queries</div>
+      <div class="v-arrow-line"></div>
+      <div class="v-arrow-head"></div>
+    </div>
+    <div class="v-arrow">
+      <div class="v-arrow-label">goroutine async</div>
+      <div class="v-arrow-line green"></div>
+      <div class="v-arrow-head green"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TIER 3: DATA ═══ -->
+  <div class="section-divider"><span>Data &amp; Storage Tier</span></div>
+
+  <div class="arch-grid g2" style="animation-delay:0.35s">
+
+    <div class="node c-purple" style="max-width:100%">
+      <span class="node-tag">PostgreSQL</span>
+      <span class="node-icon">🗄️</span>
+      <div class="node-title">Primary Database</div>
+      <div class="node-sub">
+        users · posts · post_versions · notes · drafts<br>
+        comments · reactions · follows · messages<br>
+        categories · scripture_refs · server_sequence<br>
+        <br>
+        JSONB → rich text payload storage
+      </div>
+    </div>
+
+    <div class="node c-red" style="max-width:100%">
+      <span class="node-tag">Async background</span>
+      <span class="node-icon">📬</span>
+      <div class="node-title">Job / Queue Layer</div>
+      <div class="node-sub">
+        Notification batch processor<br>
+        Digest schedule runner<br>
+        Sync sequence incrementer<br>
+        Export job (Markdown / .txt generator)
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ DATA FLOWS ═══ -->
+  <div class="section-divider" style="margin-top:40px"><span>Key Data Flows</span></div>
+
+  <div class="flow-band fb-blue" style="animation-delay:0.4s">
+    <div class="flow-band-title">① OFFLINE DRAFT → PUBLISH</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="fs-box">User types Note</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Drift (SQLite) write</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Reconnect detected</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">GET /sync?seq=N</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Server returns Δ records</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Merge into local DB</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">POST /posts → publish</div></div>
+    </div>
+    <div class="fs-note" style="margin-top:8px">Server sequence is authoritative — client clock is never trusted for ordering</div>
+  </div>
+
+  <div class="flow-band fb-green" style="animation-delay:0.45s">
+    <div class="flow-band-title">② POST REVISION FLOW</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="fs-box">Author edits Post</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">PATCH /posts/:id/revise</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Snapshot current version → post_versions</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Write new content to posts</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Readers see latest version</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Version History panel available</div></div>
+    </div>
+  </div>
+
+  <div class="flow-band fb-amber" style="animation-delay:0.5s">
+    <div class="flow-band-title">③ COLD-START FEED RANKING</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="fs-box">New user selects categories</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">GET /feed/explore?cat=[]</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Feed Handler queries posts + reactions + comments</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Score = Σ reactions + comments (90d window)</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Return ranked list</div></div>
+    </div>
+    <div class="fs-note" style="margin-top:8px">No implicit signals — view counts and read times are never stored</div>
+  </div>
+
+  <div class="flow-band fb-purple" style="animation-delay:0.55s">
+    <div class="flow-band-title">④ NOTIFICATION DELIVERY</div>
+    <div class="flow-steps">
+      <div class="flow-step"><div class="fs-box">Interaction event fires</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">Handler enqueues job</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">@mention / admin?</div><div class="fs-arrow">→</div></div>
+      <div class="flow-step"><div class="fs-box">YES → real-time push</div></div>
+      <div class="fs-note" style="padding: 0 8px"> / </div>
+      <div class="flow-step"><div class="fs-box">NO → batch queue → digest schedule</div></div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Client / API layer</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Sync &amp; delta flow</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Auth &amp; async workers</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent4)"></div>Database / storage</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent5)"></div>Job / queue layer</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>Dashed = local only</div>
+  </div>
+
+</div>
+
+</body>
+</html>

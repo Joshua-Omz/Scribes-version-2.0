@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'app_config/theme.dart';
-import 'screens/home_screen.dart';
-
+import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/splash_screen.dart';
+import 'features/auth/presentation/auth_gate_screen.dart';
+import 'features/feed/presentation/primary_feed_screen.dart';
+import 'features/explore/presentation/explore_screen.dart';
+import 'features/profile/presentation/private_profile_screen.dart';
 void main() {
   runApp(const ScribesApp());
 }
@@ -12,11 +15,11 @@ class ScribesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Scribes 2.0',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Will switch based on device settings
-      home: const HomeScreen(),
+      title: 'Scribes',
+      theme: AppTheme.parchmentTheme,
+      darkTheme: AppTheme.nightTheme,
+      themeMode: ThemeMode.system,
+      home: const PrivateProfileScreen(),
     );
   }
 }

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scribes | Delete Account</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=DM+Sans:wght@400;500&amp;family=Cormorant+Garamond:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#5f5e5e",
+                    "tertiary-container": "#fff1d2",
+                    "tertiary": "#735c00",
+                    "on-primary-container": "#6f6e68",
+                    "on-secondary-container": "#656464",
+                    "surface-dim": "#dcd9d9",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-error": "#ffffff",
+                    "on-tertiary-container": "#866b00",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#313030",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#eae7e7",
+                    "outline-variant": "#c9c7bd",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c9c6bf",
+                    "on-primary-fixed": "#1c1c17",
+                    "primary": "#5f5e58",
+                    "secondary-fixed": "#e5e2e1",
+                    "surface-variant": "#e5e2e1",
+                    "inverse-primary": "#c9c6bf",
+                    "surface-container-low": "#f6f3f2",
+                    "primary-container": "#f5f2ea",
+                    "outline": "#78776f",
+                    "primary-fixed": "#e5e2da",
+                    "on-primary-fixed-variant": "#474741",
+                    "surface": "#fcf9f8",
+                    "on-tertiary-fixed": "#241a00",
+                    "on-surface": "#1c1b1b",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#474646",
+                    "tertiary-fixed-dim": "#e9c349",
+                    "surface-container": "#f0eded",
+                    "surface-bright": "#fcf9f8",
+                    "tertiary-fixed": "#ffe088",
+                    "surface-tint": "#5f5e58",
+                    "inverse-on-surface": "#f3f0ef",
+                    "secondary-container": "#e5e2e1",
+                    "secondary-fixed-dim": "#c9c6c5",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#574500",
+                    "error": "#ba1a1a",
+                    "on-background": "#1c1b1b",
+                    "on-surface-variant": "#474740",
+                    "background": "#fcf9f8",
+                    "warning-red": "#B22222"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "gutter": "24px",
+                    "container-max": "1120px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "display-lg-mobile": ["EB Garamond"],
+                    "headline-sm": ["EB Garamond"],
+                    "headline-md": ["EB Garamond"],
+                    "label-caps": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["EB Garamond"],
+                    "serif-accent": ["Cormorant Garamond"],
+                    "sans-clean": ["DM Sans"]
+            },
+            "fontSize": {
+                    "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                    "headline-sm": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                    "headline-md": ["32px", {"lineHeight": "1.2", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                    "cormorant-md": ["24px", {"lineHeight": "1.2", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .scrim-overlay {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+        }
+        .bottom-sheet-animation {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .fleuron-divider {
+            color: #735c00; /* Burnished Gold */
+            opacity: 0.5;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md selection:bg-tertiary-container selection:text-on-tertiary-container overflow-hidden">
+<!-- Background: Settings Screen (Blurred/Darkened) -->
+<div class="fixed inset-0 w-full h-full flex flex-col pointer-events-none">
+<!-- TopAppBar -->
+<header class="flex items-center justify-between px-margin-mobile h-16 w-full border-b border-outline-variant bg-background">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+<h1 class="font-headline-sm text-headline-sm text-primary">Settings</h1>
+</div>
+<span class="material-symbols-outlined text-primary">search</span>
+</header>
+<!-- Settings Content -->
+<main class="flex-1 overflow-y-auto px-margin-mobile pt-8 space-y-8 opacity-40">
+<section>
+<h2 class="font-label-caps text-label-caps text-secondary mb-4">ACCOUNT</h2>
+<div class="space-y-6">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-body-lg">Profile Information</span>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-body-lg">Security &amp; Password</span>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+</div>
+</section>
+<section>
+<h2 class="font-label-caps text-label-caps text-secondary mb-4">PREFERENCES</h2>
+<div class="space-y-6">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-body-lg">Manuscript Themes</span>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<span class="text-body-lg">Notifications</span>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+</div>
+</section>
+<section class="pt-12">
+<button class="w-full text-left py-4 px-2 text-error border border-error/20 bg-error/5">
+                    Delete Account
+                </button>
+</section>
+</main>
+<!-- Bottom Navigation Shell (Inactive UI) -->
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center h-16 px-4 bg-background border-t border-outline-variant opacity-20">
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">auto_stories</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">edit_note</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">person_book</span>
+</div>
+</div>
+</div>
+<!-- Scrim Overlay -->
+<div class="fixed inset-0 scrim-overlay z-40"></div>
+<!-- Bottom Sheet -->
+<div class="fixed bottom-0 left-0 right-0 z-50 bottom-sheet-animation">
+<div class="bg-surface dark:bg-inverse-surface rounded-t-[16px] shadow-2xl max-w-lg mx-auto border-t border-outline-variant/50">
+<!-- Handle -->
+<div class="flex justify-center pt-3 pb-2">
+<div class="w-12 h-1 bg-outline-variant rounded-full"></div>
+</div>
+<!-- Content Container -->
+<div class="px-margin-mobile pt-4 pb-10 space-y-6">
+<!-- Title -->
+<h2 class="font-serif-accent text-cormorant-md text-on-surface text-center">Before you go.</h2>
+<!-- Divider Fleuron -->
+<div class="flex justify-center items-center py-2">
+<div class="h-[1px] w-12 bg-outline-variant"></div>
+<span class="material-symbols-outlined mx-4 text-tertiary opacity-40 text-[18px]" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<div class="h-[1px] w-12 bg-outline-variant"></div>
+</div>
+<!-- Body Text -->
+<p class="font-sans-clean text-body-md text-secondary leading-relaxed text-left">
+                    Your published teachings will remain on Scribes — preserved, with your name replaced by <span class="font-medium text-on-surface italic">"Deleted Author."</span> Your Notes, Drafts, and messages will be permanently removed. This cannot be undone.
+                </p>
+<!-- Input Group -->
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-secondary block">CONFIRMATION</label>
+<input class="w-full bg-transparent border-b-[0.5px] border-outline text-body-md font-sans-clean py-3 focus:outline-none focus:border-on-surface placeholder:text-outline-variant transition-colors" id="confirmInput" placeholder="Type DELETE to confirm" type="text"/>
+</div>
+<!-- Actions -->
+<div class="space-y-4 pt-4">
+<button class="w-full bg-warning-red/40 text-on-primary font-label-caps text-label-caps py-4 transition-all duration-300 cursor-not-allowed uppercase" disabled="" id="deleteBtn">
+                        Delete my account
+                    </button>
+<button class="w-full text-secondary font-sans-clean text-[14px] font-medium py-2 hover:text-on-surface transition-colors flex items-center justify-center gap-2">
+                        Cancel
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Script for interaction simulation -->
+<script>
+        const input = document.getElementById('confirmInput');
+        const btn = document.getElementById('deleteBtn');
+
+        input.addEventListener('input', (e) => {
+            if (e.target.value === 'DELETE') {
+                btn.disabled = false;
+                btn.classList.remove('bg-warning-red/40', 'cursor-not-allowed');
+                btn.classList.add('bg-warning-red', 'cursor-pointer', 'shadow-lg');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('bg-warning-red/40', 'cursor-not-allowed');
+                btn.classList.remove('bg-warning-red', 'cursor-pointer', 'shadow-lg');
+            }
+        });
+    </script>
+</body></html>

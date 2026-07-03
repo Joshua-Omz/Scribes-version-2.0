@@ -1,152 +1,89 @@
-// Command server is the Scribes API entry point.
 package main
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
+	"database/sql"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"scribes-api/internal/auth"
+	"scribes-api/internal/config"
+	"scribes-api/internal/db/generated"
+	"scribes-api/internal/draft"
+	"scribes-api/internal/note"
+	"scribes-api/internal/post"
+	"scribes-api/internal/server"
 
-	"github.com/Joshua-Omz/scribes/internal/auth"
-	"github.com/Joshua-Omz/scribes/internal/drafts"
-	"github.com/Joshua-Omz/scribes/internal/notes"
-	"github.com/Joshua-Omz/scribes/internal/posts"
-	syncPkg "github.com/Joshua-Omz/scribes/internal/sync"
-	"github.com/Joshua-Omz/scribes/internal/users"
-	"github.com/Joshua-Omz/scribes/pkg/config"
-	"github.com/Joshua-Omz/scribes/pkg/database"
-	mw "github.com/Joshua-Omz/scribes/pkg/middleware"
+	_ "github.com/lib/pq"
 )
 
+
 func main() {
-	// ── Structured JSON logging ───────────────────────────────────────────────
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	})))
+	cfg := config.Load()
 
-	// ── Configuration ─────────────────────────────────────────────────────────
-	cfg, err := config.Load()
+	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		slog.Error("config error", "err", err)
-		os.Exit(1)
-	}
-
-	// ── Database ──────────────────────────────────────────────────────────────
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
-	db, err := database.Connect(ctx, cfg.DatabaseURL)
-	if err != nil {
-		slog.Error("database connection failed", "err", err)
-		os.Exit(1)
+		log.Fatalf("failed to open db connection: %v", err)
 	}
 	defer db.Close()
-	slog.Info("database connected")
 
-	// ── Migrations ────────────────────────────────────────────────────────────
-	if err = database.Migrate(cfg.DatabaseURL, cfg.MigrationsPath); err != nil {
-		slog.Error("migration failed", "err", err)
-		os.Exit(1)
+	if err := db.Ping(); err != nil {
+		log.Fatalf("failed to ping db: %v", err)
 	}
-	slog.Info("migrations applied")
+	log.Println("connected to postgres")
 
-	// ── Repositories ──────────────────────────────────────────────────────────
-	userRepo := users.NewRepository(db)
-	noteRepo := notes.NewRepository(db)
-	draftRepo := drafts.NewRepository(db)
-	postRepo := posts.NewRepository(db)
+	queries := generated.New(db)
 
-	// ── Handlers ──────────────────────────────────────────────────────────────
-	authHandler := auth.NewHandler(userRepo, cfg.JWTSecret)
-	noteHandler := notes.NewHandler(noteRepo)
-	draftHandler := drafts.NewHandler(draftRepo)
-	postHandler := posts.NewHandler(postRepo)
-	syncHandler := syncPkg.NewHandler(noteRepo, draftRepo, postRepo)
-
-	// ── Router ────────────────────────────────────────────────────────────────
-	r := chi.NewRouter()
-	r.Use(chiMiddleware.Recoverer)
-	r.Use(mw.Logger)
-
-	// Public routes
-	r.Post("/api/auth/register", authHandler.Register)
-	r.Post("/api/auth/login", authHandler.Login)
-
-	// Public feed (read-only)
-	r.Get("/api/posts", postHandler.Feed)
-	r.Get("/api/posts/{id}", postHandler.Get)
-
-	// Protected routes
-	r.Group(func(r chi.Router) {
-		r.Use(mw.Authenticate(cfg.JWTSecret))
-
-		// Auth
-		r.Get("/api/auth/me", authHandler.Me)
-
-		// Notes
-		r.Get("/api/notes", noteHandler.List)
-		r.Post("/api/notes", noteHandler.Create)
-		r.Get("/api/notes/{id}", noteHandler.Get)
-		r.Put("/api/notes/{id}", noteHandler.Update)
-		r.Delete("/api/notes/{id}", noteHandler.Delete)
-
-		// Drafts
-		r.Get("/api/drafts", draftHandler.List)
-		r.Post("/api/drafts", draftHandler.Create)
-		r.Get("/api/drafts/{id}", draftHandler.Get)
-		r.Put("/api/drafts/{id}", draftHandler.Update)
-		r.Delete("/api/drafts/{id}", draftHandler.Delete)
-
-		// Posts (write)
-		r.Post("/api/posts", postHandler.Create)
-		r.Put("/api/posts/{id}", postHandler.Update)
-		r.Delete("/api/posts/{id}", postHandler.Delete)
-
-		// Sync engine
-		r.Get("/api/sync/pull", syncHandler.Pull)
-		r.Post("/api/sync/push", syncHandler.Push)
+	authRepo := auth.NewRepository(queries)
+	authSvc := auth.NewService(authRepo, auth.Config{
+		JWTSecret:      cfg.JWTSecret,
+		JWTExpiryHours: cfg.JWTExpiryHours,
+		BcryptCost:     cfg.BcryptCost,
+		DummyHash:      cfg.DummyHash,
 	})
+	authHandler := auth.NewHandler(authSvc)
 
-	// Health-check
-	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"status":"ok"}`))
-	})
+	draftRepo := draft.NewRepository(queries)
+	draftSvc := draft.NewService(draftRepo)
+	draftHandler := draft.NewHandler(draftSvc)
 
-	// ── Server ────────────────────────────────────────────────────────────────
+	noteRepo := note.NewRepository(queries)
+	// We pass draftSvc so that the promote endpoint can create drafts.
+	noteSvc := note.NewService(noteRepo, draftSvc)
+	noteHandler := note.NewHandler(noteSvc)
+
+	postRepo := post.NewRepository(queries, db)
+	postSvc := post.NewService(postRepo)
+	postHandler := post.NewHandler(postSvc)
+
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, cfg.JWTSecret)
+
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.ServerPort),
-		Handler:      r,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:    ":" + cfg.Port,
+		Handler: router,
 	}
-
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		slog.Info("server starting", "port", cfg.ServerPort)
-		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("server error", "err", err)
-			os.Exit(1)
+		log.Printf("starting server on port %s", cfg.Port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen error: %v", err)
 		}
 	}()
 
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	slog.Info("shutting down…")
-	shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer shutCancel()
-	if err = srv.Shutdown(shutCtx); err != nil {
-		slog.Error("graceful shutdown failed", "err", err)
+	log.Println("shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("server shutdown error: %v", err)
 	}
-	slog.Info("server stopped")
+	log.Println("server stopped gracefully")
 }

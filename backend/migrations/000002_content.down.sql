@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS user_onboarding_categories;
+DROP TABLE IF EXISTS draft_categories;
+DROP TABLE IF EXISTS post_categories;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS scripture_refs;
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS drafts;
+DROP TABLE IF EXISTS notes;
+DROP TABLE IF EXISTS notebooks;
+DROP TYPE IF EXISTS post_visibility;
+DROP TYPE IF EXISTS note_source_type;

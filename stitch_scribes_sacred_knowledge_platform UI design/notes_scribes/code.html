@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scribes - Notes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-container-high": "#eae7e7",
+                        "primary-fixed-dim": "#c9c6bf",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-tertiary-fixed": "#241a00",
+                        "error": "#ba1a1a",
+                        "primary": "#5f5e58",
+                        "tertiary-fixed": "#ffe088",
+                        "surface-variant": "#e5e2e1",
+                        "surface": "#fcf9f8",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#1c1b1b",
+                        "outline": "#78776f",
+                        "secondary": "#5f5e5e",
+                        "on-secondary-container": "#656464",
+                        "surface-container": "#f0eded",
+                        "inverse-primary": "#c9c6bf",
+                        "surface-tint": "#5f5e58",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface-variant": "#474740",
+                        "inverse-on-surface": "#f3f0ef",
+                        "outline-variant": "#c9c7bd",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-primary-fixed-variant": "#474741",
+                        "on-primary-fixed": "#1c1c17",
+                        "on-background": "#1c1b1b",
+                        "on-primary-container": "#6f6e68",
+                        "tertiary-container": "#fff1d2",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "background": "#fcf9f8",
+                        "primary-container": "#f5f2ea",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#474646",
+                        "secondary-container": "#e5e2e1",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary": "#735c00",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary-fixed-dim": "#c9c6c5",
+                        "surface-dim": "#dcd9d9",
+                        "on-tertiary-container": "#866b00",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#e5e2da",
+                        "inverse-surface": "#313030"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-desktop": "64px",
+                        "container-max": "1120px",
+                        "gutter": "24px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-sm": ["EB Garamond"],
+                        "headline-md": ["EB Garamond"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg-mobile": ["EB Garamond"],
+                        "display-lg": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .parchment-texture {
+            background-color: #F5F0E8; /* Fallback */
+            background-image: 
+                radial-gradient(circle at 100% 150%, #fcf9f8 24%, white 25%, white 28%, #fcf9f8 29%, #fcf9f8 36%, white 36%, white 40%, transparent 40%, transparent),
+                radial-gradient(circle at 0    150%, #fcf9f8 24%, white 25%, white 28%, #fcf9f8 29%, #fcf9f8 36%, white 36%, white 40%, transparent 40%, transparent),
+                radial-gradient(circle at 50%  100%, white 10%, #fcf9f8 11%, #fcf9f8 23%, white 24%, white 30%, #fcf9f8 31%, #fcf9f8 43%, white 44%, white 50%, #fcf9f8 51%, #fcf9f8 63%, white 64%, white 71%, transparent 71%, transparent),
+                radial-gradient(circle at 100% 50%, white 5%, #fcf9f8 6%, #fcf9f8 15%, white 16%, white 20%, #fcf9f8 21%, #fcf9f8 30%, white 31%, white 35%, #fcf9f8 36%, #fcf9f8 45%, white 46%, white 49%, transparent 50%, transparent),
+                radial-gradient(circle at 0    50%, white 5%, #fcf9f8 6%, #fcf9f8 15%, white 16%, white 20%, #fcf9f8 21%, #fcf9f8 30%, white 31%, white 35%, #fcf9f8 36%, #fcf9f8 45%, white 46%, white 49%, transparent 50%, transparent);
+            background-size:100px 50px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="parchment-texture text-[#1A1612] min-h-screen flex flex-col font-body-md relative pb-24 md:pb-0">
+<!-- TopAppBar for Top-level Navigation on Web (Hidden on Mobile) -->
+<header class="hidden md:flex justify-between items-center px-margin-desktop py-unit max-w-container-max mx-auto w-full top-0 sticky bg-surface border-b border-outline-variant z-50">
+<button class="text-primary hover:text-tertiary transition-colors duration-300 scale-95 flex items-center justify-center p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-headline-md text-headline-md tracking-widest text-primary flex-1 text-center">
+            SCRIBES
+        </div>
+<button class="text-primary hover:text-tertiary transition-colors duration-300 scale-95 flex items-center justify-center p-2">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<!-- Contextual Header for Notes (Mobile & Desktop Content Header) -->
+<div class="w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-6 pb-4 flex items-center justify-between sticky top-0 z-40 bg-[#F5F0E8]/90 backdrop-blur-sm md:mt-8">
+<button class="p-2 -ml-2 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile md:text-headline-md font-medium text-center flex-1">
+            Notes
+        </h1>
+<button class="p-2 -mr-2 text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">history_edu</span>
+</button>
+</div>
+<!-- Main Workspace Area -->
+<main class="flex-1 w-full max-w-3xl mx-auto px-margin-mobile md:px-0 flex flex-col gap-6">
+<!-- Notebook Filter Row -->
+<div class="w-full overflow-x-auto hide-scrollbar pb-2">
+<div class="flex items-center gap-3 w-max px-1">
+<button class="px-4 py-1.5 rounded-full bg-[#1A1612] text-surface font-label-caps text-label-caps border border-[#1A1612] transition-colors">
+                    All
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-surface text-on-surface font-label-caps text-label-caps border border-outline-variant hover:border-outline transition-colors">
+                    Sunday Sermons
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-surface text-on-surface font-label-caps text-label-caps border border-outline-variant hover:border-outline transition-colors">
+                    2am Thoughts
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-surface text-on-surface font-label-caps text-label-caps border border-outline-variant hover:border-outline transition-colors">
+                    Exegesis Drafts
+                </button>
+<button class="px-4 py-1.5 rounded-full bg-transparent text-on-surface-variant font-label-caps text-label-caps border border-dashed border-outline-variant hover:border-outline transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">add</span> New Notebook
+                </button>
+</div>
+</div>
+<!-- Note List -->
+<div class="flex flex-col gap-4">
+<!-- Note Card 1 -->
+<article class="bg-[#FDFAF4] rounded-[10px] border border-outline-variant/50 p-5 flex flex-col gap-3 cursor-pointer hover:border-outline-variant transition-colors group">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant px-2 py-0.5 rounded bg-surface-container-low border border-outline-variant/30">
+                        Sunday Sermons
+                    </span>
+<span class="text-xs text-on-surface-variant/70 font-body-md">Oct 24, 10:15 AM</span>
+</div>
+<div>
+<h2 class="font-body-lg text-body-lg font-medium text-on-surface mb-1 group-hover:text-tertiary transition-colors">
+                        The Architecture of Grace
+                    </h2>
+<p class="font-body-md text-body-md text-on-surface-variant/80 line-clamp-2 leading-relaxed">
+                        Considering Ephesians 2 today. The word 'workmanship' (poiēma) implies something crafted with intent, not just assembled. We are His poem. The structure of grace isn't a hasty shelter; it's a cathedral built over centuries of patience.
+                    </p>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex items-center gap-1 text-xs text-on-surface-variant bg-[#F5F0E8] px-2 py-1 rounded-sm">
+<span class="text-[12px]">🎙</span> Sermon
+                    </div>
+<div class="flex items-center gap-1 text-xs text-tertiary bg-tertiary-container/30 px-2 py-1 rounded-sm border border-tertiary/10">
+<span class="text-[12px]">✦</span> Received
+                    </div>
+</div>
+</article>
+<!-- Note Card 2 (Untitled/Raw) -->
+<article class="bg-[#FDFAF4] rounded-[10px] border border-outline-variant/50 p-5 flex flex-col gap-3 cursor-pointer hover:border-outline-variant transition-colors group">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant px-2 py-0.5 rounded bg-surface-container-low border border-outline-variant/30">
+                        2am Thoughts
+                    </span>
+<span class="text-xs text-on-surface-variant/70 font-body-md">Yesterday, 2:14 AM</span>
+</div>
+<div>
+<h2 class="font-body-lg text-body-lg italic text-on-surface-variant mb-1 group-hover:text-tertiary transition-colors">
+                        Why does the silence feel heavier in the dark?
+                    </h2>
+<p class="font-body-md text-body-md text-on-surface-variant/80 line-clamp-2 leading-relaxed">
+                        Reading Psalms 42. Tears as food day and night. There is a specific kind of thirst that only wakes up when the rest of the world is asleep. Need to study the wilderness metaphor more deeply. It's not just emptiness; it's a place of severe preparation.
+                    </p>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex items-center gap-1 text-xs text-on-surface-variant bg-[#F5F0E8] px-2 py-1 rounded-sm">
+<span class="text-[12px]">✏</span> Personal
+                    </div>
+</div>
+</article>
+<!-- Note Card 3 -->
+<article class="bg-[#FDFAF4] rounded-[10px] border border-outline-variant/50 p-5 flex flex-col gap-3 cursor-pointer hover:border-outline-variant transition-colors group">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant px-2 py-0.5 rounded bg-surface-container-low border border-outline-variant/30">
+                        Exegesis Drafts
+                    </span>
+<span class="text-xs text-on-surface-variant/70 font-body-md">Oct 20, 4:30 PM</span>
+</div>
+<div>
+<h2 class="font-body-lg text-body-lg font-medium text-on-surface mb-1 group-hover:text-tertiary transition-colors">
+                        Notes on the Prodigal's Brother
+                    </h2>
+<p class="font-body-md text-body-md text-on-surface-variant/80 line-clamp-2 leading-relaxed">
+                        The scandal isn't just that the younger brother left; it's that the older brother stayed but never actually inhabited the father's house in his heart. Proximity does not equal intimacy. We often mistake our duty for devotion.
+                    </p>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex items-center gap-1 text-xs text-on-surface-variant bg-[#F5F0E8] px-2 py-1 rounded-sm">
+<span class="text-[12px]">📖</span> Study
+                    </div>
+</div>
+</article>
+<!-- Note Card 4 -->
+<article class="bg-[#FDFAF4] rounded-[10px] border border-outline-variant/50 p-5 flex flex-col gap-3 cursor-pointer hover:border-outline-variant transition-colors group">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant px-2 py-0.5 rounded bg-surface-container-low border border-outline-variant/30">
+                        Uncategorized
+                    </span>
+<span class="text-xs text-on-surface-variant/70 font-body-md">Oct 15, 8:00 AM</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface-variant/80 line-clamp-2 leading-relaxed mt-2">
+                        Just a quick thought: The veil was torn from top to bottom. God's action, not man's effort. Stop trying to climb up and tear it yourself.
+                    </p>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex items-center gap-1 text-xs text-on-surface-variant bg-[#F5F0E8] px-2 py-1 rounded-sm">
+<span class="text-[12px]">✏</span> Personal
+                    </div>
+</div>
+</article>
+</div>
+<!-- Bottom spacing for FAB -->
+<div class="h-20 w-full"></div>
+</main>
+<!-- Floating Action Button for New Note -->
+<button class="fixed bottom-24 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-[#1A1612] text-[#FDFAF4] rounded-full flex items-center justify-center shadow-lg hover:bg-tertiary transition-colors z-50 border border-outline/20">
+<span class="material-symbols-outlined text-[28px]">edit</span>
+</button>
+<!-- BottomNavBar (Mobile Only) -->
+<!-- Profile is active because Notes is a subsection of the personal workspace -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center bg-surface px-4 pb-2 z-50 border-t border-outline-variant dark:border-outline">
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-tertiary-fixed-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">auto_stories</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Scriptures</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-tertiary-fixed-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">account_balance</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Library</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant pt-2 hover:text-tertiary-fixed-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">lightbulb</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-tertiary dark:text-tertiary-fixed-dim border-t-2 border-tertiary pt-2 hover:text-tertiary-fixed-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-caps text-[10px] uppercase tracking-wider font-bold">Profile</span>
+</a>
+</nav>
+</body></html>

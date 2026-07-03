@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribes — Class Diagram &amp; Component Links</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #F5F3EE;
+    --paper:   #FDFCF9;
+    --ink:     #1A1814;
+    --ink2:    #3D3830;
+    --rule:    #D8D2C4;
+    --accent:  #2E5C8A;
+    --green:   #2E6B4A;
+    --amber:   #7A4F1A;
+    --red:     #8A2E2E;
+    --purple:  #5C2E8A;
+    --muted:   #8A8070;
+    --link-color: #2E5C8A;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 40px 30px 70px;
+    min-height: 100vh;
+  }
+
+  /* subtle paper texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.5;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 44px;
+    animation: fadeIn 0.5s ease both;
+  }
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+  }
+  .sub { font-size: 10px; color: var(--muted); margin-top: 5px; letter-spacing: 1px; }
+
+  .diagram { max-width: 1100px; margin: 0 auto; position: relative; }
+
+  /* ── CLASS BOX ── */
+  .class-box {
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 0;
+    position: relative;
+    font-size: 9px;
+    animation: slideUp 0.4s ease both;
+    transition: box-shadow 0.2s;
+  }
+  .class-box:hover { box-shadow: 4px 4px 0 var(--rule); }
+
+  .class-header {
+    padding: 8px 12px;
+    border-bottom: 1.5px solid var(--rule);
+    position: relative;
+  }
+  .class-stereotype {
+    font-size: 8px;
+    color: var(--muted);
+    font-style: italic;
+    display: block;
+  }
+  .class-name {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .class-marker {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .class-section {
+    padding: 7px 12px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .class-section:last-child { border-bottom: none; }
+  .class-section-label {
+    font-size: 7px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .field {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 2px;
+    line-height: 1.6;
+  }
+  .field-vis { color: var(--muted); font-size: 9px; flex-shrink: 0; }
+  .field-name { color: var(--ink2); font-size: 9px; }
+  .field-type { color: var(--accent); font-size: 8.5px; }
+  .method { color: var(--green); font-size: 9px; margin-bottom: 2px; }
+
+  /* color top borders */
+  .cb-blue   .class-header { background: rgba(46,92,138,0.06); }
+  .cb-blue   .class-marker { background: var(--accent); }
+  .cb-blue   .class-name   { color: var(--accent); }
+
+  .cb-green  .class-header { background: rgba(46,107,74,0.06); }
+  .cb-green  .class-marker { background: var(--green); }
+  .cb-green  .class-name   { color: var(--green); }
+
+  .cb-amber  .class-header { background: rgba(122,79,26,0.06); }
+  .cb-amber  .class-marker { background: var(--amber); }
+  .cb-amber  .class-name   { color: var(--amber); }
+
+  .cb-red    .class-header { background: rgba(138,46,46,0.06); }
+  .cb-red    .class-marker { background: var(--red); }
+  .cb-red    .class-name   { color: var(--red); }
+
+  .cb-purple .class-header { background: rgba(92,46,138,0.06); }
+  .cb-purple .class-marker { background: var(--purple); }
+  .cb-purple .class-name   { color: var(--purple); }
+
+  /* ── GRID ── */
+  .class-grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .g5 { grid-template-columns: repeat(5, 1fr); }
+
+  /* ── RELATIONSHIP LINES (SVG) ── */
+  .rel-row {
+    position: relative;
+    height: 50px;
+    margin: 4px 0;
+  }
+  .rel-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: visible;
+  }
+
+  /* ── RELATIONSHIP TABLE ── */
+  .rel-table {
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 0;
+    overflow: hidden;
+    animation: slideUp 0.5s ease 0.4s both;
+  }
+  .rel-table-header {
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+  }
+  .rel-row-item {
+    display: grid;
+    grid-template-columns: 140px 60px 140px 1fr;
+    gap: 12px;
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 9px;
+    align-items: center;
+  }
+  .rel-row-item:last-child { border-bottom: none; }
+  .rel-row-item:nth-child(even) { background: rgba(0,0,0,0.015); }
+  .rel-from { color: var(--accent); font-weight: 500; }
+  .rel-type { text-align: center; color: var(--muted); }
+  .rel-to   { color: var(--green); font-weight: 500; }
+  .rel-desc { color: var(--muted); font-style: italic; font-size: 8.5px; }
+  .rel-symbol {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+  }
+  .rs-assoc  { background: rgba(46,92,138,0.1);  color: var(--accent); }
+  .rs-comp   { background: rgba(46,107,74,0.1);  color: var(--green); }
+  .rs-agg    { background: rgba(122,79,26,0.1);  color: var(--amber); }
+  .rs-dep    { background: rgba(92,46,138,0.1);  color: var(--purple); }
+  .rs-enum   { background: rgba(138,46,46,0.1);  color: var(--red); }
+
+  /* ── SECTION LABEL ── */
+  .sec {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  /* ── ENUMS ── */
+  .enum-box {
+    background: var(--paper);
+    border: 1.5px dashed var(--rule);
+    padding: 10px 14px;
+    font-size: 9px;
+    animation: slideUp 0.4s ease 0.2s both;
+  }
+  .enum-title {
+    font-family: 'Fraunces', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--red);
+    margin-bottom: 6px;
+    border-bottom: 1px dashed var(--rule);
+    padding-bottom: 4px;
+  }
+  .enum-label { font-size: 7px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .enum-val { color: var(--ink2); margin-bottom: 2px; }
+
+  /* ── INTERFACE BOX ── */
+  .iface-box {
+    background: var(--paper);
+    border: 1.5px solid var(--purple);
+    padding: 10px 14px;
+    font-size: 9px;
+    opacity: 0.85;
+    animation: slideUp 0.4s ease 0.3s both;
+  }
+  .iface-title {
+    font-family: 'Fraunces', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--purple);
+    margin-bottom: 6px;
+  }
+  .iface-method { color: var(--purple); margin-bottom: 2px; }
+
+  @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Scribes v2.0 · Domain Model</div>
+  <h1>Class Diagram &amp; Component Links</h1>
+  <p class="sub">// entities · relationships · enumerations · interfaces</p>
+</header>
+
+<div class="diagram">
+
+  <!-- ══ CORE DOMAIN ENTITIES ══ -->
+  <div class="sec">Core Domain Entities</div>
+
+  <div class="class-grid g3">
+
+    <div class="class-box cb-blue">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">User</div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Fields</div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">handle</span><span class="field-type">string (unique)</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">display_name</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">email</span><span class="field-type">string (unique)</span></div>
+        <div class="field"><span class="field-vis">-</span><span class="field-name">password_hash</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">bio</span><span class="field-type">string?</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">role</span><span class="field-type">UserRole</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_deleted</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Methods</div>
+        <div class="method">+ anonymise() → void</div>
+        <div class="method">+ canMessage(target: User) → bool</div>
+      </div>
+    </div>
+
+    <div class="class-box cb-green">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Post</div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Fields</div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">author_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">content</span><span class="field-type">JSONB (rich text)</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">caption</span><span class="field-type">string?</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">visibility</span><span class="field-type">PostVisibility</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">current_version</span><span class="field-type">int</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_correction</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">corrects_post_id</span><span class="field-type">UUID?</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_deleted</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">server_sequence</span><span class="field-type">bigint</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">published_at</span><span class="field-type">timestamp</span></div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Methods</div>
+        <div class="method">+ revise(newContent: JSONB) → PostVersion</div>
+        <div class="method">+ softDelete() → void</div>
+        <div class="method">+ interactionScore(days: int) → float</div>
+      </div>
+    </div>
+
+    <div class="class-box cb-amber">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">PostVersion</div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Fields</div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">post_id</span><span class="field-type">UUID → Post</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">version_number</span><span class="field-type">int</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">content_snapshot</span><span class="field-type">JSONB</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">snapshotted_at</span><span class="field-type">timestamp</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">snapshotted_by</span><span class="field-type">UUID → User</span></div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Notes</div>
+        <div style="font-size:8.5px; color:var(--muted); line-height:1.6">Immutable once written.<br>Never updated or deleted.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="class-grid g3" style="margin-top:14px">
+
+    <div class="class-box cb-blue">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Note</div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Fields</div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">author_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">content</span><span class="field-type">JSONB</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">notebook_id</span><span class="field-type">UUID? → Notebook</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">server_sequence</span><span class="field-type">bigint</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">updated_at</span><span class="field-type">timestamp</span></div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Methods</div>
+        <div class="method">+ promoteToPostDraft() → Draft</div>
+      </div>
+    </div>
+
+    <div class="class-box cb-blue">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Draft</div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Fields</div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">author_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">content</span><span class="field-type">JSONB</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">caption</span><span class="field-type">string?</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">category_ids</span><span class="field-type">UUID[]</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">server_sequence</span><span class="field-type">bigint</span></div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Methods</div>
+        <div class="method">+ publish() → Post</div>
+        <div class="method">+ discard() → void</div>
+      </div>
+    </div>
+
+    <div class="class-box cb-red">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Comment</div>
+      </div>
+      <div class="class-section">
+        <div class="class-section-label">Fields</div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">post_id</span><span class="field-type">UUID → Post</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">author_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">body</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_hidden</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_deleted</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">mentions</span><span class="field-type">UUID[]</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ SUPPORTING ENTITIES ══ -->
+  <div class="sec">Supporting Entities</div>
+
+  <div class="class-grid g4">
+
+    <div class="class-box cb-purple">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Reaction</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">post_id</span><span class="field-type">UUID → Post</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">user_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">type</span><span class="field-type">ReactionType</span></div>
+      </div>
+    </div>
+
+    <div class="class-box cb-purple">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Message</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">conversation_id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">sender_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">body</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_deleted</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">sent_at</span><span class="field-type">timestamp</span></div>
+      </div>
+    </div>
+
+    <div class="class-box cb-amber">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Follow</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">follower_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">followee_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+      </div>
+      <div class="class-section">
+        <div style="font-size:8.5px; color:var(--muted)">Composite PK.<br>Counts are private.</div>
+      </div>
+    </div>
+
+    <div class="class-box cb-green">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Category</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">name</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_deprecated</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">managed_by</span><span class="field-type">SuperAdmin only</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="class-grid g4" style="margin-top:14px">
+
+    <div class="class-box cb-blue">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">ScriptureRef</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">post_id</span><span class="field-type">UUID → Post</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">book</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">chapter</span><span class="field-type">int</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">verse_start</span><span class="field-type">int</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">verse_end</span><span class="field-type">int?</span></div>
+      </div>
+    </div>
+
+    <div class="class-box cb-red">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Notification</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">recipient_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">type</span><span class="field-type">NotifType</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">ref_id</span><span class="field-type">UUID (polymorphic)</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">is_realtime</span><span class="field-type">bool</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">sent_at</span><span class="field-type">timestamp?</span></div>
+      </div>
+    </div>
+
+    <div class="class-box cb-amber">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Notebook</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">owner_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">name</span><span class="field-type">string</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+      </div>
+    </div>
+
+    <div class="class-box cb-purple">
+      <div class="class-header">
+        <div class="class-marker"></div>
+        <span class="class-stereotype">«entity»</span>
+        <div class="class-name">Bookmark / Import</div>
+      </div>
+      <div class="class-section">
+        <div class="field"><span class="field-vis">+</span><span class="field-name">id</span><span class="field-type">UUID</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">user_id</span><span class="field-type">UUID → User</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">post_id</span><span class="field-type">UUID → Post</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">type</span><span class="field-type">SavedType</span></div>
+        <div class="field"><span class="field-vis">+</span><span class="field-name">snapshot</span><span class="field-type">JSONB? (Import only)</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ ENUMERATIONS ══ -->
+  <div class="sec">Enumerations</div>
+
+  <div class="class-grid g5">
+    <div class="enum-box">
+      <div class="enum-title">UserRole</div>
+      <div class="enum-label">values</div>
+      <div class="enum-val">STANDARD</div>
+      <div class="enum-val">SUPER_ADMIN</div>
+    </div>
+    <div class="enum-box">
+      <div class="enum-title">PostVisibility</div>
+      <div class="enum-label">values</div>
+      <div class="enum-val">PUBLIC</div>
+      <div class="enum-val">PRIVATE</div>
+    </div>
+    <div class="enum-box">
+      <div class="enum-title">ReactionType</div>
+      <div class="enum-label">values</div>
+      <div class="enum-val">AMEN</div>
+      <div class="enum-val">INSIGHTFUL</div>
+      <div class="enum-val">THOUGHT_PROVOKING</div>
+    </div>
+    <div class="enum-box">
+      <div class="enum-title">NotifType</div>
+      <div class="enum-label">values</div>
+      <div class="enum-val">MENTION (realtime)</div>
+      <div class="enum-val">REACTION (batch)</div>
+      <div class="enum-val">COMMENT (batch)</div>
+      <div class="enum-val">ADMIN_ALERT (realtime)</div>
+    </div>
+    <div class="enum-box">
+      <div class="enum-title">SavedType</div>
+      <div class="enum-label">values</div>
+      <div class="enum-val">BOOKMARK</div>
+      <div class="enum-val">IMPORT</div>
+    </div>
+  </div>
+
+  <!-- ══ INTERFACES ══ -->
+  <div class="sec">Key Interfaces</div>
+
+  <div class="class-grid g3">
+    <div class="iface-box">
+      <div class="iface-title">«interface» Syncable</div>
+      <div class="iface-method">+ getServerSequence() → bigint</div>
+      <div class="iface-method">+ applyDelta(records: []Record) → void</div>
+      <div style="font-size:8px; color:var(--muted); margin-top:6px">Implemented by: Note, Draft, Post (client-side)</div>
+    </div>
+    <div class="iface-box">
+      <div class="iface-title">«interface» Exportable</div>
+      <div class="iface-method">+ toMarkdown() → string</div>
+      <div class="iface-method">+ toPlainText() → string</div>
+      <div style="font-size:8px; color:var(--muted); margin-top:6px">Implemented by: Post</div>
+    </div>
+    <div class="iface-box">
+      <div class="iface-title">«interface» Moderatable</div>
+      <div class="iface-method">+ hide() → void</div>
+      <div class="iface-method">+ restore() → void</div>
+      <div class="iface-method">+ adminDelete() → void</div>
+      <div style="font-size:8px; color:var(--muted); margin-top:6px">Implemented by: Post, Comment, Message</div>
+    </div>
+  </div>
+
+  <!-- ══ RELATIONSHIPS ══ -->
+  <div class="sec">Relationship Map</div>
+
+  <div class="rel-table">
+    <div class="rel-table-header">ENTITY RELATIONSHIPS</div>
+
+    <div class="rel-row-item">
+      <div class="rel-from">User</div>
+      <div class="rel-type"><span class="rel-symbol rs-comp">1 ◆──→ *</span></div>
+      <div class="rel-to">Post</div>
+      <div class="rel-desc">Composition — User owns Posts; orphaned on delete (anonymised)</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-comp">1 ◆──→ *</span></div>
+      <div class="rel-to">PostVersion</div>
+      <div class="rel-desc">Composition — Post owns its version history; versions immutable</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-agg">0..1 ◇──→ 1</span></div>
+      <div class="rel-to">Post (CorrectionPost)</div>
+      <div class="rel-desc">Self-association — corrects_post_id nullable FK</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-comp">1 ◆──→ *</span></div>
+      <div class="rel-to">Comment</div>
+      <div class="rel-desc">Composition — flat single-level stream; author moderates</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-comp">1 ◆──→ *</span></div>
+      <div class="rel-to">Reaction</div>
+      <div class="rel-desc">Composition — domain-specific reactions; public count, author sees identities</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-agg">1 ◇──→ *</span></div>
+      <div class="rel-to">Category</div>
+      <div class="rel-desc">Aggregation (join table) — many-to-many; deprecated categories retained</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-comp">1 ◆──→ *</span></div>
+      <div class="rel-to">ScriptureRef</div>
+      <div class="rel-desc">Composition — structured Book/Chapter/Verse selector</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">User</div>
+      <div class="rel-type"><span class="rel-symbol rs-comp">1 ◆──→ *</span></div>
+      <div class="rel-to">Note</div>
+      <div class="rel-desc">Composition — private workspace; deletable by author</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Note</div>
+      <div class="rel-type"><span class="rel-symbol rs-agg">0..1 ◇──→ 1</span></div>
+      <div class="rel-to">Notebook</div>
+      <div class="rel-desc">Aggregation — optional single-level grouping</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">User</div>
+      <div class="rel-type"><span class="rel-symbol rs-assoc">* ───→ *</span></div>
+      <div class="rel-to">User (Follow)</div>
+      <div class="rel-desc">Association — asymmetric quiet follow; counts private</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">User</div>
+      <div class="rel-type"><span class="rel-symbol rs-dep">──→</span></div>
+      <div class="rel-to">Syncable</div>
+      <div class="rel-desc">Dependency — client-side Note/Draft/Post implement Syncable interface</div>
+    </div>
+    <div class="rel-row-item">
+      <div class="rel-from">Post</div>
+      <div class="rel-type"><span class="rel-symbol rs-dep">──→</span></div>
+      <div class="rel-to">Exportable · Moderatable</div>
+      <div class="rel-desc">Dependency — Post realises both interfaces</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
