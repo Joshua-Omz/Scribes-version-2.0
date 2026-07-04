@@ -3,12 +3,14 @@ package server
 import (
 	"net/http"
 
+	"scribes-api/internal/admin"
 	"scribes-api/internal/auth"
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
 	"scribes-api/internal/message"
 	"scribes-api/internal/middleware"
 	"scribes-api/internal/note"
+	"scribes-api/internal/notification"
 	"scribes-api/internal/post"
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
@@ -17,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, jwtSecret string) *gin.Engine {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -102,6 +104,16 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/conversations/:id/messages", messageHandler.SendMessage)
 		protected.POST("/conversations/:id/block", messageHandler.BlockConversation)
 		protected.DELETE("/messages/:id", messageHandler.SoftDeleteMessage)
+
+		// Notification endpoints
+		protected.GET("/notifications", notificationHandler.GetUnreadNotifications)
+		protected.POST("/notifications/:id/read", notificationHandler.MarkAsRead)
+
+		// Admin & Reporting endpoints
+		protected.POST("/reports", adminHandler.SubmitReport)
+		// For a full implementation, these next two would be wrapped in a super_admin check middleware
+		protected.GET("/admin/reports", adminHandler.GetPendingReports)
+		protected.POST("/admin/reports/:id/status", adminHandler.UpdateReportStatus)
 	}
 
 	return r

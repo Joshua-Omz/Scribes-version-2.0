@@ -59,6 +59,51 @@ func (ns NullNoteSourceType) Value() (driver.Value, error) {
 	return string(ns.NoteSourceType), nil
 }
 
+type NotifType string
+
+const (
+	NotifTypeMention    NotifType = "mention"
+	NotifTypeReaction   NotifType = "reaction"
+	NotifTypeComment    NotifType = "comment"
+	NotifTypeFollow     NotifType = "follow"
+	NotifTypeAdminAlert NotifType = "admin_alert"
+)
+
+func (e *NotifType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = NotifType(s)
+	case string:
+		*e = NotifType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NotifType: %T", src)
+	}
+	return nil
+}
+
+type NullNotifType struct {
+	NotifType NotifType `json:"notif_type"`
+	Valid     bool      `json:"valid"` // Valid is true if NotifType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullNotifType) Scan(value interface{}) error {
+	if value == nil {
+		ns.NotifType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.NotifType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullNotifType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.NotifType), nil
+}
+
 type PostVisibility string
 
 const (
@@ -142,6 +187,50 @@ func (ns NullReactionType) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ReactionType), nil
+}
+
+type ReportStatus string
+
+const (
+	ReportStatusPending   ReportStatus = "pending"
+	ReportStatusReviewed  ReportStatus = "reviewed"
+	ReportStatusActioned  ReportStatus = "actioned"
+	ReportStatusDismissed ReportStatus = "dismissed"
+)
+
+func (e *ReportStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportStatus(s)
+	case string:
+		*e = ReportStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReportStatus struct {
+	ReportStatus ReportStatus `json:"report_status"`
+	Valid        bool         `json:"valid"` // Valid is true if ReportStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportStatus), nil
 }
 
 type RequestStatus string
@@ -357,6 +446,17 @@ type Notebook struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type Notification struct {
+	ID          uuid.UUID    `json:"id"`
+	RecipientID uuid.UUID    `json:"recipient_id"`
+	Type        NotifType    `json:"type"`
+	RefID       uuid.UUID    `json:"ref_id"`
+	IsRealtime  bool         `json:"is_realtime"`
+	IsRead      bool         `json:"is_read"`
+	SentAt      sql.NullTime `json:"sent_at"`
+	CreatedAt   time.Time    `json:"created_at"`
+}
+
 type Post struct {
 	ID             uuid.UUID       `json:"id"`
 	AuthorID       uuid.UUID       `json:"author_id"`
@@ -370,6 +470,7 @@ type Post struct {
 	IsDeleted      bool            `json:"is_deleted"`
 	PublishedAt    time.Time       `json:"published_at"`
 	ServerSequence int64           `json:"server_sequence"`
+	SearchVector   interface{}     `json:"search_vector"`
 }
 
 type PostCategory struct {
@@ -377,6 +478,7 @@ type PostCategory struct {
 	CategoryID uuid.UUID `json:"category_id"`
 }
 
+// INSERT-ONLY. No UPDATE or DELETE permitted. Enforced at repository layer in internal/post/repository.go.
 type PostVersion struct {
 	ID              uuid.UUID       `json:"id"`
 	PostID          uuid.UUID       `json:"post_id"`
@@ -392,6 +494,18 @@ type Reaction struct {
 	UserID    uuid.UUID    `json:"user_id"`
 	Type      ReactionType `json:"type"`
 	CreatedAt time.Time    `json:"created_at"`
+}
+
+type Report struct {
+	ID          uuid.UUID     `json:"id"`
+	ReporterID  uuid.UUID     `json:"reporter_id"`
+	ContentType string        `json:"content_type"`
+	ContentID   uuid.UUID     `json:"content_id"`
+	Reason      string        `json:"reason"`
+	Status      ReportStatus  `json:"status"`
+	ReviewedBy  uuid.NullUUID `json:"reviewed_by"`
+	ReviewedAt  sql.NullTime  `json:"reviewed_at"`
+	CreatedAt   time.Time     `json:"created_at"`
 }
 
 type Saved struct {
