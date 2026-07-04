@@ -12,6 +12,7 @@ Connect the Flutter client to the Go sync engine. Implement background sync with
 
 ---
 
+
 ## Deliverables
 
 | Task | Status | Notes |

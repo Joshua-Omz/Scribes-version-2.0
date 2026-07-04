@@ -5,15 +5,19 @@ import (
 
 	"scribes-api/internal/auth"
 	"scribes-api/internal/draft"
+	"scribes-api/internal/feed"
+	"scribes-api/internal/message"
 	"scribes-api/internal/middleware"
 	"scribes-api/internal/note"
 	"scribes-api/internal/post"
+	"scribes-api/internal/social"
+	"scribes-api/internal/sync"
 	"scribes-api/pkg/respond"
 
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, jwtSecret string) http.Handler {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -64,6 +68,40 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.DELETE("/posts/:id", postHandler.Delete)
 		protected.PATCH("/posts/:id/revise", postHandler.Revise)
 		protected.POST("/posts/:id/correct", postHandler.CreateCorrection)
+
+		// Sync endpoint
+		protected.GET("/sync", syncHandler.Pull)
+
+		// Social endpoints
+		protected.POST("/users/:id/follow", socialHandler.Follow)
+		protected.DELETE("/users/:id/follow", socialHandler.Unfollow)
+
+		protected.POST("/posts/:id/reactions", socialHandler.React)
+		protected.DELETE("/posts/:id/reactions", socialHandler.Unreact)
+
+		protected.GET("/posts/:id/comments", socialHandler.GetComments)
+		protected.POST("/posts/:id/comments", socialHandler.AddComment)
+		protected.PATCH("/comments/:id", socialHandler.PatchComment)
+
+		protected.POST("/posts/:id/save", socialHandler.SavePost)
+		protected.DELETE("/posts/:id/save", socialHandler.UnsavePost)
+
+		// Feed endpoints
+		protected.GET("/feed/following", feedHandler.GetFollowingFeed)
+		protected.GET("/feed/explore", feedHandler.GetExploreFeed)
+
+		// Direct Messaging endpoints
+		protected.POST("/message-requests", messageHandler.SendRequest)
+		protected.GET("/message-requests", messageHandler.GetPendingRequests)
+		protected.POST("/message-requests/:id/approve", messageHandler.ApproveRequest)
+		protected.POST("/message-requests/:id/reject", messageHandler.RejectRequest)
+
+		protected.GET("/conversations", messageHandler.GetConversations)
+		protected.GET("/conversations/:id/messages", messageHandler.GetMessages)
+		protected.GET("/conversations/:id/stream", messageHandler.StreamMessages)
+		protected.POST("/conversations/:id/messages", messageHandler.SendMessage)
+		protected.POST("/conversations/:id/block", messageHandler.BlockConversation)
+		protected.DELETE("/messages/:id", messageHandler.SoftDeleteMessage)
 	}
 
 	return r

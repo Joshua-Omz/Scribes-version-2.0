@@ -23,7 +23,7 @@ INSERT INTO notes (
     source_label
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at
+) RETURNING id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at, server_sequence
 `
 
 type CreateNoteParams struct {
@@ -55,6 +55,7 @@ func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, e
 		&i.SourceLabel,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
@@ -75,7 +76,7 @@ func (q *Queries) DeleteNote(ctx context.Context, arg DeleteNoteParams) error {
 }
 
 const getNoteByID = `-- name: GetNoteByID :one
-SELECT id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at FROM notes
+SELECT id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at, server_sequence FROM notes
 WHERE id = $1 LIMIT 1
 `
 
@@ -92,12 +93,13 @@ func (q *Queries) GetNoteByID(ctx context.Context, id uuid.UUID) (Note, error) {
 		&i.SourceLabel,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
 
 const listNotesByAuthor = `-- name: ListNotesByAuthor :many
-SELECT id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at FROM notes
+SELECT id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at, server_sequence FROM notes
 WHERE author_id = $1
 ORDER BY created_at DESC
 `
@@ -121,6 +123,7 @@ func (q *Queries) ListNotesByAuthor(ctx context.Context, authorID uuid.UUID) ([]
 			&i.SourceLabel,
 			&i.UpdatedAt,
 			&i.CreatedAt,
+			&i.ServerSequence,
 		); err != nil {
 			return nil, err
 		}
@@ -144,7 +147,7 @@ SET content = $2,
     source_label = $6,
     updated_at = now()
 WHERE id = $1 AND author_id = $7
-RETURNING id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at
+RETURNING id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at, server_sequence
 `
 
 type UpdateNoteParams struct {
@@ -178,6 +181,7 @@ func (q *Queries) UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, e
 		&i.SourceLabel,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }

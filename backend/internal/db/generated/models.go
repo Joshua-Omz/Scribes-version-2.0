@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 type NoteSourceType string
@@ -100,6 +101,134 @@ func (ns NullPostVisibility) Value() (driver.Value, error) {
 	return string(ns.PostVisibility), nil
 }
 
+type ReactionType string
+
+const (
+	ReactionTypeAmen             ReactionType = "amen"
+	ReactionTypeInsightful       ReactionType = "insightful"
+	ReactionTypeThoughtProvoking ReactionType = "thought_provoking"
+)
+
+func (e *ReactionType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReactionType(s)
+	case string:
+		*e = ReactionType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReactionType: %T", src)
+	}
+	return nil
+}
+
+type NullReactionType struct {
+	ReactionType ReactionType `json:"reaction_type"`
+	Valid        bool         `json:"valid"` // Valid is true if ReactionType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReactionType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReactionType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReactionType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReactionType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReactionType), nil
+}
+
+type RequestStatus string
+
+const (
+	RequestStatusPending  RequestStatus = "pending"
+	RequestStatusApproved RequestStatus = "approved"
+	RequestStatusRejected RequestStatus = "rejected"
+)
+
+func (e *RequestStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RequestStatus(s)
+	case string:
+		*e = RequestStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RequestStatus: %T", src)
+	}
+	return nil
+}
+
+type NullRequestStatus struct {
+	RequestStatus RequestStatus `json:"request_status"`
+	Valid         bool          `json:"valid"` // Valid is true if RequestStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRequestStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.RequestStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RequestStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRequestStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RequestStatus), nil
+}
+
+type SavedType string
+
+const (
+	SavedTypeBookmark SavedType = "bookmark"
+	SavedTypeImport   SavedType = "import"
+)
+
+func (e *SavedType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SavedType(s)
+	case string:
+		*e = SavedType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SavedType: %T", src)
+	}
+	return nil
+}
+
+type NullSavedType struct {
+	SavedType SavedType `json:"saved_type"`
+	Valid     bool      `json:"valid"` // Valid is true if SavedType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSavedType) Scan(value interface{}) error {
+	if value == nil {
+		ns.SavedType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SavedType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSavedType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SavedType), nil
+}
+
 type UserRole string
 
 const (
@@ -148,14 +277,35 @@ type Category struct {
 	IsDeprecated bool      `json:"is_deprecated"`
 }
 
+type Comment struct {
+	ID        uuid.UUID   `json:"id"`
+	PostID    uuid.UUID   `json:"post_id"`
+	AuthorID  uuid.UUID   `json:"author_id"`
+	Body      string      `json:"body"`
+	IsHidden  bool        `json:"is_hidden"`
+	IsDeleted bool        `json:"is_deleted"`
+	Mentions  []uuid.UUID `json:"mentions"`
+	CreatedAt time.Time   `json:"created_at"`
+}
+
+type Conversation struct {
+	ID         uuid.UUID `json:"id"`
+	UserAID    uuid.UUID `json:"user_a_id"`
+	UserBID    uuid.UUID `json:"user_b_id"`
+	Blocked    bool      `json:"blocked"`
+	CreatedAt  time.Time `json:"created_at"`
+	LastActive time.Time `json:"last_active"`
+}
+
 type Draft struct {
-	ID           uuid.UUID       `json:"id"`
-	AuthorID     uuid.UUID       `json:"author_id"`
-	Content      json.RawMessage `json:"content"`
-	Caption      sql.NullString  `json:"caption"`
-	SermonSource sql.NullString  `json:"sermon_source"`
-	CreatedAt    time.Time       `json:"created_at"`
-	UpdatedAt    time.Time       `json:"updated_at"`
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	CreatedAt      time.Time       `json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
+	ServerSequence int64           `json:"server_sequence"`
 }
 
 type DraftCategory struct {
@@ -163,16 +313,41 @@ type DraftCategory struct {
 	CategoryID uuid.UUID `json:"category_id"`
 }
 
+type Follow struct {
+	FollowerID uuid.UUID `json:"follower_id"`
+	FolloweeID uuid.UUID `json:"followee_id"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type Message struct {
+	ID             uuid.UUID `json:"id"`
+	ConversationID uuid.UUID `json:"conversation_id"`
+	SenderID       uuid.UUID `json:"sender_id"`
+	Body           string    `json:"body"`
+	IsDeleted      bool      `json:"is_deleted"`
+	SentAt         time.Time `json:"sent_at"`
+}
+
+type MessageRequest struct {
+	ID           uuid.UUID     `json:"id"`
+	FromUserID   uuid.UUID     `json:"from_user_id"`
+	ToUserID     uuid.UUID     `json:"to_user_id"`
+	Status       RequestStatus `json:"status"`
+	FirstMessage string        `json:"first_message"`
+	CreatedAt    time.Time     `json:"created_at"`
+}
+
 type Note struct {
-	ID          uuid.UUID          `json:"id"`
-	AuthorID    uuid.UUID          `json:"author_id"`
-	Content     json.RawMessage    `json:"content"`
-	Title       sql.NullString     `json:"title"`
-	NotebookID  uuid.NullUUID      `json:"notebook_id"`
-	SourceType  NullNoteSourceType `json:"source_type"`
-	SourceLabel sql.NullString     `json:"source_label"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-	CreatedAt   time.Time          `json:"created_at"`
+	ID             uuid.UUID          `json:"id"`
+	AuthorID       uuid.UUID          `json:"author_id"`
+	Content        json.RawMessage    `json:"content"`
+	Title          sql.NullString     `json:"title"`
+	NotebookID     uuid.NullUUID      `json:"notebook_id"`
+	SourceType     NullNoteSourceType `json:"source_type"`
+	SourceLabel    sql.NullString     `json:"source_label"`
+	UpdatedAt      time.Time          `json:"updated_at"`
+	CreatedAt      time.Time          `json:"created_at"`
+	ServerSequence int64              `json:"server_sequence"`
 }
 
 type Notebook struct {
@@ -194,6 +369,7 @@ type Post struct {
 	SermonSource   sql.NullString  `json:"sermon_source"`
 	IsDeleted      bool            `json:"is_deleted"`
 	PublishedAt    time.Time       `json:"published_at"`
+	ServerSequence int64           `json:"server_sequence"`
 }
 
 type PostCategory struct {
@@ -208,6 +384,23 @@ type PostVersion struct {
 	ContentSnapshot json.RawMessage `json:"content_snapshot"`
 	SnapshottedAt   time.Time       `json:"snapshotted_at"`
 	SnapshottedBy   uuid.UUID       `json:"snapshotted_by"`
+}
+
+type Reaction struct {
+	ID        uuid.UUID    `json:"id"`
+	PostID    uuid.UUID    `json:"post_id"`
+	UserID    uuid.UUID    `json:"user_id"`
+	Type      ReactionType `json:"type"`
+	CreatedAt time.Time    `json:"created_at"`
+}
+
+type Saved struct {
+	ID        uuid.UUID             `json:"id"`
+	UserID    uuid.UUID             `json:"user_id"`
+	PostID    uuid.UUID             `json:"post_id"`
+	Type      SavedType             `json:"type"`
+	Snapshot  pqtype.NullRawMessage `json:"snapshot"`
+	CreatedAt time.Time             `json:"created_at"`
 }
 
 type ScriptureRef struct {

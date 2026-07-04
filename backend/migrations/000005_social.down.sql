@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS saved;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS reactions;
+DROP TABLE IF EXISTS follows;
+DROP TYPE IF EXISTS saved_type;
+DROP TYPE IF EXISTS reaction_type;
