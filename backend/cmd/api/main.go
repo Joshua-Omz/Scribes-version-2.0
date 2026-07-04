@@ -10,14 +10,15 @@ import (
 	"syscall"
 	"time"
 
+	"scribes-api/internal/admin"
 	"scribes-api/internal/auth"
 	"scribes-api/internal/config"
-	"scribes-api/internal/db"
 	"scribes-api/internal/db/generated"
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
 	"scribes-api/internal/message"
 	"scribes-api/internal/note"
+	"scribes-api/internal/notification"
 	"scribes-api/internal/post"
 	"scribes-api/internal/server"
 	"scribes-api/internal/social"
@@ -81,7 +82,15 @@ func main() {
 	messageSvc := message.NewService(messageRepo)
 	messageHandler := message.NewHandler(messageSvc)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, cfg.JWTSecret)
+	notificationRepo := notification.NewRepository(queries, db)
+	notificationSvc := notification.NewService(notificationRepo)
+	notificationHandler := notification.NewHandler(notificationSvc)
+
+	adminRepo := admin.NewRepository(queries, db)
+	adminSvc := admin.NewService(adminRepo)
+	adminHandler := admin.NewHandler(adminSvc)
+
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

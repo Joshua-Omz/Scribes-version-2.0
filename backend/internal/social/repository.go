@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"time"
 
 	"scribes-api/internal/db/generated"
 
 	"github.com/google/uuid"
+	"github.com/sqlc-dev/pqtype"
 )
 
 type Repository struct {
@@ -93,7 +93,7 @@ func (r *Repository) SavePost(ctx context.Context, userID, postID uuid.UUID, sav
 		UserID:   userID,
 		PostID:   postID,
 		Type:     savedType,
-		Snapshot: snapshot, // Since sqlc treats JSONB as []byte or json.RawMessage
+		Snapshot: pqtype.NullRawMessage{RawMessage: snapshot, Valid: len(snapshot) > 0},
 	})
 }
 

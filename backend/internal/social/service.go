@@ -61,7 +61,7 @@ func (s *Service) HideComment(ctx context.Context, commentID, userID uuid.UUID) 
 		return err
 	}
 
-	p, err := s.postRepo.GetByID(ctx, comment.PostID)
+	p, err := s.postRepo.GetPostByID(ctx, comment.PostID)
 	if err != nil {
 		return err
 	}
@@ -97,11 +97,11 @@ func (s *Service) GetComments(ctx context.Context, postID uuid.UUID) ([]generate
 func (s *Service) SavePost(ctx context.Context, userID, postID uuid.UUID, savedType string) error {
 	var snapshot json.RawMessage
 	if savedType == string(generated.SavedTypeImport) {
-		p, err := s.postRepo.GetByID(ctx, postID)
+		postData, err := s.postRepo.GetPostByID(ctx, postID)
 		if err != nil {
 			return err
 		}
-		snapshot = p.Content
+		snapshot = postData.Content
 	}
 	return s.repo.SavePost(ctx, userID, postID, generated.SavedType(savedType), snapshot)
 }

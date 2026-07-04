@@ -87,7 +87,7 @@ func (q *Queries) GetExploreFeed(ctx context.Context, arg GetExploreFeedParams) 
 }
 
 const getFollowingFeed = `-- name: GetFollowingFeed :many
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence 
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector 
 FROM posts p
 JOIN follows f ON p.author_id = f.followee_id
 WHERE f.follower_id = $1::uuid 
@@ -132,6 +132,7 @@ func (q *Queries) GetFollowingFeed(ctx context.Context, arg GetFollowingFeedPara
 			&i.IsDeleted,
 			&i.PublishedAt,
 			&i.ServerSequence,
+			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}
