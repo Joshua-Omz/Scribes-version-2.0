@@ -21,7 +21,7 @@ INSERT INTO drafts (
     sermon_source
 ) VALUES (
     $1, $2, $3, $4
-) RETURNING id, author_id, content, caption, sermon_source, created_at, updated_at
+) RETURNING id, author_id, content, caption, sermon_source, created_at, updated_at, server_sequence
 `
 
 type CreateDraftParams struct {
@@ -47,6 +47,7 @@ func (q *Queries) CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft
 		&i.SermonSource,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
@@ -67,7 +68,7 @@ func (q *Queries) DeleteDraft(ctx context.Context, arg DeleteDraftParams) error 
 }
 
 const getDraftByID = `-- name: GetDraftByID :one
-SELECT id, author_id, content, caption, sermon_source, created_at, updated_at FROM drafts
+SELECT id, author_id, content, caption, sermon_source, created_at, updated_at, server_sequence FROM drafts
 WHERE id = $1 LIMIT 1
 `
 
@@ -82,12 +83,13 @@ func (q *Queries) GetDraftByID(ctx context.Context, id uuid.UUID) (Draft, error)
 		&i.SermonSource,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
 
 const listDraftsByAuthor = `-- name: ListDraftsByAuthor :many
-SELECT id, author_id, content, caption, sermon_source, created_at, updated_at FROM drafts
+SELECT id, author_id, content, caption, sermon_source, created_at, updated_at, server_sequence FROM drafts
 WHERE author_id = $1
 ORDER BY created_at DESC
 `
@@ -109,6 +111,7 @@ func (q *Queries) ListDraftsByAuthor(ctx context.Context, authorID uuid.UUID) ([
 			&i.SermonSource,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ServerSequence,
 		); err != nil {
 			return nil, err
 		}
@@ -130,7 +133,7 @@ SET content = $2,
     sermon_source = $4,
     updated_at = now()
 WHERE id = $1 AND author_id = $5
-RETURNING id, author_id, content, caption, sermon_source, created_at, updated_at
+RETURNING id, author_id, content, caption, sermon_source, created_at, updated_at, server_sequence
 `
 
 type UpdateDraftParams struct {
@@ -158,6 +161,7 @@ func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) (Draft
 		&i.SermonSource,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }

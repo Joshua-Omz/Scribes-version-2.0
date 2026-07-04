@@ -95,10 +95,13 @@ go run ./cmd/api
 | GET | `/api/posts` | — | Public chronological feed |
 | GET | `/api/posts/{id}` | — | Get post |
 | POST | `/api/posts` | Bearer | Publish post |
-| PUT | `/api/posts/{id}` | Bearer | Update post |
+| PATCH | `/api/posts/{id}` | Bearer | Update post |
 | DELETE | `/api/posts/{id}` | Bearer | Soft-delete post |
-| GET | `/api/sync/pull` | Bearer | Pull server deltas |
-| POST | `/api/sync/push` | Bearer | Push client mutations |
+| PATCH | `/api/posts/{id}/revise` | Bearer | Revise post & snapshot |
+| POST | `/api/posts/{id}/correct` | Bearer | Create correction post |
+| GET | `/api/posts/{id}/versions` | — | Get all post versions |
+| GET | `/api/posts/{id}/versions/{v}`| — | Get specific post version |
+| GET | `/api/sync?seq={N}` | Bearer | Pull offline sync deltas |
 | GET | `/health` | — | Health check |
 
 ---
@@ -114,7 +117,7 @@ Sprint documentation lives in [`docs/sprints/`](docs/sprints/):
 | [Sprint 1 — Infrastructure, Identity & Data](docs/sprints/sprint-1.md) | ✅ Complete |
 | [Sprint 2 — Delta Sync Engine](docs/sprints/sprint-2.md) | ✅ Complete |
 | [API Contract (Phase 1.5)](docs/sprints/sprint-api-contract.md) | 🔲 Pending |
-| [Sprint 3 — Offline Database & Editor](docs/sprints/sprint-3.md) | 🔲 Pending |
-| [Sprint 4 — Publishing Pipeline & Feeds](docs/sprints/sprint-4.md) | 🔲 Pending |
+| [Sprint 3 — Offline Database & Editor](docs/sprints/sprint-3.md) | ✅ Complete |
+| [Sprint 4 — Publishing Pipeline & Feeds](docs/sprints/sprint-4.md) | ✅ Complete |
 | [Sprint 5 — Sync Worker](docs/sprints/sprint-5.md) | 🔲 Pending |
 | [Sprint 6 — Observability & Deployment](docs/sprints/sprint-6.md) | 🔲 Pending |

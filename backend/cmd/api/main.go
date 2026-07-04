@@ -12,11 +12,16 @@ import (
 
 	"scribes-api/internal/auth"
 	"scribes-api/internal/config"
+	"scribes-api/internal/db"
 	"scribes-api/internal/db/generated"
 	"scribes-api/internal/draft"
+	"scribes-api/internal/feed"
+	"scribes-api/internal/message"
 	"scribes-api/internal/note"
 	"scribes-api/internal/post"
 	"scribes-api/internal/server"
+	"scribes-api/internal/social"
+	"scribes-api/internal/sync"
 
 	_ "github.com/lib/pq"
 )
@@ -60,7 +65,23 @@ func main() {
 	postSvc := post.NewService(postRepo)
 	postHandler := post.NewHandler(postSvc)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, cfg.JWTSecret)
+	syncRepo := sync.NewRepository(queries)
+	syncSvc := sync.NewService(syncRepo)
+	syncHandler := sync.NewHandler(syncSvc)
+
+	socialRepo := social.NewRepository(queries, db)
+	socialSvc := social.NewService(socialRepo, postRepo)
+	socialHandler := social.NewHandler(socialSvc)
+
+	feedRepo := feed.NewRepository(queries, db)
+	feedSvc := feed.NewService(feedRepo)
+	feedHandler := feed.NewHandler(feedSvc)
+
+	messageRepo := message.NewRepository(queries, db)
+	messageSvc := message.NewService(messageRepo)
+	messageHandler := message.NewHandler(messageSvc)
+
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

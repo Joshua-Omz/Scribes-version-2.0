@@ -24,7 +24,7 @@ INSERT INTO posts (
     corrects_post_id
 ) VALUES (
     $1, $2, $3, $4, $5, true, $6
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence
 `
 
 type CreateCorrectionPostParams struct {
@@ -58,6 +58,7 @@ func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrection
 		&i.SermonSource,
 		&i.IsDeleted,
 		&i.PublishedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
@@ -71,7 +72,7 @@ INSERT INTO posts (
     sermon_source
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence
 `
 
 type CreatePostParams struct {
@@ -103,6 +104,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.SermonSource,
 		&i.IsDeleted,
 		&i.PublishedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
@@ -124,7 +126,7 @@ func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at FROM posts
+SELECT id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence FROM posts
 WHERE id = $1 AND is_deleted = false LIMIT 1
 `
 
@@ -143,12 +145,13 @@ func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error) {
 		&i.SermonSource,
 		&i.IsDeleted,
 		&i.PublishedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
 
 const listPostsByAuthor = `-- name: ListPostsByAuthor :many
-SELECT id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at FROM posts
+SELECT id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence FROM posts
 WHERE author_id = $1 AND is_deleted = false
 ORDER BY published_at DESC
 `
@@ -174,6 +177,7 @@ func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.ServerSequence,
 		); err != nil {
 			return nil, err
 		}
@@ -194,7 +198,7 @@ SET content = $2,
     caption = $3,
     current_version = current_version + 1
 WHERE id = $1 AND author_id = $4 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence
 `
 
 type RevisePostParams struct {
@@ -224,6 +228,7 @@ func (q *Queries) RevisePost(ctx context.Context, arg RevisePostParams) (Post, e
 		&i.SermonSource,
 		&i.IsDeleted,
 		&i.PublishedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
@@ -236,7 +241,7 @@ SET content = $2,
     sermon_source = $5,
     current_version = $6
 WHERE id = $1 AND author_id = $7 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence
 `
 
 type UpdatePostParams struct {
@@ -272,6 +277,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.SermonSource,
 		&i.IsDeleted,
 		&i.PublishedAt,
+		&i.ServerSequence,
 	)
 	return i, err
 }
