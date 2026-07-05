@@ -13,6 +13,7 @@ import (
 	"scribes-api/internal/admin"
 	"scribes-api/internal/auth"
 	"scribes-api/internal/config"
+	"scribes-api/internal/db"
 	"scribes-api/internal/db/generated"
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
