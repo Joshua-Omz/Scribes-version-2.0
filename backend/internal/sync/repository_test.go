@@ -1,12 +1,7 @@
 package sync
 
 import (
-	"context"
 	"testing"
-	"time"
-
-	"scribes-api/internal/db/generated"
-	"github.com/google/uuid"
 )
 
 // Mock queries implementation just for testing the structure if needed,
