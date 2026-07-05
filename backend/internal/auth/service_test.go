@@ -12,7 +12,7 @@ func TestAuthService(t *testing.T) {
 	os.Setenv("DATABASE_URL", "postgres://scribes:password@localhost:5433/scribes_db?sslmode=disable")
 	os.Setenv("JWT_SECRET", "test_secret")
 
-	tdb := testutil.SetupDB()
+	tdb := testutil.SetupDB(t)
 	defer tdb.Teardown()
 
 	repo := NewRepository(tdb.Queries)

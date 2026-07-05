@@ -2,7 +2,7 @@ package testutil
 
 import (
 	"database/sql"
-	"log"
+	"testing"
 
 	"scribes-api/internal/config"
 	"scribes-api/internal/db/generated"
@@ -15,17 +15,17 @@ type TestDB struct {
 	Queries *generated.Queries
 }
 
-func SetupDB() *TestDB {
+func SetupDB(t *testing.T) *TestDB {
 	// For testing, just load the default config
 	cfg := config.Load()
 
 	db, err := sql.Open("postgres", cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("failed to open test db: %v", err)
+		t.Skipf("skipping test: failed to open test db: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("failed to ping test db: %v", err)
+		t.Skipf("skipping test: failed to ping test db: %v", err)
 	}
 
 	queries := generated.New(db)
