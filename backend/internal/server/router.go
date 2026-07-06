@@ -95,9 +95,6 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/posts/:id/save", socialHandler.SavePost)
 		protected.DELETE("/posts/:id/save", socialHandler.UnsavePost)
 
-		// Feed endpoints
-		protected.GET("/feed/following", feedHandler.GetFollowingFeed)
-		protected.GET("/feed/explore", feedHandler.GetExploreFeed)
 
 		// Direct Messaging endpoints
 		protected.POST("/message-requests", messageHandler.SendRequest)

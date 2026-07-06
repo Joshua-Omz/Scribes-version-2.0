@@ -51,3 +51,4 @@ client/ios/.symlinks/
 *.swo
 
 node_modules/
+mcp-server/
