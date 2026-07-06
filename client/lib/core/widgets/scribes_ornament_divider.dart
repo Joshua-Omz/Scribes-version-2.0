@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class OrnamentalDivider extends StatelessWidget {
-  const OrnamentalDivider({super.key});
+class ScribesOrnamentDivider extends StatelessWidget {
+  const ScribesOrnamentDivider({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,7 @@ class OrnamentalDivider extends StatelessWidget {
       children: [
         Expanded(
           child: Divider(
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
             thickness: 0.5,
           ),
         ),
@@ -28,7 +28,7 @@ class OrnamentalDivider extends StatelessWidget {
         ),
         Expanded(
           child: Divider(
-            color: theme.colorScheme.onSurface.withOpacity(0.2),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
             thickness: 0.5,
           ),
         ),

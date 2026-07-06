@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'scripture_tag.dart';
-import 'reaction_chip.dart';
+import 'scribes_scripture_chip.dart';
+import 'scribes_reaction_bar.dart';
 
-class PostCard extends StatelessWidget {
+class ScribesPostCard extends StatelessWidget {
   final String title;
   final String bodyExcerpt;
   final String authorName;
@@ -13,7 +13,7 @@ class PostCard extends StatelessWidget {
   final int thoughtCount;
   final bool isFeatured;
 
-  const PostCard({
+  const ScribesPostCard({
     super.key,
     required this.title,
     required this.bodyExcerpt,
@@ -37,7 +37,7 @@ class PostCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.1),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -59,7 +59,7 @@ class PostCard extends StatelessWidget {
                 style: theme.textTheme.labelSmall,
               ),
               if (scriptureRef != null)
-                ScriptureTag(
+                ScribesScriptureChip(
                   reference: scriptureRef!,
                   onTap: () {},
                 ),
@@ -78,26 +78,10 @@ class PostCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              ReactionChip(
-                icon: Icons.local_fire_department_outlined,
-                count: amenCount.toString(),
-                onTap: () {},
-              ),
-              const SizedBox(width: 12),
-              ReactionChip(
-                icon: Icons.lightbulb_outline,
-                count: insightCount.toString(),
-                onTap: () {},
-              ),
-              const SizedBox(width: 12),
-              ReactionChip(
-                icon: Icons.edit_note_outlined,
-                count: thoughtCount.toString(),
-                onTap: () {},
-              ),
-            ],
+          ScribesReactionBar(
+            amenCount: amenCount,
+            insightCount: insightCount,
+            thoughtCount: thoughtCount,
           )
         ],
       ),

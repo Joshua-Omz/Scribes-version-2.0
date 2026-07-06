@@ -11,16 +11,13 @@ class AppTheme {
         primary: AppColors.nightGoldPrimary,
         secondary: AppColors.nightOrangeAccent,
         surface: AppColors.nightSurface,
-        background: AppColors.nightBackground,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.nightBackground,
         elevation: 0,
-        titleTextStyle: AppColors.nightPrimaryText  != null
-            ? AppTypography.displaySmall.copyWith(
-                color: AppColors.nightPrimaryText,
-              )
-            : AppTypography.displaySmall,
+        titleTextStyle: AppTypography.displaySmall.copyWith(
+          color: AppColors.nightPrimaryText,
+        ),
       ),
       textTheme: TextTheme(
         displayLarge: AppTypography.displayXl.copyWith(
@@ -59,7 +56,6 @@ class AppTheme {
         primary: AppColors.parchmentGoldPrimary,
         secondary: AppColors.parchmentOrangeAccent,
         surface: AppColors.parchmentSurface,
-        background: AppColors.parchmentBackground,
       ),
       textTheme: TextTheme(
         displayLarge: AppTypography.displayXl.copyWith(
@@ -98,7 +94,6 @@ class AppTheme {
         primary: AppColors.silverGoldPrimary,
         secondary: AppColors.silverOrangeAccent,
         surface: AppColors.silverSurface,
-        background: AppColors.silverBackground,
       ),
       textTheme: TextTheme(
         displayLarge: AppTypography.displayXl.copyWith(

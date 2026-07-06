@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ScriptureTag extends StatelessWidget {
+class ScribesScriptureChip extends StatelessWidget {
   final String reference;
   final VoidCallback onTap;
 
-  const ScriptureTag({
+  const ScribesScriptureChip({
     super.key,
     required this.reference,
     required this.onTap,
@@ -14,22 +14,33 @@ class ScriptureTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.primary),
+          color: theme.colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.book_outlined, color: theme.colorScheme.primary, size: 14),
+            Icon(
+              Icons.menu_book,
+              size: 14,
+              color: theme.colorScheme.onSecondaryContainer,
+            ),
             const SizedBox(width: 6),
             Text(
               reference,
-              style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSecondaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
