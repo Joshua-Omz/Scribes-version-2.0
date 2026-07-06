@@ -2,6 +2,9 @@ package feed
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"strings"
 	"time"
 
 	"scribes-api/internal/db/generated"
@@ -14,33 +17,132 @@ type Service struct {
 }
 
 func NewService(repo *Repository) *Service {
-	return &Service{
-		repo: repo,
-	}
+	return &Service{repo: repo}
 }
 
-func (s *Service) GetFollowingFeed(ctx context.Context, userID uuid.UUID, cursorTs time.Time, cursorID uuid.UUID, limit int) ([]generated.Post, error) {
+// Cursor logic
+// We encode as Base64( "timestamp_in_rfc3339nano|uuid" )
+func encodeCursor(t time.Time, id uuid.UUID) string {
+	raw := fmt.Sprintf("%s|%s", t.Format(time.RFC3339Nano), id.String())
+	return base64.RawURLEncoding.EncodeToString([]byte(raw))
+}
+
+func decodeCursor(cursor string) (time.Time, uuid.UUID, error) {
+	if cursor == "" {
+		// Return far future to get the very first page
+		return time.Now().Add(time.Hour * 24 * 365), uuid.Nil, nil
+	}
+
+	decoded, err := base64.RawURLEncoding.DecodeString(cursor)
+	if err != nil {
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid cursor format")
+	}
+
+	parts := strings.SplitN(string(decoded), "|", 2)
+	if len(parts) != 2 {
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid cursor format")
+	}
+
+	t, err := time.Parse(time.RFC3339Nano, parts[0])
+	if err != nil {
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid cursor time")
+	}
+
+	id, err := uuid.Parse(parts[1])
+	if err != nil {
+		return time.Time{}, uuid.Nil, fmt.Errorf("invalid cursor id")
+	}
+
+	return t, id, nil
+}
+
+type PaginatedFeedResponse struct {
+	Posts      []generated.GetFeedPostsRow `json:"posts"`
+	NextCursor string                      `json:"next_cursor,omitempty"`
+}
+
+type PaginatedExploreResponse struct {
+	Posts      []generated.GetExplorePostsRow `json:"posts"`
+	NextCursor string                         `json:"next_cursor,omitempty"`
+}
+
+type PaginatedExploreCategoryResponse struct {
+	Posts      []generated.GetExplorePostsByCategoryRow `json:"posts"`
+	NextCursor string                                   `json:"next_cursor,omitempty"`
+}
+
+func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (PaginatedFeedResponse, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
-	return s.repo.GetFollowingFeed(ctx, userID, cursorTs, cursorID, int32(limit))
+	
+	t, id, err := decodeCursor(cursor)
+	if err != nil {
+		return PaginatedFeedResponse{}, err
+	}
+
+	// Fetch limit + 1 to check if there is a next page
+	rows, err := s.repo.GetFeedPosts(ctx, t, id, limit+1)
+	if err != nil {
+		return PaginatedFeedResponse{}, err
+	}
+
+	var nextCursor string
+	if len(rows) > int(limit) {
+		last := rows[limit-1]
+		nextCursor = encodeCursor(last.PublishedAt, last.ID)
+		rows = rows[:limit]
+	}
+
+	return PaginatedFeedResponse{
+		Posts:      rows,
+		NextCursor: nextCursor,
+	}, nil
 }
 
-func (s *Service) GetExploreFeed(ctx context.Context, userID uuid.UUID, requestedCategories []uuid.UUID, limit int) ([]generated.GetExploreFeedRow, error) {
+func (s *Service) GetExplore(ctx context.Context, cursor string, limit int32, categoryID *uuid.UUID) (interface{}, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
 
-	categoriesToQuery := requestedCategories
+	t, id, err := decodeCursor(cursor)
+	if err != nil {
+		return nil, err
+	}
 
-	// Cold-boot logic: if no categories were provided by the client,
-	// fetch the user's onboarding categories to power the feed.
-	if len(categoriesToQuery) == 0 {
-		onboardingCategories, err := s.repo.GetUserOnboardingCategories(ctx, userID)
-		if err == nil && len(onboardingCategories) > 0 {
-			categoriesToQuery = onboardingCategories
+	if categoryID != nil {
+		rows, err := s.repo.GetExplorePostsByCategory(ctx, *categoryID, t, id, limit+1)
+		if err != nil {
+			return nil, err
 		}
+		var nextCursor string
+		if len(rows) > int(limit) {
+			last := rows[limit-1]
+			nextCursor = encodeCursor(last.PublishedAt, last.ID)
+			rows = rows[:limit]
+		}
+		return PaginatedExploreCategoryResponse{
+			Posts:      rows,
+			NextCursor: nextCursor,
+		}, nil
 	}
 
-	return s.repo.GetExploreFeed(ctx, categoriesToQuery, int32(limit))
+	rows, err := s.repo.GetExplorePosts(ctx, t, id, limit+1)
+	if err != nil {
+		return nil, err
+	}
+	var nextCursor string
+	if len(rows) > int(limit) {
+		last := rows[limit-1]
+		nextCursor = encodeCursor(last.PublishedAt, last.ID)
+		rows = rows[:limit]
+	}
+	return PaginatedExploreResponse{
+		Posts:      rows,
+		NextCursor: nextCursor,
+	}, nil
+}
+
+func (s *Service) ListCategories(ctx context.Context) ([]generated.Category, error) {
+	return s.repo.ListCategories(ctx)
 }

@@ -2,7 +2,6 @@ package feed
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"scribes-api/internal/db/generated"
@@ -14,26 +13,37 @@ type Repository struct {
 	q *generated.Queries
 }
 
-func NewRepository(q *generated.Queries, db *sql.DB) *Repository {
-	return &Repository{q: q}
+func NewRepository(q *generated.Queries) *Repository {
+	return &Repository{
+		q: q,
+	}
 }
 
-func (r *Repository) GetFollowingFeed(ctx context.Context, followerID uuid.UUID, cursorTs time.Time, cursorID uuid.UUID, limit int32) ([]generated.Post, error) {
-	return r.q.GetFollowingFeed(ctx, generated.GetFollowingFeedParams{
-		FollowerID: followerID,
-		CursorTs:   cursorTs,
-		CursorID:   cursorID,
-		LimitCount: int32(limit),
+func (r *Repository) GetFeedPosts(ctx context.Context, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]generated.GetFeedPostsRow, error) {
+	return r.q.GetFeedPosts(ctx, generated.GetFeedPostsParams{
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
 	})
 }
 
-func (r *Repository) GetExploreFeed(ctx context.Context, categoryIDs []uuid.UUID, limit int32) ([]generated.GetExploreFeedRow, error) {
-	return r.q.GetExploreFeed(ctx, generated.GetExploreFeedParams{
-		CategoryIds: categoryIDs,
-		LimitCount:  int32(limit),
+func (r *Repository) GetExplorePosts(ctx context.Context, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]generated.GetExplorePostsRow, error) {
+	return r.q.GetExplorePosts(ctx, generated.GetExplorePostsParams{
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
 	})
 }
 
-func (r *Repository) GetUserOnboardingCategories(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
-	return r.q.GetUserOnboardingCategories(ctx, userID)
+func (r *Repository) GetExplorePostsByCategory(ctx context.Context, categoryID uuid.UUID, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]generated.GetExplorePostsByCategoryRow, error) {
+	return r.q.GetExplorePostsByCategory(ctx, generated.GetExplorePostsByCategoryParams{
+		CategoryID:  categoryID,
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
+	})
+}
+
+func (r *Repository) ListCategories(ctx context.Context) ([]generated.Category, error) {
+	return r.q.ListCategories(ctx)
 }

@@ -12,113 +12,53 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
-const getExploreFeed = `-- name: GetExploreFeed :many
-SELECT
-  p.id,
-  p.author_id,
-  p.content,
-  p.caption,
-  p.published_at,
-  (
-    SELECT COUNT(*) FROM reactions r
-    WHERE r.post_id = p.id
-    AND r.created_at > now() - INTERVAL '90 days'
-  ) +
-  (
-    SELECT COUNT(*) FROM comments c
-    WHERE c.post_id = p.id
-    AND c.is_deleted = false
-    AND c.created_at > now() - INTERVAL '90 days'
-  ) AS interaction_score
+const getExplorePosts = `-- name: GetExplorePosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
 FROM posts p
-JOIN post_categories pc ON pc.post_id = p.id
-WHERE pc.category_id = ANY($1::uuid[])
-  AND p.is_deleted = false
+JOIN users u ON p.author_id = u.id
+WHERE p.is_deleted = false 
   AND p.visibility = 'public'
-ORDER BY interaction_score DESC, p.published_at DESC
-LIMIT $2::int
-`
-
-type GetExploreFeedParams struct {
-	CategoryIds []uuid.UUID `json:"category_ids"`
-	LimitCount  int32       `json:"limit_count"`
-}
-
-type GetExploreFeedRow struct {
-	ID               uuid.UUID       `json:"id"`
-	AuthorID         uuid.UUID       `json:"author_id"`
-	Content          json.RawMessage `json:"content"`
-	Caption          sql.NullString  `json:"caption"`
-	PublishedAt      time.Time       `json:"published_at"`
-	InteractionScore int32           `json:"interaction_score"`
-}
-
-func (q *Queries) GetExploreFeed(ctx context.Context, arg GetExploreFeedParams) ([]GetExploreFeedRow, error) {
-	rows, err := q.db.QueryContext(ctx, getExploreFeed, pq.Array(arg.CategoryIds), arg.LimitCount)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetExploreFeedRow
-	for rows.Next() {
-		var i GetExploreFeedRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.AuthorID,
-			&i.Content,
-			&i.Caption,
-			&i.PublishedAt,
-			&i.InteractionScore,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getFollowingFeed = `-- name: GetFollowingFeed :many
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector 
-FROM posts p
-JOIN follows f ON p.author_id = f.followee_id
-WHERE f.follower_id = $1::uuid 
-  AND p.is_deleted = false 
-  AND p.visibility = 'public'
-  AND (p.published_at, p.id) < ($2::timestamptz, $3::uuid)
+  AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
 ORDER BY p.published_at DESC, p.id DESC
-LIMIT $4::int
+LIMIT $3
 `
 
-type GetFollowingFeedParams struct {
-	FollowerID uuid.UUID `json:"follower_id"`
-	CursorTs   time.Time `json:"cursor_ts"`
-	CursorID   uuid.UUID `json:"cursor_id"`
-	LimitCount int32     `json:"limit_count"`
+type GetExplorePostsParams struct {
+	PublishedAt time.Time `json:"published_at"`
+	ID          uuid.UUID `json:"id"`
+	Limit       int32     `json:"limit"`
 }
 
-func (q *Queries) GetFollowingFeed(ctx context.Context, arg GetFollowingFeedParams) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, getFollowingFeed,
-		arg.FollowerID,
-		arg.CursorTs,
-		arg.CursorID,
-		arg.LimitCount,
-	)
+type GetExplorePostsRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams) ([]GetExplorePostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getExplorePosts, arg.PublishedAt, arg.ID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Post
+	var items []GetExplorePostsRow
 	for rows.Next() {
-		var i Post
+		var i GetExplorePostsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.AuthorID,
@@ -131,8 +71,8 @@ func (q *Queries) GetFollowingFeed(ctx context.Context, arg GetFollowingFeedPara
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
-			&i.ServerSequence,
-			&i.SearchVector,
+			&i.AuthorHandle,
+			&i.AuthorName,
 		); err != nil {
 			return nil, err
 		}
@@ -147,25 +87,180 @@ func (q *Queries) GetFollowingFeed(ctx context.Context, arg GetFollowingFeedPara
 	return items, nil
 }
 
-const getUserOnboardingCategories = `-- name: GetUserOnboardingCategories :many
-SELECT category_id 
-FROM user_onboarding_categories 
-WHERE user_id = $1
+const getExplorePostsByCategory = `-- name: GetExplorePostsByCategory :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+JOIN post_categories pc ON p.id = pc.post_id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND pc.category_id = $1
+  AND (p.published_at < $2 OR (p.published_at = $2 AND p.id < $3))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $4
 `
 
-func (q *Queries) GetUserOnboardingCategories(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.QueryContext(ctx, getUserOnboardingCategories, userID)
+type GetExplorePostsByCategoryParams struct {
+	CategoryID  uuid.UUID `json:"category_id"`
+	PublishedAt time.Time `json:"published_at"`
+	ID          uuid.UUID `json:"id"`
+	Limit       int32     `json:"limit"`
+}
+
+type GetExplorePostsByCategoryRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) GetExplorePostsByCategory(ctx context.Context, arg GetExplorePostsByCategoryParams) ([]GetExplorePostsByCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getExplorePostsByCategory,
+		arg.CategoryID,
+		arg.PublishedAt,
+		arg.ID,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []uuid.UUID
+	var items []GetExplorePostsByCategoryRow
 	for rows.Next() {
-		var category_id uuid.UUID
-		if err := rows.Scan(&category_id); err != nil {
+		var i GetExplorePostsByCategoryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthorID,
+			&i.Content,
+			&i.Caption,
+			&i.Visibility,
+			&i.CurrentVersion,
+			&i.IsCorrection,
+			&i.CorrectsPostID,
+			&i.SermonSource,
+			&i.IsDeleted,
+			&i.PublishedAt,
+			&i.AuthorHandle,
+			&i.AuthorName,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, category_id)
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFeedPosts = `-- name: GetFeedPosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $3
+`
+
+type GetFeedPostsParams struct {
+	PublishedAt time.Time `json:"published_at"`
+	ID          uuid.UUID `json:"id"`
+	Limit       int32     `json:"limit"`
+}
+
+type GetFeedPostsRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]GetFeedPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFeedPosts, arg.PublishedAt, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFeedPostsRow
+	for rows.Next() {
+		var i GetFeedPostsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthorID,
+			&i.Content,
+			&i.Caption,
+			&i.Visibility,
+			&i.CurrentVersion,
+			&i.IsCorrection,
+			&i.CorrectsPostID,
+			&i.SermonSource,
+			&i.IsDeleted,
+			&i.PublishedAt,
+			&i.AuthorHandle,
+			&i.AuthorName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCategories = `-- name: ListCategories :many
+SELECT id, name, is_deprecated 
+FROM categories
+WHERE is_deprecated = false
+ORDER BY name ASC
+`
+
+func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, listCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.ID, &i.Name, &i.IsDeprecated); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

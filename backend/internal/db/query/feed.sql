@@ -1,41 +1,46 @@
--- name: GetFollowingFeed :many
-SELECT p.* 
+-- name: GetFeedPosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
 FROM posts p
-JOIN follows f ON p.author_id = f.followee_id
-WHERE f.follower_id = sqlc.arg(follower_id)::uuid 
-  AND p.is_deleted = false 
+JOIN users u ON p.author_id = u.id
+WHERE p.is_deleted = false 
   AND p.visibility = 'public'
-  AND (p.published_at, p.id) < (sqlc.arg(cursor_ts)::timestamptz, sqlc.arg(cursor_id)::uuid)
+  AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
 ORDER BY p.published_at DESC, p.id DESC
-LIMIT sqlc.arg(limit_count)::int;
+LIMIT $3;
 
--- name: GetExploreFeed :many
-SELECT
-  p.id,
-  p.author_id,
-  p.content,
-  p.caption,
-  p.published_at,
-  (
-    SELECT COUNT(*) FROM reactions r
-    WHERE r.post_id = p.id
-    AND r.created_at > now() - INTERVAL '90 days'
-  ) +
-  (
-    SELECT COUNT(*) FROM comments c
-    WHERE c.post_id = p.id
-    AND c.is_deleted = false
-    AND c.created_at > now() - INTERVAL '90 days'
-  ) AS interaction_score
+-- name: GetExplorePosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
 FROM posts p
-JOIN post_categories pc ON pc.post_id = p.id
-WHERE pc.category_id = ANY(sqlc.arg(category_ids)::uuid[])
-  AND p.is_deleted = false
+JOIN users u ON p.author_id = u.id
+WHERE p.is_deleted = false 
   AND p.visibility = 'public'
-ORDER BY interaction_score DESC, p.published_at DESC
-LIMIT sqlc.arg(limit_count)::int;
+  AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $3;
 
--- name: GetUserOnboardingCategories :many
-SELECT category_id 
-FROM user_onboarding_categories 
-WHERE user_id = $1;
+-- name: GetExplorePostsByCategory :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+JOIN post_categories pc ON p.id = pc.post_id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND pc.category_id = $1
+  AND (p.published_at < $2 OR (p.published_at = $2 AND p.id < $3))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $4;
+
+-- name: ListCategories :many
+SELECT id, name, is_deprecated 
+FROM categories
+WHERE is_deprecated = false
+ORDER BY name ASC;

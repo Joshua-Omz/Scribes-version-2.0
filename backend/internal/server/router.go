@@ -37,6 +37,10 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/posts/:id/versions", postHandler.ListVersions)
 	r.GET("/posts/:id/versions/:version", postHandler.GetVersion)
 
+	// Feed & Explore
+	r.GET("/explore", feedHandler.GetExplore)
+	r.GET("/categories", feedHandler.GetCategories)
+
 	// Protected routes
 	protected := r.Group("/")
 	protected.Use(middleware.ValidateJWT(jwtSecret))
@@ -48,6 +52,9 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 				"role":    claims.Role,
 			})
 		})
+
+		// Authenticated feed
+		protected.GET("/feed", feedHandler.GetFeed)
 
 		// Note endpoints
 		protected.GET("/notes", noteHandler.List)

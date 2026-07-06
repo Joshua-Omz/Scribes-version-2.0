@@ -74,7 +74,7 @@ func main() {
 	socialSvc := social.NewService(socialRepo, postRepo)
 	socialHandler := social.NewHandler(socialSvc)
 
-	feedRepo := feed.NewRepository(queries, db)
+	feedRepo := feed.NewRepository(queries)
 	feedSvc := feed.NewService(feedRepo)
 	feedHandler := feed.NewHandler(feedSvc)
 

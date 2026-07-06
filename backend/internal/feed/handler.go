@@ -3,13 +3,11 @@ package feed
 import (
 	"net/http"
 	"strconv"
-	"time"
-
-	"scribes-api/internal/middleware"
-	"scribes-api/pkg/respond"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"scribes-api/pkg/respond"
 )
 
 type Handler struct {
@@ -20,79 +18,64 @@ func NewHandler(svc *Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-func (h *Handler) GetFollowingFeed(c *gin.Context) {
-	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
-	if !ok {
-		respond.Error(c, http.StatusUnauthorized, "unauthorized")
-		return
-	}
-	userID, _ := uuid.Parse(claims.UserID)
+func (h *Handler) GetFeed(c *gin.Context) {
+	// The feed endpoint should technically be authenticated, but we handle it just like explore for now
+	// as per the implementation plan (no follows yet).
 
-	// Keyset pagination parameters
-	cursorTsStr := c.Query("cursor_ts")
-	cursorIDStr := c.Query("cursor_id")
+	cursor := c.Query("cursor")
 	limitStr := c.Query("limit")
-
-	limit, _ := strconv.Atoi(limitStr)
-	
-	// Default to now if no cursor
-	var cursorTs time.Time
-	if cursorTsStr == "" {
-		cursorTs = time.Now()
-	} else {
-		parsedTs, err := time.Parse(time.RFC3339, cursorTsStr)
-		if err == nil {
-			cursorTs = parsedTs
-		} else {
-			cursorTs = time.Now()
+	var limit int32 = 20
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
 		}
 	}
 
-	var cursorID uuid.UUID
-	if cursorIDStr == "" {
-		// Use a max UUID or something to ensure we get results before it,
-		// or if we use time mostly, the UUID is just a tiebreaker.
-		cursorID = uuid.MustParse("ffffffff-ffff-ffff-ffff-ffffffffffff")
-	} else {
-		if id, err := uuid.Parse(cursorIDStr); err == nil {
-			cursorID = id
-		} else {
-			cursorID = uuid.MustParse("ffffffff-ffff-ffff-ffff-ffffffffffff")
-		}
-	}
-
-	posts, err := h.svc.GetFollowingFeed(c.Request.Context(), userID, cursorTs, cursorID, limit)
+	res, err := h.svc.GetFeed(c.Request.Context(), cursor, limit)
 	if err != nil {
-		respond.Error(c, http.StatusInternalServerError, "failed to fetch following feed")
+		respond.Error(c, http.StatusBadRequest, "invalid request")
 		return
 	}
-	respond.JSON(c, http.StatusOK, posts)
+
+	respond.JSON(c, http.StatusOK, res)
 }
 
-func (h *Handler) GetExploreFeed(c *gin.Context) {
-	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
-	if !ok {
-		respond.Error(c, http.StatusUnauthorized, "unauthorized")
-		return
-	}
-	userID, _ := uuid.Parse(claims.UserID)
-
+func (h *Handler) GetExplore(c *gin.Context) {
+	cursor := c.Query("cursor")
 	limitStr := c.Query("limit")
-	limit, _ := strconv.Atoi(limitStr)
-
-	categoriesQuery := c.QueryArray("category_id")
-	var categoryIDs []uuid.UUID
-
-	for _, cID := range categoriesQuery {
-		if id, err := uuid.Parse(cID); err == nil {
-			categoryIDs = append(categoryIDs, id)
+	var limit int32 = 20
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
 		}
 	}
 
-	posts, err := h.svc.GetExploreFeed(c.Request.Context(), userID, categoryIDs, limit)
+	categoryStr := c.Query("category_id")
+	var categoryID *uuid.UUID
+	if categoryStr != "" {
+		id, err := uuid.Parse(categoryStr)
+		if err == nil {
+			categoryID = &id
+		} else {
+			respond.Error(c, http.StatusBadRequest, "invalid category_id")
+			return
+		}
+	}
+
+	res, err := h.svc.GetExplore(c.Request.Context(), cursor, limit, categoryID)
 	if err != nil {
-		respond.Error(c, http.StatusInternalServerError, "failed to fetch explore feed")
+		respond.Error(c, http.StatusBadRequest, "invalid request")
 		return
 	}
-	respond.JSON(c, http.StatusOK, posts)
+
+	respond.JSON(c, http.StatusOK, res)
+}
+
+func (h *Handler) GetCategories(c *gin.Context) {
+	cats, err := h.svc.ListCategories(c.Request.Context())
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to load categories")
+		return
+	}
+	respond.JSON(c, http.StatusOK, cats)
 }

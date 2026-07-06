@@ -49,3 +49,5 @@ client/ios/.symlinks/
 .vscode/
 *.swp
 *.swo
+
+node_modules/
