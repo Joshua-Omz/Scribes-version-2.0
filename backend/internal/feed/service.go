@@ -57,19 +57,21 @@ func decodeCursor(cursor string) (time.Time, uuid.UUID, error) {
 }
 
 type PaginatedFeedResponse struct {
-	Posts      []generated.GetFeedPostsRow `json:"posts"`
-	NextCursor string                      `json:"next_cursor,omitempty"`
+	Posts      []FeedPost `json:"posts"`
+	NextCursor string     `json:"next_cursor,omitempty"`
 }
 
 type PaginatedExploreResponse struct {
-	Posts      []generated.GetExplorePostsRow `json:"posts"`
-	NextCursor string                         `json:"next_cursor,omitempty"`
+	Posts      []FeedPost `json:"posts"`
+	NextCursor string     `json:"next_cursor,omitempty"`
 }
 
 type PaginatedExploreCategoryResponse struct {
-	Posts      []generated.GetExplorePostsByCategoryRow `json:"posts"`
-	NextCursor string                                   `json:"next_cursor,omitempty"`
+	Posts      []FeedPost `json:"posts"`
+	NextCursor string     `json:"next_cursor,omitempty"`
 }
+
+
 
 func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (PaginatedFeedResponse, error) {
 	if limit <= 0 || limit > 100 {
@@ -82,20 +84,20 @@ func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (Pagi
 	}
 
 	// Fetch limit + 1 to check if there is a next page
-	rows, err := s.repo.GetFeedPosts(ctx, t, id, limit+1)
+	posts, err := s.repo.GetFeedPosts(ctx, t, id, limit+1)
 	if err != nil {
 		return PaginatedFeedResponse{}, err
 	}
 
 	var nextCursor string
-	if len(rows) > int(limit) {
-		last := rows[limit-1]
+	if len(posts) > int(limit) {
+		last := posts[limit-1]
 		nextCursor = encodeCursor(last.PublishedAt, last.ID)
-		rows = rows[:limit]
+		posts = posts[:limit]
 	}
 
 	return PaginatedFeedResponse{
-		Posts:      rows,
+		Posts:      posts,
 		NextCursor: nextCursor,
 	}, nil
 }
@@ -111,34 +113,36 @@ func (s *Service) GetExplore(ctx context.Context, cursor string, limit int32, ca
 	}
 
 	if categoryID != nil {
-		rows, err := s.repo.GetExplorePostsByCategory(ctx, *categoryID, t, id, limit+1)
+		posts, err := s.repo.GetExplorePostsByCategory(ctx, *categoryID, t, id, limit+1)
 		if err != nil {
 			return nil, err
 		}
 		var nextCursor string
-		if len(rows) > int(limit) {
-			last := rows[limit-1]
+		if len(posts) > int(limit) {
+			last := posts[limit-1]
 			nextCursor = encodeCursor(last.PublishedAt, last.ID)
-			rows = rows[:limit]
+			posts = posts[:limit]
 		}
+		
 		return PaginatedExploreCategoryResponse{
-			Posts:      rows,
+			Posts:      posts,
 			NextCursor: nextCursor,
 		}, nil
 	}
 
-	rows, err := s.repo.GetExplorePosts(ctx, t, id, limit+1)
+	posts, err := s.repo.GetExplorePosts(ctx, t, id, limit+1)
 	if err != nil {
 		return nil, err
 	}
 	var nextCursor string
-	if len(rows) > int(limit) {
-		last := rows[limit-1]
+	if len(posts) > int(limit) {
+		last := posts[limit-1]
 		nextCursor = encodeCursor(last.PublishedAt, last.ID)
-		rows = rows[:limit]
+		posts = posts[:limit]
 	}
+	
 	return PaginatedExploreResponse{
-		Posts:      rows,
+		Posts:      posts,
 		NextCursor: nextCursor,
 	}, nil
 }

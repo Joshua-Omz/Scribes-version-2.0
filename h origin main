@@ -1,0 +1,149 @@
+[33mcommit 7dac8bc196a00adfa15a5e39bff8e637d583c527[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Mon Jul 6 21:02:11 2026 +0100
+
+    whatever this is
+
+[33mcommit 0bb759b4b5167280e442b3f934132ee7dc653d50[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Mon Jul 6 11:59:30 2026 +0100
+
+    Merge upstream and restore correct feed implementation
+
+[33mcommit ca44b742224b5dd22d7e559b81f5d25a1b0177e3[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Mon Jul 6 11:51:09 2026 +0100
+
+    fix: remove invalid internal/db import to fix CI build
+
+[33mcommit 274996ecb23c4adba66d804507cf1a83dbf60796[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Mon Jul 6 00:18:06 2026 +0100
+
+    fix: graceful db test skip and unused imports
+
+[33mcommit b110375022c95d4302c390bc9dfbde8713c290b2[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Sat Jul 4 23:43:45 2026 +0100
+
+    deployment ready
+
+[33mcommit 99c67010068b973dfa1c57bd0ac89b9c0520b727[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Sat Jul 4 21:38:05 2026 +0100
+
+    feat: implement social, feed, and dm backend sprints
+
+[33mcommit 881e0e64c635165dd94597d4c828aa74afdcfc53[m
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sat Jul 4 21:43:24 2026 +0100
+
+    updated ci for the latest branch
+
+[33mcommit 2f0bdb91988302073810ab1d69f855b92802654a[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Sat Jul 4 00:09:39 2026 +0100
+
+    finished sprint 3 ,post revision feature compelete
+
+[33mcommit 503fe0ff756edd36768bcdd1c8e7079859a92a3e[m
+Author: joshuaomz9 <joshuaomisanya41@gmail.com>
+Date:   Thu Apr 9 11:17:34 2026 +0100
+
+    tested all the endpoints , all good and built the core ui first for the client
+
+[33mcommit fdcef6cdaea84a1786c00f6a5e942f7ff05e904b[m
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sun Mar 15 15:28:32 2026 +0100
+
+    Refactor CI pipeline configuration and job names
+    
+    Updated CI pipeline configuration for better clarity and organization. Modified job names and added comments for better understanding.
+
+[33mcommit ed2ccde140c79753a1166dd18b4fbf9e9499b25e[m
+Merge: 0840e3b 43ec263
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sun Mar 15 15:24:21 2026 +0100
+
+    Merge pull request #6 from Joshua-Omz/copilot/setup-folder-architecture
+    
+    chore: restructure repo into scribes monorepo layout
+
+[33mcommit 43ec263755caae31cd14576a2fda55170ee6951e[m
+Author: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Date:   Sun Mar 15 14:18:55 2026 +0000
+
+    chore: restructure repo into monorepo layout (backend/, client/, docs/)
+    
+    Co-authored-by: Joshua-Omz <88328681+Joshua-Omz@users.noreply.github.com>
+
+[33mcommit 4c7049a33326d96c14a5c75aff38fac94b6818ad[m
+Author: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Date:   Sun Mar 15 14:12:27 2026 +0000
+
+    Initial plan
+
+[33mcommit 0840e3bbb9fff4252aace69bf26f127d190a5d8c[m
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sun Mar 15 14:44:21 2026 +0100
+
+    Add Docker Image CI workflow
+
+[33mcommit d4640b61a4ee8b632ea04cf33423f15d5b7561f5[m
+Merge: 87febd4 b5c6da1
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sun Mar 15 13:47:24 2026 +0100
+
+    Merge pull request #4 from Joshua-Omz/copilot/build-backend-foundation
+    
+    Bootstrap Scribes MVP: Go modular monolith backend + sprint tracking docs
+
+[33mcommit b5c6da1f2752bfd9d87ca82e49b5155ca8befcea[m
+Author: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Date:   Sun Mar 15 12:29:38 2026 +0000
+
+    Add Scribes backend foundation: Go API, migrations, sync engine, and sprint docs
+    
+    Co-authored-by: Joshua-Omz <88328681+Joshua-Omz@users.noreply.github.com>
+
+[33mcommit a2d936d4e1fe719310538df70682e78f9a9d79d2[m
+Author: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Date:   Sun Mar 15 12:19:26 2026 +0000
+
+    Initial plan
+
+[33mcommit 87febd4a671c9c46382e70fa7cab0c9a237b0c96[m
+Merge: 32e3a6b 20c69a7
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sat Mar 14 19:38:53 2026 +0100
+
+    Merge pull request #2 from Joshua-Omz/copilot/create-backend-foundation-mvp
+    
+    [WIP] Add backend foundation for MVP with delta sync engine
+
+[33mcommit 32e3a6bbbd29a042af7b48a31dff7b146f3dc6f9[m
+Merge: 3f68fe6 8f9243a
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sat Mar 14 19:36:35 2026 +0100
+
+    Merge pull request #1 from Joshua-Omz/copilot/add-note-taking-feature
+    
+    [WIP] Add private note-taking feature for users
+
+[33mcommit 20c69a779427fb701d88069c01024de8e477640a[m[33m ([m[1;31morigin/copilot/create-backend-foundation-mvp[m[33m)[m
+Author: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Date:   Sat Mar 14 18:33:00 2026 +0000
+
+    Initial plan
+
+[33mcommit 8f9243adc1b99a41ef6fe97d440203f2be639501[m
+Author: copilot-swe-agent[bot] <198982749+Copilot@users.noreply.github.com>
+Date:   Sat Mar 14 18:28:53 2026 +0000
+
+    Initial plan
+
+[33mcommit 3f68fe69be3c324757dcaf8a2c978c4275b9ebe0[m
+Author: TechNomad <88328681+Joshua-Omz@users.noreply.github.com>
+Date:   Sat Mar 14 19:28:50 2026 +0100
+
+    Initial commit
