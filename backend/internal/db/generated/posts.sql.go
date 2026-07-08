@@ -9,6 +9,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -128,13 +129,33 @@ func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector FROM posts
-WHERE id = $1 AND is_deleted = false LIMIT 1
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, u.handle AS author_handle, u.display_name AS author_name 
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.id = $1 AND p.is_deleted = false LIMIT 1
 `
 
-func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error) {
+type GetPostByIDRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	ServerSequence int64           `json:"server_sequence"`
+	SearchVector   interface{}     `json:"search_vector"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (GetPostByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getPostByID, id)
-	var i Post
+	var i GetPostByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.AuthorID,
@@ -149,25 +170,47 @@ func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error) {
 		&i.PublishedAt,
 		&i.ServerSequence,
 		&i.SearchVector,
+		&i.AuthorHandle,
+		&i.AuthorName,
 	)
 	return i, err
 }
 
 const listPostsByAuthor = `-- name: ListPostsByAuthor :many
-SELECT id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector FROM posts
-WHERE author_id = $1 AND is_deleted = false
-ORDER BY published_at DESC
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, u.handle AS author_handle, u.display_name AS author_name 
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.author_id = $1 AND p.is_deleted = false
+ORDER BY p.published_at DESC
 `
 
-func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]Post, error) {
+type ListPostsByAuthorRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	ServerSequence int64           `json:"server_sequence"`
+	SearchVector   interface{}     `json:"search_vector"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]ListPostsByAuthorRow, error) {
 	rows, err := q.db.QueryContext(ctx, listPostsByAuthor, authorID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Post
+	var items []ListPostsByAuthorRow
 	for rows.Next() {
-		var i Post
+		var i ListPostsByAuthorRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.AuthorID,
@@ -182,6 +225,8 @@ func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]
 			&i.PublishedAt,
 			&i.ServerSequence,
 			&i.SearchVector,
+			&i.AuthorHandle,
+			&i.AuthorName,
 		); err != nil {
 			return nil, err
 		}

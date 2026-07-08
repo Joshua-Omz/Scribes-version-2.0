@@ -1,0 +1,41 @@
+import 'package:dio/dio.dart';
+import 'package:scribes/core/network/api_client.dart';
+import 'package:scribes/core/network/endpoints.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final socialApiProvider = Provider((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return SocialApi(apiClient);
+});
+
+class SocialApi {
+  final Dio _dio;
+
+  SocialApi(this._dio);
+
+  Future<List<dynamic>> getReactions(String postId) async {
+    final response = await _dio.get('${Endpoints.posts}/$postId/reactions');
+    return response.data as List<dynamic>;
+  }
+
+  Future<void> react(String postId, String type) async {
+    await _dio.post('${Endpoints.posts}/$postId/reactions', data: {'type': type});
+  }
+
+  Future<void> unreact(String postId) async {
+    await _dio.delete('${Endpoints.posts}/$postId/reactions');
+  }
+
+  Future<List<dynamic>> getComments(String postId) async {
+    final response = await _dio.get('${Endpoints.posts}/$postId/comments');
+    return response.data as List<dynamic>;
+  }
+
+  Future<Map<String, dynamic>> addComment(String postId, String body, List<String> mentions) async {
+    final response = await _dio.post('${Endpoints.posts}/$postId/comments', data: {
+      'body': body,
+      'mentions': mentions,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+}

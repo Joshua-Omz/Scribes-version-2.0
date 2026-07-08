@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../posts/domain/post.dart';
 import '../domain/paginated_feed.dart';
 import 'feed_api.dart';
 import '../../../core/network/api_client.dart';
@@ -14,7 +13,16 @@ class FeedRepository {
 
   FeedRepository(this._api);
 
-  Future<PaginatedFeed> getFeed({String? cursor}) {
-    return _api.getFeed(cursor: cursor);
+  Future<PaginatedFeed> getFeed({String? cursor}) async {
+    final rawData = await _api.getFeed(cursor: cursor);
+    return _mapPaginatedFeed(rawData);
+  }
+
+  PaginatedFeed _mapPaginatedFeed(Map<String, dynamic> data) {
+    final posts = (data['posts'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    return PaginatedFeed.fromJson({
+      ...data,
+      'posts': posts,
+    });
   }
 }

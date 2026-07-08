@@ -18,6 +18,8 @@ import (
 type Post struct {
 	ID             uuid.UUID       `json:"id"`
 	AuthorID       uuid.UUID       `json:"author_id"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
 	Content        json.RawMessage `json:"content"`
 	Caption        *string         `json:"caption,omitempty"`
 	Visibility     string          `json:"visibility"`
@@ -25,11 +27,11 @@ type Post struct {
 	IsCorrection   bool            `json:"is_correction"`
 	CorrectsPostID *uuid.UUID      `json:"corrects_post_id,omitempty"`
 	SermonSource   *string         `json:"sermon_source,omitempty"`
+	IsDeleted      bool            `json:"is_deleted"`
 	PublishedAt    time.Time       `json:"published_at"`
 }
 
-// mapPost translates the raw database type into our clean domain type.
-func mapPost(dbPost generated.Post) Post {
+func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
 	var caption *string
 	if dbPost.Caption.Valid {
 		c := dbPost.Caption.String
@@ -51,6 +53,8 @@ func mapPost(dbPost generated.Post) Post {
 	return Post{
 		ID:             dbPost.ID,
 		AuthorID:       dbPost.AuthorID,
+		AuthorHandle:   dbPost.AuthorHandle,
+		AuthorName:     dbPost.AuthorName,
 		Content:        dbPost.Content,
 		Caption:        caption,
 		Visibility:     string(dbPost.Visibility),
@@ -58,6 +62,43 @@ func mapPost(dbPost generated.Post) Post {
 		IsCorrection:   dbPost.IsCorrection,
 		CorrectsPostID: correctsPostID,
 		SermonSource:   sermonSource,
+		IsDeleted:      dbPost.IsDeleted,
+		PublishedAt:    dbPost.PublishedAt,
+	}
+}
+
+func mapListPostsByAuthorRow(dbPost generated.ListPostsByAuthorRow) Post {
+	var caption *string
+	if dbPost.Caption.Valid {
+		c := dbPost.Caption.String
+		caption = &c
+	}
+
+	var sermonSource *string
+	if dbPost.SermonSource.Valid {
+		s := dbPost.SermonSource.String
+		sermonSource = &s
+	}
+
+	var correctsPostID *uuid.UUID
+	if dbPost.CorrectsPostID.Valid {
+		id := dbPost.CorrectsPostID.UUID
+		correctsPostID = &id
+	}
+
+	return Post{
+		ID:             dbPost.ID,
+		AuthorID:       dbPost.AuthorID,
+		AuthorHandle:   dbPost.AuthorHandle,
+		AuthorName:     dbPost.AuthorName,
+		Content:        dbPost.Content,
+		Caption:        caption,
+		Visibility:     string(dbPost.Visibility),
+		CurrentVersion: dbPost.CurrentVersion,
+		IsCorrection:   dbPost.IsCorrection,
+		CorrectsPostID: correctsPostID,
+		SermonSource:   sermonSource,
+		IsDeleted:      dbPost.IsDeleted,
 		PublishedAt:    dbPost.PublishedAt,
 	}
 }
@@ -114,7 +155,9 @@ func (r *Repository) CreatePost(ctx context.Context, authorID uuid.UUID, content
 	if err != nil {
 		return Post{}, err
 	}
-	return mapPost(dbPost), nil
+	
+	// Fetch the hydrated post containing author details
+	return r.GetPostByID(ctx, dbPost.ID)
 }
 
 func (r *Repository) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error) {
@@ -122,7 +165,7 @@ func (r *Repository) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error
 	if err != nil {
 		return Post{}, err
 	}
-	return mapPost(dbPost), nil
+	return mapGetPostByIDRow(dbPost), nil
 }
 
 func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]Post, error) {
@@ -133,7 +176,7 @@ func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) 
 
 	posts := make([]Post, len(dbPosts))
 	for i, dbPost := range dbPosts {
-		posts[i] = mapPost(dbPost)
+		posts[i] = mapListPostsByAuthorRow(dbPost)
 	}
 	return posts, nil
 }
@@ -161,7 +204,7 @@ func (r *Repository) UpdatePost(ctx context.Context, id, authorID uuid.UUID, con
 	if err != nil {
 		return Post{}, err
 	}
-	return mapPost(dbPost), nil
+	return r.GetPostByID(ctx, dbPost.ID)
 }
 
 func (r *Repository) DeletePost(ctx context.Context, id, authorID uuid.UUID) error {
@@ -194,7 +237,7 @@ func (r *Repository) CreateCorrectionPost(ctx context.Context, authorID uuid.UUI
 	if err != nil {
 		return Post{}, err
 	}
-	return mapPost(dbPost), nil
+	return r.GetPostByID(ctx, dbPost.ID)
 }
 
 // RevisePost performs the atomic revision flow:
@@ -242,7 +285,8 @@ func (r *Repository) RevisePost(ctx context.Context, id, authorID uuid.UUID, cur
 		return Post{}, err
 	}
 
-	return mapPost(updatedPost), nil
+	// Fetch hydrated post outside the transaction
+	return r.GetPostByID(ctx, updatedPost.ID)
 }
 
 func (r *Repository) ListVersionsByPost(ctx context.Context, postID uuid.UUID) ([]PostVersion, error) {

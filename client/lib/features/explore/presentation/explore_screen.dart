@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/scribes_post_card.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../application/explore_notifier.dart';
@@ -105,6 +105,7 @@ class ExploreScreen extends ConsumerWidget {
                           authorHandle: post.authorHandle,
                           bodyExcerpt: post.content['body'] ?? '',
                           isFeatured: isFeatured,
+                          onTap: () => context.push('/posts/${post.id}'),
                         ),
                       );
                     },

@@ -36,6 +36,10 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/posts/:id", postHandler.GetByID)
 	r.GET("/posts/:id/versions", postHandler.ListVersions)
 	r.GET("/posts/:id/versions/:version", postHandler.GetVersion)
+	
+	// Public social endpoints for posts
+	r.GET("/posts/:id/reactions", socialHandler.GetReactions)
+	r.GET("/posts/:id/comments", socialHandler.GetComments)
 
 	// Feed & Explore
 	r.GET("/explore", feedHandler.GetExplore)
@@ -88,7 +92,6 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/posts/:id/reactions", socialHandler.React)
 		protected.DELETE("/posts/:id/reactions", socialHandler.Unreact)
 
-		protected.GET("/posts/:id/comments", socialHandler.GetComments)
 		protected.POST("/posts/:id/comments", socialHandler.AddComment)
 		protected.PATCH("/comments/:id", socialHandler.PatchComment)
 

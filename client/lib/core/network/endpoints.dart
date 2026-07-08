@@ -4,5 +4,13 @@ class Endpoints {
   static const String register = '/auth/register';
   static const String login = '/auth/login';
 
-  // We will add more endpoints here in later sprints
+  // Feed
+  static const String feed = '/feed';
+  static const String explore = '/explore';
+
+  // Posts
+  static const String posts = '/posts';
+  
+  // Social
+  static const String comments = '/comments';
 }

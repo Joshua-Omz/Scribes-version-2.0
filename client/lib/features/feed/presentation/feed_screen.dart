@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/scribes_post_card.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../application/feed_notifier.dart';
@@ -50,6 +50,7 @@ class FeedScreen extends ConsumerWidget {
                     authorHandle: post.authorHandle,
                     bodyExcerpt: post.content['body'] ?? '',
                     isFeatured: false,
+                    onTap: () => context.push('/posts/${post.id}'),
                   ),
                 );
               },

@@ -7,7 +7,7 @@ class ExploreApi {
 
   ExploreApi(this._dio);
 
-  Future<PaginatedFeed> getExplore({String? cursor, int limit = 20, String? categoryId}) async {
+  Future<Map<String, dynamic>> getExplore({String? cursor, int limit = 20, String? categoryId}) async {
     final response = await _dio.get(
       '/explore',
       queryParameters: {
@@ -16,7 +16,7 @@ class ExploreApi {
         if (categoryId != null) 'category_id': categoryId,
       },
     );
-    return PaginatedFeed.fromJson(response.data);
+    return response.data;
   }
 
   Future<List<PostCategory>> getCategories() async {

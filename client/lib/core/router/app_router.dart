@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -10,6 +8,7 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/test_widgets_screen.dart';
 import '../../features/feed/presentation/feed_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
+import '../../features/posts/presentation/post_detail_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -27,9 +26,10 @@ GoRouter appRouter(Ref ref) {
       final isGoingToAuth = state.matchedLocation == '/auth';
       final isGoingToSplash = state.matchedLocation == '/splash';
       final isExplore = state.matchedLocation == '/explore';
+      final isPost = state.matchedLocation.startsWith('/posts/');
       
-      // Allow unauthenticated access to splash and explore
-      if (!isAuth && !isGoingToSplash && !isGoingToAuth && !isExplore) {
+      // Allow unauthenticated access to splash, explore, and post detail
+      if (!isAuth && !isGoingToSplash && !isGoingToAuth && !isExplore && !isPost) {
         return '/splash'; // will eventually go to auth after splash
       }
 
@@ -64,6 +64,13 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/test-widgets',
         builder: (context, state) => const TestWidgetsScreen(),
+      ),
+      GoRoute(
+        path: '/posts/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return PostDetailScreen(postId: id);
+        },
       ),
 
     ],

@@ -10,13 +10,17 @@ INSERT INTO posts (
 ) RETURNING *;
 
 -- name: GetPostByID :one
-SELECT * FROM posts
-WHERE id = $1 AND is_deleted = false LIMIT 1;
+SELECT p.*, u.handle AS author_handle, u.display_name AS author_name 
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.id = $1 AND p.is_deleted = false LIMIT 1;
 
 -- name: ListPostsByAuthor :many
-SELECT * FROM posts
-WHERE author_id = $1 AND is_deleted = false
-ORDER BY published_at DESC;
+SELECT p.*, u.handle AS author_handle, u.display_name AS author_name 
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.author_id = $1 AND p.is_deleted = false
+ORDER BY p.published_at DESC;
 
 -- name: UpdatePost :one
 UPDATE posts

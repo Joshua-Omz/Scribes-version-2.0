@@ -44,6 +44,10 @@ func (s *Service) Unreact(ctx context.Context, postID, userID uuid.UUID) error {
 	return s.repo.DeleteReaction(ctx, postID, userID)
 }
 
+func (s *Service) GetReactionCounts(ctx context.Context, postID uuid.UUID) ([]generated.GetReactionCountsRow, error) {
+	return s.repo.GetReactionCounts(ctx, postID)
+}
+
 // Comments
 func (s *Service) AddComment(ctx context.Context, postID, authorID uuid.UUID, body string, mentions []uuid.UUID) (generated.Comment, error) {
 	return s.repo.CreateComment(ctx, postID, authorID, body, mentions)

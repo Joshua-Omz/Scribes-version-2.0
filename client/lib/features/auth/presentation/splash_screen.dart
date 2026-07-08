@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/scribes_ornament_divider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -34,17 +35,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'SCRIBES',
+              'Scribes',
               style: ScribesTextStyles.displayXl.copyWith(
-                color: colors.primaryText,
-                letterSpacing: 8.0,
+                color: const Color(0xFFC0C0C0), // Silver color
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4.0,
               ),
             ),
             const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48.0),
+              child: ScribesOrnamentDivider(),
+            ),
+            const SizedBox(height: 16),
             Text(
-              'SACRED KNOWLEDGE PLATFORM',
-              style: ScribesTextStyles.labelSm.copyWith(
+              '2 Timothy 3:16-17   •   Acts 26:28',
+              style: ScribesTextStyles.labelLg.copyWith(
                 color: colors.secondaryText,
+                fontStyle: FontStyle.italic,
+                letterSpacing: 1.5,
               ),
             ),
           ],

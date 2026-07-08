@@ -108,6 +108,24 @@ func (h *Handler) Unreact(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, gin.H{"status": "unreacted"})
 }
 
+func (h *Handler) GetReactions(c *gin.Context) {
+	postID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid post id")
+		return
+	}
+
+	counts, err := h.svc.GetReactionCounts(c.Request.Context(), postID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to fetch reactions")
+		return
+	}
+	
+	// Convert array to a more friendly map format if desired, or return as is.
+	// We will just return the array of counts.
+	respond.JSON(c, http.StatusOK, counts)
+}
+
 type CommentRequest struct {
 	Body     string   `json:"body" binding:"required"`
 	Mentions []string `json:"mentions"`

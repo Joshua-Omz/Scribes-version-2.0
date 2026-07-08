@@ -6,7 +6,7 @@ class FeedApi {
 
   FeedApi(this._dio);
 
-  Future<PaginatedFeed> getFeed({String? cursor, int limit = 20}) async {
+  Future<Map<String, dynamic>> getFeed({String? cursor, int limit = 20}) async {
     final response = await _dio.get(
       '/feed',
       queryParameters: {
@@ -14,6 +14,6 @@ class FeedApi {
         'limit': limit,
       },
     );
-    return PaginatedFeed.fromJson(response.data);
+    return response.data;
   }
 }

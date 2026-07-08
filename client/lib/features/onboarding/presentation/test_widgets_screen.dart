@@ -41,9 +41,11 @@ class TestWidgetsScreen extends StatelessWidget {
 
               const Text('ScribesReactionBar:'),
               const ScribesReactionBar(
-                amenCount: 24,
-                insightCount: 12,
+                amenCount: 12,
+                insightCount: 5,
                 thoughtCount: 3,
+                onReact: _noopReact,
+                onComment: _noop,
               ),
               const SizedBox(height: 32),
 
@@ -94,4 +96,7 @@ class TestWidgetsScreen extends StatelessWidget {
       bottomNavigationBar: const ScribesBottomNav(currentIndex: 0),
     );
   }
+
+  static void _noopReact(String type) {}
+  static void _noop() {}
 }
