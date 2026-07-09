@@ -43,4 +43,9 @@ class AuthApi {
     });
     return response.data as Map<String, dynamic>;
   }
+
+  Future<Map<String, dynamic>> getMe() async {
+    final response = await _dio.get(Endpoints.me);
+    return response.data as Map<String, dynamic>;
+  }
 }

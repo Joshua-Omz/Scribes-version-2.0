@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ScribesScriptureChip extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/theme_provider.dart';
+import '../theme/scribes_text_styles.dart';
+
+class ScribesScriptureChip extends ConsumerWidget {
   final String reference;
   final VoidCallback onTap;
 
@@ -11,19 +15,19 @@ class ScribesScriptureChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = ref.watch(themeProvider);
     
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: theme.colorScheme.secondaryContainer,
+          color: colors.gold.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+            color: colors.gold.withValues(alpha: 0.3),
           ),
         ),
         child: Row(
@@ -32,13 +36,13 @@ class ScribesScriptureChip extends StatelessWidget {
             Icon(
               Icons.menu_book,
               size: 14,
-              color: theme.colorScheme.onSecondaryContainer,
+              color: colors.gold,
             ),
             const SizedBox(width: 6),
             Text(
               reference,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSecondaryContainer,
+              style: ScribesTextStyles.labelSm.copyWith(
+                color: colors.gold,
                 fontWeight: FontWeight.w600,
               ),
             ),

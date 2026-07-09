@@ -15,20 +15,17 @@ class AuthNotifier extends _$AuthNotifier {
       return null;
     }
     
-    // In a real app, you might want to fetch the user profile here using the token
-    // For now, if we have a token, we assume we're authenticated, but we don't 
-    // have the User object unless we parse the JWT or hit a /me endpoint.
-    // For v1, returning a dummy user or just null since the token exists.
-    // Actually, let's just leave it null if we don't have a /me endpoint yet, 
-    // but the state needs to know we are logged in.
-    // Let's create a minimal user since we know we're logged in.
-    return User(
-      id: 'stored-token-user', 
-      email: '', 
-      handle: '', 
-      displayName: '', 
-      createdAt: DateTime.now()
-    );
+    // Fetch the user profile from the /me endpoint
+    try {
+      final user = await repo.getMe();
+      return user;
+    } catch (e) {
+      // If fetching the profile fails (e.g., token expired/invalid on server),
+      // we might want to log out or just return null.
+      // For now, if /me fails, we assume we're not authenticated.
+      await repo.logout();
+      return null;
+    }
   }
 
   Future<void> register({

@@ -10,6 +10,7 @@ import (
 	"scribes-api/pkg/password"
 	"scribes-api/pkg/token"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -36,6 +37,10 @@ func NewService(repo *Repository, cfg Config) *Service {
 		repo: repo,
 		cfg:  cfg,
 	}
+}
+
+func (s *Service) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+	return s.repo.GetUserByID(ctx, id)
 }
 
 type RegisterInput struct {

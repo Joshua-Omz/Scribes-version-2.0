@@ -64,6 +64,32 @@ class ScribesColors extends ThemeExtension<ScribesColors> {
     border:        Color(0xFFE0E0E6),
   );
 
+  static const light = ScribesColors(
+    background:    Color(0xFFFCF9F8),
+    surface:       Color(0xFFF0EDED), // surface-container from html
+    surfaceRaised: Color(0xFFFFFFFF),
+    primaryText:   Color(0xFF1C1B1B),
+    secondaryText: Color(0xFF474740),
+    gold:          Color(0xFF735C00),
+    goldMuted:     Color(0xFFE9C349), // tertiary-fixed-dim
+    orange:        Color(0xFFBA1A1A),
+    orangeSoft:    Color(0xFFFFDAD6),
+    border:        Color(0xFF78776F),
+  );
+
+  static const dark = ScribesColors(
+    background:    Color(0xFF1A1A1A),
+    surface:       Color(0xFF242424),
+    surfaceRaised: Color(0xFF2C2C2C),
+    primaryText:   Color(0xFFE3E3E3),
+    secondaryText: Color(0xFFA1A1A1),
+    gold:          Color(0xFFE9C349),
+    goldMuted:     Color(0xFF735C00),
+    orange:        Color(0xFFFFB4AB),
+    orangeSoft:    Color(0xFF93000A),
+    border:        Color(0xFF474747),
+  );
+
   @override
   ScribesColors copyWith({
     Color? background,

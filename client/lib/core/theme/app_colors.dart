@@ -21,7 +21,7 @@ class AppColors {
   static const Color parchmentSecondaryText = Color(0xFF6B6055);
   static const Color parchmentGoldPrimary = Color(0xFF9A7020);
   static const Color parchmentGoldMuted = Color(0xFFC8B070);
-  static const Color parchmentOrangeAccent = Color(0xFFC4511A);
+  static const Color parchmentOrangeAccent = Color.fromARGB(255, 136, 53, 14);
   static const Color parchmentOrangeSoft = Color(0xFFFAEADE);
   static const Color parchmentBorder = Color(0xFFDDD5C0);
 

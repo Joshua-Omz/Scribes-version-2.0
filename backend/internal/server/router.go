@@ -49,13 +49,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	protected := r.Group("/")
 	protected.Use(middleware.ValidateJWT(jwtSecret))
 	{
-		protected.GET("/me", func(c *gin.Context) {
-			claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
-			respond.JSON(c, http.StatusOK, gin.H{
-				"user_id": claims.UserID,
-				"role":    claims.Role,
-			})
-		})
+		protected.GET("/me", authHandler.GetMe)
 
 		// Authenticated feed
 		protected.GET("/feed", feedHandler.GetFeed)

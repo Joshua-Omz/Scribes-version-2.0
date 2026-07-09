@@ -3,9 +3,11 @@ package auth
 import (
 	"net/http"
 
+	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -67,4 +69,26 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	respond.JSON(c, http.StatusOK, authResponse{User: user, Token: token})
+}
+
+func (h *Handler) GetMe(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	user, err := h.svc.GetUserByID(c.Request.Context(), userID)
+	if err != nil {
+		respond.Error(c, http.StatusNotFound, "user not found")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, user)
 }

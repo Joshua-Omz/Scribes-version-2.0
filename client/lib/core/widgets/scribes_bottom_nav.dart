@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/theme_provider.dart';
+import '../theme/scribes_text_styles.dart';
+import 'scribes_diamond_fab.dart';
 
-class ScribesBottomNav extends StatelessWidget {
+class ScribesBottomNav extends ConsumerWidget {
   final int currentIndex;
 
   const ScribesBottomNav({
@@ -20,45 +24,83 @@ class ScribesBottomNav extends StatelessWidget {
         context.go('/explore');
         break;
       case 2:
-        context.go('/notes');
+        context.go('/compose');
         break;
       case 3:
+        context.go('/insights'); // Placeholder
+        break;
+      case 4:
         context.go('/profile');
         break;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = ref.watch(themeProvider);
 
-    return NavigationBar(
-      selectedIndex: currentIndex,
-      onDestinationSelected: (index) => _onItemTapped(context, index),
-      backgroundColor: theme.colorScheme.surface,
-      indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: 'Feed',
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.bottomCenter,
+      children: [
+        Container(
+          height: 70,
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border(
+              top: BorderSide(color: colors.border),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildNavItem(context, colors, Icons.auto_stories, 'Bread', 0),
+              _buildNavItem(context, colors, Icons.explore_outlined, 'Explore', 1),
+              const SizedBox(width: 60), // Space for FAB
+              _buildNavItem(context, colors, Icons.lightbulb_outline, 'Insights', 3),
+              _buildNavItem(context, colors, Icons.person_outline, 'Profile', 4),
+            ],
+          ),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.search_outlined),
-          selectedIcon: Icon(Icons.search),
-          label: 'Explore',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.edit_note_outlined),
-          selectedIcon: Icon(Icons.edit_note),
-          label: 'Compose',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: 'Profile',
+        Positioned(
+          top: -24, // Float out of the bounds
+          child: ScribesDiamondFab(
+            icon: Icons.edit,
+            onPressed: () => _onItemTapped(context, 2),
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNavItem(BuildContext context, colors, IconData icon, String label, int index) {
+    final isSelected = currentIndex == index;
+    final color = isSelected ? colors.gold : colors.secondaryText;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onItemTapped(context, index),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: isSelected
+                    ? Border(top: BorderSide(color: colors.gold, width: 2))
+                    : null,
+              ),
+              padding: const EdgeInsets.only(top: 4),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: ScribesTextStyles.labelSm.copyWith(color: color, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

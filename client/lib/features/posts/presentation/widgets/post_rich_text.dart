@@ -28,6 +28,10 @@ class PostRichText extends StatelessWidget {
     return QuillEditor.basic(
       controller: controller,
       config: QuillEditorConfig(
+        scrollable: false,
+        autoFocus: false,
+        expands: false,
+        padding: EdgeInsets.zero,
         customStyles: DefaultStyles(
           paragraph: DefaultTextBlockStyle(
             ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),

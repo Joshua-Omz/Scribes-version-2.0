@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:scribes/core/theme/scribes_colors.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/theme_provider.dart';
+import '../theme/scribes_text_styles.dart';
 
-class ScribesReactionBar extends StatelessWidget {
+class ScribesReactionBar extends ConsumerWidget {
   final int amenCount;
   final int insightCount;
   final int thoughtCount;
   final Function(String) onReact;
   final VoidCallback onComment;
+  final List<String> userReactions;
 
   const ScribesReactionBar({
     super.key,
@@ -15,11 +18,12 @@ class ScribesReactionBar extends StatelessWidget {
     this.thoughtCount = 0,
     required this.onReact,
     required this.onComment,
+    this.userReactions = const [],
   });
 
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<ScribesColors>()!;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = ref.watch(themeProvider);
 
     return Row(
       children: [
@@ -28,6 +32,8 @@ class ScribesReactionBar extends StatelessWidget {
           count: amenCount.toString(),
           onTap: () => onReact('amen'),
           color: colors.orange,
+          isSelected: userReactions.contains('amen'),
+          colors: colors,
         ),
         const SizedBox(width: 12),
         _ReactionChip(
@@ -35,6 +41,8 @@ class ScribesReactionBar extends StatelessWidget {
           count: insightCount.toString(),
           onTap: () => onReact('insight'),
           color: colors.gold,
+          isSelected: userReactions.contains('insight'),
+          colors: colors,
         ),
         const SizedBox(width: 12),
         _ReactionChip(
@@ -42,6 +50,7 @@ class ScribesReactionBar extends StatelessWidget {
           count: thoughtCount.toString(),
           onTap: onComment,
           color: colors.primaryText,
+          colors: colors,
         ),
       ],
     );
@@ -54,6 +63,7 @@ class _ReactionChip extends StatelessWidget {
   final VoidCallback onTap;
   final Color color;
   final bool isSelected;
+  final dynamic colors;
 
   const _ReactionChip({
     required this.icon,
@@ -61,12 +71,12 @@ class _ReactionChip extends StatelessWidget {
     required this.onTap,
     required this.color,
     this.isSelected = false,
+    required this.colors,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final displayColor = isSelected ? color : color.withValues(alpha: 0.7);
+    final displayColor = isSelected ? color : colors.secondaryText;
 
     return InkWell(
       onTap: onTap,
@@ -87,7 +97,7 @@ class _ReactionChip extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               count,
-              style: theme.textTheme.labelMedium?.copyWith(color: displayColor),
+              style: ScribesTextStyles.labelLg.copyWith(color: displayColor),
             ),
           ],
         ),
