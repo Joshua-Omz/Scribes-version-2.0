@@ -149,6 +149,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
   }
 
   Future<void> publishToCloud() async {
+    await forceSave();
     final repo = ref.read(draftRepositoryProvider);
     await repo.publishDraft(state.draftId);
   }

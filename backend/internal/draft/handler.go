@@ -88,7 +88,7 @@ func (h *Handler) Create(c *gin.Context) {
 
 	var input CreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		respond.Error(c, http.StatusBadRequest, "invalid json payload")
+		respond.Error(c, http.StatusBadRequest, "invalid json payload: "+err.Error())
 		return
 	}
 
@@ -116,7 +116,7 @@ func (h *Handler) Update(c *gin.Context) {
 
 	var input CreateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		respond.Error(c, http.StatusBadRequest, "invalid json payload")
+		respond.Error(c, http.StatusBadRequest, "invalid json payload: "+err.Error())
 		return
 	}
 

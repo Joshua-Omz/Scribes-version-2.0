@@ -27,7 +27,9 @@ class ScribesConnectedPostCard extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final isAuthenticated = authState.value != null;
 
-    final reactions = reactionsState.value ?? [];
+    final reactionsStateData = reactionsState.value;
+    final reactions = reactionsStateData?.counts ?? [];
+    final userReaction = reactionsStateData?.userReaction;
     final comments = commentsState.value ?? [];
 
     final amenCount = reactions.where((r) => r.type == 'amen').fold(0, (sum, r) => sum + r.count);
@@ -49,6 +51,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
           amenCount: amenCount,
           insightCount: insightCount,
           thoughtCount: thoughtCount,
+          userReactionType: userReaction,
           onTap: () => context.push('/posts/${post.id}'),
           onComment: () {
             ScribesCommentSheet.show(context, postId: post.id);

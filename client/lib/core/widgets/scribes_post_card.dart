@@ -25,6 +25,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final VoidCallback? onTap;
   final VoidCallback? onComment;
   final void Function(String)? onReact;
+  final String? userReactionType;
 
   const ScribesPostCard({
     super.key,
@@ -44,6 +45,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     this.onTap,
     this.onComment,
     this.onReact,
+    this.userReactionType,
   });
 
   @override
@@ -162,6 +164,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               thoughtCount: widget.thoughtCount,
               onReact: widget.onReact ?? (type) {},
               onComment: widget.onComment ?? () {},
+              userReactions: widget.userReactionType != null ? [widget.userReactionType!] : [],
             )
           ],
         ),

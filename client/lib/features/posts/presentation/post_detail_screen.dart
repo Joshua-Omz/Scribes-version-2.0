@@ -184,13 +184,16 @@ class PostDetailScreen extends ConsumerWidget {
                           final reactionsState = ref.watch(postReactionsProvider(postId));
                           final commentsState = ref.watch(postCommentsProvider(postId));
 
-                          final reactions = reactionsState.value ?? [];
+                          final reactionsStateData = reactionsState.value;
+                          final reactions = reactionsStateData?.counts ?? [];
+                          final userReaction = reactionsStateData?.userReaction;
                           final comments = commentsState.value ?? [];
 
                           return ScribesReactionBar(
                             amenCount: reactions.where((r) => r.type == 'amen').fold(0, (sum, r) => sum + r.count),
                             insightCount: reactions.where((r) => r.type == 'insight').fold(0, (sum, r) => sum + r.count),
                             thoughtCount: comments.length,
+                            userReactions: userReaction != null ? [userReaction] : [],
                             onReact: (type) {
                               if (!isAuthenticated) {
                                 context.push('/auth');

@@ -13,7 +13,7 @@ part of 'post_social_providers.dart';
 final postReactionsProvider = PostReactionsNotifierFamily._();
 
 final class PostReactionsNotifierProvider
-    extends $AsyncNotifierProvider<PostReactionsNotifier, List<ReactionCount>> {
+    extends $AsyncNotifierProvider<PostReactionsNotifier, PostReactionsState> {
   PostReactionsNotifierProvider._({
     required PostReactionsNotifierFamily super.from,
     required String super.argument,
@@ -51,15 +51,15 @@ final class PostReactionsNotifierProvider
 }
 
 String _$postReactionsNotifierHash() =>
-    r'98d556916115b6419891f9f6f49d788dc197d0b3';
+    r'8000e1913f3756184a117e66a788c81f8c98112a';
 
 final class PostReactionsNotifierFamily extends $Family
     with
         $ClassFamilyOverride<
           PostReactionsNotifier,
-          AsyncValue<List<ReactionCount>>,
-          List<ReactionCount>,
-          FutureOr<List<ReactionCount>>,
+          AsyncValue<PostReactionsState>,
+          PostReactionsState,
+          FutureOr<PostReactionsState>,
           String
         > {
   PostReactionsNotifierFamily._()
@@ -79,21 +79,21 @@ final class PostReactionsNotifierFamily extends $Family
 }
 
 abstract class _$PostReactionsNotifier
-    extends $AsyncNotifier<List<ReactionCount>> {
+    extends $AsyncNotifier<PostReactionsState> {
   late final _$args = ref.$arg as String;
   String get postId => _$args;
 
-  FutureOr<List<ReactionCount>> build(String postId);
+  FutureOr<PostReactionsState> build(String postId);
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<AsyncValue<List<ReactionCount>>, List<ReactionCount>>;
+        this.ref as $Ref<AsyncValue<PostReactionsState>, PostReactionsState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<ReactionCount>>, List<ReactionCount>>,
-              AsyncValue<List<ReactionCount>>,
+              AnyNotifier<AsyncValue<PostReactionsState>, PostReactionsState>,
+              AsyncValue<PostReactionsState>,
               Object?,
               Object?
             >;

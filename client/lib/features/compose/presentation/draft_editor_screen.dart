@@ -62,11 +62,14 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.primaryText),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/drafts');
+          onPressed: () async {
+            await ref.read(composeProvider.notifier).forceSave();
+            if (context.mounted) {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/drafts');
+              }
             }
           },
         ),
@@ -127,27 +130,22 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
             child: Container(
               color: colors.background,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: TextFormField(
-                      controller: _titleController,
-                      style: ScribesTextStyles.displayXl.copyWith(color: colors.primaryText),
-                      decoration: InputDecoration(
-                        hintText: 'Title',
-                        hintStyle: ScribesTextStyles.displayXl.copyWith(color: colors.secondaryText.withValues(alpha: 0.5)),
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (val) {
-                        ref.read(composeProvider.notifier).updateTitle(val);
-                      },
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _titleController,
+                    style: ScribesTextStyles.displayXl.copyWith(color: colors.primaryText),
+                    decoration: InputDecoration(
+                      hintText: 'Title',
+                      hintStyle: ScribesTextStyles.displayXl.copyWith(color: colors.secondaryText.withValues(alpha: 0.5)),
+                      border: InputBorder.none,
                     ),
+                    onChanged: (val) {
+                      ref.read(composeProvider.notifier).updateTitle(val);
+                    },
                   ),
-                  SliverToBoxAdapter(
-                    child: const SizedBox(height: 16),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
+                  const SizedBox(height: 16),
+                  Expanded(
                     child: QuillEditor.basic(
                       controller: _controller,
                       focusNode: _focusNode,
