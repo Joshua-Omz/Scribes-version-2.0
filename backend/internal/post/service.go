@@ -19,6 +19,7 @@ type CreateInput struct {
 	Caption      *string         `json:"caption,omitempty"`
 	Visibility   *string         `json:"visibility,omitempty"`
 	SermonSource *string         `json:"sermon_source,omitempty"`
+	CategoryIDs  []uuid.UUID     `json:"category_ids,omitempty"`
 }
 
 type Service struct {
@@ -36,7 +37,19 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 		visibility = *input.Visibility
 	}
 
-	return s.repo.CreatePost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource)
+	p, err := s.repo.CreatePost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource)
+	if err != nil {
+		return Post{}, err
+	}
+
+	if len(input.CategoryIDs) > 0 {
+		err = s.repo.SetPostCategories(ctx, p.ID, input.CategoryIDs)
+		if err != nil {
+			return Post{}, err
+		}
+	}
+
+	return p, nil
 }
 
 func (s *Service) Get(ctx context.Context, id uuid.UUID) (Post, error) {

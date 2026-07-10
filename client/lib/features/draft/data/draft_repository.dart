@@ -181,4 +181,18 @@ class DraftRepository {
     
     return cloudDraft;
   }
+
+  /// Publishes a draft to the backend and removes it locally.
+  Future<Map<String, dynamic>> publishDraft(String id) async {
+    // 1. Ensure it's pushed to the cloud first
+    await pushToCloud(id);
+    
+    // 2. Call the publish endpoint
+    final postData = await _api.publishDraft(id);
+    
+    // 3. Delete the draft locally since it's now a post
+    await deleteDraftLocally(id);
+    
+    return postData;
+  }
 }

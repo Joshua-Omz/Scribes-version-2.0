@@ -132,3 +132,24 @@ func (r *Repository) DeleteDraft(ctx context.Context, id, authorID uuid.UUID) er
 		AuthorID: authorID,
 	})
 }
+
+func (r *Repository) SetDraftCategories(ctx context.Context, draftID uuid.UUID, categoryIDs []uuid.UUID) error {
+	err := r.q.ClearDraftCategories(ctx, draftID)
+	if err != nil {
+		return err
+	}
+	for _, catID := range categoryIDs {
+		err = r.q.AddDraftCategory(ctx, generated.AddDraftCategoryParams{
+			DraftID:    draftID,
+			CategoryID: catID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *Repository) GetDraftCategories(ctx context.Context, draftID uuid.UUID) ([]uuid.UUID, error) {
+	return r.q.GetDraftCategories(ctx, draftID)
+}

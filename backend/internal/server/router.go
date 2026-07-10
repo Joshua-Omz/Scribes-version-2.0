@@ -67,6 +67,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/drafts", draftHandler.Create)
 		protected.PATCH("/drafts/:id", draftHandler.Update)
 		protected.DELETE("/drafts/:id", draftHandler.Delete)
+		protected.POST("/drafts/:id/publish", draftHandler.Publish)
 
 		// Post endpoints (author-only mutations)
 		protected.GET("/posts", postHandler.List)

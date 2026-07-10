@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	"scribes-api/internal/note"
+	"scribes-api/internal/post"
 
 	"github.com/google/uuid"
 )
@@ -20,15 +21,16 @@ type CreateInput struct {
 	Content      json.RawMessage `json:"content" binding:"required"`
 	Caption      *string         `json:"caption,omitempty"`
 	SermonSource *string         `json:"sermon_source,omitempty"`
-	
+	CategoryIDs  []uuid.UUID     `json:"category_ids,omitempty"`
 }
 
 type Service struct {
-	repo *Repository
+	repo    *Repository
+	postSvc *post.Service
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo *Repository, postSvc *post.Service) *Service {
+	return &Service{repo: repo, postSvc: postSvc}
 }
 
 func (s *Service) List(ctx context.Context, authorID uuid.UUID) ([]Draft, error) {
@@ -50,7 +52,17 @@ func (s *Service) GetByID(ctx context.Context, authorID, draftID uuid.UUID) (Dra
 }
 
 func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateInput) (Draft, error) {
-	return s.repo.CreateDraft(ctx, authorID, input.Content, input.Caption, input.SermonSource)
+	d, err := s.repo.CreateDraft(ctx, authorID, input.Content, input.Caption, input.SermonSource)
+	if err != nil {
+		return Draft{}, err
+	}
+	if len(input.CategoryIDs) > 0 {
+		err = s.repo.SetDraftCategories(ctx, d.ID, input.CategoryIDs)
+		if err != nil {
+			return Draft{}, err
+		}
+	}
+	return d, nil
 }
 
 func (s *Service) Update(ctx context.Context, authorID, draftID uuid.UUID, input CreateInput) (Draft, error) {
@@ -65,7 +77,17 @@ func (s *Service) Update(ctx context.Context, authorID, draftID uuid.UUID, input
 		return Draft{}, ErrUnauthorized
 	}
 
-	return s.repo.UpdateDraft(ctx, draftID, authorID, input.Content, input.Caption, input.SermonSource)
+	d, err := s.repo.UpdateDraft(ctx, draftID, authorID, input.Content, input.Caption, input.SermonSource)
+	if err != nil {
+		return Draft{}, err
+	}
+
+	err = s.repo.SetDraftCategories(ctx, d.ID, input.CategoryIDs)
+	if err != nil {
+		return Draft{}, err
+	}
+	
+	return d, nil
 }
 
 func (s *Service) Delete(ctx context.Context, authorID, draftID uuid.UUID) error {
@@ -92,4 +114,33 @@ func (s *Service) CreateDraftFromNote(ctx context.Context, authorID uuid.UUID, n
 		return uuid.Nil, err
 	}
 	return draft.ID, nil
+}
+
+func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID) (post.Post, error) {
+	d, err := s.GetByID(ctx, authorID, draftID)
+	if err != nil {
+		return post.Post{}, err
+	}
+
+	catIDs, err := s.repo.GetDraftCategories(ctx, draftID)
+	if err != nil {
+		return post.Post{}, err
+	}
+
+	p, err := s.postSvc.Create(ctx, authorID, post.CreateInput{
+		Content:      d.Content,
+		Caption:      d.Caption,
+		SermonSource: d.SermonSource,
+		CategoryIDs:  catIDs,
+	})
+	if err != nil {
+		return post.Post{}, err
+	}
+
+	err = s.repo.DeleteDraft(ctx, draftID, authorID)
+	if err != nil {
+		return post.Post{}, err
+	}
+
+	return p, nil
 }

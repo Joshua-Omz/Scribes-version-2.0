@@ -166,3 +166,33 @@ func (h *Handler) Delete(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
+
+func (h *Handler) Publish(c *gin.Context) {
+	authorID, ok := getAuthorID(c)
+	if !ok {
+		return
+	}
+
+	idParam := c.Param("id")
+	draftID, err := uuid.Parse(idParam)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid draft id")
+		return
+	}
+
+	post, err := h.svc.Publish(c.Request.Context(), authorID, draftID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			respond.Error(c, http.StatusNotFound, "draft not found")
+			return
+		}
+		if errors.Is(err, ErrUnauthorized) {
+			respond.Error(c, http.StatusForbidden, "unauthorized to publish this draft")
+			return
+		}
+		respond.Error(c, http.StatusInternalServerError, "failed to publish draft")
+		return
+	}
+
+	respond.JSON(c, http.StatusCreated, post)
+}

@@ -36,4 +36,9 @@ class DraftApi {
   Future<void> deleteDraft(String id) async {
     await _dio.delete('${Endpoints.drafts}/$id');
   }
+
+  Future<Map<String, dynamic>> publishDraft(String id) async {
+    final response = await _dio.post('${Endpoints.drafts}/$id/publish');
+    return response.data as Map<String, dynamic>;
+  }
 }

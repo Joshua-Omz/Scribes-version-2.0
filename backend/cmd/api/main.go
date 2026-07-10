@@ -53,18 +53,18 @@ func main() {
 	})
 	authHandler := auth.NewHandler(authSvc)
 
+	postRepo := post.NewRepository(queries, db)
+	postSvc := post.NewService(postRepo)
+	postHandler := post.NewHandler(postSvc)
+
 	draftRepo := draft.NewRepository(queries)
-	draftSvc := draft.NewService(draftRepo)
+	draftSvc := draft.NewService(draftRepo, postSvc)
 	draftHandler := draft.NewHandler(draftSvc)
 
 	noteRepo := note.NewRepository(queries)
 	// We pass draftSvc so that the promote endpoint can create drafts.
 	noteSvc := note.NewService(noteRepo, draftSvc)
 	noteHandler := note.NewHandler(noteSvc)
-
-	postRepo := post.NewRepository(queries, db)
-	postSvc := post.NewService(postRepo)
-	postHandler := post.NewHandler(postSvc)
 
 	syncRepo := sync.NewRepository(queries)
 	syncSvc := sync.NewService(syncRepo)

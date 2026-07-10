@@ -312,3 +312,24 @@ func (r *Repository) GetVersionByPostAndNumber(ctx context.Context, postID uuid.
 	}
 	return mapPostVersion(dbVersion), nil
 }
+
+func (r *Repository) SetPostCategories(ctx context.Context, postID uuid.UUID, categoryIDs []uuid.UUID) error {
+	err := r.q.ClearPostCategories(ctx, postID)
+	if err != nil {
+		return err
+	}
+	for _, catID := range categoryIDs {
+		err = r.q.AddPostCategory(ctx, generated.AddPostCategoryParams{
+			PostID:     postID,
+			CategoryID: catID,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *Repository) GetPostCategories(ctx context.Context, postID uuid.UUID) ([]uuid.UUID, error) {
+	return r.q.GetPostCategories(ctx, postID)
+}
