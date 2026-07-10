@@ -42,6 +42,7 @@ class DraftRepository {
         caption: Value(caption),
         sermonSource: Value(sermonSource),
         scriptureTags: Value(tagsJson),
+        isSynced: const Value(false),
         createdAt: Value(now), // Ideally we only set this on insert, but update works for now
         updatedAt: Value(now),
       ),
@@ -161,15 +162,23 @@ class DraftRepository {
       'scripture_tags': local.scriptureTags,
     };
 
+    domain.Draft cloudDraft;
     try {
       // Try update first
       final data = await _api.updateDraft(id, payload);
-      return domain.Draft.fromJson(data);
+      cloudDraft = domain.Draft.fromJson(data);
     } catch (e) {
       // If 404, create it
       // In a real app we'd check status code
       final data = await _api.createDraft(payload);
-      return domain.Draft.fromJson(data);
+      cloudDraft = domain.Draft.fromJson(data);
     }
+    
+    // Mark as synced locally
+    await (_db.update(_db.drafts)..where((t) => t.id.equals(id))).write(
+      const DraftsCompanion(isSynced: Value(true)),
+    );
+    
+    return cloudDraft;
   }
 }

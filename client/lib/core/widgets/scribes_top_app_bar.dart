@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
-import '../theme/scribes_colors.dart';
+
 import 'scribes_icon_button.dart';
 
 class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -28,7 +27,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   child: Text(
                     'Scribes',
                     style: ScribesTextStyles.displayMd.copyWith(
-                      color: colors.gold,
+                      color: colors.primaryText,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2.0,
                     ),
@@ -38,13 +37,6 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ScribesIconButton(
-                    icon: Icons.edit_document,
-                    onPressed: () {
-                      context.push('/drafts');
-                    },
-                    color: colors.secondaryText,
-                  ),
                   const SizedBox(width: 8),
                   ScribesIconButton(
                     icon: Icons.notifications_none_outlined,

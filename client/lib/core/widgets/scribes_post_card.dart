@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
 import 'scribes_scripture_chip.dart';
-import 'package:intl/intl.dart';
+
 import 'scribes_reaction_bar.dart';
 import 'scribes_ornament_divider.dart';
 import 'scribes_author_header.dart';

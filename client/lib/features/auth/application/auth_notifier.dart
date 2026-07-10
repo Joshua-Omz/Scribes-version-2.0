@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
+import '../../sync/application/sync_service.dart';
 
 part 'auth_notifier.g.dart';
 
@@ -18,6 +19,8 @@ class AuthNotifier extends _$AuthNotifier {
     // Fetch the user profile from the /me endpoint
     try {
       final user = await repo.getMe();
+      // Trigger sync in background
+      _triggerSync();
       return user;
     } catch (e) {
       // If fetching the profile fails (e.g., token expired/invalid on server),
@@ -26,6 +29,18 @@ class AuthNotifier extends _$AuthNotifier {
       await repo.logout();
       return null;
     }
+  }
+
+  void _triggerSync() {
+    // Fire and forget
+    Future.microtask(() async {
+      try {
+        final syncService = ref.read(syncServiceProvider);
+        await syncService.sync();
+      } catch (e) {
+        print('Background sync failed: \$e');
+      }
+    });
   }
 
   Future<void> register({
@@ -37,12 +52,14 @@ class AuthNotifier extends _$AuthNotifier {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
-      return await repo.register(
+      final user = await repo.register(
         email: email,
         handle: handle,
         displayName: displayName,
         password: password,
       );
+      _triggerSync();
+      return user;
     });
   }
 
@@ -53,7 +70,9 @@ class AuthNotifier extends _$AuthNotifier {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
-      return await repo.login(email: email, password: password);
+      final user = await repo.login(email: email, password: password);
+      _triggerSync();
+      return user;
     });
   }
 

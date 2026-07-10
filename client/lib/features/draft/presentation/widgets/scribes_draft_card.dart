@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/theme/scribes_text_styles.dart';
-import '../../../../core/theme/scribes_colors.dart';
+
 import '../../domain/draft.dart';
 
 class ScribesDraftCard extends ConsumerWidget {

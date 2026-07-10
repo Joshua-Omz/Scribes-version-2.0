@@ -113,7 +113,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
             delegate: ScribesTabBarDelegate(
               child: ScribesTabBar(
                 selectedIndex: _selectedTabIndex,
-                tabs: const ['POSTS', 'DRAFTS', 'SAVED'],
+                tabs: const ['Posts', 'Drafts', 'Saved'],
                 onTabChanged: (index) {
                   setState(() {
                     _selectedTabIndex = index;

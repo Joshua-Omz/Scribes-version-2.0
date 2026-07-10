@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../feed/domain/paginated_feed.dart';
+
 import '../domain/category.dart';
 
 class ExploreApi {
