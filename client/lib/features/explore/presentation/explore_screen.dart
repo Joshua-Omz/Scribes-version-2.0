@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/widgets/scribes_post_card.dart';
+
+import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
+import '../../../core/widgets/scribes_icon_button.dart';
+import '../../../core/theme/theme_provider.dart';
+import '../../../core/theme/scribes_text_styles.dart';
 import '../application/explore_notifier.dart';
 
 class ExploreScreen extends ConsumerWidget {
@@ -10,119 +14,212 @@ class ExploreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final colors = ref.watch(themeProvider);
     final categoriesState = ref.watch(categoriesProvider);
     final postsState = ref.watch(explorePostsProvider);
     final selectedCategory = ref.watch(exploreSelectedCategoryProvider);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Explore', style: TextStyle(fontFamily: 'CormorantGaramond', fontSize: 24, fontWeight: FontWeight.w600)),
-        centerTitle: false,
-        backgroundColor: theme.colorScheme.surface,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Search not implemented in v1 MVP
-            },
-          )
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Categories Row
-          categoriesState.when(
-            data: (categories) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    ChoiceChip(
-                      label: const Text('All'),
-                      selected: selectedCategory == null,
-                      onSelected: (selected) {
-                        if (selected) {
-                          ref.read(exploreSelectedCategoryProvider.notifier).select(null);
-                        }
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    ...categories.map((cat) => Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: ChoiceChip(
-                        label: Text(cat.name),
-                        selected: selectedCategory == cat.id,
-                        onSelected: (selected) {
-                          ref.read(exploreSelectedCategoryProvider.notifier).select(selected ? cat.id : null);
-                        },
-                      ),
-                    )),
-                  ],
+      backgroundColor: colors.background,
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(explorePostsProvider.notifier).refresh(),
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: colors.background,
+              surfaceTintColor: Colors.transparent,
+              floating: true,
+              snap: true,
+              elevation: 0,
+              centerTitle: false,
+              title: Text(
+                'Explore',
+                style: ScribesTextStyles.displayMd.copyWith(
+                  color: colors.primaryText,
                 ),
-              );
-            },
-            loading: () => const SizedBox(height: 50, child: Center(child: CircularProgressIndicator())),
-            error: (e, st) => const SizedBox(height: 50, child: Center(child: Text('Failed to load categories'))),
-          ),
-          
-          const Divider(),
+              ),
+              actions: [
+                ScribesIconButton(
+                  icon: Icons.search_outlined,
+                  color: colors.secondaryText,
+                  onPressed: () {
+                    // Search not implemented in v1 MVP
+                  },
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
+            
+            // Categories Sticky Header
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _CategoryHeaderDelegate(
+                height: 56.0,
+                backgroundColor: colors.background,
+                child: categoriesState.when(
+                  data: (categories) {
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      itemCount: categories.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          // "All" chip
+                          return _buildCategoryChip(
+                            context: context,
+                            label: 'All',
+                            isSelected: selectedCategory == null,
+                            colors: colors,
+                            onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(null),
+                          );
+                        }
+                        final cat = categories[index - 1];
+                        return _buildCategoryChip(
+                          context: context,
+                          label: cat.name,
+                          isSelected: selectedCategory == cat.id,
+                          colors: colors,
+                          onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(cat.id),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => Center(child: Text('Error', style: TextStyle(color: colors.primaryText))),
+                ),
+              ),
+            ),
 
-          // Posts Feed
-          Expanded(
-            child: postsState.when(
+            // Divider below sticky header
+            SliverToBoxAdapter(
+              child: Divider(
+                color: colors.border,
+                height: 1,
+                thickness: 1,
+              ),
+            ),
+
+            // Posts Feed
+            postsState.when(
               data: (posts) {
                 if (posts.isEmpty) {
-                  return const Center(child: Text('No posts found.'));
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Text(
+                        'No posts found.',
+                        style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                      ),
+                    ),
+                  );
                 }
 
-                return RefreshIndicator(
-                  onRefresh: () => ref.read(explorePostsProvider.notifier).refresh(),
-                  child: ListView.builder(
-                    itemCount: posts.length + (ref.read(explorePostsProvider.notifier).hasMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == posts.length) {
-                        ref.read(explorePostsProvider.notifier).loadMore();
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(child: CircularProgressIndicator()),
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == posts.length) {
+                          ref.read(explorePostsProvider.notifier).loadMore();
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+
+                        final post = posts[index];
+                        final isFeatured = index == 0 && selectedCategory == null;
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: ScribesConnectedPostCard(
+                            post: post,
+                            isFeatured: isFeatured,
+                          ),
                         );
-                      }
-
-                      final post = posts[index];
-                      // Top post is featured
-                      final isFeatured = index == 0 && selectedCategory == null;
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        child: ScribesPostCard(
-                          title: post.content['title'] ?? 'Untitled',
-                          authorName: post.authorName,
-                          authorHandle: post.authorHandle,
-                          bodyExcerpt: post.content['body'] ?? '',
-                          caption: post.caption,
-                          sermonSource: post.sermonSource?.displayTitle,
-                          isCorrection: post.isCorrection,
-                          publishedAt: post.publishedAt,
-                          isFeatured: isFeatured,
-                          onTap: () => context.push('/posts/${post.id}'),
-                        ),
-                      );
-                    },
+                      },
+                      childCount: posts.length + (ref.read(explorePostsProvider.notifier).hasMore ? 1 : 0),
+                    ),
                   ),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Error: $e')),
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, st) => SliverFillRemaining(
+                child: Center(
+                  child: Text('Error: \$e', style: TextStyle(color: colors.primaryText)),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: const ScribesBottomNav(currentIndex: 1),
     );
+  }
+
+  Widget _buildCategoryChip({
+    required BuildContext context,
+    required String label,
+    required bool isSelected,
+    required dynamic colors,
+    required VoidCallback onSelected,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: GestureDetector(
+        onTap: onSelected,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.primaryText : colors.surfaceRaised,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? colors.primaryText : colors.border,
+            ),
+          ),
+          child: Text(
+            label,
+            style: ScribesTextStyles.labelLg.copyWith(
+              color: isSelected ? colors.surface : colors.secondaryText,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+  final Color backgroundColor;
+
+  _CategoryHeaderDelegate({
+    required this.child,
+    required this.height,
+    required this.backgroundColor,
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: backgroundColor,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
+    return oldDelegate.child != child ||
+        oldDelegate.height != height ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }

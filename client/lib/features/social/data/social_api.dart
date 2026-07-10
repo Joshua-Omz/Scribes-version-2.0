@@ -15,6 +15,7 @@ class SocialApi {
 
   Future<List<dynamic>> getReactions(String postId) async {
     final response = await _dio.get('${Endpoints.posts}/$postId/reactions');
+    if (response.data == null) return [];
     return response.data as List<dynamic>;
   }
 
@@ -28,6 +29,7 @@ class SocialApi {
 
   Future<List<dynamic>> getComments(String postId) async {
     final response = await _dio.get('${Endpoints.posts}/$postId/comments');
+    if (response.data == null) return [];
     return response.data as List<dynamic>;
   }
 

@@ -44,7 +44,7 @@ class FeedRepository {
     try {
       contentDecoded = jsonDecode(record.content);
     } catch (_) {
-      contentDecoded = {'body': []};
+      contentDecoded = {'body': [], 'excerpt': '', 'title': 'Untitled'};
     }
 
     dynamic sermonDecoded;

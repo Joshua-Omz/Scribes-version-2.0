@@ -24,16 +24,9 @@ class ScribesDiamondFab extends ConsumerWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: colors.gold,
+            color: colors.primaryText,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: colors.goldMuted, width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: colors.gold.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: Transform.rotate(
             angle: -45 * 3.1415927 / 180,
