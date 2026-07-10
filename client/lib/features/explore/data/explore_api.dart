@@ -16,12 +16,16 @@ class ExploreApi {
         if (categoryId != null) 'category_id': categoryId,
       },
     );
-    return response.data;
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return {'posts': []};
+    return data as Map<String, dynamic>;
   }
 
   Future<List<PostCategory>> getCategories() async {
     final response = await _dio.get('/categories');
-    final List data = response.data;
-    return data.map((json) => PostCategory.fromJson(json)).toList();
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return [];
+    final List listData = data as List;
+    return listData.map((json) => PostCategory.fromJson(json)).toList();
   }
 }

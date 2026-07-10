@@ -32,6 +32,12 @@ class PostRichText extends StatelessWidget {
         autoFocus: false,
         expands: false,
         padding: EdgeInsets.zero,
+        customStyleBuilder: (Attribute attribute) {
+          if (attribute.key == 'scripture') {
+            return TextStyle(color: colors.gold, fontStyle: FontStyle.italic);
+          }
+          return const TextStyle();
+        },
         customStyles: DefaultStyles(
           paragraph: DefaultTextBlockStyle(
             ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),

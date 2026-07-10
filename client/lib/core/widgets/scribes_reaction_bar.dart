@@ -25,40 +25,47 @@ class ScribesReactionBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
 
-    return Row(
-      children: [
-        _ReactionChip(
-          icon: Icons.local_fire_department_outlined,
-          count: amenCount.toString(),
-          onTap: () => onReact('amen'),
-          color: colors.orange,
-          isSelected: userReactions.contains('amen'),
-          colors: colors,
-        ),
-        const SizedBox(width: 12),
-        _ReactionChip(
-          icon: Icons.lightbulb_outline,
-          count: insightCount.toString(),
-          onTap: () => onReact('insight'),
-          color: colors.gold,
-          isSelected: userReactions.contains('insight'),
-          colors: colors,
-        ),
-        const SizedBox(width: 12),
-        _ReactionChip(
-          icon: Icons.chat_bubble_outline,
-          count: thoughtCount.toString(),
-          onTap: onComment,
-          color: colors.primaryText,
-          colors: colors,
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _ReactionChip(
+            icon: Icons.local_fire_department_outlined,
+            label: 'Amen',
+            count: amenCount.toString(),
+            onTap: () => onReact('amen'),
+            color: colors.orange,
+            isSelected: userReactions.contains('amen'),
+            colors: colors,
+          ),
+          const SizedBox(width: 12),
+          _ReactionChip(
+            icon: Icons.lightbulb_outline,
+            label: 'Insight',
+            count: insightCount.toString(),
+            onTap: () => onReact('insight'),
+            color: colors.gold,
+            isSelected: userReactions.contains('insight'),
+            colors: colors,
+          ),
+          const SizedBox(width: 12),
+          _ReactionChip(
+            icon: Icons.chat_bubble_outline,
+            label: 'Thoughts',
+            count: thoughtCount.toString(),
+            onTap: onComment,
+            color: colors.primaryText,
+            colors: colors,
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _ReactionChip extends StatelessWidget {
   final IconData icon;
+  final String label;
   final String count;
   final VoidCallback onTap;
   final Color color;
@@ -67,6 +74,7 @@ class _ReactionChip extends StatelessWidget {
 
   const _ReactionChip({
     required this.icon,
+    required this.label,
     required this.count,
     required this.onTap,
     required this.color,
@@ -96,7 +104,7 @@ class _ReactionChip extends StatelessWidget {
             Icon(icon, size: 18, color: displayColor),
             const SizedBox(width: 6),
             Text(
-              count,
+              '$label $count',
               style: ScribesTextStyles.labelLg.copyWith(color: displayColor),
             ),
           ],

@@ -6,10 +6,10 @@ class ScribesTabBarDelegate extends SliverPersistentHeaderDelegate {
   ScribesTabBarDelegate({required this.child});
 
   @override
-  double get minExtent => 48.0;
+  double get minExtent => 56.0;
 
   @override
-  double get maxExtent => 48.0;
+  double get maxExtent => 56.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {

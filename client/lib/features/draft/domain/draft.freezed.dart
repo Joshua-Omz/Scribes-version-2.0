@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Draft {
 
- String get id;@JsonKey(name: 'author_id') String get authorId; Map<String, dynamic> get content; String? get caption;@JsonKey(name: 'sermon_source') String? get sermonSource;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ String get id;@JsonKey(name: 'author_id') String get authorId;@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> get content; String? get caption;@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? get sermonSource;@JsonKey(name: 'scripture_tags') List<String> get scriptureTags;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of Draft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DraftCopyWith<Draft> get copyWith => _$DraftCopyWithImpl<Draft>(this as Draft, 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Draft&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Draft&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other.scriptureTags, scriptureTags)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(content),caption,sermonSource,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(content),caption,sermonSource,const DeepCollectionEquality().hash(scriptureTags),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Draft(id: $id, authorId: $authorId, content: $content, caption: $caption, sermonSource: $sermonSource, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Draft(id: $id, authorId: $authorId, content: $content, caption: $caption, sermonSource: $sermonSource, scriptureTags: $scriptureTags, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,11 +48,11 @@ abstract mixin class $DraftCopyWith<$Res>  {
   factory $DraftCopyWith(Draft value, $Res Function(Draft) _then) = _$DraftCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'author_id') String authorId, Map<String, dynamic> content, String? caption,@JsonKey(name: 'sermon_source') String? sermonSource,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'author_id') String authorId,@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> content, String? caption,@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,@JsonKey(name: 'scripture_tags') List<String> scriptureTags,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
-
+$SermonSourceCopyWith<$Res>? get sermonSource;
 
 }
 /// @nodoc
@@ -65,19 +65,32 @@ class _$DraftCopyWithImpl<$Res>
 
 /// Create a copy of Draft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? sermonSource = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? sermonSource = freezed,Object? scriptureTags = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>,caption: freezed == caption ? _self.caption : caption // ignore: cast_nullable_to_non_nullable
 as String?,sermonSource: freezed == sermonSource ? _self.sermonSource : sermonSource // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as SermonSource?,scriptureTags: null == scriptureTags ? _self.scriptureTags : scriptureTags // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
+/// Create a copy of Draft
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SermonSourceCopyWith<$Res>? get sermonSource {
+    if (_self.sermonSource == null) {
+    return null;
+  }
 
+  return $SermonSourceCopyWith<$Res>(_self.sermonSource!, (value) {
+    return _then(_self.copyWith(sermonSource: value));
+  });
+}
 }
 
 
@@ -159,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId,  Map<String, dynamic> content,  String? caption, @JsonKey(name: 'sermon_source')  String? sermonSource, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_tags')  List<String> scriptureTags, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Draft() when $default != null:
-return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermonSource,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermonSource,_that.scriptureTags,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -180,10 +193,10 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermon
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId,  Map<String, dynamic> content,  String? caption, @JsonKey(name: 'sermon_source')  String? sermonSource, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_tags')  List<String> scriptureTags, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Draft():
-return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermonSource,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermonSource,_that.scriptureTags,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +213,10 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermon
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'author_id')  String authorId,  Map<String, dynamic> content,  String? caption, @JsonKey(name: 'sermon_source')  String? sermonSource, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_tags')  List<String> scriptureTags, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Draft() when $default != null:
-return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermonSource,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermonSource,_that.scriptureTags,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -215,20 +228,27 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.sermon
 @JsonSerializable()
 
 class _Draft implements Draft {
-  const _Draft({required this.id, @JsonKey(name: 'author_id') required this.authorId, required final  Map<String, dynamic> content, this.caption, @JsonKey(name: 'sermon_source') this.sermonSource, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _content = content;
+  const _Draft({required this.id, @JsonKey(name: 'author_id') required this.authorId, @JsonKey(fromJson: _contentFromJson) required final  Map<String, dynamic> content, this.caption, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) this.sermonSource, @JsonKey(name: 'scripture_tags') final  List<String> scriptureTags = const [], @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _content = content,_scriptureTags = scriptureTags;
   factory _Draft.fromJson(Map<String, dynamic> json) => _$DraftFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'author_id') final  String authorId;
  final  Map<String, dynamic> _content;
-@override Map<String, dynamic> get content {
+@override@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> get content {
   if (_content is EqualUnmodifiableMapView) return _content;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_content);
 }
 
 @override final  String? caption;
-@override@JsonKey(name: 'sermon_source') final  String? sermonSource;
+@override@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) final  SermonSource? sermonSource;
+ final  List<String> _scriptureTags;
+@override@JsonKey(name: 'scripture_tags') List<String> get scriptureTags {
+  if (_scriptureTags is EqualUnmodifiableListView) return _scriptureTags;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_scriptureTags);
+}
+
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
@@ -245,16 +265,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Draft&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Draft&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other._scriptureTags, _scriptureTags)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(_content),caption,sermonSource,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(_content),caption,sermonSource,const DeepCollectionEquality().hash(_scriptureTags),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Draft(id: $id, authorId: $authorId, content: $content, caption: $caption, sermonSource: $sermonSource, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Draft(id: $id, authorId: $authorId, content: $content, caption: $caption, sermonSource: $sermonSource, scriptureTags: $scriptureTags, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -265,11 +285,11 @@ abstract mixin class _$DraftCopyWith<$Res> implements $DraftCopyWith<$Res> {
   factory _$DraftCopyWith(_Draft value, $Res Function(_Draft) _then) = __$DraftCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'author_id') String authorId, Map<String, dynamic> content, String? caption,@JsonKey(name: 'sermon_source') String? sermonSource,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ String id,@JsonKey(name: 'author_id') String authorId,@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> content, String? caption,@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,@JsonKey(name: 'scripture_tags') List<String> scriptureTags,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
-
+@override $SermonSourceCopyWith<$Res>? get sermonSource;
 
 }
 /// @nodoc
@@ -282,20 +302,33 @@ class __$DraftCopyWithImpl<$Res>
 
 /// Create a copy of Draft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? sermonSource = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? sermonSource = freezed,Object? scriptureTags = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Draft(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,content: null == content ? _self._content : content // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>,caption: freezed == caption ? _self.caption : caption // ignore: cast_nullable_to_non_nullable
 as String?,sermonSource: freezed == sermonSource ? _self.sermonSource : sermonSource // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as SermonSource?,scriptureTags: null == scriptureTags ? _self._scriptureTags : scriptureTags // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
 
+/// Create a copy of Draft
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$SermonSourceCopyWith<$Res>? get sermonSource {
+    if (_self.sermonSource == null) {
+    return null;
+  }
 
+  return $SermonSourceCopyWith<$Res>(_self.sermonSource!, (value) {
+    return _then(_self.copyWith(sermonSource: value));
+  });
+}
 }
 
 // dart format on

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
 import 'package:scribes/features/posts/application/post_detail_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class VersionHistorySheet extends ConsumerWidget {
   final String postId;
@@ -39,7 +40,7 @@ class VersionHistorySheet extends ConsumerWidget {
                 Text('Version History', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
                 IconButton(
                   icon: Icon(Icons.close, color: colors.primaryText),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.pop(),
                 ),
               ],
             ),

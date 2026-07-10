@@ -10,7 +10,7 @@ abstract class Comment with _$Comment {
     @JsonKey(name: 'post_id') required String postId,
     @JsonKey(name: 'author_id') required String authorId,
     required String body,
-    List<String>? mentions,
+    @Default([]) List<String> mentions,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'is_hidden') required bool isHidden,
     @JsonKey(name: 'is_deleted') required bool isDeleted,

@@ -11,9 +11,9 @@ _Comment _$CommentFromJson(Map<String, dynamic> json) => _Comment(
   postId: json['post_id'] as String,
   authorId: json['author_id'] as String,
   body: json['body'] as String,
-  mentions: (json['mentions'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
+  mentions:
+      (json['mentions'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   createdAt: DateTime.parse(json['created_at'] as String),
   isHidden: json['is_hidden'] as bool,
   isDeleted: json['is_deleted'] as bool,

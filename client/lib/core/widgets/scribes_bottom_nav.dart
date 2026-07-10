@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
-import 'scribes_diamond_fab.dart';
+
 
 class ScribesBottomNav extends ConsumerWidget {
   final int currentIndex;
@@ -24,7 +24,7 @@ class ScribesBottomNav extends ConsumerWidget {
         context.go('/explore');
         break;
       case 2:
-        context.go('/compose');
+        context.push('/compose');
         break;
       case 3:
         context.go('/insights'); // Placeholder
@@ -56,20 +56,13 @@ class ScribesBottomNav extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildNavItem(context, colors, Icons.auto_stories, 'Bread', 0),
-              _buildNavItem(context, colors, Icons.explore_outlined, 'Explore', 1),
-              const SizedBox(width: 60), // Space for FAB
+              _buildNavItem(context, colors, Icons.search, 'search', 1),
               _buildNavItem(context, colors, Icons.lightbulb_outline, 'Insights', 3),
               _buildNavItem(context, colors, Icons.person_outline, 'Profile', 4),
             ],
           ),
         ),
-        Positioned(
-          top: -24, // Float out of the bounds
-          child: ScribesDiamondFab(
-            icon: Icons.edit,
-            onPressed: () => _onItemTapped(context, 2),
-          ),
-        ),
+  
       ],
     );
   }

@@ -14,6 +14,8 @@ class FeedApi {
         'limit': limit,
       },
     );
-    return response.data;
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return {'posts': []};
+    return data as Map<String, dynamic>;
   }
 }

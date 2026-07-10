@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Comment {
 
- String get id;@JsonKey(name: 'post_id') String get postId;@JsonKey(name: 'author_id') String get authorId; String get body; List<String>? get mentions;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'is_hidden') bool get isHidden;@JsonKey(name: 'is_deleted') bool get isDeleted;
+ String get id;@JsonKey(name: 'post_id') String get postId;@JsonKey(name: 'author_id') String get authorId; String get body; List<String> get mentions;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'is_hidden') bool get isHidden;@JsonKey(name: 'is_deleted') bool get isDeleted;
 /// Create a copy of Comment
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $CommentCopyWith<$Res>  {
   factory $CommentCopyWith(Comment value, $Res Function(Comment) _then) = _$CommentCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body, List<String>? mentions,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_hidden') bool isHidden,@JsonKey(name: 'is_deleted') bool isDeleted
+ String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body, List<String> mentions,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_hidden') bool isHidden,@JsonKey(name: 'is_deleted') bool isDeleted
 });
 
 
@@ -65,14 +65,14 @@ class _$CommentCopyWithImpl<$Res>
 
 /// Create a copy of Comment
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? mentions = freezed,Object? createdAt = null,Object? isHidden = null,Object? isDeleted = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? mentions = null,Object? createdAt = null,Object? isHidden = null,Object? isDeleted = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,postId: null == postId ? _self.postId : postId // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
-as String,mentions: freezed == mentions ? _self.mentions : mentions // ignore: cast_nullable_to_non_nullable
-as List<String>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,mentions: null == mentions ? _self.mentions : mentions // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isHidden: null == isHidden ? _self.isHidden : isHidden // ignore: cast_nullable_to_non_nullable
 as bool,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,
@@ -160,7 +160,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body,  List<String>? mentions, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_hidden')  bool isHidden, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body,  List<String> mentions, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_hidden')  bool isHidden, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Comment() when $default != null:
 return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.mentions,_that.createdAt,_that.isHidden,_that.isDeleted);case _:
@@ -181,7 +181,7 @@ return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.mentions,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body,  List<String>? mentions, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_hidden')  bool isHidden, @JsonKey(name: 'is_deleted')  bool isDeleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body,  List<String> mentions, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_hidden')  bool isHidden, @JsonKey(name: 'is_deleted')  bool isDeleted)  $default,) {final _that = this;
 switch (_that) {
 case _Comment():
 return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.mentions,_that.createdAt,_that.isHidden,_that.isDeleted);case _:
@@ -201,7 +201,7 @@ return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.mentions,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body,  List<String>? mentions, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_hidden')  bool isHidden, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'author_id')  String authorId,  String body,  List<String> mentions, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'is_hidden')  bool isHidden, @JsonKey(name: 'is_deleted')  bool isDeleted)?  $default,) {final _that = this;
 switch (_that) {
 case _Comment() when $default != null:
 return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.mentions,_that.createdAt,_that.isHidden,_that.isDeleted);case _:
@@ -216,20 +216,18 @@ return $default(_that.id,_that.postId,_that.authorId,_that.body,_that.mentions,_
 @JsonSerializable()
 
 class _Comment implements Comment {
-  const _Comment({required this.id, @JsonKey(name: 'post_id') required this.postId, @JsonKey(name: 'author_id') required this.authorId, required this.body, final  List<String>? mentions, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'is_hidden') required this.isHidden, @JsonKey(name: 'is_deleted') required this.isDeleted}): _mentions = mentions;
+  const _Comment({required this.id, @JsonKey(name: 'post_id') required this.postId, @JsonKey(name: 'author_id') required this.authorId, required this.body, final  List<String> mentions = const [], @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'is_hidden') required this.isHidden, @JsonKey(name: 'is_deleted') required this.isDeleted}): _mentions = mentions;
   factory _Comment.fromJson(Map<String, dynamic> json) => _$CommentFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'post_id') final  String postId;
 @override@JsonKey(name: 'author_id') final  String authorId;
 @override final  String body;
- final  List<String>? _mentions;
-@override List<String>? get mentions {
-  final value = _mentions;
-  if (value == null) return null;
+ final  List<String> _mentions;
+@override@JsonKey() List<String> get mentions {
   if (_mentions is EqualUnmodifiableListView) return _mentions;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(value);
+  return EqualUnmodifiableListView(_mentions);
 }
 
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
@@ -269,7 +267,7 @@ abstract mixin class _$CommentCopyWith<$Res> implements $CommentCopyWith<$Res> {
   factory _$CommentCopyWith(_Comment value, $Res Function(_Comment) _then) = __$CommentCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body, List<String>? mentions,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_hidden') bool isHidden,@JsonKey(name: 'is_deleted') bool isDeleted
+ String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'author_id') String authorId, String body, List<String> mentions,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'is_hidden') bool isHidden,@JsonKey(name: 'is_deleted') bool isDeleted
 });
 
 
@@ -286,14 +284,14 @@ class __$CommentCopyWithImpl<$Res>
 
 /// Create a copy of Comment
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? mentions = freezed,Object? createdAt = null,Object? isHidden = null,Object? isDeleted = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? postId = null,Object? authorId = null,Object? body = null,Object? mentions = null,Object? createdAt = null,Object? isHidden = null,Object? isDeleted = null,}) {
   return _then(_Comment(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,postId: null == postId ? _self.postId : postId // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
 as String,body: null == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
-as String,mentions: freezed == mentions ? _self._mentions : mentions // ignore: cast_nullable_to_non_nullable
-as List<String>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,mentions: null == mentions ? _self._mentions : mentions // ignore: cast_nullable_to_non_nullable
+as List<String>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,isHidden: null == isHidden ? _self.isHidden : isHidden // ignore: cast_nullable_to_non_nullable
 as bool,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: cast_nullable_to_non_nullable
 as bool,

@@ -1,28 +1,18 @@
-class User {
-  final String id;
-  final String email;
-  final String handle;
-  final String displayName;
-  final String? avatarUrl;
-  final DateTime createdAt;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  User({
-    required this.id,
-    required this.email,
-    required this.handle,
-    required this.displayName,
-    this.avatarUrl,
-    required this.createdAt,
-  });
+part 'user.freezed.dart';
+part 'user.g.dart';
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      handle: json['handle'] as String,
-      displayName: json['display_name'] as String,
-      avatarUrl: json['avatar_url'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-    );
-  }
+@freezed
+abstract class User with _$User {
+  const factory User({
+    required String id,
+    required String email,
+    required String handle,
+    @JsonKey(name: 'display_name') required String displayName,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+  }) = _User;
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 }

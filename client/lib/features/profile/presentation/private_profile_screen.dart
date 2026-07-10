@@ -6,6 +6,7 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_avatar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
+import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../auth/application/auth_notifier.dart';
 
 class PrivateProfileScreen extends ConsumerStatefulWidget {
@@ -36,9 +37,16 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            
             backgroundColor: colors.surface,
             elevation: 0,
             pinned: true,
+            leading: context.canPop()
+                ? IconButton(
+                    icon: Icon(Icons.arrow_back, color: colors.primaryText),
+                    onPressed: () => context.pop(),
+                  )
+                : null,
             title: Text('Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
             actions: [
               IconButton(
@@ -134,6 +142,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: const ScribesBottomNav(currentIndex: 4),
     );
   }
 

@@ -24,9 +24,17 @@ async def list_tools() -> list[Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "content": {
+                    "title": {
                         "type": "string",
-                        "description": "The JSON string representation of the post content (e.g. rich text payload)."
+                        "description": "The title of the post."
+                    },
+                    "excerpt": {
+                        "type": "string",
+                        "description": "A short plain text excerpt summarizing the post for the feed."
+                    },
+                    "body": {
+                        "type": "string",
+                        "description": "The JSON string representation of the rich text body (e.g. Quill operations array). If plain text, it will be wrapped automatically."
                     },
                     "caption": {
                         "type": "string",
@@ -42,7 +50,7 @@ async def list_tools() -> list[Tool]:
                         "description": "Optional origin or sermon source for this post."
                     }
                 },
-                "required": ["content"]
+                "required": ["title", "excerpt", "body"]
             }
         )
     ]
@@ -52,15 +60,26 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     if name != "create_scribes_post":
         raise ValueError(f"Tool not found: {name}")
 
-    content = arguments.get("content")
+    title = arguments.get("title", "")
+    excerpt = arguments.get("excerpt", "")
+    body_str = arguments.get("body", "[]")
+    
     caption = arguments.get("caption")
     visibility = arguments.get("visibility")
     sermon_source = arguments.get("sermon_source")
 
     try:
-        parsed_content = json.loads(content)
+        body = json.loads(body_str)
+        if not isinstance(body, list):
+            body = [{"insert": body_str + "\n"}]
     except (json.JSONDecodeError, TypeError):
-        parsed_content = {"text": content}
+        body = [{"insert": body_str + "\n"}]
+
+    parsed_content = {
+        "title": title,
+        "excerpt": excerpt,
+        "body": body
+    }
 
     payload = {"content": parsed_content}
     if caption:

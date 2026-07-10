@@ -105,7 +105,7 @@ class ExploreScreen extends ConsumerWidget {
                           authorHandle: post.authorHandle,
                           bodyExcerpt: post.content['body'] ?? '',
                           caption: post.caption,
-                          sermonSource: post.sermonSource,
+                          sermonSource: post.sermonSource?.displayTitle,
                           isCorrection: post.isCorrection,
                           publishedAt: post.publishedAt,
                           isFeatured: isFeatured,

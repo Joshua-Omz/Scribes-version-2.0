@@ -15,11 +15,15 @@ class PostApi {
 
   Future<Map<String, dynamic>> getPost(String id) async {
     final response = await _dio.get('${Endpoints.posts}/$id');
-    return response.data as Map<String, dynamic>;
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) throw Exception('Post not found');
+    return data as Map<String, dynamic>;
   }
 
   Future<List<dynamic>> getPostVersions(String id) async {
     final response = await _dio.get('${Endpoints.posts}/$id/versions');
-    return response.data as List<dynamic>;
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return [];
+    return data as List<dynamic>;
   }
 }

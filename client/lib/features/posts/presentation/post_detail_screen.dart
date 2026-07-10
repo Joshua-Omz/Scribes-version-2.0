@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
@@ -5,9 +6,10 @@ import 'package:scribes/core/theme/scribes_text_styles.dart';
 import 'package:scribes/features/posts/application/post_detail_provider.dart';
 import 'package:scribes/core/widgets/scribes_ornament_divider.dart';
 import 'package:scribes/core/widgets/scribes_reaction_bar.dart';
+import 'package:scribes/core/widgets/scribes_author_header.dart';
 import 'package:scribes/features/posts/presentation/widgets/post_rich_text.dart';
 import 'package:scribes/features/posts/presentation/widgets/version_history_sheet.dart';
-import 'package:scribes/features/social/presentation/comments_sheet.dart';
+import '../../../core/widgets/scribes_comment_sheet.dart';
 import 'package:scribes/core/widgets/scribes_unauth_banner.dart';
 import 'package:scribes/features/social/application/post_social_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
@@ -32,7 +34,7 @@ class PostDetailScreen extends ConsumerWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.primaryText),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
@@ -56,10 +58,32 @@ class PostDetailScreen extends ConsumerWidget {
                     width: double.infinity,
                     color: colors.orangeSoft,
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: Text(
-                      'This post corrects a previous version.',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
-                      textAlign: TextAlign.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline, color: colors.orange, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          'This post corrects an original note.',
+                          style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
+                        ),
+                        if (post.correctsPostId != null) ...[
+                          const SizedBox(width: 12),
+                          InkWell(
+                            onTap: () {
+                              context.push('/posts/${post.correctsPostId}');
+                            },
+                            child: Text(
+                              'View Original',
+                              style: ScribesTextStyles.labelSm.copyWith(
+                                color: colors.orange,
+                                decoration: TextDecoration.underline,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 Padding(
@@ -72,36 +96,85 @@ class PostDetailScreen extends ConsumerWidget {
                         style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: colors.goldMuted,
-                            child: Text(
-                              post.authorName.isNotEmpty ? post.authorName[0] : '?',
-                              style: ScribesTextStyles.labelLg.copyWith(color: colors.surface),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(post.authorName, style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
-                              Text('@${post.authorHandle}', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
-                            ],
-                          ),
-                        ],
+                      ScribesAuthorHeader(
+                        authorName: post.authorName,
+                        authorHandle: post.authorHandle,
+                        publishedAt: post.publishedAt,
+                        isCorrection: post.isCorrection,
+                        onTap: () {
+                          // Navigate to author profile
+                        },
                       ),
                       const SizedBox(height: 32),
                       const ScribesOrnamentDivider(),
                       const SizedBox(height: 32),
                       
-                      // Rich text renderer
-                      if (post.content['body'] is List)
-                        PostRichText(content: post.content['body'] as List)
-                      else
-                        Text(
-                          post.content['body']?.toString() ?? '',
-                          style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
+                      Builder(
+                        builder: (context) {
+                          var bodyData = post.content['body'];
+                          List<dynamic>? richContent;
+                          if (bodyData is List) {
+                            richContent = bodyData;
+                          } else if (bodyData is String) {
+                            try {
+                              final decoded = jsonDecode(bodyData);
+                              if (decoded is List) richContent = decoded;
+                            } catch (_) {}
+                          }
+
+                          if (richContent != null) {
+                            return PostRichText(content: richContent);
+                          } else {
+                            return Text(
+                              bodyData?.toString() ?? '',
+                              style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
+                            );
+                          }
+                        },
+                      ),
+
+                      if ((post.caption != null && post.caption!.isNotEmpty) || (post.sermonSource != null && post.sermonSource!.isNotEmpty))
+                        Container(
+                          margin: const EdgeInsets.only(top: 24),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colors.background,
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(8),
+                              bottomRight: Radius.circular(8),
+                            ),
+                            border: Border(
+                              left: BorderSide(color: colors.goldMuted, width: 3),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (post.caption != null && post.caption!.isNotEmpty)
+                                Text(
+                                  post.caption!,
+                                  style: ScribesTextStyles.bodyMd.copyWith(
+                                    color: colors.secondaryText,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              if (post.caption != null && post.caption!.isNotEmpty && post.sermonSource != null && post.sermonSource!.isNotEmpty)
+                                const SizedBox(height: 12),
+                              if (post.sermonSource != null && post.sermonSource!.isNotEmpty)
+                                Row(
+                                  children: [
+                                    Icon(Icons.church_outlined, size: 14, color: colors.gold),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      post.sermonSource!.displayTitle,
+                                      style: ScribesTextStyles.caption.copyWith(
+                                        color: colors.goldMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
                         ),
 
                       const SizedBox(height: 48),
@@ -130,7 +203,7 @@ class PostDetailScreen extends ConsumerWidget {
                                 context.push('/auth');
                                 return;
                               }
-                              CommentsSheet.show(context, postId);
+                              ScribesCommentSheet.show(context, postId: postId);
                             },
                           );
                         },

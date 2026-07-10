@@ -12,7 +12,7 @@ class ScribesTabBar extends ConsumerWidget {
     super.key,
     required this.selectedIndex,
     required this.onTabChanged,
-    this.tabs = const ['FOLLOWING', 'EXPLORE'], // Default for backward compatibility
+    this.tabs = const ['Following', 'Seek'], // Default for backward compatibility
   });
 
   @override
@@ -27,7 +27,7 @@ class ScribesTabBar extends ConsumerWidget {
           bottom: BorderSide(color: colors.border),
         ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: tabs.asMap().entries.map((entry) {

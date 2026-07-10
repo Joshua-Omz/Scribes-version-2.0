@@ -61,6 +61,17 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _scriptureTagsMeta = const VerificationMeta(
+    'scriptureTags',
+  );
+  @override
+  late final GeneratedColumn<String> scriptureTags = GeneratedColumn<String>(
+    'scripture_tags',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -90,6 +101,7 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
     content,
     caption,
     sermonSource,
+    scriptureTags,
     createdAt,
     updatedAt,
   ];
@@ -141,6 +153,15 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
         ),
       );
     }
+    if (data.containsKey('scripture_tags')) {
+      context.handle(
+        _scriptureTagsMeta,
+        scriptureTags.isAcceptableOrUnknown(
+          data['scripture_tags']!,
+          _scriptureTagsMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -186,6 +207,10 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
         DriftSqlType.string,
         data['${effectivePrefix}sermon_source'],
       ),
+      scriptureTags: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scripture_tags'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -209,6 +234,7 @@ class Draft extends DataClass implements Insertable<Draft> {
   final String content;
   final String? caption;
   final String? sermonSource;
+  final String? scriptureTags;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Draft({
@@ -217,6 +243,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     required this.content,
     this.caption,
     this.sermonSource,
+    this.scriptureTags,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -231,6 +258,9 @@ class Draft extends DataClass implements Insertable<Draft> {
     }
     if (!nullToAbsent || sermonSource != null) {
       map['sermon_source'] = Variable<String>(sermonSource);
+    }
+    if (!nullToAbsent || scriptureTags != null) {
+      map['scripture_tags'] = Variable<String>(scriptureTags);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -248,6 +278,9 @@ class Draft extends DataClass implements Insertable<Draft> {
       sermonSource: sermonSource == null && nullToAbsent
           ? const Value.absent()
           : Value(sermonSource),
+      scriptureTags: scriptureTags == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scriptureTags),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -264,6 +297,7 @@ class Draft extends DataClass implements Insertable<Draft> {
       content: serializer.fromJson<String>(json['content']),
       caption: serializer.fromJson<String?>(json['caption']),
       sermonSource: serializer.fromJson<String?>(json['sermonSource']),
+      scriptureTags: serializer.fromJson<String?>(json['scriptureTags']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -277,6 +311,7 @@ class Draft extends DataClass implements Insertable<Draft> {
       'content': serializer.toJson<String>(content),
       'caption': serializer.toJson<String?>(caption),
       'sermonSource': serializer.toJson<String?>(sermonSource),
+      'scriptureTags': serializer.toJson<String?>(scriptureTags),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -288,6 +323,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     String? content,
     Value<String?> caption = const Value.absent(),
     Value<String?> sermonSource = const Value.absent(),
+    Value<String?> scriptureTags = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Draft(
@@ -296,6 +332,9 @@ class Draft extends DataClass implements Insertable<Draft> {
     content: content ?? this.content,
     caption: caption.present ? caption.value : this.caption,
     sermonSource: sermonSource.present ? sermonSource.value : this.sermonSource,
+    scriptureTags: scriptureTags.present
+        ? scriptureTags.value
+        : this.scriptureTags,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -308,6 +347,9 @@ class Draft extends DataClass implements Insertable<Draft> {
       sermonSource: data.sermonSource.present
           ? data.sermonSource.value
           : this.sermonSource,
+      scriptureTags: data.scriptureTags.present
+          ? data.scriptureTags.value
+          : this.scriptureTags,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -321,6 +363,7 @@ class Draft extends DataClass implements Insertable<Draft> {
           ..write('content: $content, ')
           ..write('caption: $caption, ')
           ..write('sermonSource: $sermonSource, ')
+          ..write('scriptureTags: $scriptureTags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -334,6 +377,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     content,
     caption,
     sermonSource,
+    scriptureTags,
     createdAt,
     updatedAt,
   );
@@ -346,6 +390,7 @@ class Draft extends DataClass implements Insertable<Draft> {
           other.content == this.content &&
           other.caption == this.caption &&
           other.sermonSource == this.sermonSource &&
+          other.scriptureTags == this.scriptureTags &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -356,6 +401,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
   final Value<String> content;
   final Value<String?> caption;
   final Value<String?> sermonSource;
+  final Value<String?> scriptureTags;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -365,6 +411,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     this.content = const Value.absent(),
     this.caption = const Value.absent(),
     this.sermonSource = const Value.absent(),
+    this.scriptureTags = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -375,6 +422,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     required String content,
     this.caption = const Value.absent(),
     this.sermonSource = const Value.absent(),
+    this.scriptureTags = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -389,6 +437,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     Expression<String>? content,
     Expression<String>? caption,
     Expression<String>? sermonSource,
+    Expression<String>? scriptureTags,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -399,6 +448,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
       if (content != null) 'content': content,
       if (caption != null) 'caption': caption,
       if (sermonSource != null) 'sermon_source': sermonSource,
+      if (scriptureTags != null) 'scripture_tags': scriptureTags,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -411,6 +461,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     Value<String>? content,
     Value<String?>? caption,
     Value<String?>? sermonSource,
+    Value<String?>? scriptureTags,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -421,6 +472,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
       content: content ?? this.content,
       caption: caption ?? this.caption,
       sermonSource: sermonSource ?? this.sermonSource,
+      scriptureTags: scriptureTags ?? this.scriptureTags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -445,6 +497,9 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     if (sermonSource.present) {
       map['sermon_source'] = Variable<String>(sermonSource.value);
     }
+    if (scriptureTags.present) {
+      map['scripture_tags'] = Variable<String>(scriptureTags.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -465,6 +520,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
           ..write('content: $content, ')
           ..write('caption: $caption, ')
           ..write('sermonSource: $sermonSource, ')
+          ..write('scriptureTags: $scriptureTags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -491,6 +547,7 @@ typedef $$DraftsTableCreateCompanionBuilder =
       required String content,
       Value<String?> caption,
       Value<String?> sermonSource,
+      Value<String?> scriptureTags,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -502,6 +559,7 @@ typedef $$DraftsTableUpdateCompanionBuilder =
       Value<String> content,
       Value<String?> caption,
       Value<String?> sermonSource,
+      Value<String?> scriptureTags,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -538,6 +596,11 @@ class $$DraftsTableFilterComposer
 
   ColumnFilters<String> get sermonSource => $composableBuilder(
     column: $table.sermonSource,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get scriptureTags => $composableBuilder(
+    column: $table.scriptureTags,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -586,6 +649,11 @@ class $$DraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get scriptureTags => $composableBuilder(
+    column: $table.scriptureTags,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -620,6 +688,11 @@ class $$DraftsTableAnnotationComposer
 
   GeneratedColumn<String> get sermonSource => $composableBuilder(
     column: $table.sermonSource,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get scriptureTags => $composableBuilder(
+    column: $table.scriptureTags,
     builder: (column) => column,
   );
 
@@ -663,6 +736,7 @@ class $$DraftsTableTableManager
                 Value<String> content = const Value.absent(),
                 Value<String?> caption = const Value.absent(),
                 Value<String?> sermonSource = const Value.absent(),
+                Value<String?> scriptureTags = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -672,6 +746,7 @@ class $$DraftsTableTableManager
                 content: content,
                 caption: caption,
                 sermonSource: sermonSource,
+                scriptureTags: scriptureTags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -683,6 +758,7 @@ class $$DraftsTableTableManager
                 required String content,
                 Value<String?> caption = const Value.absent(),
                 Value<String?> sermonSource = const Value.absent(),
+                Value<String?> scriptureTags = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -692,6 +768,7 @@ class $$DraftsTableTableManager
                 content: content,
                 caption: caption,
                 sermonSource: sermonSource,
+                scriptureTags: scriptureTags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

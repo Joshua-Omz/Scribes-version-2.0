@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/widgets/scribes_post_card.dart';
+import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../../core/widgets/scribes_top_app_bar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
@@ -10,6 +10,13 @@ import '../application/feed_notifier.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../../core/widgets/scribes_unauth_banner.dart';
+
+import 'package:flutter/rendering.dart';
+import '../../../core/widgets/scribes_drawer.dart';
+import '../../compose/application/compose_provider.dart';
+
+
+import '../../../core/widgets/scribes_diamond_fab.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -20,6 +27,8 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
   int _selectedTabIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isFabVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -29,21 +38,48 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final isAuth = authState.value != null;
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: colors.background,
+      drawer: const ScribesDrawer(),
+      floatingActionButton: AnimatedSlide(
+        duration: const Duration(milliseconds: 250),
+        offset: _isFabVisible ? Offset.zero : const Offset(0, 2),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 250),
+          opacity: _isFabVisible ? 1.0 : 0.0,
+          child: ScribesDiamondFab(
+            icon: Icons.add,
+            onPressed: () {
+              ref.read(composeProvider.notifier).reset();
+              context.push('/compose');
+            },
+          ),
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => ref.read(feedProvider.notifier).refresh(),
-              child: CustomScrollView(
+            child: NotificationListener<UserScrollNotification>(
+              onNotification: (notification) {
+                if (notification.direction == ScrollDirection.forward) {
+                  if (!_isFabVisible) setState(() => _isFabVisible = true);
+                } else if (notification.direction == ScrollDirection.reverse) {
+                  if (_isFabVisible) setState(() => _isFabVisible = false);
+                }
+                return false;
+              },
+              child: RefreshIndicator(
+                onRefresh: () => ref.read(feedProvider.notifier).refresh(),
+                child: CustomScrollView(
                 slivers: [
                   SliverAppBar(
                     floating: true,
                     pinned: false,
                     elevation: 0,
                     backgroundColor: colors.surface,
-                    toolbarHeight: 64,
-                    flexibleSpace: const ScribesTopAppBar(),
+                    toolbarHeight: 56,
+                    titleSpacing: 0,
+                    title: const ScribesTopAppBar(),
                   ),
                   SliverPersistentHeader(
                     pinned: true,
@@ -66,11 +102,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                         );
                       }
 
-                      return SliverPadding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
                               if (index == posts.length) {
                                 if (ref.read(feedProvider.notifier).hasMore) {
                                   ref.read(feedProvider.notifier).loadMore();
@@ -83,26 +117,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                               }
 
                               final post = posts[index];
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                child: ScribesPostCard(
-                                  title: post.content['title'] ?? 'Untitled',
-                                  authorName: post.authorName,
-                                  authorHandle: post.authorHandle,
-                                  bodyExcerpt: post.content['body'] ?? '',
-                                  caption: post.caption,
-                                  sermonSource: post.sermonSource,
-                                  isCorrection: post.isCorrection,
-                                  publishedAt: post.publishedAt,
-                                  isFeatured: index == 0,
-                                  onTap: () => context.push('/posts/${post.id}'),
-                                ),
+                              return ScribesConnectedPostCard(
+                                post: post,
+                                isFeatured: index == 0,
                               );
                             },
                             childCount: posts.length + (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
                           ),
-                        ),
-                      );
+                        );
                     },
                     loading: () => const SliverFillRemaining(
                       child: Center(child: CircularProgressIndicator()),
@@ -113,6 +135,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   ),
                 ],
               ),
+            ),
             ),
           ),
           if (!isAuth)

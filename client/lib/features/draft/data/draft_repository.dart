@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../domain/draft.dart' as domain;
+import '../../posts/domain/sermon_source.dart';
 import 'draft_api.dart';
 
 final draftRepositoryProvider = Provider<DraftRepository>((ref) {
@@ -27,18 +27,21 @@ class DraftRepository {
   DraftRepository(this._db, this._api, this._currentUserId);
 
   /// Auto-saves the draft locally to Drift.
-  Future<void> saveDraftLocally(String id, String content, {String? caption, String? sermonSource}) async {
-    if (_currentUserId == null) return;
+  Future<void> saveDraftLocally(String id, String content, {String? caption, String? sermonSource, List<String>? scriptureTags}) async {
+    final userId = _currentUserId;
+    if (userId == null) return;
 
     final now = DateTime.now();
+    final tagsJson = scriptureTags != null ? jsonEncode(scriptureTags) : null;
 
     await _db.into(_db.drafts).insertOnConflictUpdate(
       DraftsCompanion(
         id: Value(id),
-        authorId: Value(_currentUserId!),
+        authorId: Value(userId),
         content: Value(content),
         caption: Value(caption),
         sermonSource: Value(sermonSource),
+        scriptureTags: Value(tagsJson),
         createdAt: Value(now), // Ideally we only set this on insert, but update works for now
         updatedAt: Value(now),
       ),
@@ -50,12 +53,40 @@ class DraftRepository {
     final record = await (_db.select(_db.drafts)..where((t) => t.id.equals(id))).getSingleOrNull();
     if (record == null) return null;
 
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(record.content);
+    } catch (e) {
+      decoded = {'body': []};
+    }
+
+    Map<String, dynamic> contentMap;
+    if (decoded is Map<String, dynamic>) {
+      contentMap = decoded;
+    } else if (decoded is List) {
+      contentMap = {
+        'title': '',
+        'excerpt': '',
+        'body': decoded,
+      };
+    } else {
+      contentMap = {'body': []};
+    }
+
+    List<String> tags = [];
+    if (record.scriptureTags != null) {
+      try {
+        tags = List<String>.from(jsonDecode(record.scriptureTags!));
+      } catch (_) {}
+    }
+
     return domain.Draft(
       id: record.id,
       authorId: record.authorId,
-      content: jsonDecode(record.content) as Map<String, dynamic>,
+      content: contentMap,
       caption: record.caption,
-      sermonSource: record.sermonSource,
+      sermonSource: record.sermonSource != null ? SermonSource(preacher: record.sermonSource) : null,
+      scriptureTags: tags,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     );
@@ -66,6 +97,58 @@ class DraftRepository {
     await (_db.delete(_db.drafts)..where((t) => t.id.equals(id))).go();
   }
 
+  /// Loads all drafts from local SQLite
+  Future<List<domain.Draft>> getAllLocalDrafts() async {
+    final userId = _currentUserId;
+    if (userId == null) return [];
+    
+    final records = await (_db.select(_db.drafts)
+          ..where((t) => t.authorId.equals(userId))
+          ..orderBy([(t) => OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc)]))
+        .get();
+
+    return records.map((record) {
+      dynamic decoded;
+      try {
+        decoded = jsonDecode(record.content);
+      } catch (e) {
+        decoded = {'body': []};
+      }
+
+      Map<String, dynamic> contentMap;
+      if (decoded is Map<String, dynamic>) {
+        contentMap = decoded;
+      } else if (decoded is List) {
+        // Fallback for old drafts saved purely as delta arrays
+        contentMap = {
+          'title': '',
+          'excerpt': '',
+          'body': decoded,
+        };
+      } else {
+        contentMap = {'body': []};
+      }
+
+      List<String> tags = [];
+      if (record.scriptureTags != null) {
+        try {
+          tags = List<String>.from(jsonDecode(record.scriptureTags!));
+        } catch (_) {}
+      }
+
+      return domain.Draft(
+        id: record.id,
+        authorId: record.authorId,
+        content: contentMap,
+        caption: record.caption,
+        sermonSource: record.sermonSource != null ? SermonSource(preacher: record.sermonSource) : null,
+        scriptureTags: tags,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      );
+    }).toList();
+  }
+
   /// Explicit sync to backend: Creates or Updates the draft.
   Future<domain.Draft> pushToCloud(String id) async {
     final local = await getDraftLocally(id);
@@ -74,7 +157,8 @@ class DraftRepository {
     final payload = {
       'content': local.content,
       'caption': local.caption,
-      'sermon_source': local.sermonSource,
+      'sermon_source': local.sermonSource?.toJson(),
+      'scripture_tags': local.scriptureTags,
     };
 
     try {

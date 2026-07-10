@@ -3,6 +3,7 @@ import 'package:scribes/features/social/data/social_api.dart';
 import 'package:scribes/features/social/domain/comment.dart';
 import 'package:scribes/features/social/domain/reaction_count.dart';
 
+
 final socialRepositoryProvider = Provider((ref) {
   final api = ref.watch(socialApiProvider);
   return SocialRepository(api);

@@ -8,7 +8,7 @@ import 'scribes_reaction_bar.dart';
 import 'scribes_ornament_divider.dart';
 import 'scribes_author_header.dart';
 
-class ScribesPostCard extends ConsumerWidget {
+class ScribesPostCard extends ConsumerStatefulWidget {
   final String title;
   final String bodyExcerpt;
   final String authorName;
@@ -23,6 +23,8 @@ class ScribesPostCard extends ConsumerWidget {
   final int thoughtCount;
   final bool isFeatured;
   final VoidCallback? onTap;
+  final VoidCallback? onComment;
+  final void Function(String)? onReact;
 
   const ScribesPostCard({
     super.key,
@@ -40,30 +42,35 @@ class ScribesPostCard extends ConsumerWidget {
     this.thoughtCount = 0,
     this.isFeatured = false,
     this.onTap,
+    this.onComment,
+    this.onReact,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ScribesPostCard> createState() => _ScribesPostCardState();
+}
+
+class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
+  bool _isExpanded = true; // Default to open as requested
+
+  @override
+  Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
+    final hasEmbeddedContent = (widget.caption != null && widget.caption!.isNotEmpty) || 
+                               (widget.sermonSource != null && widget.sermonSource!.isNotEmpty);
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        
-       
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: colors.border,
-          ),
+          color: colors.background, // Match screen background for flat look
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isFeatured)
+            if (widget.isFeatured)
               Align(
                 alignment: Alignment.topLeft,
                 child: Opacity(
@@ -76,18 +83,18 @@ class ScribesPostCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: ScribesAuthorHeader(
-                    authorName: authorName,
-                    authorHandle: authorHandle,
-                    publishedAt: publishedAt,
-                    isCorrection: isCorrection,
+                    authorName: widget.authorName,
+                    authorHandle: widget.authorHandle,
+                    publishedAt: widget.publishedAt,
+                    isCorrection: widget.isCorrection,
                     onTap: () {},
                   ),
                 ),
-                if (scriptureRef != null)
+                if (widget.scriptureRef != null)
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: ScribesScriptureChip(
-                      reference: scriptureRef!,
+                      reference: widget.scriptureRef!,
                       onTap: () {},
                     ),
                   ),
@@ -95,57 +102,123 @@ class ScribesPostCard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              title,
+              widget.title,
               style: ScribesTextStyles.displayMd.copyWith(
                 color: colors.primaryText,
               ),
             ),
-            if (caption != null && caption!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                caption!,
-                style: ScribesTextStyles.bodyMd.copyWith(
-                  color: colors.secondaryText,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
             const SizedBox(height: 12),
             Text(
-              bodyExcerpt,
+              widget.bodyExcerpt,
               style: ScribesTextStyles.bodyLg.copyWith(
                 color: colors.primaryText,
               ),
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
-            if (sermonSource != null && sermonSource!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.church_outlined, size: 14, color: colors.gold),
-                  const SizedBox(width: 4),
-                  Text(
-                    sermonSource!,
-                    style: ScribesTextStyles.caption.copyWith(
-                      color: colors.goldMuted,
+            
+            if (hasEmbeddedContent) ...[
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: [
+                    Icon(
+                      _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      color: colors.secondaryText,
+                      size: 16,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Text(
+                      _isExpanded ? 'Hide references' : 'Show references',
+                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                    ),
+                  ],
+                ),
+              ),
+              AnimatedCrossFade(
+                firstChild: const SizedBox(width: double.infinity),
+                secondChild: _EmbeddedContentBox(
+                  caption: widget.caption,
+                  sermonSource: widget.sermonSource,
+                  colors: colors,
+                ),
+                crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 250),
               ),
             ],
+            
             const SizedBox(height: 20),
             const ScribesOrnamentDivider(),
             const SizedBox(height: 20),
             ScribesReactionBar(
-              amenCount: amenCount,
-              insightCount: insightCount,
-              thoughtCount: thoughtCount,
-              onReact: (type) {},
-              onComment: () {},
+              amenCount: widget.amenCount,
+              insightCount: widget.insightCount,
+              thoughtCount: widget.thoughtCount,
+              onReact: widget.onReact ?? (type) {},
+              onComment: widget.onComment ?? () {},
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EmbeddedContentBox extends StatelessWidget {
+  final String? caption;
+  final String? sermonSource;
+  final dynamic colors;
+
+  const _EmbeddedContentBox({this.caption, this.sermonSource, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(left: 16, top: 12, bottom: 12, right: 16),
+      decoration: BoxDecoration(
+        color: colors.background, // Offset from surface
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+        ),
+        border: Border(
+          left: BorderSide(color: colors.goldMuted, width: 3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (caption != null && caption!.isNotEmpty)
+            Text(
+              caption!,
+              style: ScribesTextStyles.bodyMd.copyWith(
+                color: colors.secondaryText,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          if (caption != null && caption!.isNotEmpty && sermonSource != null && sermonSource!.isNotEmpty)
+            const SizedBox(height: 12),
+          if (sermonSource != null && sermonSource!.isNotEmpty)
+            Row(
+              children: [
+                Icon(Icons.church_outlined, size: 14, color: colors.gold),
+                const SizedBox(width: 6),
+                Text(
+                  sermonSource!,
+                  style: ScribesTextStyles.caption.copyWith(
+                    color: colors.goldMuted,
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }

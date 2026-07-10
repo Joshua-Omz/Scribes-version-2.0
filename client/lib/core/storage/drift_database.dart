@@ -14,6 +14,7 @@ class Drafts extends Table {
   TextColumn get content => text()(); // Stores JSON string of Quill Document
   TextColumn get caption => text().nullable()();
   TextColumn get sermonSource => text().nullable()();
+  TextColumn get scriptureTags => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -26,7 +27,21 @@ class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          await m.addColumn(drafts, drafts.scriptureTags);
+        }
+      },
+    );
+  }
 }
 
 LazyDatabase _openConnection() {

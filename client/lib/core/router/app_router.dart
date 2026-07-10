@@ -5,11 +5,14 @@ import '../../features/auth/application/auth_notifier.dart';
 import '../../features/auth/presentation/auth_gate_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
-import '../../features/onboarding/presentation/test_widgets_screen.dart';
+
 import '../../features/feed/presentation/feed_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
 import '../../features/posts/presentation/post_detail_screen.dart';
-import '../../features/compose/presentation/compose_screen.dart';
+import '../../features/compose/presentation/draft_editor_screen.dart';
+import '../../features/compose/presentation/draft_preview_screen.dart';
+import '../../features/compose/presentation/publish_metadata_screen.dart';
+import '../../features/draft/presentation/drafts_list_screen.dart';
 import '../../features/profile/presentation/private_profile_screen.dart';
 part 'app_router.g.dart';
 
@@ -64,13 +67,22 @@ GoRouter appRouter(Ref ref) {
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/test-widgets',
-        builder: (context, state) => const TestWidgetsScreen(),
-      ),
+
       GoRoute(
         path: '/compose',
-        builder: (context, state) => const ComposeScreen(),
+        builder: (context, state) => const DraftEditorScreen(),
+      ),
+      GoRoute(
+        path: '/compose/preview',
+        builder: (context, state) => const DraftPreviewScreen(),
+      ),
+      GoRoute(
+        path: '/compose/publish',
+        builder: (context, state) => const PublishMetadataScreen(),
+      ),
+      GoRoute(
+        path: '/drafts',
+        builder: (context, state) => const DraftsListScreen(),
       ),
       GoRoute(
         path: '/posts/:id',
