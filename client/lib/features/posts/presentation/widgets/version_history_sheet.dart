@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
+import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/features/posts/application/post_detail_provider.dart';
 import 'package:go_router/go_router.dart';
 
@@ -72,7 +73,7 @@ class VersionHistorySheet extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => Center(child: CircularProgressIndicator(color: colors.gold)),
+              loading: () => Center(child: ScribesLoadingIndicator()),
               error: (err, stack) => Center(child: Text('Error: $err')),
             ),
           ),

@@ -5,6 +5,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/scribes_radius.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../application/auth_notifier.dart';
 
 class AuthGateScreen extends ConsumerStatefulWidget {
@@ -184,7 +185,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                   ),
                   onPressed: authState.isLoading ? null : _submit,
                   child: authState.isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(height: 20, width: 20, child: ScribesLoadingIndicator(size: 20))
                     : Text(_isLogin ? 'Log in' : 'Create Account', style: ScribesTextStyles.labelLg),
                 ),
                 

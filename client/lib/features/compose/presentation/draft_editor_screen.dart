@@ -18,6 +18,7 @@ class DraftEditorScreen extends ConsumerStatefulWidget {
 class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
   late final QuillController _controller;
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   late final TextEditingController _titleController;
 
   @override
@@ -44,6 +45,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
     _controller.dispose();
     _titleController.dispose();
     _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -88,25 +90,12 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (composeState.isSaving || composeState.lastSavedAt != null)
-                    ScribesAutoSaveDot(
-                      state: composeState.isSaving ? SaveState.saving : SaveState.localSaved,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: ScribesAutoSaveDot(
+                        state: composeState.isSaving ? SaveState.saving : SaveState.localSaved,
+                      ),
                     ),
-                  TextButton(
-                    onPressed: () async {
-                      await ref.read(composeProvider.notifier).forceSave();
-                      if (context.mounted) {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/drafts');
-                        }
-                      }
-                    },
-                    child: Text(
-                      'Save to Drafts',
-                      style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
-                    ),
-                  ),
                   TextButton(
                     onPressed: () {
                       ref.read(composeProvider.notifier).syncContent(_controller);
@@ -149,6 +138,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                     child: QuillEditor.basic(
                       controller: _controller,
                       focusNode: _focusNode,
+                      scrollController: _scrollController,
                       config: QuillEditorConfig(
                         customStyleBuilder: (Attribute attribute) {
                           if (attribute.key == 'scripture') {

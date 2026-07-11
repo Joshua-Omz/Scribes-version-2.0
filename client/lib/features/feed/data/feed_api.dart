@@ -10,7 +10,7 @@ class FeedApi {
     final response = await _dio.get(
       '/feed',
       queryParameters: {
-        if (cursor != null) 'cursor': cursor,
+        'cursor': ?cursor,
         'limit': limit,
       },
     );

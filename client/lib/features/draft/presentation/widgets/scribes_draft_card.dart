@@ -88,16 +88,20 @@ class ScribesDraftCard extends ConsumerWidget {
                 ),
                 const Spacer(),
                 if (draft.sermonSource != null && draft.sermonSource!.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(4), // ScribesRadius.chip
-                      border: Border.all(color: colors.border),
-                    ),
-                    child: Text(
-                      draft.sermonSource!.displayTitle,
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceRaised,
+                        borderRadius: BorderRadius.circular(4), // ScribesRadius.chip
+                        border: Border.all(color: colors.border),
+                      ),
+                      child: Text(
+                        draft.sermonSource!.displayTitle,
+                        style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
               ],

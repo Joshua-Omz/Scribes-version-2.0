@@ -20,7 +20,8 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final DateTime? publishedAt;
   final int amenCount;
   final int insightCount;
-  final int thoughtCount;
+  final int thoughtProvokingCount;
+  final int commentCount;
   final bool isFeatured;
   final VoidCallback? onTap;
   final VoidCallback? onComment;
@@ -40,7 +41,8 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     this.publishedAt,
     this.amenCount = 0,
     this.insightCount = 0,
-    this.thoughtCount = 0,
+    this.thoughtProvokingCount = 0,
+    this.commentCount = 0,
     this.isFeatured = false,
     this.onTap,
     this.onComment,
@@ -161,7 +163,8 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
             ScribesReactionBar(
               amenCount: widget.amenCount,
               insightCount: widget.insightCount,
-              thoughtCount: widget.thoughtCount,
+              thoughtProvokingCount: widget.thoughtProvokingCount,
+              commentCount: widget.commentCount,
               onReact: widget.onReact ?? (type) {},
               onComment: widget.onComment ?? () {},
               userReactions: widget.userReactionType != null ? [widget.userReactionType!] : [],

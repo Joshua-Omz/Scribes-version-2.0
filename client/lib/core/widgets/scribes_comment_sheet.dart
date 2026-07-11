@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_colors.dart';
+import 'scribes_loading_indicator.dart';
+import '../../features/social/application/post_social_providers.dart';
 
-class ScribesCommentSheet extends ConsumerWidget {
+class ScribesCommentSheet extends ConsumerStatefulWidget {
   final String postId;
 
   const ScribesCommentSheet({
@@ -22,9 +24,31 @@ class ScribesCommentSheet extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ScribesCommentSheet> createState() => _ScribesCommentSheetState();
+}
+
+class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
+  final _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitComment() async {
+    final body = _commentController.text.trim();
+    if (body.isEmpty) return;
+
+    await ref.read(postCommentsProvider(widget.postId).notifier).addComment(body, []);
+    _commentController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final commentsState = ref.watch(postCommentsProvider(widget.postId));
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75, // Take up 75% of screen
@@ -72,16 +96,33 @@ class ScribesCommentSheet extends ConsumerWidget {
           
           // Comments List
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(20),
-              itemCount: 3, // Mock data for UI presentation
-              separatorBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Divider(height: 1, color: colors.border),
-              ),
-              itemBuilder: (context, index) {
-                return _buildMockComment(colors);
+            child: commentsState.when(
+              data: (comments) {
+                if (comments.isEmpty) {
+                  return Center(
+                    child: Text('No thoughts yet. Share yours!', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
+                  );
+                }
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(postCommentsProvider(widget.postId));
+                  },
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: comments.length,
+                    separatorBuilder: (context, index) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Divider(height: 1, color: colors.border),
+                    ),
+                    itemBuilder: (context, index) {
+                      final comment = comments[index];
+                      return _buildComment(colors, comment);
+                    },
+                  ),
+                );
               },
+              loading: () => const Center(child: ScribesLoadingIndicator()),
+              error: (err, stack) => Center(child: Text('Failed to load comments.', style: TextStyle(color: colors.primaryText))),
             ),
           ),
           
@@ -108,6 +149,7 @@ class ScribesCommentSheet extends ConsumerWidget {
                       border: Border.all(color: colors.border),
                     ),
                     child: TextField(
+                      controller: _commentController,
                       maxLines: 4,
                       minLines: 1,
                       style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
@@ -129,9 +171,7 @@ class ScribesCommentSheet extends ConsumerWidget {
                   ),
                   child: IconButton(
                     icon: Icon(Icons.arrow_upward, color: colors.surfaceRaised),
-                    onPressed: () {
-                      // Submit comment
-                    },
+                    onPressed: _submitComment,
                   ),
                 ),
               ],
@@ -142,7 +182,8 @@ class ScribesCommentSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildMockComment(ScribesColors colors) {
+  Widget _buildComment(ScribesColors colors, dynamic comment) {
+    // Assuming Comment has author, created_at, and body.
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -158,16 +199,16 @@ class ScribesCommentSheet extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Text('Reader', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
+                  Text(comment.author?.displayName ?? 'Anonymous', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
                   const SizedBox(width: 8),
-                  Text('@reader', style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText)),
+                  Text('@${comment.author?.handle ?? 'unknown'}', style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText)),
                   const SizedBox(width: 8),
-                  Text('2h', style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText)),
+                  // Text(comment.createdAt.toString(), style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText)), // format this better
                 ],
               ),
               const SizedBox(height: 4),
               Text(
-                'This is a wonderful insight into the text. Thank you for sharing!',
+                comment.body,
                 style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
               ),
             ],

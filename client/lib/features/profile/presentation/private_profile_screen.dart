@@ -8,6 +8,11 @@ import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../auth/application/auth_notifier.dart';
+import '../../../core/widgets/scribes_profile_post_card.dart';
+import '../../../core/widgets/scribes_profile_draft_card.dart';
+import '../../posts/application/my_posts_provider.dart';
+import '../../draft/application/drafts_list_provider.dart';
+import '../../../core/widgets/scribes_loading_indicator.dart';
 
 class PrivateProfileScreen extends ConsumerStatefulWidget {
   const PrivateProfileScreen({super.key});
@@ -28,7 +33,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
     if (user == null) {
       return Scaffold(
         backgroundColor: colors.background,
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: ScribesLoadingIndicator()),
       );
     }
 
@@ -100,7 +105,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
                     onPressed: () {
-                      // Edit Profile
+                      context.push('/profile/edit');
                     },
                     child: Text('Edit Profile', style: ScribesTextStyles.labelLg),
                   ),
@@ -122,24 +127,117 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
               ), 
             ),
           ),
-          SliverFillRemaining(
-            child: Container(
-              color: colors.background,
+          if (_selectedTabIndex == 0)
+            Consumer(
+              builder: (context, ref, child) {
+                final postsState = ref.watch(myPostsProvider);
+                return postsState.when(
+                  data: (posts) {
+                    if (posts.isEmpty) {
+                      return SliverFillRemaining(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.feed_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                              const SizedBox(height: 16),
+                              Text('No posts yet.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final post = posts[index];
+                          // Simple excerpt extractor
+                          String excerpt = '';
+                          if (post.content != null && post.content['ops'] != null) {
+                            for (var op in post.content['ops']) {
+                              if (op['insert'] is String) {
+                                excerpt += op['insert'];
+                                if (excerpt.length > 100) {
+                                  excerpt = '\${excerpt.substring(0, 100)}...';
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                          return ScribesProfilePostCard(
+                            title: post.caption ?? '',
+                            excerpt: excerpt,
+                            publishedAt: post.publishedAt,
+                            onTap: () => context.push('/posts/\${post.id}'),
+                          );
+                        },
+                        childCount: posts.length,
+                      ),
+                    );
+                  },
+                  loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: \$err'))),
+                );
+              },
+            ),
+          if (_selectedTabIndex == 1)
+            Consumer(
+              builder: (context, ref, child) {
+                final draftsState = ref.watch(draftsListProvider);
+                return draftsState.when(
+                  data: (drafts) {
+                    if (drafts.isEmpty) {
+                      return SliverFillRemaining(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.edit_note_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                              const SizedBox(height: 16),
+                              Text('No drafts.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final draft = drafts[index];
+                          String excerpt = '';
+                          if (draft.content != null && draft.content['ops'] != null) {
+                            for (var op in draft.content['ops']) {
+                              if (op['insert'] is String) {
+                                excerpt += op['insert'];
+                                if (excerpt.length > 100) {
+                                  excerpt = '\${excerpt.substring(0, 100)}...';
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                          return ScribesProfileDraftCard(
+                            title: draft.caption ?? '',
+                            excerpt: excerpt,
+                            updatedAt: draft.updatedAt,
+                            onTap: () => context.push('/drafts/\${draft.id}'),
+                          );
+                        },
+                        childCount: drafts.length,
+                      ),
+                    );
+                  },
+                  loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: \$err'))),
+                );
+              },
+            ),
+          if (_selectedTabIndex == 2)
+            SliverFillRemaining(
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.feed_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
-                    const SizedBox(height: 16),
-                    Text(
-                      _selectedTabIndex == 0 ? 'No posts yet.' : 'No drafts.',
-                      style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
-                    ),
-                  ],
-                ),
+                child: Text('Saved posts coming soon.', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
               ),
             ),
-          ),
         ],
       ),
       bottomNavigationBar: const ScribesBottomNav(currentIndex: 4),

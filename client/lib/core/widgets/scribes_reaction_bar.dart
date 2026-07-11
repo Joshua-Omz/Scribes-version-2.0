@@ -6,7 +6,8 @@ import '../theme/scribes_text_styles.dart';
 class ScribesReactionBar extends ConsumerWidget {
   final int amenCount;
   final int insightCount;
-  final int thoughtCount;
+  final int thoughtProvokingCount;
+  final int commentCount;
   final Function(String) onReact;
   final VoidCallback onComment;
   final List<String> userReactions;
@@ -15,7 +16,8 @@ class ScribesReactionBar extends ConsumerWidget {
     super.key,
     this.amenCount = 0,
     this.insightCount = 0,
-    this.thoughtCount = 0,
+    this.thoughtProvokingCount = 0,
+    this.commentCount = 0,
     required this.onReact,
     required this.onComment,
     this.userReactions = const [],
@@ -43,16 +45,26 @@ class ScribesReactionBar extends ConsumerWidget {
             icon: Icons.lightbulb_outline,
             label: 'Insight',
             count: insightCount.toString(),
-            onTap: () => onReact('insight'),
+            onTap: () => onReact('insightful'),
             color: colors.gold,
-            isSelected: userReactions.contains('insight'),
+            isSelected: userReactions.contains('insightful'),
+            colors: colors,
+          ),
+          const SizedBox(width: 12),
+          _ReactionChip(
+            icon: Icons.diamond_outlined,
+            label: 'Deep',
+            count: thoughtProvokingCount.toString(),
+            onTap: () => onReact('thought_provoking'),
+            color: colors.primaryText,
+            isSelected: userReactions.contains('thought_provoking'),
             colors: colors,
           ),
           const SizedBox(width: 12),
           _ReactionChip(
             icon: Icons.chat_bubble_outline,
-            label: 'Thoughts',
-            count: thoughtCount.toString(),
+            label: 'Discuss',
+            count: commentCount.toString(),
             onTap: onComment,
             color: colors.primaryText,
             colors: colors,

@@ -14,16 +14,36 @@ class PublishMetadataScreen extends ConsumerWidget {
     final colors = ref.read(themeProvider);
     showModalBottomSheet(
       context: context,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
+        return Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              )
+            ]
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
               Text(
                 'Publish Post?',
                 style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
@@ -32,39 +52,50 @@ class PublishMetadataScreen extends ConsumerWidget {
               Text(
                 'Publishing creates a public post that cannot be erased. It will be permanently added to your scroll and visible to your followers.',
                 textAlign: TextAlign.center,
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText, height: 1.5),
               ),
               const SizedBox(height: 32),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: Text('Not yet', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.gold,
-                      foregroundColor: colors.surfaceRaised,
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text('Not yet', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
                     ),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ref.read(composeProvider.notifier).publishToCloud().then((_) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Post published!')),
-                          );
-                          context.go('/feed');
-                        }
-                      }).catchError((err) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error publishing: $err')),
-                          );
-                        }
-                      });
-                    },
-                    child: const Text('Publish'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.gold,
+                        foregroundColor: colors.surfaceRaised,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        ref.read(composeProvider.notifier).publishToCloud().then((_) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Post published!')),
+                            );
+                            context.go('/feed');
+                          }
+                        }).catchError((err) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error publishing: $err')),
+                            );
+                          }
+                        });
+                      },
+                      child: Text('Publish', style: ScribesTextStyles.labelLg.copyWith(fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ],
               ),
@@ -123,120 +154,217 @@ class PublishMetadataScreen extends ConsumerWidget {
       ),
       body: Container(
         color: colors.background,
-        padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Context is everything.',
-                style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Add optional metadata to help others discover your post.',
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-              ),
-              const SizedBox(height: 32),
-              TextFormField(
-                initialValue: composeState.caption,
-                style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
-                maxLines: 3,
-                minLines: 1,
-                decoration: InputDecoration(
-                  labelText: 'Caption (Optional)',
-                  labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: colors.border),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: colors.gold),
-                  ),
-                ),
-                onChanged: (value) => ref.read(composeProvider.notifier).updateMetadata(caption: value),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Sermon Details',
-                style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                initialValue: composeState.sermonSource?.preacher,
-                style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
-                decoration: InputDecoration(
-                  labelText: 'Preacher',
-                  labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.border)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.gold)),
-                ),
-                onChanged: (value) {
-                  final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                  ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(preacher: value));
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                initialValue: composeState.sermonSource?.church,
-                style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
-                decoration: InputDecoration(
-                  labelText: 'Church',
-                  labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.border)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.gold)),
-                ),
-                onChanged: (value) {
-                  final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                  ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(church: value));
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                initialValue: composeState.sermonSource?.series,
-                style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
-                decoration: InputDecoration(
-                  labelText: 'Sermon Series',
-                  labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
-                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.border)),
-                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.gold)),
-                ),
-                onChanged: (value) {
-                  final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                  ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(series: value));
-                },
-              ),
-              const SizedBox(height: 16),
-              InkWell(
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) {
-                    final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                    ref.read(composeProvider.notifier).updateMetadata(
-                      sermonSource: src.copyWith(date: date.toIso8601String().split('T')[0]),
-                    );
-                  }
-                },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: 'Date',
-                    labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.border)),
-                  ),
-                  child: Text(
-                    composeState.sermonSource?.date ?? 'Select Date',
-                    style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
-                  ),
+              // Header Area
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Context is everything.',
+                      style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add optional metadata to help others discover your post.',
+                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText, height: 1.5),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
+              
+              // Form Area
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border(top: BorderSide(color: colors.border)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, -4),
+                    )
+                  ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Caption Field
+                    Text(
+                      'Caption',
+                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.background,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: colors.border),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: TextFormField(
+                        initialValue: composeState.caption,
+                        style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                        maxLines: 4,
+                        minLines: 2,
+                        decoration: InputDecoration(
+                          hintText: 'Share a thought about this note...',
+                          hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText.withOpacity(0.5)),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                        ),
+                        onChanged: (value) => ref.read(composeProvider.notifier).updateMetadata(caption: value),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // Sermon Details Section
+                    Text(
+                      'Sermon Details',
+                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.background,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.border),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildPremiumField(
+                            label: 'Preacher',
+                            icon: Icons.person_outline,
+                            initialValue: composeState.sermonSource?.preacher,
+                            colors: colors,
+                            onChanged: (value) {
+                              final src = composeState.sermonSource ?? const SermonSource(preacher: '');
+                              ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(preacher: value));
+                            },
+                          ),
+                          Divider(height: 1, color: colors.border, indent: 48),
+                          _buildPremiumField(
+                            label: 'Church',
+                            icon: Icons.church_outlined,
+                            initialValue: composeState.sermonSource?.church,
+                            colors: colors,
+                            onChanged: (value) {
+                              final src = composeState.sermonSource ?? const SermonSource(preacher: '');
+                              ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(church: value));
+                            },
+                          ),
+                          Divider(height: 1, color: colors.border, indent: 48),
+                          _buildPremiumField(
+                            label: 'Series',
+                            icon: Icons.collections_bookmark_outlined,
+                            initialValue: composeState.sermonSource?.series,
+                            colors: colors,
+                            onChanged: (value) {
+                              final src = composeState.sermonSource ?? const SermonSource(preacher: '');
+                              ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(series: value));
+                            },
+                          ),
+                          Divider(height: 1, color: colors.border, indent: 48),
+                          InkWell(
+                            onTap: () async {
+                              final date = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: ThemeData.light().copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: colors.gold,
+                                        onPrimary: colors.surfaceRaised,
+                                        surface: colors.surface,
+                                        onSurface: colors.primaryText,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (date != null) {
+                                final src = composeState.sermonSource ?? const SermonSource(preacher: '');
+                                ref.read(composeProvider.notifier).updateMetadata(
+                                  sermonSource: src.copyWith(date: date.toIso8601String().split('T')[0]),
+                                );
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.calendar_today_outlined, size: 20, color: colors.secondaryText),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      composeState.sermonSource?.date ?? 'Date Preached',
+                                      style: ScribesTextStyles.bodyMd.copyWith(
+                                        color: composeState.sermonSource?.date == null 
+                                          ? colors.secondaryText.withOpacity(0.5) 
+                                          : colors.primaryText,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right, size: 20, color: colors.secondaryText.withOpacity(0.5)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumField({
+    required String label,
+    required IconData icon,
+    required String? initialValue,
+    required dynamic colors,
+    required Function(String) onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: colors.secondaryText),
+          const SizedBox(width: 16),
+          Expanded(
+            child: TextFormField(
+              initialValue: initialValue,
+              style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+              decoration: InputDecoration(
+                hintText: label,
+                hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText.withOpacity(0.5)),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
       ),
     );
   }

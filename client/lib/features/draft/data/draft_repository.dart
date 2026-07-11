@@ -86,7 +86,14 @@ class DraftRepository {
       authorId: record.authorId,
       content: contentMap,
       caption: record.caption,
-      sermonSource: record.sermonSource != null ? SermonSource(preacher: record.sermonSource) : null,
+      sermonSource: () {
+        if (record.sermonSource == null) return null;
+        try {
+          return SermonSource.fromJson(jsonDecode(record.sermonSource!));
+        } catch (_) {
+          return null; // fallback if invalid json
+        }
+      }(),
       scriptureTags: tags,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
@@ -142,7 +149,14 @@ class DraftRepository {
         authorId: record.authorId,
         content: contentMap,
         caption: record.caption,
-        sermonSource: record.sermonSource != null ? SermonSource(preacher: record.sermonSource) : null,
+        sermonSource: () {
+          if (record.sermonSource == null) return null;
+          try {
+            return SermonSource.fromJson(jsonDecode(record.sermonSource!));
+          } catch (_) {
+            return null; // fallback if invalid json
+          }
+        }(),
         scriptureTags: tags,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,

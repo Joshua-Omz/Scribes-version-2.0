@@ -8,7 +8,8 @@ part 'post_social_providers.g.dart';
 class PostReactionsState {
   final List<ReactionCount> counts;
   final String? userReaction;
-  PostReactionsState({required this.counts, this.userReaction});
+  final bool modifiedReaction;
+  PostReactionsState({required this.counts, this.userReaction, this.modifiedReaction = false});
 }
 
 @riverpod
@@ -25,51 +26,63 @@ class PostReactionsNotifier extends _$PostReactionsNotifier {
     }
   }
 
-  Future<void> react(String type) async {
+  Future<void> react(String type, {String? knownUserReaction}) async {
     final repo = ref.read(socialRepositoryProvider);
     
-    // Toggle reaction if it's the same
     final currentState = state.value;
-    final isRemoving = currentState != null && currentState.userReaction == type;
+    final currentUserReaction = currentState?.modifiedReaction == true 
+        ? currentState?.userReaction 
+        : knownUserReaction;
+        
+    final isRemoving = currentUserReaction == type;
     
+    // --- OPTIMISTIC UPDATE ---
     if (isRemoving) {
-      await repo.unreact(postId);
-      // Optimistic update
-      final newCounts = List<ReactionCount>.from(currentState.counts);
+      final newCounts = List<ReactionCount>.from(currentState?.counts ?? []);
       final idx = newCounts.indexWhere((c) => c.type == type);
       if (idx >= 0) {
         newCounts[idx] = ReactionCount(type: type, count: (newCounts[idx].count - 1).clamp(0, 999999));
       }
-      state = AsyncData(PostReactionsState(counts: newCounts, userReaction: null));
+      state = AsyncData(PostReactionsState(counts: newCounts, userReaction: null, modifiedReaction: true));
     } else {
-      await repo.react(postId, type);
-      // Optimistic update
       if (currentState != null) {
         final newCounts = List<ReactionCount>.from(currentState.counts);
         
-        // Remove old reaction count if any
-        if (currentState.userReaction != null) {
-           final oldIdx = newCounts.indexWhere((c) => c.type == currentState.userReaction);
+        if (currentUserReaction != null) {
+           final oldIdx = newCounts.indexWhere((c) => c.type == currentUserReaction);
            if (oldIdx >= 0) {
-             newCounts[oldIdx] = ReactionCount(type: currentState.userReaction!, count: (newCounts[oldIdx].count - 1).clamp(0, 999999));
+             newCounts[oldIdx] = ReactionCount(type: currentUserReaction, count: (newCounts[oldIdx].count - 1).clamp(0, 999999));
            }
         }
         
-        // Add new reaction count
         final newIdx = newCounts.indexWhere((c) => c.type == type);
         if (newIdx >= 0) {
           newCounts[newIdx] = ReactionCount(type: type, count: newCounts[newIdx].count + 1);
         } else {
           newCounts.add(ReactionCount(type: type, count: 1));
         }
-        state = AsyncData(PostReactionsState(counts: newCounts, userReaction: type));
+        state = AsyncData(PostReactionsState(counts: newCounts, userReaction: type, modifiedReaction: true));
       }
     }
     
-    // Fetch from server to sync (optional, could just rely on optimistic)
-    final freshCounts = await repo.getReactions(postId);
-    if (state.value != null) {
-        state = AsyncData(PostReactionsState(counts: freshCounts, userReaction: state.value!.userReaction));
+    // --- NETWORK CALL ---
+    try {
+      if (isRemoving) {
+        await repo.unreact(postId);
+      } else {
+        await repo.react(postId, type);
+      }
+      
+      // Fetch from server to sync 
+      final freshCounts = await repo.getReactions(postId);
+      if (state.value != null) {
+          state = AsyncData(PostReactionsState(counts: freshCounts, userReaction: state.value!.userReaction, modifiedReaction: state.value!.modifiedReaction));
+      }
+    } catch (e) {
+      // Revert on failure (simplified)
+      if (currentState != null) {
+        state = AsyncData(currentState);
+      }
     }
   }
 }

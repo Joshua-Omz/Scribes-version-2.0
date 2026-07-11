@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../draft/data/draft_repository.dart';
 import '../../posts/domain/sermon_source.dart';
 
-final composeProvider = NotifierProvider<ComposeNotifier, ComposeState>(ComposeNotifier.new);
+final composeProvider = NotifierProvider<ComposeNotifier, ComposeState>(() => ComposeNotifier());
 
 class ComposeState {
   final String draftId;
@@ -122,9 +122,9 @@ class ComposeNotifier extends Notifier<ComposeState> {
     final deltaJson = controller.document.toDelta().toJson();
     final List<String> scriptureTags = [];
     for (final op in deltaJson) {
-      if (op is Map<String, dynamic> && op.containsKey('attributes')) {
+      if ((op as Map).containsKey('attributes')) {
         final attrs = op['attributes'];
-        if (attrs is Map && attrs.containsKey('scripture')) {
+        if ((attrs as Map).containsKey('scripture')) {
           final tag = attrs['scripture'].toString();
           if (!scriptureTags.contains(tag)) {
             scriptureTags.add(tag);

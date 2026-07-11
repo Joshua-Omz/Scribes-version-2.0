@@ -17,7 +17,7 @@ class ScribesDrawer extends ConsumerWidget {
     final user = authState.value;
 
     return Drawer(
-      backgroundColor: colors.surface,
+      backgroundColor: colors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(right: Radius.circular(16)),
       ),

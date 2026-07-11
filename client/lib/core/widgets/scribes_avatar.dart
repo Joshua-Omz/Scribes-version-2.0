@@ -7,7 +7,7 @@ class ScribesAvatar extends ConsumerWidget {
   final String authorName;
   final double radius;
 
-  ScribesAvatar({
+  const ScribesAvatar({
     super.key,
     this.imageUrl,
     required this.authorName,

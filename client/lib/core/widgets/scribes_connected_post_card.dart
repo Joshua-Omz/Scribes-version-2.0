@@ -29,12 +29,15 @@ class ScribesConnectedPostCard extends ConsumerWidget {
 
     final reactionsStateData = reactionsState.value;
     final reactions = reactionsStateData?.counts ?? [];
-    final userReaction = reactionsStateData?.userReaction;
+    final userReaction = (reactionsStateData?.modifiedReaction ?? false) 
+        ? reactionsStateData?.userReaction 
+        : null; // The backend doesn't currently return the initial user reaction on the Post model
     final comments = commentsState.value ?? [];
 
     final amenCount = reactions.where((r) => r.type == 'amen').fold(0, (sum, r) => sum + r.count);
-    final insightCount = reactions.where((r) => r.type == 'insight').fold(0, (sum, r) => sum + r.count);
-    final thoughtCount = comments.length;
+    final insightCount = reactions.where((r) => r.type == 'insightful').fold(0, (sum, r) => sum + r.count);
+    final thoughtProvokingCount = reactions.where((r) => r.type == 'thought_provoking').fold(0, (sum, r) => sum + r.count);
+    final commentCount = comments.length;
 
     return Column(
       children: [
@@ -50,7 +53,8 @@ class ScribesConnectedPostCard extends ConsumerWidget {
           isFeatured: isFeatured,
           amenCount: amenCount,
           insightCount: insightCount,
-          thoughtCount: thoughtCount,
+          thoughtProvokingCount: thoughtProvokingCount,
+          commentCount: commentCount,
           userReactionType: userReaction,
           onTap: () => context.push('/posts/${post.id}'),
           onComment: () {
@@ -61,7 +65,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
               context.push('/auth');
               return;
             }
-            ref.read(postReactionsProvider(post.id).notifier).react(type);
+            ref.read(postReactionsProvider(post.id).notifier).react(type, knownUserReaction: null);
           },
         ),
         Divider(height: 1, thickness: 1, color: colors.border),

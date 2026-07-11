@@ -7,9 +7,11 @@ import '../../../core/widgets/scribes_top_app_bar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
 import '../application/feed_notifier.dart';
+import '../../explore/application/explore_notifier.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../../core/widgets/scribes_unauth_banner.dart';
+import '../../../core/widgets/scribes_loading_indicator.dart';
 
 import 'package:flutter/rendering.dart';
 import '../../../core/widgets/scribes_drawer.dart';
@@ -94,45 +96,84 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                       ),
                     ),
                   ),
-                  feedState.when(
-                    data: (posts) {
-                      if (posts.isEmpty) {
-                        return SliverFillRemaining(
-                          child: _buildEmptyState(context, colors),
-                        );
-                      }
+                  if (_selectedTabIndex == 0)
+                    feedState.when(
+                      data: (posts) {
+                        if (posts.isEmpty) {
+                          return SliverFillRemaining(
+                            child: _buildEmptyState(context, colors),
+                          );
+                        }
 
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                              if (index == posts.length) {
-                                if (ref.read(feedProvider.notifier).hasMore) {
-                                  ref.read(feedProvider.notifier).loadMore();
-                                  return const Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Center(child: CircularProgressIndicator()),
-                                  );
+                        return SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                                if (index == posts.length) {
+                                  if (ref.read(feedProvider.notifier).hasMore) {
+                                    ref.read(feedProvider.notifier).loadMore();
+                                    return const Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: Center(child: ScribesLoadingIndicator()),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
                                 }
-                                return const SizedBox.shrink();
-                              }
 
-                              final post = posts[index];
-                              return ScribesConnectedPostCard(
-                                post: post,
-                                isFeatured: index == 0,
+                                final post = posts[index];
+                                return ScribesConnectedPostCard(
+                                  post: post,
+                                  isFeatured: index == 0,
+                                );
+                              },
+                              childCount: posts.length + (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
+                            ),
+                          );
+                      },
+                      loading: () => const SliverFillRemaining(
+                        child: Center(child: ScribesLoadingIndicator()),
+                      ),
+                      error: (e, st) => SliverFillRemaining(
+                        child: Center(child: Text('Error: \$e')),
+                      ),
+                    ),
+                  if (_selectedTabIndex == 1)
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final exploreState = ref.watch(explorePostsProvider);
+                        return exploreState.when(
+                          data: (posts) {
+                            if (posts.isEmpty) {
+                              return SliverFillRemaining(
+                                child: _buildEmptyState(context, colors),
                               );
-                            },
-                            childCount: posts.length + (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
-                          ),
+                            }
+                            return SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  if (index == posts.length) {
+                                    if (ref.read(explorePostsProvider.notifier).hasMore) {
+                                      ref.read(explorePostsProvider.notifier).loadMore();
+                                      return const Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Center(child: ScribesLoadingIndicator()),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  }
+                                  return ScribesConnectedPostCard(
+                                    post: posts[index],
+                                    isFeatured: index == 0,
+                                  );
+                                },
+                                childCount: posts.length + (ref.read(explorePostsProvider.notifier).hasMore ? 1 : 0),
+                              ),
+                            );
+                          },
+                          loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                          error: (e, st) => SliverFillRemaining(child: Center(child: Text('Error: \$e'))),
                         );
-                    },
-                    loading: () => const SliverFillRemaining(
-                      child: Center(child: CircularProgressIndicator()),
+                      },
                     ),
-                    error: (e, st) => SliverFillRemaining(
-                      child: Center(child: Text('Error: $e')),
-                    ),
-                  ),
                 ],
               ),
             ),

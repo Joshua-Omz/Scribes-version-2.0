@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../../core/widgets/scribes_icon_button.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../application/explore_notifier.dart';
+import '../../../core/widgets/scribes_loading_indicator.dart';
 
 class ExploreScreen extends ConsumerWidget {
   const ExploreScreen({super.key});
@@ -84,7 +85,7 @@ class ExploreScreen extends ConsumerWidget {
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: ScribesLoadingIndicator()),
                   error: (e, st) => Center(child: Text('Error', style: TextStyle(color: colors.primaryText))),
                 ),
               ),
@@ -122,7 +123,7 @@ class ExploreScreen extends ConsumerWidget {
                           ref.read(explorePostsProvider.notifier).loadMore();
                           return const Padding(
                             padding: EdgeInsets.all(16.0),
-                            child: Center(child: CircularProgressIndicator()),
+                            child: Center(child: ScribesLoadingIndicator()),
                           );
                         }
 
@@ -143,7 +144,7 @@ class ExploreScreen extends ConsumerWidget {
                 );
               },
               loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: ScribesLoadingIndicator()),
               ),
               error: (e, st) => SliverFillRemaining(
                 child: Center(

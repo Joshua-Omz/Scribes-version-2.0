@@ -9,7 +9,8 @@ import 'package:scribes/core/widgets/scribes_reaction_bar.dart';
 import 'package:scribes/core/widgets/scribes_author_header.dart';
 import 'package:scribes/features/posts/presentation/widgets/post_rich_text.dart';
 import 'package:scribes/features/posts/presentation/widgets/version_history_sheet.dart';
-import '../../../core/widgets/scribes_comment_sheet.dart';
+import 'package:scribes/core/widgets/scribes_comment_sheet.dart';
+import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/core/widgets/scribes_unauth_banner.dart';
 import 'package:scribes/features/social/application/post_social_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
@@ -186,20 +187,23 @@ class PostDetailScreen extends ConsumerWidget {
 
                           final reactionsStateData = reactionsState.value;
                           final reactions = reactionsStateData?.counts ?? [];
-                          final userReaction = reactionsStateData?.userReaction;
+                          final userReaction = (reactionsStateData?.modifiedReaction ?? false) 
+                              ? reactionsStateData?.userReaction 
+                              : null; 
                           final comments = commentsState.value ?? [];
-
+                          
                           return ScribesReactionBar(
                             amenCount: reactions.where((r) => r.type == 'amen').fold(0, (sum, r) => sum + r.count),
-                            insightCount: reactions.where((r) => r.type == 'insight').fold(0, (sum, r) => sum + r.count),
-                            thoughtCount: comments.length,
+                            insightCount: reactions.where((r) => r.type == 'insightful').fold(0, (sum, r) => sum + r.count),
+                            thoughtProvokingCount: reactions.where((r) => r.type == 'thought_provoking').fold(0, (sum, r) => sum + r.count),
+                            commentCount: comments.length,
                             userReactions: userReaction != null ? [userReaction] : [],
                             onReact: (type) {
                               if (!isAuthenticated) {
                                 context.push('/auth');
                                 return;
                               }
-                              ref.read(postReactionsProvider(postId).notifier).react(type);
+                              ref.read(postReactionsProvider(postId).notifier).react(type, knownUserReaction: null);
                             },
                             onComment: () {
                               if (!isAuthenticated) {
@@ -218,7 +222,7 @@ class PostDetailScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => Center(child: CircularProgressIndicator(color: colors.gold)),
+        loading: () => Center(child: ScribesLoadingIndicator()),
         error: (err, stack) => Center(
           child: Text('Error loading post: $err', style: TextStyle(color: colors.primaryText)),
         ),

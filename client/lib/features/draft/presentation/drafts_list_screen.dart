@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../compose/application/compose_provider.dart';
 import '../application/drafts_list_provider.dart';
 import 'widgets/scribes_draft_card.dart';
@@ -83,7 +84,7 @@ class DraftsListScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => Center(child: CircularProgressIndicator(color: colors.gold)),
+          loading: () => Center(child: ScribesLoadingIndicator()),
           error: (err, stack) => Center(
             child: Text(
               'Failed to load drafts',

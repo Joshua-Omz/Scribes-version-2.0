@@ -11,9 +11,9 @@ class ExploreApi {
     final response = await _dio.get(
       '/explore',
       queryParameters: {
-        if (cursor != null) 'cursor': cursor,
+        'cursor': ?cursor,
         'limit': limit,
-        if (categoryId != null) 'category_id': categoryId,
+        'category_id': ?categoryId,
       },
     );
     final data = response.data;
