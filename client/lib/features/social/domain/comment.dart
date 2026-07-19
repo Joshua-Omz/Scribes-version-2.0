@@ -12,6 +12,7 @@ abstract class Comment with _$Comment {
     required String body,
     @Default([]) List<String> mentions,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
     @JsonKey(name: 'is_hidden') required bool isHidden,
     @JsonKey(name: 'is_deleted') required bool isDeleted,
   }) = _Comment;

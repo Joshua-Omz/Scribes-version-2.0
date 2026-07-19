@@ -116,3 +116,11 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (User, string, er
 
 	return user, tok, nil
 }
+
+func (s *Service) GetPublicProfile(ctx context.Context, id uuid.UUID) (PublicProfile, error) {
+	return s.repo.GetPublicProfile(ctx, id)
+}
+
+func (s *Service) SearchUsersByHandle(ctx context.Context, query string) ([]UserSearchResult, error) {
+	return s.repo.SearchUsersByHandle(ctx, query)
+}

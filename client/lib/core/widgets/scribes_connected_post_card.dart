@@ -58,7 +58,11 @@ class ScribesConnectedPostCard extends ConsumerWidget {
           userReactionType: userReaction,
           onTap: () => context.push('/posts/${post.id}'),
           onComment: () {
-            ScribesCommentSheet.show(context, postId: post.id);
+            if (!isAuthenticated) {
+              context.push('/auth');
+              return;
+            }
+            ScribesCommentSheet.show(context, postId: post.id, postAuthorId: post.authorId);
           },
           onReact: (type) {
             if (!isAuthenticated) {

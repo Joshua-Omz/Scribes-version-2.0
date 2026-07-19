@@ -22,4 +22,9 @@ class PostRepository {
     final data = await _api.getPostVersions(id);
     return data.map((e) => PostVersion.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<List<Post>> getMyPosts() async {
+    final data = await _api.getMyPosts();
+    return data.map((e) => Post.fromJson(e as Map<String, dynamic>)).toList();
+  }
 }

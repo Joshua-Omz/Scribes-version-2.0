@@ -26,4 +26,11 @@ class PostApi {
     if (data == null || data is String && data.isEmpty) return [];
     return data as List<dynamic>;
   }
+
+  Future<List<dynamic>> getMyPosts() async {
+    final response = await _dio.get(Endpoints.posts);
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return [];
+    return data as List<dynamic>;
+  }
 }

@@ -36,77 +36,112 @@ class ScribesDraftCard extends ConsumerWidget {
 
     final formattedDate = DateFormat('MMM d, y').format(draft.updatedAt);
 
-    return InkWell(
-      onTap: onTap,
-       // Matching ScribesRadius.card
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: colors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surfaceRaised,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colors.gold.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: colors.border.withOpacity(0.5)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: colors.gold.withOpacity(0.1),
+          highlightColor: colors.gold.withOpacity(0.05),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (onDelete != null)
-                  IconButton(
-                    icon: Icon(Icons.delete_outline, color: colors.secondaryText, size: 20),
-                    onPressed: onDelete,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              excerpt,
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Icon(Icons.edit_document, size: 14, color: colors.gold),
-                const SizedBox(width: 6),
-                Text(
-                  'Saved $formattedDate',
-                  style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
-                ),
-                const Spacer(),
-                if (draft.sermonSource != null && draft.sermonSource!.isNotEmpty)
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: colors.surfaceRaised,
-                        borderRadius: BorderRadius.circular(4), // ScribesRadius.chip
-                        border: Border.all(color: colors.border),
+                        color: colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        draft.sermonSource!.displayTitle,
-                        style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        'DRAFT',
+                        style: ScribesTextStyles.labelSm.copyWith(
+                          color: colors.orange,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
-                  ),
+                    const Spacer(),
+                    if (onDelete != null)
+                      Material(
+                        color: Colors.transparent,
+                        child: IconButton(
+                          icon: Icon(Icons.close, color: colors.secondaryText, size: 20),
+                          onPressed: onDelete,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          splashRadius: 20,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText, height: 1.2),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  excerpt,
+                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 20),
+                Divider(height: 1, color: colors.border.withOpacity(0.5)),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 14, color: colors.secondaryText),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Last saved $formattedDate',
+                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                    ),
+                    const Spacer(),
+                    if (draft.sermonSource != null && draft.sermonSource!.isNotEmpty)
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.church_outlined, size: 14, color: colors.gold),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                draft.sermonSource!.displayTitle,
+                                style: ScribesTextStyles.labelSm.copyWith(color: colors.gold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

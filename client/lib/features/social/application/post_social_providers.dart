@@ -105,4 +105,16 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
     await repo.addComment(postId, body, mentions);
     ref.invalidateSelf();
   }
+
+  Future<void> hideComment(String commentId) async {
+    final repo = ref.read(socialRepositoryProvider);
+    await repo.hideComment(commentId);
+    ref.invalidateSelf();
+  }
+
+  Future<void> deleteComment(String commentId) async {
+    final repo = ref.read(socialRepositoryProvider);
+    await repo.deleteComment(commentId);
+    ref.invalidateSelf();
+  }
 }

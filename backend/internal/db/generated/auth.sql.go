@@ -58,6 +58,31 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getPublicProfile = `-- name: GetPublicProfile :one
+SELECT id, handle, display_name, bio
+FROM users
+WHERE id = $1 AND is_deleted = false LIMIT 1
+`
+
+type GetPublicProfileRow struct {
+	ID          uuid.UUID      `json:"id"`
+	Handle      string         `json:"handle"`
+	DisplayName string         `json:"display_name"`
+	Bio         sql.NullString `json:"bio"`
+}
+
+func (q *Queries) GetPublicProfile(ctx context.Context, id uuid.UUID) (GetPublicProfileRow, error) {
+	row := q.db.QueryRowContext(ctx, getPublicProfile, id)
+	var i GetPublicProfileRow
+	err := row.Scan(
+		&i.ID,
+		&i.Handle,
+		&i.DisplayName,
+		&i.Bio,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at FROM users
 WHERE email = $1 AND is_deleted = false LIMIT 1
@@ -122,4 +147,41 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const searchUsersByHandle = `-- name: SearchUsersByHandle :many
+SELECT id, handle, display_name
+FROM users
+WHERE handle ILIKE $1 || '%' AND is_deleted = false
+ORDER BY handle ASC
+LIMIT 10
+`
+
+type SearchUsersByHandleRow struct {
+	ID          uuid.UUID `json:"id"`
+	Handle      string    `json:"handle"`
+	DisplayName string    `json:"display_name"`
+}
+
+func (q *Queries) SearchUsersByHandle(ctx context.Context, dollar_1 sql.NullString) ([]SearchUsersByHandleRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchUsersByHandle, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchUsersByHandleRow
+	for rows.Next() {
+		var i SearchUsersByHandleRow
+		if err := rows.Scan(&i.ID, &i.Handle, &i.DisplayName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

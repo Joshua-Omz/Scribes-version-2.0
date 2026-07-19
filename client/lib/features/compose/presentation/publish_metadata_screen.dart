@@ -84,7 +84,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Post published!')),
                             );
-                            context.go('/feed');
+                            context.go('/');
                           }
                         }).catchError((err) {
                           if (context.mounted) {

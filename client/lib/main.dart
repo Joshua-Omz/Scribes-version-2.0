@@ -11,11 +11,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
-  runApp(
-    const ProviderScope(
-      child: ScribesApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: ScribesApp()));
 }
 
 class ScribesApp extends ConsumerWidget {
@@ -28,11 +24,20 @@ class ScribesApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Scribes',
+      builder: (context, child) {
+        return MediaQuery.withClampedTextScaling(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.0,
+          child: child!,
+        );
+      },
       theme: ThemeData(
         scaffoldBackgroundColor: themeColors.background,
         colorScheme: ColorScheme.fromSeed(
           seedColor: themeColors.gold,
-          brightness: themeColors.background.computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+          brightness: themeColors.background.computeLuminance() > 0.5
+              ? Brightness.light
+              : Brightness.dark,
         ),
         extensions: [themeColors],
       ),
@@ -43,9 +48,7 @@ class ScribesApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en', 'US'),
-      ],
+      supportedLocales: const [Locale('en', 'US')],
     );
   }
 }

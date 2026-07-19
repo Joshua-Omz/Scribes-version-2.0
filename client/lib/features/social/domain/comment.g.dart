@@ -15,6 +15,9 @@ _Comment _$CommentFromJson(Map<String, dynamic> json) => _Comment(
       (json['mentions'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
   createdAt: DateTime.parse(json['created_at'] as String),
+  updatedAt: json['updated_at'] == null
+      ? null
+      : DateTime.parse(json['updated_at'] as String),
   isHidden: json['is_hidden'] as bool,
   isDeleted: json['is_deleted'] as bool,
 );
@@ -26,6 +29,7 @@ Map<String, dynamic> _$CommentToJson(_Comment instance) => <String, dynamic>{
   'body': instance.body,
   'mentions': instance.mentions,
   'created_at': instance.createdAt.toIso8601String(),
+  'updated_at': instance.updatedAt?.toIso8601String(),
   'is_hidden': instance.isHidden,
   'is_deleted': instance.isDeleted,
 };

@@ -34,15 +34,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Scribes',
-              style: ScribesTextStyles.displayXl.copyWith(
-                color: const Color(0xFFC0C0C0), // Silver color
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4.0,
-              ),
+            Image.asset(
+              colors.background.computeLuminance() > 0.5 
+                  ? 'assets/app_icon.png' 
+                  : 'assets/app_icon_dark.png',
+              width: 120,
+              height: 120,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 48.0),
               child: ScribesOrnamentDivider(),

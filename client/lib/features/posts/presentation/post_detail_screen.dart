@@ -210,7 +210,7 @@ class PostDetailScreen extends ConsumerWidget {
                                 context.push('/auth');
                                 return;
                               }
-                              ScribesCommentSheet.show(context, postId: postId);
+                              ScribesCommentSheet.show(context, postId: postId, postAuthorId: post.authorId);
                             },
                           );
                         },

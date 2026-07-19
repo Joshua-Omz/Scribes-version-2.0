@@ -30,8 +30,19 @@ class ScribesDrawer extends ConsumerWidget {
               decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(color: colors.border)),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Image.asset(
+                    colors.background.computeLuminance() > 0.5 
+                        ? 'assets/app_icon.png' 
+                        : 'assets/app_icon_dark.png',
+                    width: 48,
+                    height: 48,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
                   if (user != null)
                     CircleAvatar(
                       radius: 24,
@@ -94,9 +105,11 @@ class ScribesDrawer extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
-            
-            const SizedBox(height: 16),
+            ],
+          ),
+        ),
+        
+        const SizedBox(height: 16),
             
             // Menu Items
             if (user != null) ...[
@@ -108,6 +121,16 @@ class ScribesDrawer extends ConsumerWidget {
                 onTap: () {
                   Navigator.pop(context); // Close drawer
                   context.push('/profile');
+                },
+              ),
+              _buildMenuItem(
+                context: context,
+                colors: colors,
+                icon: Icons.edit_note,
+                title: 'Notes Workspace',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/notes');
                 },
               ),
               _buildMenuItem(

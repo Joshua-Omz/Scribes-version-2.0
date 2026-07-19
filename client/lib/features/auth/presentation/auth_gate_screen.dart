@@ -74,8 +74,13 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.auto_stories, size: 48, color: Colors.grey), // Placeholder for logo if we had one. Let's use gold ornament instead.
-                Icon(Icons.auto_stories, size: 48, color: colors.gold),
+                Image.asset(
+                  colors.background.computeLuminance() > 0.5 
+                      ? 'assets/app_icon.png' 
+                      : 'assets/app_icon_dark.png',
+                  width: 120,
+                  height: 120,
+                ),
                 const SizedBox(height: 24),
                 Text(
                   _isLogin ? 'Welcome back.' : 'Join Scribes.',

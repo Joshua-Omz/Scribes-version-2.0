@@ -72,7 +72,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               children: [
                 ScribesAvatar(
                   authorName: user?.displayName ?? 'A',
-                  size: 96,
+                  radius: 48,
                 ),
                 Container(
                   padding: const EdgeInsets.all(8),

@@ -15,6 +15,9 @@ import '../../features/compose/presentation/publish_metadata_screen.dart';
 import '../../features/draft/presentation/drafts_list_screen.dart';
 import '../../features/profile/presentation/private_profile_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
+import '../../features/notes/presentation/notes_list_screen.dart';
+import '../../features/notes/presentation/note_editor_screen.dart';
+
 part 'app_router.g.dart';
 
 @riverpod
@@ -101,6 +104,14 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const EditProfileScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/notes',
+        builder: (context, state) => const NotesListScreen(),
+      ),
+      GoRoute(
+        path: '/notes/edit',
+        builder: (context, state) => const NoteEditorScreen(),
       ),
     ],
   );

@@ -1,3 +1,4 @@
+
 package auth
 
 import (
@@ -82,4 +83,51 @@ func (r *Repository) GetUserByHandle(ctx context.Context, handle string) (User, 
 		return User{}, err
 	}
 	return mapUser(dbUser), nil
+}
+
+type PublicProfile struct {
+	ID          uuid.UUID `json:"id"`
+	Handle      string    `json:"handle"`
+	DisplayName string    `json:"display_name"`
+	Bio         *string   `json:"bio,omitempty"`
+}
+
+func (r *Repository) GetPublicProfile(ctx context.Context, id uuid.UUID) (PublicProfile, error) {
+	row, err := r.q.GetPublicProfile(ctx, id)
+	if err != nil {
+		return PublicProfile{}, err
+	}
+	var bio *string
+	if row.Bio.Valid {
+		b := row.Bio.String
+		bio = &b
+	}
+	return PublicProfile{
+		ID:          row.ID,
+		Handle:      row.Handle,
+		DisplayName: row.DisplayName,
+		Bio:         bio,
+	}, nil
+}
+
+type UserSearchResult struct {
+	ID          uuid.UUID `json:"id"`
+	Handle      string    `json:"handle"`
+	DisplayName string    `json:"display_name"`
+}
+
+func (r *Repository) SearchUsersByHandle(ctx context.Context, query string) ([]UserSearchResult, error) {
+	rows, err := r.q.SearchUsersByHandle(ctx, sql.NullString{String: query, Valid: query != ""})
+	if err != nil {
+		return nil, err
+	}
+	results := make([]UserSearchResult, len(rows))
+	for i, row := range rows {
+		results[i] = UserSearchResult{
+			ID:          row.ID,
+			Handle:      row.Handle,
+			DisplayName: row.DisplayName,
+		}
+	}
+	return results, nil
 }

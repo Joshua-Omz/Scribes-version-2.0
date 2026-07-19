@@ -51,7 +51,7 @@ final class PostReactionsNotifierProvider
 }
 
 String _$postReactionsNotifierHash() =>
-    r'8000e1913f3756184a117e66a788c81f8c98112a';
+    r'e984d2e9113183a82ee386f1a5abf716f4b86d7a';
 
 final class PostReactionsNotifierFamily extends $Family
     with
@@ -143,7 +143,7 @@ final class PostCommentsNotifierProvider
 }
 
 String _$postCommentsNotifierHash() =>
-    r'09370d63eee783e09fb6c1803bd4f2985bd3ef19';
+    r'f5529455dc7d396e6b0f5e180fe9a3724c112179';
 
 final class PostCommentsNotifierFamily extends $Family
     with

@@ -43,6 +43,30 @@ class Posts extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class Notebooks extends Table {
+  TextColumn get id => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get name => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class Notes extends Table {
+  TextColumn get id => text()();
+  TextColumn get authorId => text()();
+  TextColumn get content => text()(); // JSON string
+  TextColumn get title => text().nullable()();
+  TextColumn get notebookId => text().nullable()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class SyncMetadata extends Table {
   TextColumn get key => text()();
   TextColumn get value => text()();
@@ -51,12 +75,12 @@ class SyncMetadata extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [Drafts, Posts, SyncMetadata])
+@DriftDatabase(tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes])
 class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -72,6 +96,10 @@ class ScribesDatabase extends _$ScribesDatabase {
           await m.addColumn(drafts, drafts.isSynced);
           await m.createTable(posts);
           await m.createTable(syncMetadata);
+        }
+        if (from < 4) {
+          await m.createTable(notebooks);
+          await m.createTable(notes);
         }
       },
     );

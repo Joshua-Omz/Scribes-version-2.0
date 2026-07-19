@@ -15,6 +15,13 @@ class Endpoints {
   // Social
   static const String comments = '/comments';
 
+  // Users
+  static const String users = '/users';
+
   // Drafts
   static const String drafts = '/drafts';
+
+  // Notes
+  static const String notes = '/notes';
+  static const String notebooks = '/notebooks';
 }

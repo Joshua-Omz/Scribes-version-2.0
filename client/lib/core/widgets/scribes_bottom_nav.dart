@@ -55,7 +55,7 @@ class ScribesBottomNav extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildNavItem(context, colors, Icons.auto_stories, 'Bread', 0),
+              _buildNavItem(context, colors, Icons.breakfast_dining, 'Bread', 0),
               _buildNavItem(context, colors, Icons.search, 'search', 1),
               _buildNavItem(context, colors, Icons.lightbulb_outline, 'Insights', 3),
               _buildNavItem(context, colors, Icons.person_outline, 'Profile', 4),

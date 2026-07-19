@@ -92,3 +92,35 @@ func (h *Handler) GetMe(c *gin.Context) {
 
 	respond.JSON(c, http.StatusOK, user)
 }
+
+func (h *Handler) GetPublicProfile(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	profile, err := h.svc.GetPublicProfile(c.Request.Context(), userID)
+	if err != nil {
+		respond.Error(c, http.StatusNotFound, "user not found")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, profile)
+}
+
+func (h *Handler) SearchUsers(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		respond.JSON(c, http.StatusOK, []interface{}{})
+		return
+	}
+
+	results, err := h.svc.SearchUsersByHandle(c.Request.Context(), query)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "search failed")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, results)
+}
