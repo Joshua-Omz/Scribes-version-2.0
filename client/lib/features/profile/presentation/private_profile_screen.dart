@@ -8,6 +8,7 @@ import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../auth/application/auth_notifier.dart';
+import 'package:scribes/features/social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_profile_post_card.dart';
 import '../../../core/widgets/scribes_profile_draft_card.dart';
 import '../../posts/application/my_posts_provider.dart';
@@ -92,9 +93,9 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildStatItem('Followers', '124', colors),
+                      _buildStatItem('Followers', user.followersCount.toString(), colors),
                       const SizedBox(width: 40),
-                      _buildStatItem('Following', '42', colors),
+                      _buildStatItem('Following', user.followingCount.toString(), colors),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -151,24 +152,37 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final post = posts[index];
+                          final savedPosts = ref.watch(savedPostsProvider).value ?? [];
+                          final isSaved = savedPosts.any((p) => p['id'] == post.id || p['post_id'] == post.id);
+
                           // Simple excerpt extractor
                           String excerpt = '';
-                          if (post.content != null && post.content['ops'] != null) {
+                          if (post.content['ops'] != null) {
                             for (var op in post.content['ops']) {
                               if (op['insert'] is String) {
                                 excerpt += op['insert'];
                                 if (excerpt.length > 100) {
-                                  excerpt = '\${excerpt.substring(0, 100)}...';
+                                  excerpt = '${excerpt.substring(0, 100)}...';
                                   break;
                                 }
                               }
                             }
                           }
                           return ScribesProfilePostCard(
-                            title: post.caption ?? '',
+                            title: post.content['title'] ?? '',
                             excerpt: excerpt,
                             publishedAt: post.publishedAt,
-                            onTap: () => context.push('/posts/\${post.id}'),
+                            isSaved: isSaved,
+                            onSaveToggle: () {
+                              if (isSaved) {
+                                ref.read(savedPostsProvider.notifier).unsavePost(post.id);
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post unsaved')));
+                              } else {
+                                ref.read(savedPostsProvider.notifier).savePost(post.id);
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post saved')));
+                              }
+                            },
+                            onTap: () => context.push('/posts/${post.id}'),
                           );
                         },
                         childCount: posts.length,
@@ -176,7 +190,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                     );
                   },
                   loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
-                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: \$err'))),
+                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
                 );
               },
             ),
@@ -205,22 +219,22 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                         (context, index) {
                           final draft = drafts[index];
                           String excerpt = '';
-                          if (draft.content != null && draft.content['ops'] != null) {
+                          if (draft.content['ops'] != null) {
                             for (var op in draft.content['ops']) {
                               if (op['insert'] is String) {
                                 excerpt += op['insert'];
                                 if (excerpt.length > 100) {
-                                  excerpt = '\${excerpt.substring(0, 100)}...';
+                                  excerpt = '${excerpt.substring(0, 100)}...';
                                   break;
                                 }
                               }
                             }
                           }
                           return ScribesProfileDraftCard(
-                            title: draft.caption ?? '',
+                            title: draft.content['title'] ?? '',
                             excerpt: excerpt,
                             updatedAt: draft.updatedAt,
-                            onTap: () => context.push('/drafts/\${draft.id}'),
+                            onTap: () => context.push('/drafts/${draft.id}'),
                           );
                         },
                         childCount: drafts.length,
@@ -228,15 +242,64 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                     );
                   },
                   loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
-                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: \$err'))),
+                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
                 );
               },
             ),
           if (_selectedTabIndex == 2)
-            SliverFillRemaining(
-              child: Center(
-                child: Text('Saved posts coming soon.', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
-              ),
+            Consumer(
+              builder: (context, ref, child) {
+                final savedPostsState = ref.watch(savedPostsProvider);
+                return savedPostsState.when(
+                  data: (savedPosts) {
+                    if (savedPosts.isEmpty) {
+                      return SliverFillRemaining(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.bookmark_outline, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                              const SizedBox(height: 16),
+                              Text('No saved posts.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final savedPost = savedPosts[index];
+                          // Simple excerpt extractor
+                          String excerpt = '';
+                          final content = savedPost['content'];
+                          if (content != null && content['ops'] != null) {
+                            for (var op in content['ops']) {
+                              if (op['insert'] is String) {
+                                excerpt += op['insert'];
+                                if (excerpt.length > 100) {
+                                  excerpt = '${excerpt.substring(0, 100)}...';
+                                  break;
+                                }
+                              }
+                            }
+                          }
+                          // Use the ScribesProfilePostCard for now, though it expects a post object. We might need a generic one.
+                          return ScribesProfilePostCard(
+                            title: savedPost['caption'] ?? 'Saved Post',
+                            excerpt: excerpt,
+                            publishedAt: DateTime.parse(savedPost['created_at']),
+                            onTap: () => context.push('/posts/${savedPost['post_id']}'),
+                          );
+                        },
+                        childCount: savedPosts.length,
+                      ),
+                    );
+                  },
+                  loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
+                );
+              },
             ),
         ],
       ),

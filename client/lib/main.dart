@@ -23,11 +23,17 @@ class ScribesApp extends ConsumerWidget {
     final themeColors = ref.watch(themeProvider);
 
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'Scribes',
       builder: (context, child) {
-        return MediaQuery.withClampedTextScaling(
-          minScaleFactor: 0.85,
-          maxScaleFactor: 1.0,
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: mediaQuery.textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.2,
+            ),
+          ),
           child: child!,
         );
       },

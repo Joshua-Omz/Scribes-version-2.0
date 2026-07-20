@@ -44,6 +44,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	// Public user endpoints
 	r.GET("/users/search", authHandler.SearchUsers)
 	r.GET("/users/:id", authHandler.GetPublicProfile)
+	r.GET("/users/:id/posts", postHandler.ListByAuthor)
 
 	// Feed & Explore
 	r.GET("/explore", feedHandler.GetExplore)
@@ -87,6 +88,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		// Social endpoints
 		protected.POST("/users/:id/follow", socialHandler.Follow)
 		protected.DELETE("/users/:id/follow", socialHandler.Unfollow)
+		protected.GET("/users/:id/is-following", socialHandler.IsFollowing)
 
 		protected.POST("/posts/:id/reactions", socialHandler.React)
 		protected.DELETE("/posts/:id/reactions", socialHandler.Unreact)
@@ -96,6 +98,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 		protected.POST("/posts/:id/save", socialHandler.SavePost)
 		protected.DELETE("/posts/:id/save", socialHandler.UnsavePost)
+		protected.GET("/saved", socialHandler.ListSavedPosts)
 
 
 		// Direct Messaging endpoints

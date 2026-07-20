@@ -33,4 +33,16 @@ class PostApi {
     if (data == null || data is String && data.isEmpty) return [];
     return data as List<dynamic>;
   }
+
+  Future<List<dynamic>> listMyPosts() async {
+    final response = await _dio.get(Endpoints.posts);
+    if (response.data == null) return [];
+    return response.data as List<dynamic>;
+  }
+
+  Future<List<dynamic>> listByAuthor(String userId) async {
+    final response = await _dio.get('${Endpoints.users}/$userId/posts');
+    if (response.data == null) return [];
+    return response.data as List<dynamic>;
+  }
 }

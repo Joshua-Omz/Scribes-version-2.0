@@ -9,6 +9,8 @@ class ScribesProfilePostCard extends ConsumerWidget {
   final String excerpt;
   final DateTime? publishedAt;
   final VoidCallback onTap;
+  final bool isSaved;
+  final VoidCallback? onSaveToggle;
 
   const ScribesProfilePostCard({
     super.key,
@@ -16,6 +18,8 @@ class ScribesProfilePostCard extends ConsumerWidget {
     required this.excerpt,
     this.publishedAt,
     required this.onTap,
+    this.isSaved = false,
+    this.onSaveToggle,
   });
 
   @override
@@ -36,11 +40,33 @@ class ScribesProfilePostCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (publishedAt != null)
-              Text(
-                '${publishedAt!.day}/${publishedAt!.month}/${publishedAt!.year}',
-                style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (publishedAt != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Text(
+                      '${publishedAt!.day}/${publishedAt!.month}/${publishedAt!.year}',
+                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+                if (onSaveToggle != null)
+                  IconButton(
+                    onPressed: onSaveToggle,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      isSaved ? Icons.bookmark : Icons.bookmark_border,
+                      color: isSaved ? colors.gold : colors.secondaryText,
+                      size: 20,
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 8),
             Text(
               title.isEmpty ? 'Untitled' : title,

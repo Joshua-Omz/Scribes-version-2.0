@@ -35,6 +35,10 @@ func (s *Service) Unfollow(ctx context.Context, followerID, followeeID uuid.UUID
 	return s.repo.UnfollowUser(ctx, followerID, followeeID)
 }
 
+func (s *Service) IsFollowing(ctx context.Context, followerID, followeeID uuid.UUID) (bool, error) {
+	return s.repo.CheckIsFollowing(ctx, followerID, followeeID)
+}
+
 // Reactions
 func (s *Service) React(ctx context.Context, postID, userID uuid.UUID, reactionType string) error {
 	return s.repo.UpsertReaction(ctx, postID, userID, generated.ReactionType(reactionType))
@@ -112,4 +116,8 @@ func (s *Service) SavePost(ctx context.Context, userID, postID uuid.UUID, savedT
 
 func (s *Service) UnsavePost(ctx context.Context, userID, postID uuid.UUID, savedType string) error {
 	return s.repo.UnsavePost(ctx, userID, postID, generated.SavedType(savedType))
+}
+
+func (s *Service) GetSavedPosts(ctx context.Context, userID uuid.UUID, savedType string) ([]generated.ListSavedPostsRow, error) {
+	return s.repo.ListSavedPosts(ctx, userID, generated.SavedType(savedType))
 }

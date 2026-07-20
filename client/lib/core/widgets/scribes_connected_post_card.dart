@@ -7,6 +7,7 @@ import '../theme/theme_provider.dart';
 
 import '../../features/posts/domain/post.dart';
 import '../../features/social/application/post_social_providers.dart';
+import '../../features/social/application/saved_posts_provider.dart';
 import '../../features/auth/application/auth_notifier.dart';
 
 class ScribesConnectedPostCard extends ConsumerWidget {
@@ -24,6 +25,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
     final colors = ref.watch(themeProvider);
     final reactionsState = ref.watch(postReactionsProvider(post.id));
     final commentsState = ref.watch(postCommentsProvider(post.id));
+    final savedPostsState = ref.watch(savedPostsProvider);
     final authState = ref.watch(authProvider);
     final isAuthenticated = authState.value != null;
 
@@ -38,6 +40,9 @@ class ScribesConnectedPostCard extends ConsumerWidget {
     final insightCount = reactions.where((r) => r.type == 'insightful').fold(0, (sum, r) => sum + r.count);
     final thoughtProvokingCount = reactions.where((r) => r.type == 'thought_provoking').fold(0, (sum, r) => sum + r.count);
     final commentCount = comments.length;
+    
+    final savedPosts = savedPostsState.value ?? [];
+    final isSaved = savedPosts.any((p) => p['id'] == post.id || p['post_id'] == post.id);
 
     return Column(
       children: [
@@ -56,6 +61,20 @@ class ScribesConnectedPostCard extends ConsumerWidget {
           thoughtProvokingCount: thoughtProvokingCount,
           commentCount: commentCount,
           userReactionType: userReaction,
+          isSaved: isSaved,
+          onSaveToggle: () {
+            if (!isAuthenticated) {
+              context.push('/auth');
+              return;
+            }
+            if (isSaved) {
+              ref.read(savedPostsProvider.notifier).unsavePost(post.id);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post unsaved')));
+            } else {
+              ref.read(savedPostsProvider.notifier).savePost(post.id);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post saved')));
+            }
+          },
           onTap: () => context.push('/posts/${post.id}'),
           onComment: () {
             if (!isAuthenticated) {

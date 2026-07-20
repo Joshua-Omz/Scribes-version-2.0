@@ -27,6 +27,8 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final VoidCallback? onComment;
   final void Function(String)? onReact;
   final String? userReactionType;
+  final bool isSaved;
+  final VoidCallback? onSaveToggle;
 
   const ScribesPostCard({
     super.key,
@@ -48,6 +50,8 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     this.onComment,
     this.onReact,
     this.userReactionType,
+    this.isSaved = false,
+    this.onSaveToggle,
   });
 
   @override
@@ -100,6 +104,14 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                     child: ScribesScriptureChip(
                       reference: widget.scriptureRef!,
                       onTap: () {},
+                    ),
+                  ),
+                if (widget.onSaveToggle != null)
+                  IconButton(
+                    onPressed: widget.onSaveToggle,
+                    icon: Icon(
+                      widget.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                      color: widget.isSaved ? colors.gold : colors.secondaryText,
                     ),
                   ),
               ],

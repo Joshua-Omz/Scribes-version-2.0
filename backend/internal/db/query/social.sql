@@ -9,6 +9,12 @@ ON CONFLICT DO NOTHING;
 DELETE FROM follows
 WHERE follower_id = $1 AND followee_id = $2;
 
+-- name: CheckIsFollowing :one
+SELECT EXISTS(
+    SELECT 1 FROM follows 
+    WHERE follower_id = $1 AND followee_id = $2
+);
+
 
 -- ── Reactions ──────────────────────────────────
 

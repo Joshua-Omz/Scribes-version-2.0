@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/post.dart';
+import '../domain/sermon_source.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart' hide Post;
@@ -26,7 +27,7 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
 
     try {
       final repo = ref.read(postRepositoryProvider);
-      final apiPosts = await repo.getMyPosts();
+      final apiPosts = await repo.listMyPosts();
       
       if (apiPosts.isNotEmpty) {
         await db.batch((batch) {
@@ -62,19 +63,47 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     final localPosts = await (db.select(db.posts)..where((t) => t.authorId.equals(user.id))).get();
     
     return localPosts.map((row) {
+      Map<String, dynamic> decodedContent = {'title': 'Untitled', 'body': '', 'excerpt': ''};
+      try {
+        final decoded = jsonDecode(row.content);
+        if (decoded is Map<String, dynamic>) {
+          decodedContent = decoded;
+        }
+      } catch (_) {}
+
+      SermonSource? decodedSermon;
+      if (row.sermonSource != null) {
+        try {
+          final decoded = jsonDecode(row.sermonSource!);
+          if (decoded is Map<String, dynamic>) {
+            decodedSermon = SermonSource.fromJson(decoded);
+          }
+        } catch (_) {}
+      }
+
+      List<String> decodedTags = [];
+      if (row.scriptureTags != null) {
+        try {
+          final decoded = jsonDecode(row.scriptureTags!);
+          if (decoded is List) {
+            decodedTags = decoded.map((e) => e.toString()).toList();
+          }
+        } catch (_) {}
+      }
+
       return Post(
         id: row.id,
         authorId: row.authorId,
         authorHandle: row.authorHandle,
         authorName: row.authorName,
-        content: jsonDecode(row.content),
+        content: decodedContent,
         caption: row.caption,
         visibility: row.visibility,
         currentVersion: row.currentVersion,
         isCorrection: row.isCorrection,
         correctsPostId: row.correctsPostId,
-        sermonSource: row.sermonSource != null ? jsonDecode(row.sermonSource!) : null,
-        scriptureTags: row.scriptureTags != null ? List<String>.from(jsonDecode(row.scriptureTags!)) : [],
+        sermonSource: decodedSermon,
+        scriptureTags: decodedTags,
         isDeleted: row.isDeleted,
         publishedAt: row.publishedAt,
       );

@@ -94,6 +94,23 @@ func (h *Handler) List(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, posts)
 }
 
+func (h *Handler) ListByAuthor(c *gin.Context) {
+	authorIDParam := c.Param("id")
+	authorID, err := uuid.Parse(authorIDParam)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid author id")
+		return
+	}
+
+	posts, err := h.svc.List(c.Request.Context(), authorID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to fetch posts")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, posts)
+}
+
 func (h *Handler) Update(c *gin.Context) {
 	authorID, ok := getAuthorID(c)
 	if !ok {

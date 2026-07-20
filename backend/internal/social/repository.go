@@ -35,6 +35,13 @@ func (r *Repository) UnfollowUser(ctx context.Context, followerID, followeeID uu
 	})
 }
 
+func (r *Repository) CheckIsFollowing(ctx context.Context, followerID, followeeID uuid.UUID) (bool, error) {
+	return r.q.CheckIsFollowing(ctx, generated.CheckIsFollowingParams{
+		FollowerID: followerID,
+		FolloweeID: followeeID,
+	})
+}
+
 // ── Reactions ──────────────────────────────────
 
 func (r *Repository) UpsertReaction(ctx context.Context, postID, userID uuid.UUID, reactionType generated.ReactionType) error {

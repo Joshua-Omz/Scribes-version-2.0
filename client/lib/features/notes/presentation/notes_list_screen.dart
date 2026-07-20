@@ -34,6 +34,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
       backgroundColor: colors.background,
       drawer: const ScribesDrawer(),
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
             expandedHeight: 180.0,

@@ -61,4 +61,33 @@ class SocialRepository {
     final data = await _api.searchUsers(query);
     return data.map((e) => CommentAuthor.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  // ── Follows ────────────────────────────────────
+
+  Future<void> followUser(String userId) async {
+    await _api.followUser(userId);
+  }
+
+  Future<void> unfollowUser(String userId) async {
+    await _api.unfollowUser(userId);
+  }
+
+  Future<bool> isFollowing(String userId) async {
+    return _api.isFollowing(userId);
+  }
+
+  // ── Saved ──────────────────────────────────────
+
+  Future<void> savePost(String postId, {String type = 'bookmark'}) async {
+    await _api.savePost(postId, type: type);
+  }
+
+  Future<void> unsavePost(String postId, {String type = 'bookmark'}) async {
+    await _api.unsavePost(postId, type: type);
+  }
+
+  Future<List<Map<String, dynamic>>> getSavedPosts({String type = 'bookmark'}) async {
+    final data = await _api.getSavedPosts(type: type);
+    return data.map((e) => e as Map<String, dynamic>).toList();
+  }
 }

@@ -22,17 +22,23 @@ class ScribesCommentSheet extends ConsumerStatefulWidget {
     this.postAuthorId,
   });
 
-  static Future<void> show(BuildContext context, {required String postId, String? postAuthorId}) {
+  static Future<void> show(
+    BuildContext context, {
+    required String postId,
+    String? postAuthorId,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ScribesCommentSheet(postId: postId, postAuthorId: postAuthorId),
+      builder: (context) =>
+          ScribesCommentSheet(postId: postId, postAuthorId: postAuthorId),
     );
   }
 
   @override
-  ConsumerState<ScribesCommentSheet> createState() => _ScribesCommentSheetState();
+  ConsumerState<ScribesCommentSheet> createState() =>
+      _ScribesCommentSheetState();
 }
 
 class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
@@ -126,7 +132,8 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
     if (lastAtIndex < 0) return;
 
     final textAfterCursor = text.substring(cursorPos);
-    final newText = '${text.substring(0, lastAtIndex)}@${user.handle} $textAfterCursor';
+    final newText =
+        '${text.substring(0, lastAtIndex)}@${user.handle} $textAfterCursor';
     _commentController.text = newText;
     _commentController.selection = TextSelection.collapsed(
       offset: lastAtIndex + user.handle.length + 2, // +2 for @ and space
@@ -140,15 +147,21 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
     final body = _commentController.text.trim();
     if (body.isEmpty) return;
 
-    await ref.read(postCommentsProvider(widget.postId).notifier).addComment(
-      body,
-      _mentionedUserIds.toSet().toList(), // Deduplicate
-    );
+    await ref
+        .read(postCommentsProvider(widget.postId).notifier)
+        .addComment(
+          body,
+          _mentionedUserIds.toSet().toList(), // Deduplicate
+        );
     _commentController.clear();
     _mentionedUserIds.clear();
   }
 
-  void _showCommentActions(BuildContext context, Comment comment, ScribesColors colors) {
+  void _showCommentActions(
+    BuildContext context,
+    Comment comment,
+    ScribesColors colors,
+  ) {
     final currentUser = ref.read(authProvider).value;
     if (currentUser == null) return;
 
@@ -156,7 +169,8 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
     if (comment.isHidden || comment.isDeleted) return;
 
     final isCommentAuthor = currentUser.id == comment.authorId;
-    final isPostAuthor = widget.postAuthorId != null && currentUser.id == widget.postAuthorId;
+    final isPostAuthor =
+        widget.postAuthorId != null && currentUser.id == widget.postAuthorId;
 
     showModalBottomSheet(
       context: context,
@@ -191,7 +205,9 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                   isDestructive: true,
                   onTap: () {
                     Navigator.pop(ctx);
-                    ref.read(postCommentsProvider(widget.postId).notifier).deleteComment(comment.id);
+                    ref
+                        .read(postCommentsProvider(widget.postId).notifier)
+                        .deleteComment(comment.id);
                   },
                 ),
 
@@ -202,7 +218,9 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                   label: 'Hide this comment',
                   onTap: () {
                     Navigator.pop(ctx);
-                    ref.read(postCommentsProvider(widget.postId).notifier).hideComment(comment.id);
+                    ref
+                        .read(postCommentsProvider(widget.postId).notifier)
+                        .hideComment(comment.id);
                   },
                 ),
 
@@ -239,7 +257,10 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
     final color = isDestructive ? colors.orange : colors.primaryText;
     return ListTile(
       leading: Icon(icon, color: color, size: 22),
-      title: Text(label, style: ScribesTextStyles.bodyMd.copyWith(color: color)),
+      title: Text(
+        label,
+        style: ScribesTextStyles.bodyMd.copyWith(color: color),
+      ),
       onTap: onTap,
     );
   }
@@ -250,153 +271,179 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
     final commentsState = ref.watch(postCommentsProvider(widget.postId));
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Column(
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.border,
-                borderRadius: BorderRadius.circular(2),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Thoughts',
-                  style: ScribesTextStyles.displayMd.copyWith(
-                    color: colors.primaryText, 
-                    fontSize: 24,
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, color: colors.secondaryText),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-          
-          Divider(height: 1, color: colors.border),
-          
-          // Comments List
-          Expanded(
-            child: commentsState.when(
-              data: (comments) {
-                if (comments.isEmpty) {
-                  return Center(
-                    child: Text('No thoughts yet. Share yours!', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
-                  );
-                }
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(postCommentsProvider(widget.postId));
-                  },
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: comments.length,
-                    separatorBuilder: (context, index) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Divider(height: 1, color: colors.border),
-                    ),
-                    itemBuilder: (context, index) {
-                      final comment = comments[index];
-                      return _CommentTile(
-                        comment: comment,
-                        colors: colors,
-                        onLongPress: () => _showCommentActions(context, comment, colors),
-                      );
-                    },
-                  ),
-                );
-              },
-              loading: () => const Center(child: ScribesLoadingIndicator()),
-              error: (err, stack) => Center(child: Text('Failed to load comments.', style: TextStyle(color: colors.primaryText))),
-            ),
-          ),
-          
-          // @mention autocomplete overlay + Input Area
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Mention suggestions
-              if (_showMentionOverlay && _activeMentionQuery != null)
-                _MentionSuggestions(
-                  query: _activeMentionQuery!,
-                  colors: colors,
-                  onSelect: _insertMention,
-                ),
 
-              // Input Area
-              Container(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: 12,
-                  bottom: bottomPadding > 0 ? bottomPadding + 12 : 32,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.background,
-                  border: Border(top: BorderSide(color: colors.border)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.surface,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: colors.border),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Thoughts',
+                    style: ScribesTextStyles.displayMd.copyWith(
+                      color: colors.primaryText,
+                      fontSize: 24,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, color: colors.secondaryText),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            Divider(height: 1, color: colors.border),
+
+            // Comments List
+            Expanded(
+              child: commentsState.when(
+                data: (comments) {
+                  if (comments.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'No thoughts yet. Share yours!',
+                        style: ScribesTextStyles.bodyMd.copyWith(
+                          color: colors.secondaryText,
                         ),
-                        child: TextField(
-                          controller: _commentController,
-                          focusNode: _focusNode,
-                          maxLines: 4,
-                          minLines: 1,
-                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-                          decoration: InputDecoration(
-                            hintText: 'Share your thoughts...',
-                            hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    );
+                  }
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(postCommentsProvider(widget.postId));
+                    },
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: comments.length,
+                      separatorBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Divider(height: 1, color: colors.border),
+                      ),
+                      itemBuilder: (context, index) {
+                        final comment = comments[index];
+                        return _CommentTile(
+                          comment: comment,
+                          colors: colors,
+                          onLongPress: () =>
+                              _showCommentActions(context, comment, colors),
+                        );
+                      },
+                    ),
+                  );
+                },
+                loading: () => const Center(child: ScribesLoadingIndicator()),
+                error: (err, stack) => Center(
+                  child: Text(
+                    'Failed to load comments.',
+                    style: TextStyle(color: colors.primaryText),
+                  ),
+                ),
+              ),
+            ),
+
+            // @mention autocomplete overlay + Input Area
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Mention suggestions
+                if (_showMentionOverlay && _activeMentionQuery != null)
+                  _MentionSuggestions(
+                    query: _activeMentionQuery!,
+                    colors: colors,
+                    onSelect: _insertMention,
+                  ),
+
+                // Input Area
+                Container(
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 12,
+                    bottom: 32,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.background,
+                    border: Border(top: BorderSide(color: colors.border)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: colors.border),
+                          ),
+                          child: TextField(
+                            controller: _commentController,
+                            focusNode: _focusNode,
+                            maxLines: 4,
+                            minLines: 1,
+                            style: ScribesTextStyles.bodyMd.copyWith(
+                              color: colors.primaryText,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Share your thoughts...',
+                              hintStyle: ScribesTextStyles.bodyMd.copyWith(
+                                color: colors.secondaryText,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 2),
-                      decoration: BoxDecoration(
-                        color: colors.gold,
-                        shape: BoxShape.circle,
+                      const SizedBox(width: 12),
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 2),
+                        decoration: BoxDecoration(
+                          color: colors.gold,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.arrow_upward,
+                            color: colors.surfaceRaised,
+                          ),
+                          onPressed: _submitComment,
+                        ),
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.arrow_upward, color: colors.surfaceRaised),
-                        onPressed: _submitComment,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -448,14 +495,10 @@ class _CommentTile extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           authorAsync.when(
-            data: (author) => ScribesAvatar(
-              authorName: author.displayName,
-              radius: 18,
-            ),
-            loading: () => CircleAvatar(
-              radius: 18,
-              backgroundColor: colors.surfaceRaised,
-            ),
+            data: (author) =>
+                ScribesAvatar(authorName: author.displayName, radius: 18),
+            loading: () =>
+                CircleAvatar(radius: 18, backgroundColor: colors.surfaceRaised),
             error: (_, __) => CircleAvatar(
               radius: 18,
               backgroundColor: colors.surfaceRaised,
@@ -476,14 +519,18 @@ class _CommentTile extends ConsumerWidget {
                             Flexible(
                               child: Text(
                                 author.displayName,
-                                style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                                style: ScribesTextStyles.labelLg.copyWith(
+                                  color: colors.primaryText,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 6),
                             Text(
                               '@${author.handle}',
-                              style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                              style: ScribesTextStyles.labelSm.copyWith(
+                                color: colors.secondaryText,
+                              ),
                             ),
                           ],
                         ),
@@ -498,20 +545,26 @@ class _CommentTile extends ConsumerWidget {
                       ),
                       error: (_, __) => Text(
                         'Unknown',
-                        style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
+                        style: ScribesTextStyles.labelLg.copyWith(
+                          color: colors.secondaryText,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '· ${_formatTimeAgo(comment.createdAt)}',
-                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   comment.body,
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: colors.primaryText,
+                  ),
                 ),
               ],
             ),
@@ -588,11 +641,15 @@ class _MentionSuggestions extends ConsumerWidget {
                 ),
                 title: Text(
                   user.displayName,
-                  style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                  style: ScribesTextStyles.labelLg.copyWith(
+                    color: colors.primaryText,
+                  ),
                 ),
                 subtitle: Text(
                   '@${user.handle}',
-                  style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                  style: ScribesTextStyles.caption.copyWith(
+                    color: colors.secondaryText,
+                  ),
                 ),
                 onTap: () => onSelect(user),
               );

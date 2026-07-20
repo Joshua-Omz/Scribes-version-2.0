@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CommentAuthor {
 
- String get id; String get handle;@JsonKey(name: 'display_name') String get displayName; String? get bio;
+ String get id; String get handle;@JsonKey(name: 'display_name') String get displayName; String? get bio;@JsonKey(name: 'followers_count') int get followersCount;@JsonKey(name: 'following_count') int get followingCount;
 /// Create a copy of CommentAuthor
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $CommentAuthorCopyWith<CommentAuthor> get copyWith => _$CommentAuthorCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CommentAuthor&&(identical(other.id, id) || other.id == id)&&(identical(other.handle, handle) || other.handle == handle)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.bio, bio) || other.bio == bio));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CommentAuthor&&(identical(other.id, id) || other.id == id)&&(identical(other.handle, handle) || other.handle == handle)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.followersCount, followersCount) || other.followersCount == followersCount)&&(identical(other.followingCount, followingCount) || other.followingCount == followingCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,handle,displayName,bio);
+int get hashCode => Object.hash(runtimeType,id,handle,displayName,bio,followersCount,followingCount);
 
 @override
 String toString() {
-  return 'CommentAuthor(id: $id, handle: $handle, displayName: $displayName, bio: $bio)';
+  return 'CommentAuthor(id: $id, handle: $handle, displayName: $displayName, bio: $bio, followersCount: $followersCount, followingCount: $followingCount)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $CommentAuthorCopyWith<$Res>  {
   factory $CommentAuthorCopyWith(CommentAuthor value, $Res Function(CommentAuthor) _then) = _$CommentAuthorCopyWithImpl;
 @useResult
 $Res call({
- String id, String handle,@JsonKey(name: 'display_name') String displayName, String? bio
+ String id, String handle,@JsonKey(name: 'display_name') String displayName, String? bio,@JsonKey(name: 'followers_count') int followersCount,@JsonKey(name: 'following_count') int followingCount
 });
 
 
@@ -65,13 +65,15 @@ class _$CommentAuthorCopyWithImpl<$Res>
 
 /// Create a copy of CommentAuthor
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? handle = null,Object? displayName = null,Object? bio = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? handle = null,Object? displayName = null,Object? bio = freezed,Object? followersCount = null,Object? followingCount = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,handle: null == handle ? _self.handle : handle // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,followersCount: null == followersCount ? _self.followersCount : followersCount // ignore: cast_nullable_to_non_nullable
+as int,followingCount: null == followingCount ? _self.followingCount : followingCount // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -156,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String handle, @JsonKey(name: 'display_name')  String displayName,  String? bio)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String handle, @JsonKey(name: 'display_name')  String displayName,  String? bio, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CommentAuthor() when $default != null:
-return $default(_that.id,_that.handle,_that.displayName,_that.bio);case _:
+return $default(_that.id,_that.handle,_that.displayName,_that.bio,_that.followersCount,_that.followingCount);case _:
   return orElse();
 
 }
@@ -177,10 +179,10 @@ return $default(_that.id,_that.handle,_that.displayName,_that.bio);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String handle, @JsonKey(name: 'display_name')  String displayName,  String? bio)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String handle, @JsonKey(name: 'display_name')  String displayName,  String? bio, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount)  $default,) {final _that = this;
 switch (_that) {
 case _CommentAuthor():
-return $default(_that.id,_that.handle,_that.displayName,_that.bio);case _:
+return $default(_that.id,_that.handle,_that.displayName,_that.bio,_that.followersCount,_that.followingCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +199,10 @@ return $default(_that.id,_that.handle,_that.displayName,_that.bio);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String handle, @JsonKey(name: 'display_name')  String displayName,  String? bio)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String handle, @JsonKey(name: 'display_name')  String displayName,  String? bio, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount)?  $default,) {final _that = this;
 switch (_that) {
 case _CommentAuthor() when $default != null:
-return $default(_that.id,_that.handle,_that.displayName,_that.bio);case _:
+return $default(_that.id,_that.handle,_that.displayName,_that.bio,_that.followersCount,_that.followingCount);case _:
   return null;
 
 }
@@ -212,13 +214,15 @@ return $default(_that.id,_that.handle,_that.displayName,_that.bio);case _:
 @JsonSerializable()
 
 class _CommentAuthor implements CommentAuthor {
-  const _CommentAuthor({required this.id, required this.handle, @JsonKey(name: 'display_name') required this.displayName, this.bio});
+  const _CommentAuthor({required this.id, required this.handle, @JsonKey(name: 'display_name') required this.displayName, this.bio, @JsonKey(name: 'followers_count') this.followersCount = 0, @JsonKey(name: 'following_count') this.followingCount = 0});
   factory _CommentAuthor.fromJson(Map<String, dynamic> json) => _$CommentAuthorFromJson(json);
 
 @override final  String id;
 @override final  String handle;
 @override@JsonKey(name: 'display_name') final  String displayName;
 @override final  String? bio;
+@override@JsonKey(name: 'followers_count') final  int followersCount;
+@override@JsonKey(name: 'following_count') final  int followingCount;
 
 /// Create a copy of CommentAuthor
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CommentAuthor&&(identical(other.id, id) || other.id == id)&&(identical(other.handle, handle) || other.handle == handle)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.bio, bio) || other.bio == bio));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CommentAuthor&&(identical(other.id, id) || other.id == id)&&(identical(other.handle, handle) || other.handle == handle)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.followersCount, followersCount) || other.followersCount == followersCount)&&(identical(other.followingCount, followingCount) || other.followingCount == followingCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,handle,displayName,bio);
+int get hashCode => Object.hash(runtimeType,id,handle,displayName,bio,followersCount,followingCount);
 
 @override
 String toString() {
-  return 'CommentAuthor(id: $id, handle: $handle, displayName: $displayName, bio: $bio)';
+  return 'CommentAuthor(id: $id, handle: $handle, displayName: $displayName, bio: $bio, followersCount: $followersCount, followingCount: $followingCount)';
 }
 
 
@@ -253,7 +257,7 @@ abstract mixin class _$CommentAuthorCopyWith<$Res> implements $CommentAuthorCopy
   factory _$CommentAuthorCopyWith(_CommentAuthor value, $Res Function(_CommentAuthor) _then) = __$CommentAuthorCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String handle,@JsonKey(name: 'display_name') String displayName, String? bio
+ String id, String handle,@JsonKey(name: 'display_name') String displayName, String? bio,@JsonKey(name: 'followers_count') int followersCount,@JsonKey(name: 'following_count') int followingCount
 });
 
 
@@ -270,13 +274,15 @@ class __$CommentAuthorCopyWithImpl<$Res>
 
 /// Create a copy of CommentAuthor
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? handle = null,Object? displayName = null,Object? bio = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? handle = null,Object? displayName = null,Object? bio = freezed,Object? followersCount = null,Object? followingCount = null,}) {
   return _then(_CommentAuthor(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,handle: null == handle ? _self.handle : handle // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,followersCount: null == followersCount ? _self.followersCount : followersCount // ignore: cast_nullable_to_non_nullable
+as int,followingCount: null == followingCount ? _self.followingCount : followingCount // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

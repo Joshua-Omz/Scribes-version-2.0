@@ -16,6 +16,25 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
+const checkIsFollowing = `-- name: CheckIsFollowing :one
+SELECT EXISTS(
+    SELECT 1 FROM follows 
+    WHERE follower_id = $1 AND followee_id = $2
+)
+`
+
+type CheckIsFollowingParams struct {
+	FollowerID uuid.UUID `json:"follower_id"`
+	FolloweeID uuid.UUID `json:"followee_id"`
+}
+
+func (q *Queries) CheckIsFollowing(ctx context.Context, arg CheckIsFollowingParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkIsFollowing, arg.FollowerID, arg.FolloweeID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const createComment = `-- name: CreateComment :one
 
 INSERT INTO comments (post_id, author_id, body, mentions)

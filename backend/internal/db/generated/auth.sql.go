@@ -8,6 +8,7 @@ package generated
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -59,16 +60,21 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getPublicProfile = `-- name: GetPublicProfile :one
-SELECT id, handle, display_name, bio
+SELECT 
+    id, handle, display_name, bio,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
 FROM users
 WHERE id = $1 AND is_deleted = false LIMIT 1
 `
 
 type GetPublicProfileRow struct {
-	ID          uuid.UUID      `json:"id"`
-	Handle      string         `json:"handle"`
-	DisplayName string         `json:"display_name"`
-	Bio         sql.NullString `json:"bio"`
+	ID             uuid.UUID      `json:"id"`
+	Handle         string         `json:"handle"`
+	DisplayName    string         `json:"display_name"`
+	Bio            sql.NullString `json:"bio"`
+	FollowersCount int32          `json:"followers_count"`
+	FollowingCount int32          `json:"following_count"`
 }
 
 func (q *Queries) GetPublicProfile(ctx context.Context, id uuid.UUID) (GetPublicProfileRow, error) {
@@ -79,18 +85,38 @@ func (q *Queries) GetPublicProfile(ctx context.Context, id uuid.UUID) (GetPublic
 		&i.Handle,
 		&i.DisplayName,
 		&i.Bio,
+		&i.FollowersCount,
+		&i.FollowingCount,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at FROM users
+SELECT 
+    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+FROM users
 WHERE email = $1 AND is_deleted = false LIMIT 1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	ID             uuid.UUID      `json:"id"`
+	Handle         string         `json:"handle"`
+	DisplayName    string         `json:"display_name"`
+	Email          string         `json:"email"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	Role           UserRole       `json:"role"`
+	IsDeleted      bool           `json:"is_deleted"`
+	CreatedAt      time.Time      `json:"created_at"`
+	FollowersCount int32          `json:"followers_count"`
+	FollowingCount int32          `json:"following_count"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Handle,
@@ -101,18 +127,38 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.FollowersCount,
+		&i.FollowingCount,
 	)
 	return i, err
 }
 
 const getUserByHandle = `-- name: GetUserByHandle :one
-SELECT id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at FROM users
+SELECT 
+    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+FROM users
 WHERE handle = $1 AND is_deleted = false LIMIT 1
 `
 
-func (q *Queries) GetUserByHandle(ctx context.Context, handle string) (User, error) {
+type GetUserByHandleRow struct {
+	ID             uuid.UUID      `json:"id"`
+	Handle         string         `json:"handle"`
+	DisplayName    string         `json:"display_name"`
+	Email          string         `json:"email"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	Role           UserRole       `json:"role"`
+	IsDeleted      bool           `json:"is_deleted"`
+	CreatedAt      time.Time      `json:"created_at"`
+	FollowersCount int32          `json:"followers_count"`
+	FollowingCount int32          `json:"following_count"`
+}
+
+func (q *Queries) GetUserByHandle(ctx context.Context, handle string) (GetUserByHandleRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByHandle, handle)
-	var i User
+	var i GetUserByHandleRow
 	err := row.Scan(
 		&i.ID,
 		&i.Handle,
@@ -123,18 +169,38 @@ func (q *Queries) GetUserByHandle(ctx context.Context, handle string) (User, err
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.FollowersCount,
+		&i.FollowingCount,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at FROM users
+SELECT 
+    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+FROM users
 WHERE id = $1 AND is_deleted = false LIMIT 1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+type GetUserByIDRow struct {
+	ID             uuid.UUID      `json:"id"`
+	Handle         string         `json:"handle"`
+	DisplayName    string         `json:"display_name"`
+	Email          string         `json:"email"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	Role           UserRole       `json:"role"`
+	IsDeleted      bool           `json:"is_deleted"`
+	CreatedAt      time.Time      `json:"created_at"`
+	FollowersCount int32          `json:"followers_count"`
+	FollowingCount int32          `json:"following_count"`
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
-	var i User
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Handle,
@@ -145,6 +211,8 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.FollowersCount,
+		&i.FollowingCount,
 	)
 	return i, err
 }

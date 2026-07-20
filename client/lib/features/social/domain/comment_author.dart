@@ -12,6 +12,8 @@ abstract class CommentAuthor with _$CommentAuthor {
     required String handle,
     @JsonKey(name: 'display_name') required String displayName,
     String? bio,
+    @JsonKey(name: 'followers_count') @Default(0) int followersCount,
+    @JsonKey(name: 'following_count') @Default(0) int followingCount,
   }) = _CommentAuthor;
 
   factory CommentAuthor.fromJson(Map<String, dynamic> json) =>

@@ -67,4 +67,35 @@ class SocialApi {
     if (response.data == null) return [];
     return response.data as List<dynamic>;
   }
+
+  // ── Follows ────────────────────────────────────
+
+  Future<void> followUser(String userId) async {
+    await _dio.post('${Endpoints.users}/$userId/follow');
+  }
+
+  Future<void> unfollowUser(String userId) async {
+    await _dio.delete('${Endpoints.users}/$userId/follow');
+  }
+
+  Future<bool> isFollowing(String userId) async {
+    final response = await _dio.get('${Endpoints.users}/$userId/is-following');
+    return response.data['is_following'] as bool;
+  }
+
+  // ── Saved ──────────────────────────────────────
+
+  Future<void> savePost(String postId, {String type = 'bookmark'}) async {
+    await _dio.post('${Endpoints.posts}/$postId/save', data: {'type': type});
+  }
+
+  Future<void> unsavePost(String postId, {String type = 'bookmark'}) async {
+    await _dio.delete('${Endpoints.posts}/$postId/save', data: {'type': type});
+  }
+
+  Future<List<dynamic>> getSavedPosts({String type = 'bookmark'}) async {
+    final response = await _dio.get('${Endpoints.saved}', queryParameters: {'type': type});
+    if (response.data == null) return [];
+    return response.data as List<dynamic>;
+  }
 }

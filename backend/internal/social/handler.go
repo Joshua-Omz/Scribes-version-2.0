@@ -58,6 +58,27 @@ func (h *Handler) Unfollow(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, gin.H{"status": "unfollowed"})
 }
 
+func (h *Handler) IsFollowing(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	followerID, _ := uuid.Parse(claims.UserID)
+	followeeID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	isFollowing, err := h.svc.IsFollowing(c.Request.Context(), followerID, followeeID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to check follow status")
+		return
+	}
+	respond.JSON(c, http.StatusOK, gin.H{"is_following": isFollowing})
+}
+
 type ReactRequest struct {
 	Type string `json:"type" binding:"required"`
 }
@@ -274,4 +295,27 @@ func (h *Handler) UnsavePost(c *gin.Context) {
 		return
 	}
 	respond.JSON(c, http.StatusOK, gin.H{"status": "unsaved"})
+}
+
+func (h *Handler) ListSavedPosts(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, _ := uuid.Parse(claims.UserID)
+	
+	// Default to 'bookmark' if type is not provided
+	savedType := c.Query("type")
+	if savedType == "" {
+		savedType = "bookmark"
+	}
+
+	savedPosts, err := h.svc.GetSavedPosts(c.Request.Context(), userID, savedType)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to fetch saved posts")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, savedPosts)
 }

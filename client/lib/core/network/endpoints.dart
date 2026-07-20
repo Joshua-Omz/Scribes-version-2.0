@@ -1,4 +1,3 @@
-
 class Endpoints {
   // Auth
   static const String register = '/auth/register';
@@ -11,9 +10,11 @@ class Endpoints {
 
   // Posts
   static const String posts = '/posts';
-  
+
   // Social
   static const String comments = '/comments';
+  static const String follow = '/dm';
+  static const String saved = '/saved';
 
   // Users
   static const String users = '/users';
