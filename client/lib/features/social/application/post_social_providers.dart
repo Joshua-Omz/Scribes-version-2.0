@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scribes/features/social/data/social_repository.dart';
 import 'package:scribes/features/social/domain/reaction_count.dart';
@@ -101,9 +102,17 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
   }
 
   Future<void> addComment(String body, List<String> mentions) async {
-    final repo = ref.read(socialRepositoryProvider);
-    await repo.addComment(postId, body, mentions);
-    ref.invalidateSelf();
+    try {
+      final repo = ref.read(socialRepositoryProvider);
+      await repo.addComment(postId, body, mentions);
+      ref.invalidateSelf();
+    } catch (e) {
+      print('[PostCommentsNotifier] Failed to add comment: $e');
+      if (e is DioException) {
+        print('[PostCommentsNotifier] Dio response: ${e.response?.data}');
+      }
+      rethrow;
+    }
   }
 
   Future<void> hideComment(String commentId) async {

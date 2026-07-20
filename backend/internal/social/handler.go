@@ -171,7 +171,7 @@ func (h *Handler) AddComment(c *gin.Context) {
 		return
 	}
 
-	var mentions []uuid.UUID
+	mentions := make([]uuid.UUID, 0)
 	for _, m := range req.Mentions {
 		if uid, err := uuid.Parse(m); err == nil {
 			mentions = append(mentions, uid)
