@@ -6,7 +6,6 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_avatar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
-import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_profile_post_card.dart';
@@ -284,9 +283,19 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                               }
                             }
                           }
+                          String title = 'Saved Post';
+                          final captionField = savedPost['caption'];
+                          if (captionField is String && captionField.isNotEmpty) {
+                            title = captionField;
+                          } else if (captionField is Map && captionField['Valid'] == true) {
+                            title = captionField['String'] ?? 'Saved Post';
+                          } else if (content != null && content['title'] is String) {
+                            title = content['title'];
+                          }
+
                           // Use the ScribesProfilePostCard for now, though it expects a post object. We might need a generic one.
                           return ScribesProfilePostCard(
-                            title: savedPost['caption'] ?? 'Saved Post',
+                            title: title,
                             excerpt: excerpt,
                             publishedAt: DateTime.parse(savedPost['created_at']),
                             onTap: () => context.push('/posts/${savedPost['post_id']}'),
@@ -303,7 +312,6 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
             ),
         ],
       ),
-      bottomNavigationBar: const ScribesBottomNav(currentIndex: 4),
     );
   }
 

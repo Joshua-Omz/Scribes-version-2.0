@@ -39,6 +39,7 @@ abstract class Draft with _$Draft {
     String? caption,
     @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,
     @JsonKey(name: 'scripture_tags') @Default([]) List<String> scriptureTags,
+    @JsonKey(name: 'category_ids') @Default([]) List<String> categoryIds,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Draft;

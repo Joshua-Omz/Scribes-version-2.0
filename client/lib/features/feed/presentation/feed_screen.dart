@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/scribes_connected_post_card.dart';
-import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../../core/widgets/scribes_top_app_bar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
@@ -186,7 +185,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             ),
         ],
       ),
-      bottomNavigationBar: const ScribesBottomNav(currentIndex: 0),
     );
   }
 

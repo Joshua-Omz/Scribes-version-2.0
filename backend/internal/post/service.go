@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"scribes-api/internal/db/generated"
+
 	"github.com/google/uuid"
 )
 
@@ -14,12 +16,20 @@ var (
 	ErrUnauthorized = errors.New("unauthorized to access this post")
 )
 
+type ScriptureRefPayload struct {
+	Book       string `json:"book" binding:"required"`
+	Chapter    int32  `json:"chapter" binding:"required"`
+	VerseStart int32  `json:"verse_start" binding:"required"`
+	VerseEnd   *int32 `json:"verse_end,omitempty"`
+}
+
 type CreateInput struct {
-	Content      json.RawMessage `json:"content" binding:"required"`
-	Caption      *string         `json:"caption,omitempty"`
-	Visibility   *string         `json:"visibility,omitempty"`
-	SermonSource *string         `json:"sermon_source,omitempty"`
-	CategoryIDs  []uuid.UUID     `json:"category_ids,omitempty"`
+	Content       json.RawMessage       `json:"content" binding:"required"`
+	Caption       *string               `json:"caption,omitempty"`
+	Visibility    *string               `json:"visibility,omitempty"`
+	SermonSource  *string               `json:"sermon_source,omitempty"`
+	CategoryIDs   []uuid.UUID           `json:"category_ids,omitempty"`
+	ScriptureRefs []ScriptureRefPayload `json:"scripture_refs,omitempty"`
 }
 
 type Service struct {
@@ -47,6 +57,33 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 		if err != nil {
 			return Post{}, err
 		}
+	}
+
+	if len(input.ScriptureRefs) > 0 {
+		if len(input.ScriptureRefs) > 3 || len(input.ScriptureRefs) < 2 {
+			return Post{}, errors.New("must provide between 2 and 3 scripture tags")
+		}
+		var refsParams []generated.AddScriptureRefParams
+		for _, ref := range input.ScriptureRefs {
+			var ve sql.NullInt32
+			if ref.VerseEnd != nil {
+				ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
+			}
+			refsParams = append(refsParams, generated.AddScriptureRefParams{
+				Book:       ref.Book,
+				Chapter:    ref.Chapter,
+				VerseStart: ref.VerseStart,
+				VerseEnd:   ve,
+			})
+		}
+		err = s.repo.SetScriptureRefs(ctx, p.ID, refsParams)
+		if err != nil {
+			return Post{}, err
+		}
+		p.ScriptureRefs, _ = s.repo.GetScriptureRefs(ctx, p.ID)
+	} else {
+		// Enforce validation if required
+		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
 	}
 
 	return p, nil
@@ -91,7 +128,38 @@ func (s *Service) Update(ctx context.Context, authorID, id uuid.UUID, input Crea
 		visibility = *input.Visibility
 	}
 
-	return s.repo.UpdatePost(ctx, id, authorID, input.Content, input.Caption, visibility, input.SermonSource, existing.CurrentVersion)
+	updatedPost, err := s.repo.UpdatePost(ctx, id, authorID, input.Content, input.Caption, visibility, input.SermonSource, existing.CurrentVersion)
+	if err != nil {
+		return Post{}, err
+	}
+
+	if len(input.ScriptureRefs) > 0 {
+		if len(input.ScriptureRefs) > 3 || len(input.ScriptureRefs) < 2 {
+			return Post{}, errors.New("must provide between 2 and 3 scripture tags")
+		}
+		var refsParams []generated.AddScriptureRefParams
+		for _, ref := range input.ScriptureRefs {
+			var ve sql.NullInt32
+			if ref.VerseEnd != nil {
+				ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
+			}
+			refsParams = append(refsParams, generated.AddScriptureRefParams{
+				Book:       ref.Book,
+				Chapter:    ref.Chapter,
+				VerseStart: ref.VerseStart,
+				VerseEnd:   ve,
+			})
+		}
+		err = s.repo.SetScriptureRefs(ctx, updatedPost.ID, refsParams)
+		if err != nil {
+			return Post{}, err
+		}
+		updatedPost.ScriptureRefs, _ = s.repo.GetScriptureRefs(ctx, updatedPost.ID)
+	} else {
+		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
+	}
+
+	return updatedPost, nil
 }
 
 func (s *Service) Delete(ctx context.Context, authorID, id uuid.UUID) error {
@@ -103,8 +171,8 @@ func (s *Service) Delete(ctx context.Context, authorID, id uuid.UUID) error {
 }
 
 type ReviseInput struct {
-	Content json.RawMessage `json:"content" binding:"required"`
-	Caption *string         `json:"caption,omitempty"`
+	Content       json.RawMessage       `json:"content" binding:"required"`
+	Caption       *string               `json:"caption,omitempty"`
 }
 
 func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input ReviseInput) (Post, error) {
@@ -128,7 +196,38 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 		visibility = *input.Visibility
 	}
 
-	return s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID)
+	p, err := s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID)
+	if err != nil {
+		return Post{}, err
+	}
+
+	if len(input.ScriptureRefs) > 0 {
+		if len(input.ScriptureRefs) > 3 || len(input.ScriptureRefs) < 2 {
+			return Post{}, errors.New("must provide between 2 and 3 scripture tags")
+		}
+		var refsParams []generated.AddScriptureRefParams
+		for _, ref := range input.ScriptureRefs {
+			var ve sql.NullInt32
+			if ref.VerseEnd != nil {
+				ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
+			}
+			refsParams = append(refsParams, generated.AddScriptureRefParams{
+				Book:       ref.Book,
+				Chapter:    ref.Chapter,
+				VerseStart: ref.VerseStart,
+				VerseEnd:   ve,
+			})
+		}
+		err = s.repo.SetScriptureRefs(ctx, p.ID, refsParams)
+		if err != nil {
+			return Post{}, err
+		}
+		p.ScriptureRefs, _ = s.repo.GetScriptureRefs(ctx, p.ID)
+	} else {
+		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
+	}
+
+	return p, nil
 }
 
 func (s *Service) ListVersions(ctx context.Context, id uuid.UUID) ([]PostVersion, error) {

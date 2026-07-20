@@ -14,8 +14,20 @@ class ExploreRepository {
 
   ExploreRepository(this._api);
 
-  Future<PaginatedFeed> getExplore({String? cursor, String? categoryId}) async {
-    final rawData = await _api.getExplore(cursor: cursor, categoryId: categoryId);
+  Future<PaginatedFeed> getExplore({
+    String? cursor, 
+    String? categoryId,
+    String? searchQuery,
+    String? scriptureBook,
+    int? scriptureChapter,
+  }) async {
+    final rawData = await _api.getExplore(
+      cursor: cursor, 
+      categoryId: categoryId,
+      searchQuery: searchQuery,
+      scriptureBook: scriptureBook,
+      scriptureChapter: scriptureChapter,
+    );
     return _mapPaginatedFeed(rawData);
   }
 

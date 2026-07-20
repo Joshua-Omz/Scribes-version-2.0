@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"scribes-api/internal/post"
 )
 
 type Handler struct {
@@ -180,7 +182,15 @@ func (h *Handler) Publish(c *gin.Context) {
 		return
 	}
 
-	post, err := h.svc.Publish(c.Request.Context(), authorID, draftID)
+	var input struct {
+		ScriptureRefs []post.ScriptureRefPayload `json:"scripture_refs"`
+	}
+	// We use ShouldBindJSON but ignore EOF if the body is empty
+	if err := c.ShouldBindJSON(&input); err != nil && err.Error() != "EOF" {
+		// Log the error but proceed as empty payload if we just couldn't parse it
+	}
+
+	post, err := h.svc.Publish(c.Request.Context(), authorID, draftID, input.ScriptureRefs)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			respond.Error(c, http.StatusNotFound, "draft not found")

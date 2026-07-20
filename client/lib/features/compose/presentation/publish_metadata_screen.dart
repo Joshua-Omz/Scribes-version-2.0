@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../posts/domain/sermon_source.dart';
+import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
+import '../../explore/application/explore_notifier.dart';
 
 class PublishMetadataScreen extends ConsumerWidget {
   const PublishMetadataScreen({super.key});
@@ -110,6 +113,7 @@ class PublishMetadataScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
     final composeState = ref.watch(composeProvider);
+    final categoriesState = ref.watch(categoriesProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -139,6 +143,12 @@ class PublishMetadataScreen extends ConsumerWidget {
               if (composeState.contentDelta == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Post body cannot be empty.')),
+                );
+                return;
+              }
+              if (composeState.scriptureRefs.length < 2) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please add between 2 and 3 scripture tags.')),
                 );
                 return;
               }
@@ -195,6 +205,123 @@ class PublishMetadataScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Scripture Tags Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Scripture Tags',
+                              style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Add 2 to 3 scripture references.',
+                              style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText.withValues(alpha: 0.7)),
+                            ),
+                          ],
+                        ),
+                        if (composeState.scriptureRefs.length < 3)
+                          TextButton.icon(
+                            icon: Icon(Icons.add, size: 16, color: colors.gold),
+                            label: Text('Add', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
+                            onPressed: () => _showAddScriptureSheet(context, ref, colors),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (composeState.scriptureRefs.isNotEmpty)
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: composeState.scriptureRefs.map((refData) {
+                          final refStr = refData.verseEnd != null
+                              ? '${refData.book} ${refData.chapter}:${refData.verseStart}-${refData.verseEnd}'
+                              : '${refData.book} ${refData.chapter}:${refData.verseStart}';
+                          return InputChip(
+                            label: Text(
+                              refStr,
+                              style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                            ),
+                            onDeleted: () => ref.read(composeProvider.notifier).removeScriptureRef(refData),
+                            backgroundColor: colors.surfaceRaised,
+                            deleteIconColor: colors.secondaryText,
+                            side: BorderSide(color: colors.border),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          );
+                        }).toList(),
+                      ),
+                    const SizedBox(height: 40),
+
+                    // Topics Section
+                    Text(
+                      'Topics',
+                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Select up to 3 topics to help others find your post.',
+                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText.withValues(alpha: 0.7)),
+                    ),
+                    const SizedBox(height: 12),
+                    categoriesState.when(
+                      data: (categories) {
+                        if (categories.isEmpty) return const SizedBox.shrink();
+                        return Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: categories.map((cat) {
+                            final isSelected = composeState.categoryIds.contains(cat.id);
+                            return FilterChip(
+                              label: Text(
+                                cat.name,
+                                style: ScribesTextStyles.labelLg.copyWith(
+                                  color: isSelected ? colors.surface : colors.primaryText,
+                                ),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                ref.read(composeProvider.notifier).toggleCategory(cat.id);
+                              },
+                              backgroundColor: colors.surfaceRaised,
+                              selectedColor: colors.primaryText,
+                              side: BorderSide(
+                                color: isSelected ? colors.primaryText : colors.border,
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            );
+                          }).toList(),
+                        );
+                      },
+                      loading: () => Shimmer.fromColors(
+                        baseColor: colors.surfaceRaised,
+                        highlightColor: colors.border,
+                        child: Wrap(
+                          spacing: 8.0,
+                          runSpacing: 8.0,
+                          children: List.generate(
+                            4,
+                            (index) => Container(
+                              width: 80.0 + (index % 3 * 20),
+                              height: 36.0,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      error: (err, stack) => Text(
+                        'Failed to load topics', 
+                        style: ScribesTextStyles.caption.copyWith(color: colors.orange)
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
                     // Caption Field
                     Text(
                       'Caption',
@@ -366,6 +493,140 @@ class PublishMetadataScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAddScriptureSheet(BuildContext context, WidgetRef ref, dynamic colors) {
+    final bookController = TextEditingController();
+    final chapterController = TextEditingController();
+    final verseStartController = TextEditingController();
+    final verseEndController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16, right: 16, top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Add Scripture Tag', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: bookController,
+                decoration: InputDecoration(
+                  labelText: 'Book (e.g. John)',
+                  labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  filled: true,
+                  fillColor: colors.background,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                ),
+                style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: chapterController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Chapter',
+                        labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                        filled: true,
+                        fillColor: colors.background,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                      ),
+                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: verseStartController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Verse Start',
+                        labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                        filled: true,
+                        fillColor: colors.background,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                      ),
+                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: verseEndController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Verse End',
+                        labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                        filled: true,
+                        fillColor: colors.background,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                      ),
+                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.gold,
+                      foregroundColor: colors.surface,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () {
+                      final book = bookController.text.trim();
+                      final chapter = int.tryParse(chapterController.text.trim());
+                      final verseStart = int.tryParse(verseStartController.text.trim());
+                      final verseEnd = int.tryParse(verseEndController.text.trim());
+
+                      if (book.isEmpty || chapter == null || verseStart == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Book, chapter, and verse start are required.')),
+                        );
+                        return;
+                      }
+
+                      ref.read(composeProvider.notifier).addScriptureRef(
+                        ScriptureRef(
+                          book: book,
+                          chapter: chapter,
+                          verseStart: verseStart,
+                          verseEnd: verseEnd,
+                        )
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: Text('Add', style: ScribesTextStyles.labelLg),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }

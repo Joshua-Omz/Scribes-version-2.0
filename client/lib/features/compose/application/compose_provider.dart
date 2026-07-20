@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../draft/data/draft_repository.dart';
 import '../../posts/domain/sermon_source.dart';
+import '../../posts/domain/scripture_ref.dart';
 
 final composeProvider = NotifierProvider<ComposeNotifier, ComposeState>(() => ComposeNotifier());
 
@@ -17,6 +18,8 @@ class ComposeState {
   final String caption;
   final SermonSource? sermonSource;
   final List<dynamic>? contentDelta;
+  final List<String> categoryIds;
+  final List<ScriptureRef> scriptureRefs;
 
   ComposeState({
     required this.draftId,
@@ -26,6 +29,8 @@ class ComposeState {
     this.caption = '',
     this.sermonSource,
     this.contentDelta,
+    this.categoryIds = const [],
+    this.scriptureRefs = const [],
   });
 
   ComposeState copyWith({
@@ -36,6 +41,8 @@ class ComposeState {
     String? caption,
     SermonSource? sermonSource,
     List<dynamic>? contentDelta,
+    List<String>? categoryIds,
+    List<ScriptureRef>? scriptureRefs,
   }) {
     return ComposeState(
       draftId: draftId ?? this.draftId,
@@ -45,6 +52,8 @@ class ComposeState {
       caption: caption ?? this.caption,
       sermonSource: sermonSource ?? this.sermonSource,
       contentDelta: contentDelta ?? this.contentDelta,
+      categoryIds: categoryIds ?? this.categoryIds,
+      scriptureRefs: scriptureRefs ?? this.scriptureRefs,
     );
   }
 }
@@ -67,6 +76,31 @@ class ComposeNotifier extends Notifier<ComposeState> {
     state = state.copyWith(
       caption: caption ?? state.caption,
       sermonSource: sermonSource ?? state.sermonSource,
+    );
+    _triggerAutosave();
+  }
+
+  void toggleCategory(String categoryId) {
+    final current = List<String>.from(state.categoryIds);
+    if (current.contains(categoryId)) {
+      current.remove(categoryId);
+    } else {
+      if (current.length >= 3) return; // Enforce max 3 categories
+      current.add(categoryId);
+    }
+    state = state.copyWith(categoryIds: current);
+    _triggerAutosave();
+  }
+
+  void addScriptureRef(ScriptureRef ref) {
+    if (state.scriptureRefs.length >= 3) return;
+    state = state.copyWith(scriptureRefs: [...state.scriptureRefs, ref]);
+    _triggerAutosave();
+  }
+
+  void removeScriptureRef(ScriptureRef ref) {
+    state = state.copyWith(
+      scriptureRefs: state.scriptureRefs.where((r) => r != ref).toList()
     );
     _triggerAutosave();
   }
@@ -119,19 +153,11 @@ class ComposeNotifier extends Notifier<ComposeState> {
       sermonSourceJson = jsonEncode(state.sermonSource!.toJson());
     }
 
-    final deltaJson = controller.document.toDelta().toJson();
-    final List<String> scriptureTags = [];
-    for (final op in deltaJson) {
-      if ((op as Map).containsKey('attributes')) {
-        final attrs = op['attributes'];
-        if ((attrs as Map).containsKey('scripture')) {
-          final tag = attrs['scripture'].toString();
-          if (!scriptureTags.contains(tag)) {
-            scriptureTags.add(tag);
-          }
-        }
-      }
-    }
+    // For compatibility with any legacy fields if necessary
+    final List<String> scriptureTags = state.scriptureRefs.map((r) {
+      if (r.verseEnd != null) return '${r.book} ${r.chapter}:${r.verseStart}-${r.verseEnd}';
+      return '${r.book} ${r.chapter}:${r.verseStart}';
+    }).toList();
 
     await repo.saveDraftLocally(
       state.draftId,
@@ -139,6 +165,9 @@ class ComposeNotifier extends Notifier<ComposeState> {
       caption: state.caption.trim().isEmpty ? null : state.caption.trim(),
       sermonSource: sermonSourceJson,
       scriptureTags: scriptureTags,
+      categoryIds: state.categoryIds,
+      // Note: we might need to serialize scriptureRefs natively to Drafts later, 
+      // but for v1 it might be handled in Draft Repository.
     );
 
     state = state.copyWith(
@@ -151,7 +180,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
   Future<void> publishToCloud() async {
     await forceSave();
     final repo = ref.read(draftRepositoryProvider);
-    await repo.publishDraft(state.draftId);
+    await repo.publishDraft(state.draftId, scriptureRefs: state.scriptureRefs);
   }
 
   void reset() {
@@ -160,7 +189,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
     state = ComposeState(draftId: const Uuid().v4());
   }
 
-  void loadDraft(String draftId, Map<String, dynamic> content, {String? caption, SermonSource? sermonSource}) {
+  void loadDraft(String draftId, Map<String, dynamic> content, {String? caption, SermonSource? sermonSource, List<String>? categoryIds}) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _lastController = null;
     state = ComposeState(
@@ -169,6 +198,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
       caption: caption ?? '',
       sermonSource: sermonSource,
       contentDelta: content['body'] != null ? List<dynamic>.from(content['body']) : null,
+      categoryIds: categoryIds ?? [],
     );
   }
 }

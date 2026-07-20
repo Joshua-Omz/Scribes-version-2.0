@@ -71,6 +71,15 @@ type PaginatedExploreCategoryResponse struct {
 	NextCursor string     `json:"next_cursor,omitempty"`
 }
 
+type ExploreParams struct {
+	Cursor          string
+	Limit           int32
+	CategoryID      *uuid.UUID
+	SearchQuery     *string
+	ScriptureBook   *string
+	ScriptureChapter *int32
+}
+
 
 
 func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (PaginatedFeedResponse, error) {
@@ -102,38 +111,36 @@ func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (Pagi
 	}, nil
 }
 
-func (s *Service) GetExplore(ctx context.Context, cursor string, limit int32, categoryID *uuid.UUID) (interface{}, error) {
+func (s *Service) GetExplore(ctx context.Context, params ExploreParams) (interface{}, error) {
+	limit := params.Limit
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
 
-	t, id, err := decodeCursor(cursor)
+	t, id, err := decodeCursor(params.Cursor)
 	if err != nil {
 		return nil, err
 	}
 
-	if categoryID != nil {
-		posts, err := s.repo.GetExplorePostsByCategory(ctx, *categoryID, t, id, limit+1)
-		if err != nil {
-			return nil, err
+	var posts []FeedPost
+	if params.CategoryID != nil {
+		posts, err = s.repo.GetExplorePostsByCategory(ctx, *params.CategoryID, t, id, limit+1)
+	} else if params.SearchQuery != nil && *params.SearchQuery != "" {
+		posts, err = s.repo.SearchExplorePosts(ctx, *params.SearchQuery, t, id, limit+1)
+	} else if params.ScriptureBook != nil && *params.ScriptureBook != "" {
+		var chapter int32 = 0
+		if params.ScriptureChapter != nil {
+			chapter = *params.ScriptureChapter
 		}
-		var nextCursor string
-		if len(posts) > int(limit) {
-			last := posts[limit-1]
-			nextCursor = encodeCursor(last.PublishedAt, last.ID)
-			posts = posts[:limit]
-		}
-		
-		return PaginatedExploreCategoryResponse{
-			Posts:      posts,
-			NextCursor: nextCursor,
-		}, nil
+		posts, err = s.repo.GetExplorePostsByScripture(ctx, *params.ScriptureBook, chapter, t, id, limit+1)
+	} else {
+		posts, err = s.repo.GetExplorePosts(ctx, t, id, limit+1)
 	}
 
-	posts, err := s.repo.GetExplorePosts(ctx, t, id, limit+1)
 	if err != nil {
 		return nil, err
 	}
+
 	var nextCursor string
 	if len(posts) > int(limit) {
 		last := posts[limit-1]
@@ -141,6 +148,13 @@ func (s *Service) GetExplore(ctx context.Context, cursor string, limit int32, ca
 		posts = posts[:limit]
 	}
 	
+	if params.CategoryID != nil {
+		return PaginatedExploreCategoryResponse{
+			Posts:      posts,
+			NextCursor: nextCursor,
+		}, nil
+	}
+
 	return PaginatedExploreResponse{
 		Posts:      posts,
 		NextCursor: nextCursor,

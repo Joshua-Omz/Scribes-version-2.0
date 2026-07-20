@@ -143,7 +143,7 @@ final class PostCommentsNotifierProvider
 }
 
 String _$postCommentsNotifierHash() =>
-    r'f5529455dc7d396e6b0f5e180fe9a3724c112179';
+    r'b9a0f62d4ba6f97e8fd693c19e706827fc5606e4';
 
 final class PostCommentsNotifierFamily extends $Family
     with

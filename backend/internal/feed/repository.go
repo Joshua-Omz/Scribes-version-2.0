@@ -34,6 +34,7 @@ type FeedPost struct {
 	PublishedAt    time.Time                `json:"published_at"`
 	AuthorHandle   string                   `json:"author_handle"`
 	AuthorName     string                   `json:"author_name"`
+	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
 }
 
 func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
@@ -129,6 +130,68 @@ func mapExploreCategoryPost(row generated.GetExplorePostsByCategoryRow) FeedPost
 	}
 }
 
+func mapExploreScripturePost(row generated.GetExplorePostsByScriptureRow) FeedPost {
+	var caption *string
+	if row.Caption.Valid {
+		caption = &row.Caption.String
+	}
+	var correctsPostID *uuid.UUID
+	if row.CorrectsPostID.Valid {
+		correctsPostID = &row.CorrectsPostID.UUID
+	}
+	var sermonSource *string
+	if row.SermonSource.Valid {
+		sermonSource = &row.SermonSource.String
+	}
+
+	return FeedPost{
+		ID:             row.ID,
+		AuthorID:       row.AuthorID,
+		Content:        row.Content,
+		Caption:        caption,
+		Visibility:     row.Visibility,
+		CurrentVersion: row.CurrentVersion,
+		IsCorrection:   row.IsCorrection,
+		CorrectsPostID: correctsPostID,
+		SermonSource:   sermonSource,
+		IsDeleted:      row.IsDeleted,
+		PublishedAt:    row.PublishedAt,
+		AuthorHandle:   row.AuthorHandle,
+		AuthorName:     row.AuthorName,
+	}
+}
+
+func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
+	var caption *string
+	if row.Caption.Valid {
+		caption = &row.Caption.String
+	}
+	var correctsPostID *uuid.UUID
+	if row.CorrectsPostID.Valid {
+		correctsPostID = &row.CorrectsPostID.UUID
+	}
+	var sermonSource *string
+	if row.SermonSource.Valid {
+		sermonSource = &row.SermonSource.String
+	}
+
+	return FeedPost{
+		ID:             row.ID,
+		AuthorID:       row.AuthorID,
+		Content:        row.Content,
+		Caption:        caption,
+		Visibility:     row.Visibility,
+		CurrentVersion: row.CurrentVersion,
+		IsCorrection:   row.IsCorrection,
+		CorrectsPostID: correctsPostID,
+		SermonSource:   sermonSource,
+		IsDeleted:      row.IsDeleted,
+		PublishedAt:    row.PublishedAt,
+		AuthorHandle:   row.AuthorHandle,
+		AuthorName:     row.AuthorName,
+	}
+}
+
 func (r *Repository) GetFeedPosts(ctx context.Context, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
 	rows, err := r.q.GetFeedPosts(ctx, generated.GetFeedPostsParams{
 		PublishedAt: cursorTime,
@@ -140,7 +203,12 @@ func (r *Repository) GetFeedPosts(ctx context.Context, cursorTime time.Time, cur
 	}
 	posts := make([]FeedPost, len(rows))
 	for i, row := range rows {
-		posts[i] = mapFeedPost(row)
+		post := mapFeedPost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		posts[i] = post
 	}
 	return posts, nil
 }
@@ -156,7 +224,12 @@ func (r *Repository) GetExplorePosts(ctx context.Context, cursorTime time.Time, 
 	}
 	posts := make([]FeedPost, len(rows))
 	for i, row := range rows {
-		posts[i] = mapExplorePost(row)
+		post := mapExplorePost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		posts[i] = post
 	}
 	return posts, nil
 }
@@ -173,7 +246,57 @@ func (r *Repository) GetExplorePostsByCategory(ctx context.Context, categoryID u
 	}
 	posts := make([]FeedPost, len(rows))
 	for i, row := range rows {
-		posts[i] = mapExploreCategoryPost(row)
+		post := mapExploreCategoryPost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		posts[i] = post
+	}
+	return posts, nil
+}
+
+func (r *Repository) GetExplorePostsByScripture(ctx context.Context, book string, chapter int32, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
+	rows, err := r.q.GetExplorePostsByScripture(ctx, generated.GetExplorePostsByScriptureParams{
+		Book:        book,
+		Chapter:     chapter,
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]FeedPost, len(rows))
+	for i, row := range rows {
+		post := mapExploreScripturePost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		posts[i] = post
+	}
+	return posts, nil
+}
+
+func (r *Repository) SearchExplorePosts(ctx context.Context, query string, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
+	rows, err := r.q.SearchExplorePosts(ctx, generated.SearchExplorePostsParams{
+		SearchQuery: query,
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]FeedPost, len(rows))
+	for i, row := range rows {
+		post := mapSearchExplorePost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		posts[i] = post
 	}
 	return posts, nil
 }

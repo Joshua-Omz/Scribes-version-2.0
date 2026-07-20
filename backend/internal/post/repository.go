@@ -26,9 +26,10 @@ type Post struct {
 	CurrentVersion int32           `json:"current_version"`
 	IsCorrection   bool            `json:"is_correction"`
 	CorrectsPostID *uuid.UUID      `json:"corrects_post_id,omitempty"`
-	SermonSource   *string         `json:"sermon_source,omitempty"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
+	SermonSource   *string               `json:"sermon_source,omitempty"`
+	IsDeleted      bool                  `json:"is_deleted"`
+	PublishedAt    time.Time             `json:"published_at"`
+	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
 }
 
 func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
@@ -64,6 +65,7 @@ func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
 		SermonSource:   sermonSource,
 		IsDeleted:      dbPost.IsDeleted,
 		PublishedAt:    dbPost.PublishedAt,
+		// ScriptureRefs are populated separately
 	}
 }
 
@@ -100,6 +102,7 @@ func mapListPostsByAuthorRow(dbPost generated.ListPostsByAuthorRow) Post {
 		SermonSource:   sermonSource,
 		IsDeleted:      dbPost.IsDeleted,
 		PublishedAt:    dbPost.PublishedAt,
+		// ScriptureRefs are populated separately
 	}
 }
 
@@ -165,7 +168,12 @@ func (r *Repository) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error
 	if err != nil {
 		return Post{}, err
 	}
-	return mapGetPostByIDRow(dbPost), nil
+	post := mapGetPostByIDRow(dbPost)
+	refs, err := r.GetScriptureRefs(ctx, id)
+	if err == nil {
+		post.ScriptureRefs = refs
+	}
+	return post, nil
 }
 
 func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]Post, error) {
@@ -176,7 +184,12 @@ func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) 
 
 	posts := make([]Post, len(dbPosts))
 	for i, dbPost := range dbPosts {
-		posts[i] = mapListPostsByAuthorRow(dbPost)
+		post := mapListPostsByAuthorRow(dbPost)
+		refs, err := r.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		posts[i] = post
 	}
 	return posts, nil
 }
@@ -332,4 +345,23 @@ func (r *Repository) SetPostCategories(ctx context.Context, postID uuid.UUID, ca
 
 func (r *Repository) GetPostCategories(ctx context.Context, postID uuid.UUID) ([]uuid.UUID, error) {
 	return r.q.GetPostCategories(ctx, postID)
+}
+
+func (r *Repository) SetScriptureRefs(ctx context.Context, postID uuid.UUID, refs []generated.AddScriptureRefParams) error {
+	err := r.q.ClearScriptureRefs(ctx, postID)
+	if err != nil {
+		return err
+	}
+	for _, ref := range refs {
+		ref.PostID = postID
+		err = r.q.AddScriptureRef(ctx, ref)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *Repository) GetScriptureRefs(ctx context.Context, postID uuid.UUID) ([]generated.GetScriptureRefsRow, error) {
+	return r.q.GetScriptureRefs(ctx, postID)
 }

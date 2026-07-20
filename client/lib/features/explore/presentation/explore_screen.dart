@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/scribes_connected_post_card.dart';
-import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../../core/widgets/scribes_icon_button.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/theme_provider.dart';
@@ -32,20 +31,40 @@ class ExploreScreen extends ConsumerWidget {
               floating: true,
               snap: true,
               elevation: 0,
-              centerTitle: false,
+              centerTitle: true,
               title: Text(
                 'Explore',
                 style: ScribesTextStyles.displayMd.copyWith(
                   color: colors.primaryText,
                 ),
               ),
+              leadingWidth: 160,
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                    prefixIcon: Icon(Icons.search, size: 18, color: colors.secondaryText),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: colors.surfaceRaised,
+                  ),
+                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                  onSubmitted: (query) {
+                    ref.read(exploreSearchQueryProvider.notifier).setQuery(query.isEmpty ? null : query);
+                  },
+                ),
+              ),
               actions: [
                 ScribesIconButton(
-                  icon: Icons.search_outlined,
+                  icon: Icons.menu_book_outlined,
                   color: colors.secondaryText,
-                  onPressed: () {
-                    // Search not implemented in v1 MVP
-                  },
+                  onPressed: () => _showScriptureFilterSheet(context, ref, colors),
                 ),
                 const SizedBox(width: 8),
               ],
@@ -155,7 +174,88 @@ class ExploreScreen extends ConsumerWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const ScribesBottomNav(currentIndex: 1),
+    );
+  }
+
+  void _showScriptureFilterSheet(BuildContext context, WidgetRef ref, dynamic colors) {
+    final bookController = TextEditingController(text: ref.read(exploreScriptureFilterProvider)?.book ?? '');
+    final chapterController = TextEditingController(text: ref.read(exploreScriptureFilterProvider)?.chapter?.toString() ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16, right: 16, top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Filter by Scripture', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: bookController,
+                decoration: InputDecoration(
+                  labelText: 'Book (e.g. John)',
+                  labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  filled: true,
+                  fillColor: colors.background,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                ),
+                style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: chapterController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Chapter (Optional)',
+                  labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  filled: true,
+                  fillColor: colors.background,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                ),
+                style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      ref.read(exploreScriptureFilterProvider.notifier).clear();
+                      Navigator.pop(context);
+                    },
+                    child: Text('Clear', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.gold,
+                      foregroundColor: colors.surface,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () {
+                      if (bookController.text.isNotEmpty) {
+                        int? chapter = int.tryParse(chapterController.text);
+                        ref.read(exploreScriptureFilterProvider.notifier).setFilter(bookController.text, chapter);
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: Text('Apply', style: ScribesTextStyles.labelLg),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 

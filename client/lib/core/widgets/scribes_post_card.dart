@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
 import 'scribes_scripture_chip.dart';
+import '../../features/posts/domain/scripture_ref.dart';
 
 import 'scribes_reaction_bar.dart';
 import 'scribes_ornament_divider.dart';
@@ -13,7 +14,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final String bodyExcerpt;
   final String authorName;
   final String authorHandle;
-  final String? scriptureRef;
+  final List<ScriptureRef> scriptureRefs;
   final String? caption;
   final String? sermonSource;
   final bool isCorrection;
@@ -36,7 +37,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     required this.bodyExcerpt,
     required this.authorName,
     required this.authorHandle,
-    this.scriptureRef,
+    this.scriptureRefs = const [],
     this.caption,
     this.sermonSource,
     this.isCorrection = false,
@@ -98,14 +99,6 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                     onTap: () {},
                   ),
                 ),
-                if (widget.scriptureRef != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: ScribesScriptureChip(
-                      reference: widget.scriptureRef!,
-                      onTap: () {},
-                    ),
-                  ),
                 if (widget.onSaveToggle != null)
                   IconButton(
                     onPressed: widget.onSaveToggle,
@@ -116,6 +109,23 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                   ),
               ],
             ),
+            if (widget.scriptureRefs.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  children: widget.scriptureRefs.map((ref) {
+                    final refStr = ref.verseEnd != null
+                        ? '${ref.book} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}'
+                        : '${ref.book} ${ref.chapter}:${ref.verseStart}';
+                    return ScribesScriptureChip(
+                      reference: refStr,
+                      onTap: () {},
+                    );
+                  }).toList(),
+                ),
+              ),
             const SizedBox(height: 16),
             Text(
               widget.title,
@@ -127,7 +137,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
             Text(
               widget.bodyExcerpt,
               style: ScribesTextStyles.bodyLg.copyWith(
-                color: colors.primaryText,
+                color: colors.secondaryText,
               ),
               maxLines: 4,
               overflow: TextOverflow.ellipsis,

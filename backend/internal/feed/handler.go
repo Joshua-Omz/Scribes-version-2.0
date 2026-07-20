@@ -62,7 +62,34 @@ func (h *Handler) GetExplore(c *gin.Context) {
 		}
 	}
 
-	res, err := h.svc.GetExplore(c.Request.Context(), cursor, limit, categoryID)
+	var searchQuery *string
+	if sq := c.Query("search_query"); sq != "" {
+		searchQuery = &sq
+	}
+
+	var scriptureBook *string
+	if sb := c.Query("scripture_book"); sb != "" {
+		scriptureBook = &sb
+	}
+
+	var scriptureChapter *int32
+	if sc := c.Query("scripture_chapter"); sc != "" {
+		if val, err := strconv.ParseInt(sc, 10, 32); err == nil {
+			v32 := int32(val)
+			scriptureChapter = &v32
+		}
+	}
+
+	params := ExploreParams{
+		Cursor:          cursor,
+		Limit:           limit,
+		CategoryID:      categoryID,
+		SearchQuery:     searchQuery,
+		ScriptureBook:   scriptureBook,
+		ScriptureChapter: scriptureChapter,
+	}
+
+	res, err := h.svc.GetExplore(c.Request.Context(), params)
 	if err != nil {
 		respond.Error(c, http.StatusBadRequest, "invalid request")
 		return

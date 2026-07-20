@@ -25,6 +25,36 @@ class ExploreSelectedCategory extends _$ExploreSelectedCategory {
 }
 
 @riverpod
+class ExploreSearchQuery extends _$ExploreSearchQuery {
+  @override
+  String? build() => null;
+
+  void setQuery(String? query) {
+    state = query;
+  }
+}
+
+class ScriptureFilter {
+  final String book;
+  final int? chapter;
+  ScriptureFilter(this.book, this.chapter);
+}
+
+@riverpod
+class ExploreScriptureFilter extends _$ExploreScriptureFilter {
+  @override
+  ScriptureFilter? build() => null;
+
+  void setFilter(String book, int? chapter) {
+    state = ScriptureFilter(book, chapter);
+  }
+
+  void clear() {
+    state = null;
+  }
+}
+
+@riverpod
 class ExplorePostsNotifier extends _$ExplorePostsNotifier {
   String? _nextCursor;
 
@@ -33,12 +63,20 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
   @override
   FutureOr<List<Post>> build() async {
     final categoryId = ref.watch(exploreSelectedCategoryProvider);
-    return _fetch(categoryId, null);
+    final searchQuery = ref.watch(exploreSearchQueryProvider);
+    final scriptureFilter = ref.watch(exploreScriptureFilterProvider);
+    return _fetch(categoryId, searchQuery, scriptureFilter, null);
   }
 
-  Future<List<Post>> _fetch(String? categoryId, String? cursor) async {
+  Future<List<Post>> _fetch(String? categoryId, String? searchQuery, ScriptureFilter? scriptureFilter, String? cursor) async {
     final repo = ref.read(exploreRepositoryProvider);
-    final response = await repo.getExplore(cursor: cursor, categoryId: categoryId);
+    final response = await repo.getExplore(
+      cursor: cursor, 
+      categoryId: categoryId,
+      searchQuery: searchQuery,
+      scriptureBook: scriptureFilter?.book,
+      scriptureChapter: scriptureFilter?.chapter,
+    );
     _nextCursor = response.nextCursor;
     return response.posts;
   }
@@ -49,7 +87,9 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
 
     try {
       final categoryId = ref.read(exploreSelectedCategoryProvider);
-      final newPosts = await _fetch(categoryId, _nextCursor);
+      final searchQuery = ref.read(exploreSearchQueryProvider);
+      final scriptureFilter = ref.read(exploreScriptureFilterProvider);
+      final newPosts = await _fetch(categoryId, searchQuery, scriptureFilter, _nextCursor);
       
       final currentPosts = state.value ?? [];
       state = AsyncData([...currentPosts, ...newPosts]);
@@ -63,7 +103,9 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
     _nextCursor = null;
     try {
       final categoryId = ref.read(exploreSelectedCategoryProvider);
-      final posts = await _fetch(categoryId, null);
+      final searchQuery = ref.read(exploreSearchQueryProvider);
+      final scriptureFilter = ref.read(exploreScriptureFilterProvider);
+      final posts = await _fetch(categoryId, searchQuery, scriptureFilter, null);
       state = AsyncData(posts);
     } catch (e, stack) {
       state = AsyncError(e, stack);

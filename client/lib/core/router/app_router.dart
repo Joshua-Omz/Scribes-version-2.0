@@ -17,6 +17,7 @@ import '../../features/profile/presentation/private_profile_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
+import '../widgets/scribes_bottom_nav.dart';
 
 part 'app_router.g.dart';
 
@@ -51,13 +52,44 @@ GoRouter appRouter(Ref ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const FeedScreen(),
-      ),
-      GoRoute(
-        path: '/explore',
-        builder: (context, state) => const ExploreScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return ScaffoldWithNavBar(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                builder: (context, state) => const FeedScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/explore',
+                builder: (context, state) => const ExploreScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/drafts',
+                builder: (context, state) => const DraftsListScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/notes',
+                builder: (context, state) => const NotesListScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/splash',
@@ -85,10 +117,6 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const PublishMetadataScreen(),
       ),
       GoRoute(
-        path: '/drafts',
-        builder: (context, state) => const DraftsListScreen(),
-      ),
-      GoRoute(
         path: '/posts/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
@@ -104,10 +132,6 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const EditProfileScreen(),
           ),
         ],
-      ),
-      GoRoute(
-        path: '/notes',
-        builder: (context, state) => const NotesListScreen(),
       ),
       GoRoute(
         path: '/notes/edit',

@@ -4,36 +4,66 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 
+class ScaffoldWithNavBar extends StatelessWidget {
+  const ScaffoldWithNavBar({
+    required this.navigationShell,
+    Key? key,
+  }) : super(key: key ?? const ValueKey<String>('ScaffoldWithNavBar'));
+
+  final StatefulNavigationShell navigationShell;
+
+  void _onTap(BuildContext context, int index) {
+    if (index == 2) {
+      // Compose is an action, not a tab
+      context.push('/compose');
+      return;
+    }
+
+    // Map UI indices to branch indices
+    int branchIndex = 0;
+    if (index == 0) branchIndex = 0;
+    else if (index == 1) branchIndex = 1;
+    else if (index == 3) branchIndex = 2;
+    else if (index == 4) branchIndex = 3;
+
+    // When navigating to a new branch, it's recommended to use the goBranch
+    // method, as doing so makes sure the last navigation state of the
+    // Navigator for the branch is restored.
+    navigationShell.goBranch(
+      branchIndex,
+      // A common pattern when tapping an active tab is to pop to the initial location.
+      initialLocation: branchIndex == navigationShell.currentIndex,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Map branch index back to UI index
+    int uiIndex = 0;
+    if (navigationShell.currentIndex == 0) uiIndex = 0;
+    else if (navigationShell.currentIndex == 1) uiIndex = 1;
+    else if (navigationShell.currentIndex == 2) uiIndex = 3;
+    else if (navigationShell.currentIndex == 3) uiIndex = 4;
+
+    return Scaffold(
+      body: navigationShell,
+      bottomNavigationBar: ScribesBottomNav(
+        currentIndex: uiIndex,
+        onTap: (index) => _onTap(context, index),
+      ),
+    );
+  }
+}
 
 class ScribesBottomNav extends ConsumerWidget {
   final int currentIndex;
+  final Function(int) onTap;
 
   const ScribesBottomNav({
     super.key,
     required this.currentIndex,
+    required this.onTap,
   });
-
-  void _onItemTapped(BuildContext context, int index) {
-    if (index == currentIndex) return;
-
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/explore');
-        break;
-      case 2:
-        context.push('/compose');
-        break;
-      case 3:
-        context.go('/insights'); // Placeholder
-        break;
-      case 4:
-        context.go('/profile');
-        break;
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,14 +85,13 @@ class ScribesBottomNav extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildNavItem(context, colors, Icons.breakfast_dining, 'Bread', 0),
-              _buildNavItem(context, colors, Icons.search, 'search', 1),
-              _buildNavItem(context, colors, Icons.lightbulb_outline, 'Insights', 3),
-              _buildNavItem(context, colors, Icons.person_outline, 'Profile', 4),
+              _buildNavItem(context, colors, Icons.breakfast_dining, 'scroll', 0),
+              _buildNavItem(context, colors, Icons.search, 'Search', 1),
+              _buildNavItem(context, colors, Icons.drafts_outlined, 'Drafts', 3),
+              _buildNavItem(context, colors, Icons.note_add_outlined, 'Notes', 4),
             ],
           ),
         ),
-  
       ],
     );
   }
@@ -73,7 +102,7 @@ class ScribesBottomNav extends ConsumerWidget {
 
     return Expanded(
       child: InkWell(
-        onTap: () => _onItemTapped(context, index),
+        onTap: () => onTap(index),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

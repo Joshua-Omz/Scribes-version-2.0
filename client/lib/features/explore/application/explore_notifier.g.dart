@@ -108,6 +108,112 @@ abstract class _$ExploreSelectedCategory extends $Notifier<String?> {
   }
 }
 
+@ProviderFor(ExploreSearchQuery)
+final exploreSearchQueryProvider = ExploreSearchQueryProvider._();
+
+final class ExploreSearchQueryProvider
+    extends $NotifierProvider<ExploreSearchQuery, String?> {
+  ExploreSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreSearchQueryHash();
+
+  @$internal
+  @override
+  ExploreSearchQuery create() => ExploreSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$exploreSearchQueryHash() =>
+    r'd0d7eb45eb5816588190278fa35d74524381fba8';
+
+abstract class _$ExploreSearchQuery extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ExploreScriptureFilter)
+final exploreScriptureFilterProvider = ExploreScriptureFilterProvider._();
+
+final class ExploreScriptureFilterProvider
+    extends $NotifierProvider<ExploreScriptureFilter, ScriptureFilter?> {
+  ExploreScriptureFilterProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreScriptureFilterProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreScriptureFilterHash();
+
+  @$internal
+  @override
+  ExploreScriptureFilter create() => ExploreScriptureFilter();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ScriptureFilter? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ScriptureFilter?>(value),
+    );
+  }
+}
+
+String _$exploreScriptureFilterHash() =>
+    r'4e12eb415793cf1eba629c91babf5343a23dd62f';
+
+abstract class _$ExploreScriptureFilter extends $Notifier<ScriptureFilter?> {
+  ScriptureFilter? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<ScriptureFilter?, ScriptureFilter?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ScriptureFilter?, ScriptureFilter?>,
+              ScriptureFilter?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(ExplorePostsNotifier)
 final explorePostsProvider = ExplorePostsNotifierProvider._();
 
@@ -133,7 +239,7 @@ final class ExplorePostsNotifierProvider
 }
 
 String _$explorePostsNotifierHash() =>
-    r'7a567b55ee4b795167f1e4b8fd03cb28bb489f2f';
+    r'af44592a79712259ede1b7cbd4a35057a16c8657';
 
 abstract class _$ExplorePostsNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();

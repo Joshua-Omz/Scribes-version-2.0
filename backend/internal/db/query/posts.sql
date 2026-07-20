@@ -70,3 +70,17 @@ ON CONFLICT DO NOTHING;
 -- name: GetPostCategories :many
 SELECT category_id FROM post_categories
 WHERE post_id = $1;
+
+-- name: AddScriptureRef :exec
+INSERT INTO scripture_refs (post_id, book, chapter, verse_start, verse_end)
+VALUES ($1, $2, $3, $4, $5);
+
+-- name: ClearScriptureRefs :exec
+DELETE FROM scripture_refs
+WHERE post_id = $1;
+
+-- name: GetScriptureRefs :many
+SELECT book, chapter, verse_start, verse_end 
+FROM scripture_refs 
+WHERE post_id = $1
+ORDER BY id ASC;

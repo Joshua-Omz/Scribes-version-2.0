@@ -17,6 +17,11 @@ _Draft _$DraftFromJson(Map<String, dynamic> json) => _Draft(
           ?.map((e) => e as String)
           .toList() ??
       const [],
+  categoryIds:
+      (json['category_ids'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
 );
@@ -28,6 +33,7 @@ Map<String, dynamic> _$DraftToJson(_Draft instance) => <String, dynamic>{
   'caption': instance.caption,
   'sermon_source': instance.sermonSource,
   'scripture_tags': instance.scriptureTags,
+  'category_ids': instance.categoryIds,
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
 };

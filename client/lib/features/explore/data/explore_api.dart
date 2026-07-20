@@ -7,14 +7,26 @@ class ExploreApi {
 
   ExploreApi(this._dio);
 
-  Future<Map<String, dynamic>> getExplore({String? cursor, int limit = 20, String? categoryId}) async {
+  Future<Map<String, dynamic>> getExplore({
+    String? cursor, 
+    int limit = 20, 
+    String? categoryId,
+    String? searchQuery,
+    String? scriptureBook,
+    int? scriptureChapter,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'limit': limit,
+    };
+    if (cursor != null) queryParams['cursor'] = cursor;
+    if (categoryId != null) queryParams['category_id'] = categoryId;
+    if (searchQuery != null) queryParams['search_query'] = searchQuery;
+    if (scriptureBook != null) queryParams['scripture_book'] = scriptureBook;
+    if (scriptureChapter != null) queryParams['scripture_chapter'] = scriptureChapter;
+
     final response = await _dio.get(
       '/explore',
-      queryParameters: {
-        'cursor': ?cursor,
-        'limit': limit,
-        'category_id': ?categoryId,
-      },
+      queryParameters: queryParams,
     );
     final data = response.data;
     if (data == null || data is String && data.isEmpty) return {'posts': []};

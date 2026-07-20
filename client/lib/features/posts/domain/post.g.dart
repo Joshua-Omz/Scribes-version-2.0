@@ -16,9 +16,9 @@ _Post _$PostFromJson(Map<String, dynamic> json) => _Post(
   isCorrection: json['is_correction'] as bool,
   correctsPostId: json['corrects_post_id'] as String?,
   sermonSource: _sermonSourceFromJson(json['sermon_source']),
-  scriptureTags:
-      (json['scripture_tags'] as List<dynamic>?)
-          ?.map((e) => e as String)
+  scriptureRefs:
+      (json['scripture_refs'] as List<dynamic>?)
+          ?.map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
   isDeleted: json['is_deleted'] as bool,
@@ -37,7 +37,7 @@ Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
   'is_correction': instance.isCorrection,
   'corrects_post_id': instance.correctsPostId,
   'sermon_source': instance.sermonSource,
-  'scripture_tags': instance.scriptureTags,
+  'scripture_refs': instance.scriptureRefs,
   'is_deleted': instance.isDeleted,
   'published_at': instance.publishedAt.toIso8601String(),
   'author_handle': instance.authorHandle,

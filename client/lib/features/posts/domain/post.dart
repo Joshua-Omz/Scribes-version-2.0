@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'sermon_source.dart';
+import 'scripture_ref.dart';
 import 'dart:convert';
 
 part 'post.freezed.dart';
@@ -42,7 +43,7 @@ abstract class Post with _$Post {
     @JsonKey(name: 'is_correction') required bool isCorrection,
     @JsonKey(name: 'corrects_post_id') String? correctsPostId,
     @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,
-    @JsonKey(name: 'scripture_tags') @Default([]) List<String> scriptureTags,
+    @JsonKey(name: 'scripture_refs') @Default([]) List<ScriptureRef> scriptureRefs,
     @JsonKey(name: 'is_deleted') required bool isDeleted,
     @JsonKey(name: 'published_at') required DateTime publishedAt,
     

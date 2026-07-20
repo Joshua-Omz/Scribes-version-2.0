@@ -72,6 +72,17 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _categoryIdsMeta = const VerificationMeta(
+    'categoryIds',
+  );
+  @override
+  late final GeneratedColumn<String> categoryIds = GeneratedColumn<String>(
+    'category_ids',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isSyncedMeta = const VerificationMeta(
     'isSynced',
   );
@@ -117,6 +128,7 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
     caption,
     sermonSource,
     scriptureTags,
+    categoryIds,
     isSynced,
     createdAt,
     updatedAt,
@@ -178,6 +190,15 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
         ),
       );
     }
+    if (data.containsKey('category_ids')) {
+      context.handle(
+        _categoryIdsMeta,
+        categoryIds.isAcceptableOrUnknown(
+          data['category_ids']!,
+          _categoryIdsMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_synced')) {
       context.handle(
         _isSyncedMeta,
@@ -233,6 +254,10 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
         DriftSqlType.string,
         data['${effectivePrefix}scripture_tags'],
       ),
+      categoryIds: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_ids'],
+      ),
       isSynced: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
@@ -261,6 +286,7 @@ class Draft extends DataClass implements Insertable<Draft> {
   final String? caption;
   final String? sermonSource;
   final String? scriptureTags;
+  final String? categoryIds;
   final bool isSynced;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -271,6 +297,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     this.caption,
     this.sermonSource,
     this.scriptureTags,
+    this.categoryIds,
     required this.isSynced,
     required this.createdAt,
     required this.updatedAt,
@@ -289,6 +316,9 @@ class Draft extends DataClass implements Insertable<Draft> {
     }
     if (!nullToAbsent || scriptureTags != null) {
       map['scripture_tags'] = Variable<String>(scriptureTags);
+    }
+    if (!nullToAbsent || categoryIds != null) {
+      map['category_ids'] = Variable<String>(categoryIds);
     }
     map['is_synced'] = Variable<bool>(isSynced);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -310,6 +340,9 @@ class Draft extends DataClass implements Insertable<Draft> {
       scriptureTags: scriptureTags == null && nullToAbsent
           ? const Value.absent()
           : Value(scriptureTags),
+      categoryIds: categoryIds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryIds),
       isSynced: Value(isSynced),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -328,6 +361,7 @@ class Draft extends DataClass implements Insertable<Draft> {
       caption: serializer.fromJson<String?>(json['caption']),
       sermonSource: serializer.fromJson<String?>(json['sermonSource']),
       scriptureTags: serializer.fromJson<String?>(json['scriptureTags']),
+      categoryIds: serializer.fromJson<String?>(json['categoryIds']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -343,6 +377,7 @@ class Draft extends DataClass implements Insertable<Draft> {
       'caption': serializer.toJson<String?>(caption),
       'sermonSource': serializer.toJson<String?>(sermonSource),
       'scriptureTags': serializer.toJson<String?>(scriptureTags),
+      'categoryIds': serializer.toJson<String?>(categoryIds),
       'isSynced': serializer.toJson<bool>(isSynced),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -356,6 +391,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     Value<String?> caption = const Value.absent(),
     Value<String?> sermonSource = const Value.absent(),
     Value<String?> scriptureTags = const Value.absent(),
+    Value<String?> categoryIds = const Value.absent(),
     bool? isSynced,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -368,6 +404,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     scriptureTags: scriptureTags.present
         ? scriptureTags.value
         : this.scriptureTags,
+    categoryIds: categoryIds.present ? categoryIds.value : this.categoryIds,
     isSynced: isSynced ?? this.isSynced,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -384,6 +421,9 @@ class Draft extends DataClass implements Insertable<Draft> {
       scriptureTags: data.scriptureTags.present
           ? data.scriptureTags.value
           : this.scriptureTags,
+      categoryIds: data.categoryIds.present
+          ? data.categoryIds.value
+          : this.categoryIds,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -399,6 +439,7 @@ class Draft extends DataClass implements Insertable<Draft> {
           ..write('caption: $caption, ')
           ..write('sermonSource: $sermonSource, ')
           ..write('scriptureTags: $scriptureTags, ')
+          ..write('categoryIds: $categoryIds, ')
           ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -414,6 +455,7 @@ class Draft extends DataClass implements Insertable<Draft> {
     caption,
     sermonSource,
     scriptureTags,
+    categoryIds,
     isSynced,
     createdAt,
     updatedAt,
@@ -428,6 +470,7 @@ class Draft extends DataClass implements Insertable<Draft> {
           other.caption == this.caption &&
           other.sermonSource == this.sermonSource &&
           other.scriptureTags == this.scriptureTags &&
+          other.categoryIds == this.categoryIds &&
           other.isSynced == this.isSynced &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -440,6 +483,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
   final Value<String?> caption;
   final Value<String?> sermonSource;
   final Value<String?> scriptureTags;
+  final Value<String?> categoryIds;
   final Value<bool> isSynced;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -451,6 +495,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     this.caption = const Value.absent(),
     this.sermonSource = const Value.absent(),
     this.scriptureTags = const Value.absent(),
+    this.categoryIds = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -463,6 +508,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     this.caption = const Value.absent(),
     this.sermonSource = const Value.absent(),
     this.scriptureTags = const Value.absent(),
+    this.categoryIds = const Value.absent(),
     this.isSynced = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -479,6 +525,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     Expression<String>? caption,
     Expression<String>? sermonSource,
     Expression<String>? scriptureTags,
+    Expression<String>? categoryIds,
     Expression<bool>? isSynced,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -491,6 +538,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
       if (caption != null) 'caption': caption,
       if (sermonSource != null) 'sermon_source': sermonSource,
       if (scriptureTags != null) 'scripture_tags': scriptureTags,
+      if (categoryIds != null) 'category_ids': categoryIds,
       if (isSynced != null) 'is_synced': isSynced,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -505,6 +553,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     Value<String?>? caption,
     Value<String?>? sermonSource,
     Value<String?>? scriptureTags,
+    Value<String?>? categoryIds,
     Value<bool>? isSynced,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -517,6 +566,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
       caption: caption ?? this.caption,
       sermonSource: sermonSource ?? this.sermonSource,
       scriptureTags: scriptureTags ?? this.scriptureTags,
+      categoryIds: categoryIds ?? this.categoryIds,
       isSynced: isSynced ?? this.isSynced,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -545,6 +595,9 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     if (scriptureTags.present) {
       map['scripture_tags'] = Variable<String>(scriptureTags.value);
     }
+    if (categoryIds.present) {
+      map['category_ids'] = Variable<String>(categoryIds.value);
+    }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
@@ -569,6 +622,7 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
           ..write('caption: $caption, ')
           ..write('sermonSource: $sermonSource, ')
           ..write('scriptureTags: $scriptureTags, ')
+          ..write('categoryIds: $categoryIds, ')
           ..write('isSynced: $isSynced, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -2490,6 +2544,7 @@ typedef $$DraftsTableCreateCompanionBuilder =
       Value<String?> caption,
       Value<String?> sermonSource,
       Value<String?> scriptureTags,
+      Value<String?> categoryIds,
       Value<bool> isSynced,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -2503,6 +2558,7 @@ typedef $$DraftsTableUpdateCompanionBuilder =
       Value<String?> caption,
       Value<String?> sermonSource,
       Value<String?> scriptureTags,
+      Value<String?> categoryIds,
       Value<bool> isSynced,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -2545,6 +2601,11 @@ class $$DraftsTableFilterComposer
 
   ColumnFilters<String> get scriptureTags => $composableBuilder(
     column: $table.scriptureTags,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryIds => $composableBuilder(
+    column: $table.categoryIds,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2603,6 +2664,11 @@ class $$DraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get categoryIds => $composableBuilder(
+    column: $table.categoryIds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
     builder: (column) => ColumnOrderings(column),
@@ -2650,6 +2716,11 @@ class $$DraftsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get categoryIds => $composableBuilder(
+    column: $table.categoryIds,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
@@ -2694,6 +2765,7 @@ class $$DraftsTableTableManager
                 Value<String?> caption = const Value.absent(),
                 Value<String?> sermonSource = const Value.absent(),
                 Value<String?> scriptureTags = const Value.absent(),
+                Value<String?> categoryIds = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -2705,6 +2777,7 @@ class $$DraftsTableTableManager
                 caption: caption,
                 sermonSource: sermonSource,
                 scriptureTags: scriptureTags,
+                categoryIds: categoryIds,
                 isSynced: isSynced,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -2718,6 +2791,7 @@ class $$DraftsTableTableManager
                 Value<String?> caption = const Value.absent(),
                 Value<String?> sermonSource = const Value.absent(),
                 Value<String?> scriptureTags = const Value.absent(),
+                Value<String?> categoryIds = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -2729,6 +2803,7 @@ class $$DraftsTableTableManager
                 caption: caption,
                 sermonSource: sermonSource,
                 scriptureTags: scriptureTags,
+                categoryIds: categoryIds,
                 isSynced: isSynced,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

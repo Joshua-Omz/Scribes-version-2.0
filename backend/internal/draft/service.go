@@ -116,7 +116,7 @@ func (s *Service) CreateDraftFromNote(ctx context.Context, authorID uuid.UUID, n
 	return draft.ID, nil
 }
 
-func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID) (post.Post, error) {
+func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID, scriptureRefs []post.ScriptureRefPayload) (post.Post, error) {
 	d, err := s.GetByID(ctx, authorID, draftID)
 	if err != nil {
 		return post.Post{}, err
@@ -128,10 +128,11 @@ func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID) (pos
 	}
 
 	p, err := s.postSvc.Create(ctx, authorID, post.CreateInput{
-		Content:      d.Content,
-		Caption:      d.Caption,
-		SermonSource: d.SermonSource,
-		CategoryIDs:  catIDs,
+		Content:       d.Content,
+		Caption:       d.Caption,
+		SermonSource:  d.SermonSource,
+		CategoryIDs:   catIDs,
+		ScriptureRefs: scriptureRefs,
 	})
 	if err != nil {
 		return post.Post{}, err

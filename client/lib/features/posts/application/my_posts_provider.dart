@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/post.dart';
 import '../domain/sermon_source.dart';
+import '../domain/scripture_ref.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart' hide Post;
@@ -46,7 +47,7 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
                 isCorrection: Value(post.isCorrection),
                 correctsPostId: Value(post.correctsPostId),
                 sermonSource: Value(post.sermonSource != null ? jsonEncode(post.sermonSource!.toJson()) : null),
-                scriptureTags: Value(jsonEncode(post.scriptureTags)),
+                scriptureTags: Value(jsonEncode(post.scriptureRefs.map((r) => r.toJson()).toList())),
                 isDeleted: Value(post.isDeleted),
                 publishedAt: Value(post.publishedAt),
               ),
@@ -81,12 +82,12 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
         } catch (_) {}
       }
 
-      List<String> decodedTags = [];
+      List<ScriptureRef> decodedRefs = [];
       if (row.scriptureTags != null) {
         try {
           final decoded = jsonDecode(row.scriptureTags!);
           if (decoded is List) {
-            decodedTags = decoded.map((e) => e.toString()).toList();
+            decodedRefs = decoded.map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>)).toList();
           }
         } catch (_) {}
       }
@@ -103,7 +104,7 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
         isCorrection: row.isCorrection,
         correctsPostId: row.correctsPostId,
         sermonSource: decodedSermon,
-        scriptureTags: decodedTags,
+        scriptureRefs: decodedRefs,
         isDeleted: row.isDeleted,
         publishedAt: row.publishedAt,
       );

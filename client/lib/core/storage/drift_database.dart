@@ -15,6 +15,7 @@ class Drafts extends Table {
   TextColumn get caption => text().nullable()();
   TextColumn get sermonSource => text().nullable()();
   TextColumn get scriptureTags => text().nullable()();
+  TextColumn get categoryIds => text().nullable()(); // JSON list
   BoolColumn get isSynced => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
@@ -80,7 +81,7 @@ class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -100,6 +101,9 @@ class ScribesDatabase extends _$ScribesDatabase {
         if (from < 4) {
           await m.createTable(notebooks);
           await m.createTable(notes);
+        }
+        if (from < 5) {
+          await m.addColumn(drafts, drafts.categoryIds);
         }
       },
     );
