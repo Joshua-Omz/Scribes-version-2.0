@@ -24,6 +24,21 @@ WHERE p.is_deleted = false
 ORDER BY p.published_at DESC, p.id DESC
 LIMIT $3;
 
+-- name: GetFollowingFeedPosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+JOIN follows f ON p.author_id = f.followee_id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND f.follower_id = $1
+  AND (p.published_at < $2 OR (p.published_at = $2 AND p.id < $3))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $4;
+
 -- name: GetExplorePostsByCategory :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 

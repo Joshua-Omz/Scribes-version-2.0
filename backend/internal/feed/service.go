@@ -97,7 +97,35 @@ func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (Pagi
 	if err != nil {
 		return PaginatedFeedResponse{}, err
 	}
+	var nextCursor string
+	if len(posts) > int(limit) {
+		last := posts[limit-1]
+		nextCursor = encodeCursor(last.PublishedAt, last.ID)
+		posts = posts[:limit]
+	}
 
+	return PaginatedFeedResponse{
+		Posts:      posts,
+		NextCursor: nextCursor,
+	}, nil
+}
+
+func (s *Service) GetFollowingFeed(ctx context.Context, cursor string, limit int32, userID uuid.UUID) (PaginatedFeedResponse, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	
+	t, id, err := decodeCursor(cursor)
+	if err != nil {
+		return PaginatedFeedResponse{}, err
+	}
+
+	// Fetch limit + 1 to check if there is a next page
+	posts, err := s.repo.GetFollowingFeedPosts(ctx, userID, t, id, limit+1)
+	if err != nil {
+		return PaginatedFeedResponse{}, err
+	}
+	
 	var nextCursor string
 	if len(posts) > int(limit) {
 		last := posts[limit-1]

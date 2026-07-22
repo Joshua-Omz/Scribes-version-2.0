@@ -58,6 +58,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 		// Authenticated feed
 		protected.GET("/feed", feedHandler.GetFeed)
+		protected.GET("/feed/following", feedHandler.GetFollowingFeed)
 
 		// Note endpoints
 		protected.GET("/notes", noteHandler.List)

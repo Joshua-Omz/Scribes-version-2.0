@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
 )
 
@@ -32,6 +33,46 @@ func (h *Handler) GetFeed(c *gin.Context) {
 	}
 
 	res, err := h.svc.GetFeed(c.Request.Context(), cursor, limit)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, res)
+}
+
+func getAuthorID(c *gin.Context) (uuid.UUID, bool) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return uuid.Nil, false
+	}
+
+	authorID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user ID in token")
+		return uuid.Nil, false
+	}
+
+	return authorID, true
+}
+
+func (h *Handler) GetFollowingFeed(c *gin.Context) {
+	authorID, ok := getAuthorID(c)
+	if !ok {
+		return
+	}
+
+	cursor := c.Query("cursor")
+	limitStr := c.Query("limit")
+	var limit int32 = 20
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
+		}
+	}
+
+	res, err := h.svc.GetFollowingFeed(c.Request.Context(), cursor, limit, authorID)
 	if err != nil {
 		respond.Error(c, http.StatusBadRequest, "invalid request")
 		return
