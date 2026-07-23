@@ -1,123 +1,165 @@
 # Scribes 2.0
 
-A local-first writing platform for thoughtful publishing.  
-**Architecture**: Go Modular Monolith API + Flutter local-first client (SQLite via Drift).
+Scribes is a local-first writing and publishing platform with a Go backend API and a Flutter client.
 
----
+## Repository structure
 
-## Repository Structure
+- `/backend` — Go (Gin + PostgreSQL) API
+- `/client` — Flutter app (Android/iOS/Web/Desktop)
+- `/docs` — product and engineering documentation
+- `/mcp-server` — Python MCP server for AI-assisted posting workflows
 
-```
-scribes/
-├── .github/workflows/ci.yml   # CI — Go vet/build/test + Flutter analyze/test + Docker build
-├── backend/                   # Go REST API (modular monolith)
-│   ├── cmd/api/main.go        # Entry point
-│   ├── internal/
-│   │   ├── auth/              # JWT + Argon2id auth
-│   │   ├── users/             # User repository
-│   │   ├── notes/             # Notes CRUD
-│   │   ├── drafts/            # Drafts CRUD
-│   │   ├── posts/             # Posts CRUD
-│   │   └── sync/              # Delta sync engine (pull & push)
-│   ├── pkg/
-│   │   ├── config/            # Env-based configuration
-│   │   ├── database/          # pgxpool + golang-migrate
-│   │   └── middleware/        # Logger, JWT auth middleware
-│   ├── migrations/            # SQL migration files
-│   ├── go.mod
-│   ├── go.sum
-│   └── Dockerfile
-├── client/                    # Flutter app (local-first)
-│   ├── lib/main.dart          # Entry point
-│   ├── test/                  # Widget & unit tests
-│   ├── pubspec.yaml
-│   └── pubspec.lock
-├── docs/
-│   ├── scribes_srs.md         # Software Requirements Specification
-│   ├── scribes_sdd.md         # Software Design Document
-│   ├── scribes_roadmap.md     # MVP engineering roadmap
-│   └── sprints/               # Sprint planning & tracking
-├── docker-compose.yml         # Local Postgres + API setup
-└── .gitignore
-```
+## Core backend capabilities
 
----
+- Auth + profile discovery
+- Notes, drafts, and publishing pipeline
+- Post revisions + correction history
+- Social layer (follow, reactions, comments, saves)
+- Feeds (`/feed`, `/feed/following`, `/explore`) with category/scripture filters
+- Direct messages and message requests
+- Notifications
+- Basic moderation/reporting endpoints
 
-## Quick Start (Backend)
+## Quick start (backend)
 
 ### Prerequisites
 
-- [Go 1.24+](https://go.dev/dl/)
-- [Docker & Docker Compose](https://docs.docker.com/get-docker/)
+- Go 1.24+
+- Docker + Docker Compose
 
-### Run with Docker Compose
+### Run with Docker
 
 ```bash
-# Start PostgreSQL + the API server
-docker compose up --build
+cp /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/backend/.env.example /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/backend/.env
+docker compose -f /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/backend/docker-compose.yml up --build
 ```
 
-The API will be available at `http://localhost:8080`.
+API default URL: `http://localhost:8080`
 
-### Run locally (Go only)
+### Run backend without Docker (API process)
 
 ```bash
-# 1. Copy environment template
-cp .env.example .env
-
-# 2. Start PostgreSQL
-docker compose up -d db
-
-# 3. Run the API (migrations are applied automatically on startup)
-cd backend
+cd /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/backend
 go run ./cmd/api
 ```
 
----
+> Requires a running PostgreSQL instance and a valid `DATABASE_URL` in `backend/.env`.
 
-## API Endpoints
+## Quick start (Flutter client)
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/register` | — | Create account |
-| POST | `/api/auth/login` | — | Sign in, receive JWT |
-| GET | `/api/auth/me` | Bearer | Current user |
-| GET | `/api/notes` | Bearer | List notes |
-| POST | `/api/notes` | Bearer | Create note |
-| GET | `/api/notes/{id}` | Bearer | Get note |
-| PUT | `/api/notes/{id}` | Bearer | Update note |
-| DELETE | `/api/notes/{id}` | Bearer | Soft-delete note |
-| GET | `/api/drafts` | Bearer | List drafts |
-| POST | `/api/drafts` | Bearer | Create draft |
-| GET | `/api/drafts/{id}` | Bearer | Get draft |
-| PUT | `/api/drafts/{id}` | Bearer | Update draft |
-| DELETE | `/api/drafts/{id}` | Bearer | Soft-delete draft |
-| GET | `/api/posts` | — | Public chronological feed |
-| GET | `/api/posts/{id}` | — | Get post |
-| POST | `/api/posts` | Bearer | Publish post |
-| PATCH | `/api/posts/{id}` | Bearer | Update post |
-| DELETE | `/api/posts/{id}` | Bearer | Soft-delete post |
-| PATCH | `/api/posts/{id}/revise` | Bearer | Revise post & snapshot |
-| POST | `/api/posts/{id}/correct` | Bearer | Create correction post |
-| GET | `/api/posts/{id}/versions` | — | Get all post versions |
-| GET | `/api/posts/{id}/versions/{v}`| — | Get specific post version |
-| GET | `/api/sync?seq={N}` | Bearer | Pull offline sync deltas |
-| GET | `/health` | — | Health check |
+```bash
+cd /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/client
+flutter pub get
+flutter run
+```
 
----
+## Development checks
 
-## Project Roadmap
+Backend:
 
-See [docs/scribes_roadmap.md](docs/scribes_roadmap.md) for the full MVP engineering roadmap and sprint tracking.
+```bash
+cd /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/backend
+go build ./...
+go test ./...
+```
 
-Sprint documentation lives in [`docs/sprints/`](docs/sprints/):
+Client:
 
-| Sprint | Status |
-|---|---|
-| [Sprint 1 — Infrastructure, Identity & Data](docs/sprints/sprint-1.md) | ✅ Complete |
-| [Sprint 2 — Delta Sync Engine](docs/sprints/sprint-2.md) | ✅ Complete |
-| [API Contract (Phase 1.5)](docs/sprints/sprint-api-contract.md) | 🔲 Pending |
-| [Sprint 3 — Offline Database & Editor](docs/sprints/sprint-3.md) | ✅ Complete |
-| [Sprint 4 — Publishing Pipeline & Feeds](docs/sprints/sprint-4.md) | ✅ Complete |
-| [Sprint 5 — Sync Worker](docs/sprints/sprint-5.md) | 🔲 Pending |
-| [Sprint 6 — Observability & Deployment](docs/sprints/sprint-6.md) | 🔲 Pending |
+```bash
+cd /home/runner/work/Scribes-version-2.0/Scribes-version-2.0/client
+flutter test
+```
+
+## API route map
+
+All routes are mounted at root (no `/api` prefix).
+
+### Public
+
+- `GET /health`
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /users/search`
+- `GET /users/:id`
+- `GET /users/:id/posts`
+- `GET /posts/:id`
+- `GET /posts/:id/versions`
+- `GET /posts/:id/versions/:version`
+- `GET /posts/:id/reactions`
+- `GET /posts/:id/comments`
+- `GET /explore`
+- `GET /categories`
+
+### Auth required (JWT)
+
+- `GET /me`
+- `GET /feed`
+- `GET /feed/following`
+- `GET /sync`
+
+**Notes**
+- `GET /notes`
+- `POST /notes`
+- `PATCH /notes/:id`
+- `DELETE /notes/:id`
+- `POST /notes/:id/promote`
+
+**Drafts**
+- `GET /drafts`
+- `GET /drafts/:id`
+- `POST /drafts`
+- `PATCH /drafts/:id`
+- `DELETE /drafts/:id`
+- `POST /drafts/:id/publish`
+
+**Posts**
+- `GET /posts`
+- `POST /posts`
+- `PATCH /posts/:id`
+- `DELETE /posts/:id`
+- `PATCH /posts/:id/revise`
+- `POST /posts/:id/correct`
+
+**Social**
+- `POST /users/:id/follow`
+- `DELETE /users/:id/follow`
+- `GET /users/:id/is-following`
+- `POST /posts/:id/reactions`
+- `DELETE /posts/:id/reactions`
+- `POST /posts/:id/comments`
+- `PATCH /comments/:id`
+- `POST /posts/:id/save`
+- `DELETE /posts/:id/save`
+- `GET /saved`
+
+**Messaging**
+- `POST /message-requests`
+- `GET /message-requests`
+- `POST /message-requests/:id/approve`
+- `POST /message-requests/:id/reject`
+- `GET /conversations`
+- `GET /conversations/:id/messages`
+- `GET /conversations/:id/stream`
+- `POST /conversations/:id/messages`
+- `POST /conversations/:id/block`
+- `DELETE /messages/:id`
+
+**Notifications**
+- `GET /notifications`
+- `POST /notifications/:id/read`
+
+**Moderation/Admin**
+- `POST /reports`
+- `GET /admin/reports`
+- `POST /admin/reports/:id/status`
+
+## Documentation
+
+- `/docs/scribes_srs.md`
+- `/docs/scribes_sdd.md`
+- `/docs/scribes_roadmap.md`
+- `/docs/sprints/`
+
+## MCP server
+
+See `/mcp-server/README.md` for setup and usage.
