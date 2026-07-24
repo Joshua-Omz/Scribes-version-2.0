@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -277,13 +278,16 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Column(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.75,
+            decoration: BoxDecoration(
+              color: colors.surface.withValues(alpha: 0.8),
+            ),
+            child: Column(
           children: [
             // Drag handle
             Center(
@@ -398,7 +402,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                     ),
                   ),
                 ),
-                error: (err, stack) => Center(
+                error: (error, stack) => Center(
                   child: Text(
                     'Failed to load comments.',
                     style: TextStyle(color: colors.primaryText),
@@ -470,7 +474,8 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
           ],
         ),
       ),
-    );
+    ),
+  ));
   }
 }
 
@@ -568,7 +573,7 @@ class _CommentTile extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      error: (_, __) => Text(
+                      error: (err, stackTrace) => Text(
                         'Unknown',
                         style: ScribesTextStyles.labelLg.copyWith(
                           color: colors.secondaryText,

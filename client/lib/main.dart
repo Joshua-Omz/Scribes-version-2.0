@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/theme_provider.dart';
@@ -10,6 +11,14 @@ import 'core/theme/theme_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+
+  try {
+    await GoogleSignIn.instance.initialize(
+      serverClientId: '773705773175-msk4fhvmllc34ovhlgu301g53f5cvdrd.apps.googleusercontent.com',
+    );
+  } catch (e) {
+    debugPrint('Failed to initialize Google SignIn: $e');
+  }
 
   runApp(const ProviderScope(child: ScribesApp()));
 }

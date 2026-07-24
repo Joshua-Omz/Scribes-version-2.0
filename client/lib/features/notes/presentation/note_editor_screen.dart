@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_auto_save_dot.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../application/note_editor_provider.dart';
 import '../../compose/application/compose_provider.dart';
 
@@ -80,23 +81,17 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
         }
       );
 
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: const Text('Note copied to drafts!'),
-          backgroundColor: colors.surfaceRaised,
-        ),
-      );
+      if (mounted) {
+        ScribesToast.show(context, 'Note copied to drafts!', colors);
+      }
 
       if (mounted) {
         context.go('/compose'); // Navigate to the draft editor directly
       }
     } catch (e) {
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: const Text('Failed to copy to drafts. Please try again.'),
-          backgroundColor: Colors.red.shade800,
-        ),
-      );
+      if (mounted) {
+        ScribesToast.show(context, 'Failed to copy to drafts. Please try again.', colors, isError: true);
+      }
     }
   }
 

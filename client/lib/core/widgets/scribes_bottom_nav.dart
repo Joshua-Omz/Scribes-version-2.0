@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
+import 'scribes_bounce_button.dart';
 
 class ScaffoldWithNavBar extends ConsumerWidget {
   const ScaffoldWithNavBar({
@@ -87,17 +89,24 @@ class ScribesBottomNav extends ConsumerWidget {
 
     // AnimatedContainer collapses height to 0 when hidden so that no
     // ghost layer is left behind in the Scaffold's layout space.
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
-      height: isVisible ? 70 : 0,
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(
-          top: BorderSide(color: colors.border),
-        ),
-      ),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          height: isVisible ? 70 : 0,
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            color: colors.surface.withValues(alpha: 0.8),
+            boxShadow: [
+              BoxShadow(
+                color: colors.primaryText.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
         child: SizedBox(
@@ -114,6 +123,8 @@ class ScribesBottomNav extends ConsumerWidget {
           ),
         ),
       ),
+        ),
+      ),
     );
   }
 
@@ -122,9 +133,8 @@ class ScribesBottomNav extends ConsumerWidget {
     final color = isSelected ? colors.gold : colors.secondaryText;
 
     return Expanded(
-      child: GestureDetector(
+      child: ScribesBounceButton(
         onTap: () => onTap(index),
-        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

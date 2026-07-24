@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/scribes_radius.dart';
@@ -9,6 +10,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../application/auth_notifier.dart';
+import '../domain/user.dart';
 
 class AuthGateScreen extends ConsumerStatefulWidget {
   const AuthGateScreen({super.key});
@@ -47,10 +49,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     final notifier = ref.read(authProvider.notifier);
     
     try {
-      final googleSignIn = GoogleSignIn(
-        serverClientId: '773705773175-msk4fhvmllc34ovhlgu301g53f5cvdrd.apps.googleusercontent.com',
-      );
-      final googleUser = await googleSignIn.signIn();
+      final googleUser = await GoogleSignIn.instance.authenticate();
       if (googleUser != null) {
         final googleAuth = await googleUser.authentication;
         if (googleAuth.idToken != null) {

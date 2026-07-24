@@ -5,11 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
-import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../compose/application/compose_provider.dart';
 import '../application/drafts_list_provider.dart';
 import 'widgets/scribes_draft_card.dart';
 import '../../../core/widgets/scribes_shimmer.dart';
+import '../../../core/widgets/scribes_toast.dart';
 
 class DraftsListScreen extends ConsumerStatefulWidget {
   const DraftsListScreen({super.key});
@@ -67,7 +67,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     child: Icon(
                       LucideIcons.file_text,
                       size: 140,
-                      color: colors.gold.withOpacity(0.05),
+                      color: colors.gold.withValues(alpha: 0.05),
                     ),
                   ),
                 ],
@@ -82,7 +82,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(LucideIcons.inbox, size: 48, color: colors.goldMuted.withOpacity(0.5)),
+                        Icon(LucideIcons.inbox, size: 48, color: colors.goldMuted.withValues(alpha: 0.5)),
                         const SizedBox(height: 16),
                         Text(
                           'No drafts yet.',
@@ -121,9 +121,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                           },
                           onDelete: () {
                             ref.read(draftsListProvider.notifier).deleteDraft(draft.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Draft deleted')),
-                            );
+                            ScribesToast.show(context, 'Draft deleted', colors);
                           },
                         ),
                       );

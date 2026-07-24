@@ -7,6 +7,7 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/scribes_radius.dart';
 import '../../../core/widgets/scribes_avatar.dart';
 import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../../auth/application/auth_notifier.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -54,9 +55,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           TextButton(
             onPressed: () {
               // TODO: Implement backend patch
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated successfully!')),
-              );
+              ScribesToast.show(context, 'Profile updated successfully!', colors);
               context.pop();
             },
             child: Text('Save', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),

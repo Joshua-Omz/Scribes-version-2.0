@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'scribes_bounce_button.dart';
 
 class ScribesDiamondFab extends ConsumerWidget {
   final VoidCallback onPressed;
@@ -16,7 +17,7 @@ class ScribesDiamondFab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
 
-    return GestureDetector(
+    return ScribesBounceButton(
       onTap: onPressed,
       child: Transform.rotate(
         angle: 45 * 3.1415927 / 180,

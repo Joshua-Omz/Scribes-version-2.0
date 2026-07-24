@@ -2,6 +2,7 @@ class Endpoints {
   // Auth
   static const String register = '/auth/register';
   static const String login = '/auth/login';
+  static const String googleLogin = '/auth/google';
   static const String me = '/me';
 
   // Feed

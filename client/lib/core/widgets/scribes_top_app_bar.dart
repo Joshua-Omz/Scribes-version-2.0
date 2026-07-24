@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
@@ -13,10 +14,13 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.background,
-      ),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: colors.background.withValues(alpha: 0.8),
+          ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Row(
@@ -48,6 +52,8 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ],
           ),
+        ),
+      ),
       ),
     );
   }

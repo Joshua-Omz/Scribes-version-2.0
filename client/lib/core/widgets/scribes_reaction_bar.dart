@@ -3,6 +3,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
+import 'scribes_bounce_button.dart';
 
 class ScribesReactionBar extends ConsumerWidget {
   final int amenCount;
@@ -99,9 +100,9 @@ class _ReactionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayColor = isSelected ? color : colors.secondaryText;
 
-    return InkWell(
+    return ScribesBounceButton(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      scaleFactor: 0.95,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
