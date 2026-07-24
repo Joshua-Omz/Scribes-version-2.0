@@ -1,11 +1,13 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
+import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_profile_post_card.dart';
 import '../../social/application/user_lookup_provider.dart';
 import '../../social/application/is_following_user_provider.dart';
@@ -29,7 +31,7 @@ class PublicProfileScreen extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () => context.pop(),
         ),
       ),
@@ -148,7 +150,28 @@ class PublicProfileScreen extends ConsumerWidget {
   Widget _buildUserPostsList(WidgetRef ref, dynamic colors) {
     final postsState = ref.watch(userPostsProvider(userId));
     return postsState.when(
-      loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+      loading: () => SliverPadding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: ScribesShimmer(
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: colors.surfaceRaised,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              );
+            },
+            childCount: 4,
+          ),
+        ),
+      ),
       error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
       data: (posts) {
         if (posts.isEmpty) {
@@ -157,7 +180,7 @@ class PublicProfileScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.feed_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                  Icon(LucideIcons.newspaper, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   Text('No posts yet.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
                 ],

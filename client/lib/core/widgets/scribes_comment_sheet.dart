@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_colors.dart';
-import 'scribes_loading_indicator.dart';
+import 'scribes_shimmer.dart';
+import 'scribes_text_field.dart';
 import 'scribes_avatar.dart';
 import '../../features/social/application/post_social_providers.dart';
 import '../../features/social/application/user_lookup_provider.dart';
@@ -200,7 +202,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
               if (isCommentAuthor)
                 _buildActionTile(
                   colors: colors,
-                  icon: Icons.delete_outline,
+                  icon: LucideIcons.trash_2,
                   label: 'Delete my comment',
                   isDestructive: true,
                   onTap: () {
@@ -214,7 +216,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
               if (isPostAuthor && !isCommentAuthor)
                 _buildActionTile(
                   colors: colors,
-                  icon: Icons.visibility_off_outlined,
+                  icon: LucideIcons.eye_off,
                   label: 'Hide this comment',
                   onTap: () {
                     Navigator.pop(ctx);
@@ -226,7 +228,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
 
               _buildActionTile(
                 colors: colors,
-                icon: Icons.mail_outline,
+                icon: LucideIcons.mail,
                 label: 'Reply via DM',
                 onTap: () {
                   Navigator.pop(ctx);
@@ -268,7 +270,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final _ = MediaQuery.of(context).viewInsets.bottom;
     final commentsState = ref.watch(postCommentsProvider(widget.postId));
 
     return Padding(
@@ -300,7 +302,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Thoughts',
@@ -308,10 +310,6 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                       color: colors.primaryText,
                       fontSize: 24,
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: colors.secondaryText),
-                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
@@ -356,7 +354,50 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                     ),
                   );
                 },
-                loading: () => const Center(child: ScribesLoadingIndicator()),
+                loading: () => ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: 4,
+                  separatorBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(height: 1, color: colors.border),
+                  ),
+                  itemBuilder: (context, index) => ScribesShimmer(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: colors.surfaceRaised,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 14,
+                                width: 100,
+                                color: colors.surfaceRaised,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                height: 14,
+                                width: double.infinity,
+                                color: colors.surfaceRaised,
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                height: 14,
+                                width: 150,
+                                color: colors.surfaceRaised,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 error: (err, stack) => Center(
                   child: Text(
                     'Failed to load comments.',
@@ -394,31 +435,15 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: colors.surface,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: colors.border),
-                          ),
-                          child: TextField(
-                            controller: _commentController,
-                            focusNode: _focusNode,
-                            maxLines: 4,
-                            minLines: 1,
-                            style: ScribesTextStyles.bodyMd.copyWith(
-                              color: colors.primaryText,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Share your thoughts...',
-                              hintStyle: ScribesTextStyles.bodyMd.copyWith(
-                                color: colors.secondaryText,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                            ),
+                        child: ScribesTextField(
+                          controller: _commentController,
+                          focusNode: _focusNode,
+                          maxLines: 4,
+                          minLines: 1,
+                          hintText: 'Share your thoughts...',
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
                         ),
                       ),
@@ -431,7 +456,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                         ),
                         child: IconButton(
                           icon: Icon(
-                            Icons.arrow_upward,
+                            LucideIcons.send,
                             color: colors.surfaceRaised,
                           ),
                           onPressed: _submitComment,
@@ -499,10 +524,10 @@ class _CommentTile extends ConsumerWidget {
                 ScribesAvatar(authorName: author.displayName, radius: 18),
             loading: () =>
                 CircleAvatar(radius: 18, backgroundColor: colors.surfaceRaised),
-            error: (_, __) => CircleAvatar(
+            error: (_, _) => CircleAvatar(
               radius: 18,
               backgroundColor: colors.surfaceRaised,
-              child: Icon(Icons.person_outline, size: 20, color: colors.gold),
+              child: Icon(LucideIcons.user, size: 20, color: colors.gold),
             ),
           ),
           const SizedBox(width: 12),
@@ -580,7 +605,7 @@ class _CommentTile extends ConsumerWidget {
       child: Row(
         children: [
           Icon(
-            Icons.remove_circle_outline,
+            LucideIcons.circle_minus,
             size: 16,
             color: colors.secondaryText.withValues(alpha: 0.5),
           ),

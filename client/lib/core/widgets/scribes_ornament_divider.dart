@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 class ScribesOrnamentDivider extends StatelessWidget {
   const ScribesOrnamentDivider({super.key});
@@ -20,7 +21,7 @@ class ScribesOrnamentDivider extends StatelessWidget {
           child: Opacity(
             opacity: 0.2,
             child: Icon(
-              Icons.diamond_outlined, // Placeholder for geometric medallion
+              LucideIcons.gem, // Geometric medallion ornament
               color: theme.colorScheme.primary,
               size: 16,
             ),

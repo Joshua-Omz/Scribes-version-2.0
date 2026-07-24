@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/scribes_radius.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
+import '../../../core/widgets/scribes_text_field.dart';
 import '../application/auth_notifier.dart';
 
 class AuthGateScreen extends ConsumerStatefulWidget {
@@ -23,28 +25,45 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   final _handleCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
 
-  void _submit() async {
+  void _submit() {
+    final notifier = ref.read(authProvider.notifier);
+    
+    if (_isLogin) {
+      notifier.login(
+        email: _emailCtrl.text,
+        password: _passwordCtrl.text,
+      );
+    } else {
+      notifier.register(
+        email: _emailCtrl.text,
+        handle: _handleCtrl.text,
+        displayName: _nameCtrl.text,
+        password: _passwordCtrl.text,
+      );
+    }
+  }
+
+  void _signInWithGoogle() async {
     final notifier = ref.read(authProvider.notifier);
     
     try {
-      if (_isLogin) {
-        await notifier.login(
-          email: _emailCtrl.text,
-          password: _passwordCtrl.text,
-        );
-      } else {
-        await notifier.register(
-          email: _emailCtrl.text,
-          handle: _handleCtrl.text,
-          displayName: _nameCtrl.text,
-          password: _passwordCtrl.text,
-        );
+      final googleSignIn = GoogleSignIn(
+        serverClientId: '773705773175-msk4fhvmllc34ovhlgu301g53f5cvdrd.apps.googleusercontent.com',
+      );
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser != null) {
+        final googleAuth = await googleUser.authentication;
+        if (googleAuth.idToken != null) {
+          notifier.loginWithGoogle(googleAuth.idToken!);
+        }
       }
     } catch (e) {
       if (mounted) {
-        final message = e is ApiException ? e.message : e.toString();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
+          SnackBar(
+            content: Text('Google Sign-In failed: \$e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     }
@@ -63,6 +82,28 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final authState = ref.watch(authProvider);
+
+    ref.listen<AsyncValue<User?>>(authProvider, (previous, next) {
+      if (next is AsyncError) {
+        final error = next.error;
+        String message = error.toString();
+        
+        // Extract inner ApiException message if wrapped by DioException
+        if (error is DioException && error.error is ApiException) {
+          message = (error.error as ApiException).message;
+        } else if (error is ApiException) {
+          message = error.message;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -168,14 +209,14 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
 
                 // Form
                 if (!_isLogin) ...[
-                  _buildInput('Handle', _handleCtrl, colors),
+                  ScribesTextField(labelText: 'Handle', controller: _handleCtrl),
                   const SizedBox(height: 16),
-                  _buildInput('Display Name', _nameCtrl, colors),
+                  ScribesTextField(labelText: 'Display Name', controller: _nameCtrl),
                   const SizedBox(height: 16),
                 ],
-                _buildInput('Email', _emailCtrl, colors, keyboardType: TextInputType.emailAddress),
+                ScribesTextField(labelText: 'Email', controller: _emailCtrl, keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
-                _buildInput('Password', _passwordCtrl, colors, obscureText: true),
+                ScribesTextField(labelText: 'Password', controller: _passwordCtrl, obscureText: true),
                 
                 const SizedBox(height: 40),
                 ElevatedButton(
@@ -193,6 +234,25 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                     ? const SizedBox(height: 20, width: 20, child: ScribesLoadingIndicator(size: 20))
                     : Text(_isLogin ? 'Log in' : 'Create Account', style: ScribesTextStyles.labelLg),
                 ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.surfaceRaised,
+                    foregroundColor: colors.primaryText,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(ScribesRadius.button),
+                      side: BorderSide(color: colors.border),
+                    ),
+                  ),
+                  onPressed: authState.isLoading ? null : _signInWithGoogle,
+                  icon: Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+                    height: 24,
+                  ),
+                  label: Text('Continue with Google', style: ScribesTextStyles.labelLg),
+                ),
                 
                 if (authState.hasError) ...[
                   const SizedBox(height: 24),
@@ -204,9 +264,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                       border: Border.all(color: colors.orange.withValues(alpha: 0.3)),
                     ),
                     child: Text(
-                      (authState.error is ApiException) 
-                          ? (authState.error as ApiException).message 
-                          : authState.error.toString(),
+                      _getCleanErrorMessage(authState.error),
                       style: ScribesTextStyles.caption.copyWith(color: colors.orange),
                       textAlign: TextAlign.center,
                     ),
@@ -232,39 +290,13 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     );
   }
 
-  Widget _buildInput(String label, TextEditingController ctrl, dynamic colors, {bool obscureText = false, TextInputType? keyboardType}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: ScribesTextStyles.caption.copyWith(
-            color: colors.secondaryText,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: ctrl,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ScribesRadius.input),
-              borderSide: BorderSide(color: colors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ScribesRadius.input),
-              borderSide: BorderSide(color: colors.gold, width: 1.5),
-            ),
-            filled: true,
-            fillColor: colors.surface,
-          ),
-        ),
-      ],
-    );
+  String _getCleanErrorMessage(Object? error) {
+    if (error == null) return 'Unknown error';
+    if (error is DioException && error.error is ApiException) {
+      return (error.error as ApiException).message;
+    } else if (error is ApiException) {
+      return error.message;
+    }
+    return error.toString();
   }
 }

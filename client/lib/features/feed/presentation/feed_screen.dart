@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_top_app_bar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
+import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../application/feed_notifier.dart';
-import '../../explore/application/explore_notifier.dart';
+import '../../../core/theme/scribes_colors.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../../core/widgets/scribes_unauth_banner.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
+import '../../../core/widgets/scribes_shimmer.dart';
 
 import 'package:flutter/rendering.dart';
 import '../../../core/widgets/scribes_drawer.dart';
@@ -26,14 +29,30 @@ class FeedScreen extends ConsumerStatefulWidget {
   ConsumerState<FeedScreen> createState() => _FeedScreenState();
 }
 
-class _FeedScreenState extends ConsumerState<FeedScreen> {
-  int _selectedTabIndex = 0;
+class _FeedScreenState extends ConsumerState<FeedScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isFabVisible = true;
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final feedState = ref.watch(feedProvider);
     final colors = ref.watch(themeProvider);
     final authState = ref.watch(authProvider);
     final isAuth = authState.value != null;
@@ -49,7 +68,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           duration: const Duration(milliseconds: 250),
           opacity: _isFabVisible ? 1.0 : 0.0,
           child: ScribesDiamondFab(
-            icon: Icons.add,
+            icon: LucideIcons.plus,
             onPressed: () {
               ref.read(composeProvider.notifier).reset();
               context.push('/compose');
@@ -63,21 +82,25 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             child: NotificationListener<UserScrollNotification>(
               onNotification: (notification) {
                 if (notification.direction == ScrollDirection.forward) {
-                  if (!_isFabVisible) setState(() => _isFabVisible = true);
+                  if (!_isFabVisible) {
+                    setState(() => _isFabVisible = true);
+                    ref.read(bottomNavVisibilityProvider.notifier).show();
+                  }
                 } else if (notification.direction == ScrollDirection.reverse) {
-                  if (_isFabVisible) setState(() => _isFabVisible = false);
+                  if (_isFabVisible) {
+                    setState(() => _isFabVisible = false);
+                    ref.read(bottomNavVisibilityProvider.notifier).hide();
+                  }
                 }
                 return false;
               },
-              child: RefreshIndicator(
-                onRefresh: () => ref.read(feedProvider.notifier).refresh(),
-                child: CustomScrollView(
-                slivers: [
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   SliverAppBar(
                     floating: true,
                     pinned: false,
                     elevation: 0,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.background,
                     toolbarHeight: 56,
                     titleSpacing: 0,
                     title: const ScribesTopAppBar(),
@@ -86,96 +109,22 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                     pinned: true,
                     delegate: ScribesTabBarDelegate(
                       child: ScribesTabBar(
-                        selectedIndex: _selectedTabIndex,
+                        selectedIndex: _tabController.index,
                         onTabChanged: (index) {
-                          setState(() {
-                            _selectedTabIndex = index;
-                          });
+                          _tabController.animateTo(index);
                         },
                       ),
                     ),
                   ),
-                  if (_selectedTabIndex == 0)
-                    feedState.when(
-                      data: (posts) {
-                        if (posts.isEmpty) {
-                          return SliverFillRemaining(
-                            child: _buildEmptyState(context, colors),
-                          );
-                        }
-
-                        return SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                                if (index == posts.length) {
-                                  if (ref.read(feedProvider.notifier).hasMore) {
-                                    ref.read(feedProvider.notifier).loadMore();
-                                    return const Padding(
-                                      padding: EdgeInsets.all(16.0),
-                                      child: Center(child: ScribesLoadingIndicator()),
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                }
-
-                                final post = posts[index];
-                                return ScribesConnectedPostCard(
-                                  post: post,
-                                  isFeatured: index == 0,
-                                );
-                              },
-                              childCount: posts.length + (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
-                            ),
-                          );
-                      },
-                      loading: () => const SliverFillRemaining(
-                        child: Center(child: ScribesLoadingIndicator()),
-                      ),
-                      error: (e, st) => SliverFillRemaining(
-                        child: Center(child: Text('Error: \$e')),
-                      ),
-                    ),
-                  if (_selectedTabIndex == 1)
-                    Consumer(
-                      builder: (context, ref, child) {
-                        final exploreState = ref.watch(explorePostsProvider);
-                        return exploreState.when(
-                          data: (posts) {
-                            if (posts.isEmpty) {
-                              return SliverFillRemaining(
-                                child: _buildEmptyState(context, colors),
-                              );
-                            }
-                            return SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  if (index == posts.length) {
-                                    if (ref.read(explorePostsProvider.notifier).hasMore) {
-                                      ref.read(explorePostsProvider.notifier).loadMore();
-                                      return const Padding(
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Center(child: ScribesLoadingIndicator()),
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  }
-                                  return ScribesConnectedPostCard(
-                                    post: posts[index],
-                                    isFeatured: index == 0,
-                                  );
-                                },
-                                childCount: posts.length + (ref.read(explorePostsProvider.notifier).hasMore ? 1 : 0),
-                              ),
-                            );
-                          },
-                          loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
-                          error: (e, st) => SliverFillRemaining(child: Center(child: Text('Error: \$e'))),
-                        );
-                      },
-                    ),
                 ],
+                body: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildFollowingTab(colors),
+                    _buildSeekTab(colors),
+                  ],
+                ),
               ),
-            ),
             ),
           ),
           if (!isAuth)
@@ -188,12 +137,125 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, colors) {
+  Widget _buildFollowingTab(ScribesColors colors) {
+    final followingState = ref.watch(followingFeedProvider);
+    return RefreshIndicator(
+      onRefresh: () => ref.read(followingFeedProvider.notifier).refresh(),
+      child: CustomScrollView(
+        key: const PageStorageKey<String>('followingTab'),
+        slivers: [
+          followingState.when(
+            data: (posts) {
+              if (posts.isEmpty) {
+                return SliverFillRemaining(
+                  child: _buildEmptyState(context, colors),
+                );
+              }
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == posts.length) {
+                      if (ref.read(followingFeedProvider.notifier).hasMore) {
+                        ref.read(followingFeedProvider.notifier).loadMore();
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(child: ScribesLoadingIndicator()),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }
+                    return ScribesConnectedPostCard(
+                      post: posts[index],
+                      isFeatured: index == 0,
+                    );
+                  },
+                  childCount: posts.length + (ref.read(followingFeedProvider.notifier).hasMore ? 1 : 0),
+                ),
+              );
+            },
+            loading: () => _buildShimmer(colors),
+            error: (e, st) => SliverFillRemaining(child: Center(child: Text('Error: $e'))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeekTab(ScribesColors colors) {
+    final feedState = ref.watch(feedProvider);
+    return RefreshIndicator(
+      onRefresh: () => ref.read(feedProvider.notifier).refresh(),
+      child: CustomScrollView(
+        key: const PageStorageKey<String>('seekTab'),
+        slivers: [
+          feedState.when(
+            data: (posts) {
+              if (posts.isEmpty) {
+                return SliverFillRemaining(
+                  child: _buildEmptyState(context, colors),
+                );
+              }
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == posts.length) {
+                      if (ref.read(feedProvider.notifier).hasMore) {
+                        ref.read(feedProvider.notifier).loadMore();
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(child: ScribesLoadingIndicator()),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }
+                    return ScribesConnectedPostCard(
+                      post: posts[index],
+                      isFeatured: index == 0,
+                    );
+                  },
+                  childCount: posts.length + (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
+                ),
+              );
+            },
+            loading: () => _buildShimmer(colors),
+            error: (e, st) => SliverFillRemaining(child: Center(child: Text('Error: $e'))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmer(ScribesColors colors) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: ScribesShimmer(
+                child: Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: colors.surfaceRaised,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            );
+          },
+          childCount: 4,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, ScribesColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.feed_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+          Icon(LucideIcons.newspaper, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(
             'Your scroll is empty',

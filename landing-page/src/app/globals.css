@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@layer base {
+  :root,
+  [data-theme='parchment'] {
+    /* Theme 2 — PARCHMENT (Default Light) */
+    --background: #F5F0E8;
+    --surface: #FDFAF4;
+    --surface-raised: #FFFFFF;
+    --primary-text: #1A1612;
+    --secondary-text: #6B6055;
+    --gold-primary: #9A7020;
+    --gold-muted: #C8B070;
+    --orange-accent: #88350E; /* from Color.fromARGB(255, 136, 53, 14) */
+    --orange-soft: #FAEADE;
+    --border: #DDD5C0;
+  }
+
+  /* Default Dark Mode (if no theme set) */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Theme 1 — NIGHT */
+      --background: #0A0A0A;
+      --surface: #111111;
+      --surface-raised: #1A1714;
+      --primary-text: #F0EDE6;
+      --secondary-text: #8A8070;
+      --gold-primary: #C9A84C;
+      --gold-muted: #7A6230;
+      --orange-accent: #D4621A;
+      --orange-soft: #3D2010;
+      --border: #2A2520;
+    }
+  }
+
+  [data-theme='dark'] {
+    /* Theme 1 — NIGHT (Explicit Dark) */
+    --background: #0A0A0A;
+    --surface: #111111;
+    --surface-raised: #1A1714;
+    --primary-text: #F0EDE6;
+    --secondary-text: #8A8070;
+    --gold-primary: #C9A84C;
+    --gold-muted: #7A6230;
+    --orange-accent: #D4621A;
+    --orange-soft: #3D2010;
+    --border: #2A2520;
+  }
+
+  [data-theme='silver'] {
+    /* Theme 3 — SILVER */
+    --background: #F2F2F4;
+    --surface: #FFFFFF;
+    --surface-raised: #FAFAFC;
+    --primary-text: #111116;
+    --secondary-text: #72727A;
+    --gold-primary: #B08A2A;
+    --gold-muted: #D4C080;
+    --orange-accent: #D4520A;
+    --orange-soft: #FAEDE4;
+    --border: #E0E0E6;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-primary-text: var(--primary-text);
+  --color-secondary-text: var(--secondary-text);
+  --color-gold-primary: var(--gold-primary);
+  --color-gold-muted: var(--gold-muted);
+  --color-orange-accent: var(--orange-accent);
+  --color-orange-soft: var(--orange-soft);
+  --color-border: var(--border);
+
+  --font-serif: var(--font-cormorant);
+  --font-sans: var(--font-dm-sans);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--background);
+  color: var(--primary-text);
+  font-family: var(--font-dm-sans), sans-serif;
+  font-weight: 400;
+  line-height: 1.7;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ── GRID BG ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+/* ── UTILS ── */
+.serif { font-family: var(--font-cormorant), serif; }
+.gold  { color: var(--gold-primary); }
+.ember { color: var(--orange-accent); }
+.muted { color: var(--secondary-text); }
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}

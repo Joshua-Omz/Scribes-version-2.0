@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_quill/flutter_quill.dart' hide Text;
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
@@ -58,37 +59,44 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     final colors = ref.read(themeProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     
-    // Trigger promotion logic
-    await ref.read(noteEditorProvider.notifier).promoteToDraft();
-    
-    // Load content into draft composer
-    final noteState = ref.read(noteEditorProvider);
-    ref.read(composeProvider.notifier).reset();
-    
-    // Copy the delta to new draft
-    final draftNotifier = ref.read(composeProvider.notifier);
-    draftNotifier.updateTitle(noteState.title);
-    // Actually we can just sync the exact same Quill Document to the Draft provider by passing a fake controller. 
-    // Or we simply redirect to drafts/compose and the provider will load it. Wait, the Draft's initial state needs the delta.
-    
-    // Reset compose provider and set its state
-    draftNotifier.loadDraft(
-      '', // new draft id or we let it generate one
-      {
-        'title': noteState.title,
-        'body': noteState.contentDelta,
+    try {
+      // Trigger promotion logic
+      final draftId = await ref.read(noteEditorProvider.notifier).promoteToDraft();
+      
+      // Load content into draft composer
+      final noteState = ref.read(noteEditorProvider);
+      ref.read(composeProvider.notifier).reset();
+      
+      // Copy the delta to new draft
+      final draftNotifier = ref.read(composeProvider.notifier);
+      draftNotifier.updateTitle(noteState.title);
+      
+      // Reset compose provider and set its state
+      draftNotifier.loadDraft(
+        draftId, // Use the actual draft ID returned by the backend
+        {
+          'title': noteState.title,
+          'body': noteState.contentDelta,
+        }
+      );
+
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: const Text('Note copied to drafts!'),
+          backgroundColor: colors.surfaceRaised,
+        ),
+      );
+
+      if (mounted) {
+        context.go('/compose'); // Navigate to the draft editor directly
       }
-    );
-
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: const Text('Note moved to drafts!'),
-        backgroundColor: colors.surfaceRaised,
-      ),
-    );
-
-    if (mounted) {
-      context.go('/compose'); // Navigate to the draft editor directly
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: const Text('Failed to copy to drafts. Please try again.'),
+          backgroundColor: Colors.red.shade800,
+        ),
+      );
     }
   }
 
@@ -102,7 +110,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () async {
             await ref.read(noteEditorProvider.notifier).forceSave();
             if (context.mounted) {
@@ -137,9 +145,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     ),
                   TextButton.icon(
                     onPressed: _promoteToDraft,
-                    icon: Icon(Icons.drive_file_move_outline, color: colors.orange, size: 18),
+                    icon: Icon(LucideIcons.file_output, color: colors.orange, size: 18),
                     label: Text(
-                      'Move to Drafts',
+                      'Copy to Drafts',
                       style: ScribesTextStyles.labelLg.copyWith(color: colors.orange),
                     ),
                   ),

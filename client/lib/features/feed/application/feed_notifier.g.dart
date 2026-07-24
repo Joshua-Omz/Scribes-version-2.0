@@ -52,3 +52,48 @@ abstract class _$FeedNotifier extends $AsyncNotifier<List<Post>> {
     return element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(FollowingFeedNotifier)
+final followingFeedProvider = FollowingFeedNotifierProvider._();
+
+final class FollowingFeedNotifierProvider
+    extends $AsyncNotifierProvider<FollowingFeedNotifier, List<Post>> {
+  FollowingFeedNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'followingFeedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$followingFeedNotifierHash();
+
+  @$internal
+  @override
+  FollowingFeedNotifier create() => FollowingFeedNotifier();
+}
+
+String _$followingFeedNotifierHash() =>
+    r'3067d09c2dbc5cd092ce782ab2814ee8525dfcf2';
+
+abstract class _$FollowingFeedNotifier extends $AsyncNotifier<List<Post>> {
+  FutureOr<List<Post>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
+              AsyncValue<List<Post>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

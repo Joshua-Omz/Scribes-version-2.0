@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"google.golang.org/api/idtoken"
 )
 
 var (
@@ -107,6 +108,51 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (User, string, er
 	err = password.Compare(hash, input.Password)
 	if err != nil {
 		return User{}, "", ErrInvalidCredentials
+	}
+
+	tok, err := token.Sign(user.ID.String(), user.Role, s.cfg.JWTSecret, time.Duration(s.cfg.JWTExpiryHours)*time.Hour)
+	if err != nil {
+		return User{}, "", err
+	}
+
+	return user, tok, nil
+}
+
+func (s *Service) LoginWithGoogle(ctx context.Context, idTokenStr string) (User, string, error) {
+	// Validate the ID token using the google api library
+	// We pass an empty string for the ClientID to accept any audience for now,
+	// since we don't have the ClientID yet. We can strict check it later.
+	payload, err := idtoken.Validate(ctx, idTokenStr, "")
+	if err != nil {
+		return User{}, "", errors.New("invalid google token")
+	}
+
+	email, ok := payload.Claims["email"].(string)
+	if !ok || email == "" {
+		return User{}, "", errors.New("google token missing email")
+	}
+
+	email = strings.TrimSpace(strings.ToLower(email))
+
+	// Check if user exists
+	user, _, err := s.repo.GetUserByEmail(ctx, email)
+	if err != nil {
+		// User doesn't exist, register them
+		name, _ := payload.Claims["name"].(string)
+		if name == "" {
+			name = "Scribe"
+		}
+
+		// Generate random handle since Google doesn't provide one
+		handle := "user_" + uuid.New().String()[:8]
+
+		// Generate a random dummy password hash for oauth users
+		dummyHash, _ := password.Hash(uuid.NewString(), s.cfg.BcryptCost)
+
+		user, err = s.repo.CreateUser(ctx, handle, name, email, dummyHash)
+		if err != nil {
+			return User{}, "", err
+		}
 	}
 
 	tok, err := token.Sign(user.ID.String(), user.Role, s.cfg.JWTSecret, time.Duration(s.cfg.JWTExpiryHours)*time.Hour)

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:scribes/core/theme/scribes_radius.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
@@ -25,6 +27,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final int commentCount;
   final bool isFeatured;
   final VoidCallback? onTap;
+  final VoidCallback? onAuthorTap;
   final VoidCallback? onComment;
   final void Function(String)? onReact;
   final String? userReactionType;
@@ -48,6 +51,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     this.commentCount = 0,
     this.isFeatured = false,
     this.onTap,
+    this.onAuthorTap,
     this.onComment,
     this.onReact,
     this.userReactionType,
@@ -84,7 +88,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 alignment: Alignment.topLeft,
                 child: Opacity(
                   opacity: 0.16,
-                  child: Icon(Icons.star_border, color: colors.gold, size: 24),
+                  child: Icon(LucideIcons.sparkles, color: colors.gold, size: 24),
                 ),
               ),
             Row(
@@ -96,15 +100,23 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                     authorHandle: widget.authorHandle,
                     publishedAt: widget.publishedAt,
                     isCorrection: widget.isCorrection,
-                    onTap: () {},
+                    onTap: widget.onAuthorTap ?? () {},
                   ),
                 ),
                 if (widget.onSaveToggle != null)
                   IconButton(
                     onPressed: widget.onSaveToggle,
-                    icon: Icon(
-                      widget.isSaved ? Icons.bookmark : Icons.bookmark_border,
-                      color: widget.isSaved ? colors.gold : colors.secondaryText,
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: widget.isSaved ? colors.gold : Colors.transparent,
+                        borderRadius: BorderRadius.circular(ScribesRadius.button),
+                      ),
+                      child: Icon(
+                        LucideIcons.bookmark,
+                        color: widget.isSaved ? colors.surface : colors.secondaryText,
+                        size: 20,
+                      ),
                     ),
                   ),
               ],
@@ -155,7 +167,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 child: Row(
                   children: [
                     Icon(
-                      _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      _isExpanded ? LucideIcons.chevron_up : LucideIcons.chevron_down,
                       color: colors.secondaryText,
                       size: 16,
                     ),
@@ -236,7 +248,7 @@ class _EmbeddedContentBox extends StatelessWidget {
           if (sermonSource != null && sermonSource!.isNotEmpty)
             Row(
               children: [
-                Icon(Icons.church_outlined, size: 14, color: colors.gold),
+                Icon(LucideIcons.church, size: 14, color: colors.gold),
                 const SizedBox(width: 6),
                 Text(
                   sermonSource!,

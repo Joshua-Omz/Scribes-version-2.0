@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
@@ -34,7 +35,7 @@ class ScribesScriptureChip extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.menu_book,
+              LucideIcons.book_open,
               size: 14,
               color: colors.gold,
             ),

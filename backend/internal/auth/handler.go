@@ -71,6 +71,26 @@ func (h *Handler) Login(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, authResponse{User: user, Token: token})
 }
 
+type GoogleLoginInput struct {
+	IDToken string `json:"id_token"`
+}
+
+func (h *Handler) LoginWithGoogle(c *gin.Context) {
+	var input GoogleLoginInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid json payload")
+		return
+	}
+
+	user, token, err := h.svc.LoginWithGoogle(c.Request.Context(), input.IDToken)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid google token")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, authResponse{User: user, Token: token})
+}
+
 func (h *Handler) GetMe(c *gin.Context) {
 	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
 	if !ok {

@@ -5,6 +5,8 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/note_repository.dart';
+import 'notes_list_provider.dart';
+import '../../draft/application/drafts_list_provider.dart';
 
 final noteEditorProvider = NotifierProvider<NoteEditorNotifier, NoteEditorState>(() => NoteEditorNotifier());
 
@@ -115,6 +117,8 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
       } catch (_) {}
     }();
 
+    ref.read(notesListProvider.notifier).refresh();
+
     state = state.copyWith(
       isSaving: false,
       lastSavedAt: DateTime.now(),
@@ -122,10 +126,13 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
     );
   }
 
-  Future<void> promoteToDraft() async {
+  Future<String> promoteToDraft() async {
     await forceSave();
     final repo = ref.read(noteRepositoryProvider);
-    await repo.promoteToDraft(state.noteId);
+    final draftData = await repo.promoteToDraft(state.noteId);
+    ref.read(notesListProvider.notifier).refresh();
+    ref.read(draftsListProvider.notifier).refresh();
+    return draftData['id'] as String;
   }
 
   void reset({String? notebookId}) {

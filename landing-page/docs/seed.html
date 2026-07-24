@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribes — The Knowledge of the Lord Covers the Earth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:     #0C0A08;
+    --vellum:  #F2EDE4;
+    --gold:    #C9A84C;
+    --glow:    #E8C97A;
+    --ember:   #D4621A;
+    --muted:   #8A8070;
+    --surface: #131008;
+    --border:  rgba(201,168,76,0.18);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--vellum);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BG ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* ── UTILS ── */
+  .serif { font-family: 'Cormorant Garamond', serif; }
+  .gold  { color: var(--gold); }
+  .ember { color: var(--ember); }
+  .muted { color: var(--muted); }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 60px;
+    border-bottom: 0.5px solid var(--border);
+    background: rgba(12,10,8,0.92);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600;
+    color: var(--vellum);
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-ornament {
+    display: flex; align-items: center; gap: 6px;
+    opacity: 0.5;
+  }
+  .nav-ornament span { display: block; width: 18px; height: 1px; background: var(--gold); }
+  .nav-ornament i { font-size: 8px; color: var(--gold); }
+
+  .nav-cta {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--ink);
+    background: var(--gold);
+    border: none; padding: 9px 22px;
+    border-radius: 3px; cursor: pointer;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--glow); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 140px 60px 100px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 32px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: '';
+    display: block; width: 40px; height: 0.5px;
+    background: var(--gold);
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--vellum);
+    margin-bottom: 12px;
+    max-width: 900px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 52px;
+    max-width: 680px;
+    line-height: 1.5;
+  }
+
+  .hero-actions {
+    display: flex; align-items: center; gap: 20px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .btn-primary {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    color: var(--ink);
+    background: var(--gold);
+    padding: 14px 36px;
+    border-radius: 3px;
+    text-decoration: none;
+    border: none; cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--glow); transform: translateY(-1px); }
+
+  .btn-ghost {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 400;
+    color: var(--vellum);
+    background: transparent;
+    padding: 14px 36px;
+    border-radius: 3px;
+    border: 0.5px solid rgba(242,237,228,0.3);
+    text-decoration: none; cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: border-color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── ORNAMENTAL DIVIDER ── */
+  .ornament-divider {
+    display: flex; align-items: center; gap: 16px;
+    margin: 80px auto;
+    max-width: 320px;
+  }
+  .ornament-divider::before, .ornament-divider::after {
+    content: '';
+    flex: 1; height: 0.5px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .ornament-medallion {
+    width: 24px; height: 24px;
+    border: 0.5px solid var(--gold);
+    transform: rotate(45deg);
+    opacity: 0.6;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .ornament-medallion::after {
+    content: '';
+    position: absolute; inset: 4px;
+    border: 0.5px solid var(--gold);
+  }
+
+  /* ── TICKER ── */
+  .ticker-section {
+    position: relative; z-index: 1;
+    padding: 0; overflow: hidden;
+    border-top: 0.5px solid var(--border);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .ticker-label {
+    text-align: center;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold);
+    padding: 28px 0 20px;
+  }
+  .ticker-track {
+    display: flex; width: max-content;
+    animation: ticker 40s linear infinite;
+    padding-bottom: 32px;
+  }
+  .ticker-track:hover { animation-play-state: paused; }
+  .ticker-item {
+    display: flex; align-items: center; gap: 0;
+    padding: 0 48px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ticker-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px; font-style: italic;
+    font-weight: 300;
+    color: var(--vellum);
+    opacity: 0.85;
+  }
+  .ticker-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin: 0 48px;
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── SECTION SHARED ── */
+  .section {
+    position: relative; z-index: 1;
+    padding: 120px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 5vw, 60px);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--vellum);
+    margin-bottom: 20px;
+  }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .section-body {
+    font-size: 16px; font-weight: 300;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.8;
+  }
+
+  /* ── MISSION GRID ── */
+  .mission-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    margin-top: 80px;
+  }
+  .mission-cell {
+    background: var(--ink);
+    padding: 52px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mission-cell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .mission-cell:hover::before { opacity: 1; }
+  .mission-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px; font-weight: 300;
+    color: var(--gold);
+    opacity: 0.12;
+    line-height: 1;
+    margin-bottom: 24px;
+    display: block;
+  }
+  .mission-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 600;
+    color: var(--vellum);
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+  .mission-text {
+    font-size: 14px; font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* ── HABAKKUK SECTION ── */
+  .hab-section {
+    position: relative; z-index: 1;
+    background: var(--surface);
+    border-top: 0.5px solid var(--border);
+    border-bottom: 0.5px solid var(--border);
+    padding: 140px 60px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hab-section::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    border: 0.5px solid var(--gold);
+    opacity: 0.06;
+  }
+  .hab-section::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px; height: 900px;
+    border-radius: 50%;
+    border: 0.5px solid var(--gold);
+    opacity: 0.03;
+  }
+  .hab-inner {
+    position: relative; z-index: 1;
+    max-width: 860px; margin: 0 auto;
+  }
+  .hab-eyebrow {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 40px;
+  }
+  .hab-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 4.5vw, 52px);
+    font-weight: 300; font-style: italic;
+    line-height: 1.3;
+    color: var(--vellum);
+    margin-bottom: 32px;
+  }
+  .hab-quote strong {
+    font-style: normal; font-weight: 600;
+    color: var(--gold);
+  }
+  .hab-ref {
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+    margin-top: 80px;
+  }
+  .how-step {
+    position: relative;
+    padding-top: 24px;
+    border-top: 0.5px solid var(--border);
+  }
+  .how-step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; font-weight: 400;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .how-step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 600;
+    color: var(--vellum);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .how-step-body {
+    font-size: 14px; font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  /* ── CONTENT TYPES ── */
+  .types-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 80px;
+  }
+  .type-chip {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 400;
+    color: var(--gold);
+    border: 0.5px solid rgba(201,168,76,0.3);
+    padding: 10px 20px;
+    border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .type-chip:hover {
+    background: rgba(201,168,76,0.08);
+    border-color: var(--gold);
+  }
+
+  /* ── POST PREVIEW ── */
+  .preview-section {
+    position: relative; z-index: 1;
+    padding: 120px 60px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .post-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    margin-top: 60px;
+  }
+  .post-card {
+    background: var(--ink);
+    padding: 40px 36px;
+    transition: background 0.2s;
+  }
+  .post-card:hover { background: #110E09; }
+  .post-category {
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .post-category::before {
+    content: '';
+    display: block; width: 16px; height: 0.5px;
+    background: var(--gold);
+  }
+  .post-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600;
+    color: var(--vellum);
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+  .post-excerpt {
+    font-size: 13px; font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .post-footer {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top: 0.5px solid var(--border);
+  }
+  .post-author {
+    font-size: 12px; font-weight: 400;
+    color: var(--muted);
+  }
+  .post-reactions {
+    display: flex; gap: 12px;
+    font-size: 11px; color: var(--muted);
+  }
+
+  /* ── FINAL CTA ── */
+  .cta-section {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 160px 60px;
+    border-top: 0.5px solid var(--border);
+    overflow: hidden;
+  }
+  .cta-bg-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(80px, 15vw, 200px);
+    font-weight: 700; font-style: italic;
+    color: var(--gold);
+    opacity: 0.03;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.02em;
+  }
+  .cta-inner { position: relative; z-index: 1; }
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 300; line-height: 1.1;
+    color: var(--vellum);
+    margin-bottom: 20px;
+    max-width: 700px;
+    margin-left: auto; margin-right: auto;
+  }
+  .cta-title em { font-style: italic; color: var(--gold); }
+  .cta-sub {
+    font-size: 15px; font-weight: 300;
+    color: var(--muted);
+    margin-bottom: 52px;
+    max-width: 480px;
+    margin-left: auto; margin-right: auto;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 0.5px solid var(--border);
+    padding: 40px 60px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .footer-verse {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; font-style: italic;
+    color: var(--muted);
+    opacity: 0.6;
+    max-width: 400px; text-align: center;
+  }
+  .footer-copy {
+    font-size: 12px; color: var(--muted);
+    opacity: 0.5;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .hero { padding: 120px 24px 80px; }
+    .section { padding: 80px 24px; }
+    .mission-grid { grid-template-columns: 1fr; }
+    .how-grid { grid-template-columns: 1fr; gap: 32px; }
+    .post-cards { grid-template-columns: 1fr; }
+    .hab-section { padding: 100px 24px; }
+    .cta-section { padding: 100px 24px; }
+    footer { padding: 32px 24px; flex-direction: column; text-align: center; }
+    .preview-section { padding: 80px 24px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; }
+    .reveal { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span class="nav-ornament">
+      <span></span>
+    </span>
+    Scribes
+    <span class="nav-ornament">
+      <span></span>
+    </span>
+  </a>
+  <a href="#waitlist" class="nav-cta">Join the community</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">A new kind of publishing</p>
+  <h1 class="hero-title serif">
+    Where the word of God<br>
+    <em>finds its scribes.</em>
+  </h1>
+  <p class="hero-sub serif">
+    A platform for believers to compose, preserve, and share<br>
+    the spiritual insights given to them — so that every person<br>
+    may taste the knowledge of the Lord.
+  </p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">Begin writing</a>
+    <a href="#mission" class="btn-ghost">Learn what Scribes is</a>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-section">
+  <p class="ticker-label">From the community</p>
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="ticker-quote">"He who has ears to hear, let him hear — and not merely agree, but be changed."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"Grace is not the absence of demand. It is the presence of power to meet it."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"Every wound in scripture is an invitation to look at the one who heals."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"The Kingdom is not a place you arrive at. It is a reality you carry."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"Meditation is not emptying the mind. It is filling it with what is true."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"He who has ears to hear, let him hear — and not merely agree, but be changed."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"Grace is not the absence of demand. It is the presence of power to meet it."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"Every wound in scripture is an invitation to look at the one who heals."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"The Kingdom is not a place you arrive at. It is a reality you carry."</span><span class="ticker-dot"></span></div>
+    <div class="ticker-item"><span class="ticker-quote">"Meditation is not emptying the mind. It is filling it with what is true."</span><span class="ticker-dot"></span></div>
+  </div>
+</div>
+
+<!-- MISSION -->
+<div id="mission" class="section reveal">
+  <p class="section-eyebrow">Our mission</p>
+  <h2 class="section-title">
+    That everyone gets<br>
+    <em>a taste of the Word.</em>
+  </h2>
+  <p class="section-body">
+    Scribes exists so that the spiritual insights given to believers — the
+    excerpts, meditations, charges, and questions that emerge from genuine
+    encounter with God — find a permanent home, and from that home, reach
+    anyone who is searching.
+  </p>
+
+  <div class="mission-grid">
+    <div class="mission-cell">
+      <span class="mission-num serif">I</span>
+      <h3 class="mission-heading serif">Nourish through the word</h3>
+      <p class="mission-text">Edifying content — scripture reflections, sermon notes, theological meditations — preserved exactly as they were given, attributed to the one who received them, and open to anyone who needs them.</p>
+    </div>
+    <div class="mission-cell">
+      <span class="mission-num serif">II</span>
+      <h3 class="mission-heading serif">Bless beyond the congregation</h3>
+      <p class="mission-text">A teaching published on Scribes is not locked behind a membership or a paywall. It is open. A person who has never stepped inside a church can read it. That is the point.</p>
+    </div>
+    <div class="mission-cell">
+      <span class="mission-num serif">III</span>
+      <h3 class="mission-heading serif">Preserve what was given</h3>
+      <p class="mission-text">Knowledge received is knowledge that can be lost. Scribes treats every post as a durable artifact — traceable, authored, immutable in spirit. Nothing is silently erased.</p>
+    </div>
+    <div class="mission-cell">
+      <span class="mission-num serif">IV</span>
+      <h3 class="mission-heading serif">Bring people to Christ</h3>
+      <p class="mission-text">Through the quality, seriousness, and beauty of what believers write, Scribes is designed so that an unbeliever who encounters this platform may feel, before anything else, that what is here is worth reading. The word does the rest.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HABAKKUK -->
+<div class="hab-section">
+  <div class="hab-inner reveal">
+    <p class="hab-eyebrow">Our vision — Habakkuk 2:14</p>
+    <blockquote class="hab-quote serif">
+      "For the earth will be filled with the<br>
+      <strong>knowledge of the glory of the Lord,</strong><br>
+      as the waters cover the sea."
+    </blockquote>
+    <p class="hab-ref">Habakkuk 2:14 · ESV</p>
+
+    <div class="ornament-divider" style="margin: 52px auto;">
+      <div class="ornament-medallion"></div>
+    </div>
+
+    <p style="font-family:'Cormorant Garamond',serif; font-size:19px; font-style:italic; font-weight:300; color:var(--muted); max-width:580px; margin:0 auto; line-height:1.7;">
+      Scribes is one small instrument in that filling. Every post is a drop.
+      Every reader is the sea receiving it.
+    </p>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section reveal">
+  <p class="section-eyebrow">How it works</p>
+  <h2 class="section-title">
+    From private note<br>
+    <em>to permanent teaching.</em>
+  </h2>
+
+  <div class="how-grid">
+    <div class="how-step">
+      <span class="how-step-num">01 — Capture</span>
+      <h3 class="how-step-title serif">Write what you received</h3>
+      <p class="how-step-body">Your private Notes workspace is for what arrives uninvited — a sermon line that stayed with you, a verse that meant something different this morning, a 2am impression. Plain and honest. Not for anyone else yet.</p>
+    </div>
+    <div class="how-step">
+      <span class="how-step-num">02 — Refine</span>
+      <h3 class="how-step-title serif">Shape it into a teaching</h3>
+      <p class="how-step-body">When a note is ready to be shared, move it to a Draft. Add a title, a category, scripture references. A full rich-text editor gives it the form a teaching deserves. Nothing is published until you say so.</p>
+    </div>
+    <div class="how-step">
+      <span class="how-step-num">03 — Publish</span>
+      <h3 class="how-step-title serif">Release it permanently</h3>
+      <p class="how-step-body">A published post carries your name and cannot be silently altered. It is a permanent record of what you believed and wrote on that day. It is searchable, shareable, and open to the world.</p>
+    </div>
+  </div>
+
+  <div class="ornament-divider reveal">
+    <div class="ornament-medallion"></div>
+  </div>
+
+  <p class="section-eyebrow" style="margin-bottom:20px;">What believers publish on Scribes</p>
+  <div class="types-row">
+    <div class="type-chip">Scripture meditations</div>
+    <div class="type-chip">Sermon notes</div>
+    <div class="type-chip">Theological questions</div>
+    <div class="type-chip">Personal charges</div>
+    <div class="type-chip">Study reflections</div>
+    <div class="type-chip">Kingdom insights</div>
+    <div class="type-chip">Devotional reads</div>
+    <div class="type-chip">Prophetic impressions</div>
+  </div>
+</div>
+
+<!-- POST PREVIEW -->
+<div class="preview-section reveal">
+  <p class="section-eyebrow">From the platform</p>
+  <h2 class="section-title">
+    The kind of writing<br>
+    <em>Scribes carries.</em>
+  </h2>
+
+  <div class="post-cards">
+    <div class="post-card">
+      <p class="post-category">Theology</p>
+      <h3 class="post-title serif">On the silence of God and why it is not absence</h3>
+      <p class="post-excerpt">We mistake quietness for withdrawal. But the shepherd does not speak to the sheep constantly — he leads them. His silence is often the shape of his direction, not the proof of his distance...</p>
+      <div class="post-footer">
+        <span class="post-author">@samuel.o</span>
+        <div class="post-reactions"><span>Amen 14</span><span>Insightful 8</span></div>
+      </div>
+    </div>
+    <div class="post-card">
+      <p class="post-category">Prayer</p>
+      <h3 class="post-title serif">A charge to the one who has stopped praying</h3>
+      <p class="post-excerpt">You did not stop because prayer failed. You stopped because it cost something and nothing appeared to change. But appearance is not the currency of the Kingdom. Persistence is. Return...</p>
+      <div class="post-footer">
+        <span class="post-author">@grace.a</span>
+        <div class="post-reactions"><span>Amen 31</span><span>Insightful 12</span></div>
+      </div>
+    </div>
+    <div class="post-card">
+      <p class="post-category">Hermeneutics</p>
+      <h3 class="post-title serif">Why "context is king" is insufficient and what replaces it</h3>
+      <p class="post-excerpt">Context tells you what a passage meant. The Spirit tells you what it means. These are not the same thing, and collapsing them into one is how we produce scholars who know the text but miss the author...</p>
+      <div class="post-footer">
+        <span class="post-author">@daniel.k</span>
+        <div class="post-reactions"><span>Amen 22</span><span>Thought-Provoking 18</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL CTA -->
+<div id="waitlist" class="cta-section">
+  <div class="cta-bg-text">Scribes</div>
+  <div class="cta-inner reveal">
+    <p class="section-eyebrow" style="margin-bottom:28px;">Begin</p>
+    <h2 class="cta-title serif">
+      What has been given<br>
+      to you <em>to say?</em>
+    </h2>
+    <p class="cta-sub">
+      Join a community of believers writing the word into permanence.
+      Open to anyone who wants to read. Built for those who have something to say.
+    </p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">Create your account</a>
+      <a href="#" class="btn-ghost">Read without an account</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">Scribes</a>
+  <p class="footer-verse serif">
+    "The earth shall be filled with the knowledge of the glory of the Lord,<br>
+    as the waters cover the sea." — Hab. 2:14
+  </p>
+  <p class="footer-copy">© 2025 Scribes</p>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>

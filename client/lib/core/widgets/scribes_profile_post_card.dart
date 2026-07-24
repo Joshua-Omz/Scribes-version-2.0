@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
@@ -59,10 +61,17 @@ class ScribesProfilePostCard extends ConsumerWidget {
                     onPressed: onSaveToggle,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    icon: Icon(
-                      isSaved ? Icons.bookmark : Icons.bookmark_border,
-                      color: isSaved ? colors.gold : colors.secondaryText,
-                      size: 20,
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isSaved ? colors.gold : Colors.transparent,
+                        borderRadius: BorderRadius.circular(ScribesRadius.button),
+                      ),
+                      child: Icon(
+                        LucideIcons.bookmark,
+                        color: isSaved ? colors.surface : colors.secondaryText,
+                        size: 20,
+                      ),
                     ),
                   ),
               ],

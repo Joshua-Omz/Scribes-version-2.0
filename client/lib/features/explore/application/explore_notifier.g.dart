@@ -161,6 +161,151 @@ abstract class _$ExploreSearchQuery extends $Notifier<String?> {
   }
 }
 
+@ProviderFor(ExploreSearchActive)
+final exploreSearchActiveProvider = ExploreSearchActiveProvider._();
+
+final class ExploreSearchActiveProvider
+    extends $NotifierProvider<ExploreSearchActive, bool> {
+  ExploreSearchActiveProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreSearchActiveProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreSearchActiveHash();
+
+  @$internal
+  @override
+  ExploreSearchActive create() => ExploreSearchActive();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$exploreSearchActiveHash() =>
+    r'ca8057e9e6fc5786e66ca5093f1fff66735814ed';
+
+abstract class _$ExploreSearchActive extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ExploreSearchModeNotifier)
+final exploreSearchModeProvider = ExploreSearchModeNotifierProvider._();
+
+final class ExploreSearchModeNotifierProvider
+    extends $NotifierProvider<ExploreSearchModeNotifier, ExploreSearchMode> {
+  ExploreSearchModeNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreSearchModeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreSearchModeNotifierHash();
+
+  @$internal
+  @override
+  ExploreSearchModeNotifier create() => ExploreSearchModeNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ExploreSearchMode value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ExploreSearchMode>(value),
+    );
+  }
+}
+
+String _$exploreSearchModeNotifierHash() =>
+    r'f2a5aebf7016dd5836041f7bcb8af2506a961c4e';
+
+abstract class _$ExploreSearchModeNotifier
+    extends $Notifier<ExploreSearchMode> {
+  ExploreSearchMode build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<ExploreSearchMode, ExploreSearchMode>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ExploreSearchMode, ExploreSearchMode>,
+              ExploreSearchMode,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(exploreUserSearch)
+final exploreUserSearchProvider = ExploreUserSearchProvider._();
+
+final class ExploreUserSearchProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<User>>,
+          List<User>,
+          FutureOr<List<User>>
+        >
+    with $FutureModifier<List<User>>, $FutureProvider<List<User>> {
+  ExploreUserSearchProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreUserSearchProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreUserSearchHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<User>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<User>> create(Ref ref) {
+    return exploreUserSearch(ref);
+  }
+}
+
+String _$exploreUserSearchHash() => r'64b87d9d315bc5e25aeac8d9f0f6cb2afc6b0ffd';
+
 @ProviderFor(ExploreScriptureFilter)
 final exploreScriptureFilterProvider = ExploreScriptureFilterProvider._();
 

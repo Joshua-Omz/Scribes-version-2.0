@@ -159,11 +159,30 @@ class NoteRepository {
     final cloudNote = await pushToCloud(id);
     
     // 2. Call promote endpoint
-    final draftData = await _api.promoteNoteToDraft(cloudNote.id);
+    final draftDataResponse = await _api.promoteNoteToDraft(cloudNote.id);
     
-    // 3. Delete note locally as it is now a draft
-    await deleteNoteLocally(id);
+    // 3. Insert into local drafts so it appears immediately!
+    final draftId = draftDataResponse['draft_id'];
+    final contentJson = jsonEncode(cloudNote.content);
+    final now = DateTime.now();
+
+    await _db.into(_db.drafts).insertOnConflictUpdate(
+      DraftsCompanion(
+        id: Value(draftId),
+        authorId: Value(_currentUserId!),
+        content: Value(contentJson),
+        isSynced: const Value(true),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
     
-    return draftData;
+    // 4. We no longer delete the note locally, so it persists as requested by the user.
+    // await deleteNoteLocally(id);
+    
+    return {
+      'id': draftId,
+      'content': cloudNote.content,
+    };
   }
 }

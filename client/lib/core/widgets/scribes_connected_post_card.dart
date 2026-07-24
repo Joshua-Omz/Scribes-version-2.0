@@ -55,6 +55,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
           sermonSource: post.sermonSource?.displayTitle,
           isCorrection: post.isCorrection,
           publishedAt: post.publishedAt,
+          scriptureRefs: post.scriptureRefs,
           isFeatured: isFeatured,
           amenCount: amenCount,
           insightCount: insightCount,
@@ -76,6 +77,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
             }
           },
           onTap: () => context.push('/posts/${post.id}'),
+          onAuthorTap: () => context.push('/users/${post.authorId}'),
           onComment: () {
             if (!isAuthenticated) {
               context.push('/auth');

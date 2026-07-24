@@ -30,6 +30,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
+		authGroup.POST("/google", authHandler.LoginWithGoogle)
 	}
 
 	// Public post endpoints — no auth required

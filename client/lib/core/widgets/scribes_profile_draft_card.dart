@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
@@ -38,7 +39,7 @@ class ScribesProfileDraftCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.edit_note, size: 16, color: colors.orange),
+                Icon(LucideIcons.file_pen, size: 16, color: colors.orange),
                 const SizedBox(width: 8),
                 Text(
                   'DRAFT • Last updated ${updatedAt.day}/${updatedAt.month}/${updatedAt.year}',

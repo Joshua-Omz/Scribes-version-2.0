@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
@@ -32,7 +33,7 @@ class ScribesReactionBar extends ConsumerWidget {
       child: Row(
         children: [
           _ReactionChip(
-            icon: Icons.local_fire_department_outlined,
+            icon: LucideIcons.flame,
             label: 'Amen',
             count: amenCount.toString(),
             onTap: () => onReact('amen'),
@@ -42,7 +43,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: Icons.lightbulb_outline,
+            icon: LucideIcons.lightbulb,
             label: 'Insight',
             count: insightCount.toString(),
             onTap: () => onReact('insightful'),
@@ -52,7 +53,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: Icons.diamond_outlined,
+            icon: LucideIcons.gem,
             label: 'Deep',
             count: thoughtProvokingCount.toString(),
             onTap: () => onReact('thought_provoking'),
@@ -62,7 +63,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: Icons.chat_bubble_outline,
+            icon: LucideIcons.message_circle,
             label: 'Discuss',
             count: commentCount.toString(),
             onTap: onComment,

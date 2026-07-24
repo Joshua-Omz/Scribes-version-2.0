@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ScriptureRef {
 
- String get book; int get chapter;@JsonKey(name: 'verse_start') int get verseStart;@JsonKey(name: 'verse_end') int? get verseEnd;
+ String get book; int get chapter;@JsonKey(name: 'verse_start') int get verseStart;@JsonKey(name: 'verse_end', fromJson: _verseEndFromJson) int? get verseEnd;
 /// Create a copy of ScriptureRef
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ScriptureRefCopyWith<$Res>  {
   factory $ScriptureRefCopyWith(ScriptureRef value, $Res Function(ScriptureRef) _then) = _$ScriptureRefCopyWithImpl;
 @useResult
 $Res call({
- String book, int chapter,@JsonKey(name: 'verse_start') int verseStart,@JsonKey(name: 'verse_end') int? verseEnd
+ String book, int chapter,@JsonKey(name: 'verse_start') int verseStart,@JsonKey(name: 'verse_end', fromJson: _verseEndFromJson) int? verseEnd
 });
 
 
@@ -156,7 +156,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String book,  int chapter, @JsonKey(name: 'verse_start')  int verseStart, @JsonKey(name: 'verse_end')  int? verseEnd)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String book,  int chapter, @JsonKey(name: 'verse_start')  int verseStart, @JsonKey(name: 'verse_end', fromJson: _verseEndFromJson)  int? verseEnd)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScriptureRef() when $default != null:
 return $default(_that.book,_that.chapter,_that.verseStart,_that.verseEnd);case _:
@@ -177,7 +177,7 @@ return $default(_that.book,_that.chapter,_that.verseStart,_that.verseEnd);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String book,  int chapter, @JsonKey(name: 'verse_start')  int verseStart, @JsonKey(name: 'verse_end')  int? verseEnd)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String book,  int chapter, @JsonKey(name: 'verse_start')  int verseStart, @JsonKey(name: 'verse_end', fromJson: _verseEndFromJson)  int? verseEnd)  $default,) {final _that = this;
 switch (_that) {
 case _ScriptureRef():
 return $default(_that.book,_that.chapter,_that.verseStart,_that.verseEnd);case _:
@@ -197,7 +197,7 @@ return $default(_that.book,_that.chapter,_that.verseStart,_that.verseEnd);case _
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String book,  int chapter, @JsonKey(name: 'verse_start')  int verseStart, @JsonKey(name: 'verse_end')  int? verseEnd)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String book,  int chapter, @JsonKey(name: 'verse_start')  int verseStart, @JsonKey(name: 'verse_end', fromJson: _verseEndFromJson)  int? verseEnd)?  $default,) {final _that = this;
 switch (_that) {
 case _ScriptureRef() when $default != null:
 return $default(_that.book,_that.chapter,_that.verseStart,_that.verseEnd);case _:
@@ -212,13 +212,13 @@ return $default(_that.book,_that.chapter,_that.verseStart,_that.verseEnd);case _
 @JsonSerializable()
 
 class _ScriptureRef implements ScriptureRef {
-  const _ScriptureRef({required this.book, required this.chapter, @JsonKey(name: 'verse_start') required this.verseStart, @JsonKey(name: 'verse_end') this.verseEnd});
+  const _ScriptureRef({required this.book, required this.chapter, @JsonKey(name: 'verse_start') required this.verseStart, @JsonKey(name: 'verse_end', fromJson: _verseEndFromJson) this.verseEnd});
   factory _ScriptureRef.fromJson(Map<String, dynamic> json) => _$ScriptureRefFromJson(json);
 
 @override final  String book;
 @override final  int chapter;
 @override@JsonKey(name: 'verse_start') final  int verseStart;
-@override@JsonKey(name: 'verse_end') final  int? verseEnd;
+@override@JsonKey(name: 'verse_end', fromJson: _verseEndFromJson) final  int? verseEnd;
 
 /// Create a copy of ScriptureRef
 /// with the given fields replaced by the non-null parameter values.
@@ -253,7 +253,7 @@ abstract mixin class _$ScriptureRefCopyWith<$Res> implements $ScriptureRefCopyWi
   factory _$ScriptureRefCopyWith(_ScriptureRef value, $Res Function(_ScriptureRef) _then) = __$ScriptureRefCopyWithImpl;
 @override @useResult
 $Res call({
- String book, int chapter,@JsonKey(name: 'verse_start') int verseStart,@JsonKey(name: 'verse_end') int? verseEnd
+ String book, int chapter,@JsonKey(name: 'verse_start') int verseStart,@JsonKey(name: 'verse_end', fromJson: _verseEndFromJson) int? verseEnd
 });
 
 

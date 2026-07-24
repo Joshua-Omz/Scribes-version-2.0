@@ -1,5 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../posts/domain/post.dart';
+import '../../auth/domain/user.dart';
+import '../../social/data/social_api.dart';
 import '../data/explore_repository.dart';
 import '../domain/category.dart';
 
@@ -32,6 +34,43 @@ class ExploreSearchQuery extends _$ExploreSearchQuery {
   void setQuery(String? query) {
     state = query;
   }
+}
+
+@riverpod
+class ExploreSearchActive extends _$ExploreSearchActive {
+  @override
+  bool build() => false;
+
+  void toggle() {
+    state = !state;
+    if (!state) {
+      // Clear query and reset mode when closing search
+      ref.read(exploreSearchQueryProvider.notifier).setQuery(null);
+      ref.read(exploreSearchModeProvider.notifier).toggleMode(ExploreSearchMode.posts);
+    }
+  }
+}
+
+enum ExploreSearchMode { posts, users }
+
+@riverpod
+class ExploreSearchModeNotifier extends _$ExploreSearchModeNotifier {
+  @override
+  ExploreSearchMode build() => ExploreSearchMode.posts;
+
+  void toggleMode(ExploreSearchMode mode) {
+    state = mode;
+  }
+}
+
+@riverpod
+Future<List<User>> exploreUserSearch(Ref ref) async {
+  final query = ref.watch(exploreSearchQueryProvider);
+  if (query == null || query.trim().isEmpty) return [];
+  
+  final api = ref.watch(socialApiProvider);
+  final results = await api.searchUsers(query);
+  return results.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
 }
 
 class ScriptureFilter {

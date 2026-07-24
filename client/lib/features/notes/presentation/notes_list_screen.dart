@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -55,7 +56,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                 color: colors.surface,
                 child: Center(
                   child: Icon(
-                    Icons.edit_note,
+                    LucideIcons.file_pen,
                     size: 80,
                     color: colors.border,
                   ),
@@ -71,7 +72,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.edit_document, size: 64, color: colors.border),
+                        Icon(LucideIcons.file_text, size: 64, color: colors.border),
                         const SizedBox(height: 16),
                         Text(
                           'No notes yet',
@@ -126,8 +127,9 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         backgroundColor: colors.gold,
-        child: Icon(Icons.add, color: colors.surfaceRaised),
+        child: Icon(LucideIcons.plus, color: colors.surfaceRaised),
         onPressed: () {
           ref.read(noteEditorProvider.notifier).reset();
           context.push('/notes/edit');

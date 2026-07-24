@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
 import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_icon_button.dart';
 import '../../../core/theme/theme_provider.dart';
-import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../posts/domain/post.dart';
 import '../application/explore_notifier.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
+import '../../../core/widgets/scribes_shimmer.dart';
+import '../../../core/widgets/scribes_text_field.dart';
 
 class ExploreScreen extends ConsumerWidget {
   const ExploreScreen({super.key});
@@ -18,6 +22,8 @@ class ExploreScreen extends ConsumerWidget {
     final categoriesState = ref.watch(categoriesProvider);
     final postsState = ref.watch(explorePostsProvider);
     final selectedCategory = ref.watch(exploreSelectedCategoryProvider);
+    final searchMode = ref.watch(exploreSearchModeProvider);
+    final isSearchActive = ref.watch(exploreSearchActiveProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -31,147 +37,179 @@ class ExploreScreen extends ConsumerWidget {
               floating: true,
               snap: true,
               elevation: 0,
-              centerTitle: true,
-              title: Text(
-                'Explore',
-                style: ScribesTextStyles.displayMd.copyWith(
-                  color: colors.primaryText,
-                ),
-              ),
-              leadingWidth: 160,
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
-                child: TextField(
-                  decoration: InputDecoration(
+              centerTitle: !isSearchActive,
+              leading: isSearchActive 
+                ? IconButton(
+                    icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+                    onPressed: () => ref.read(exploreSearchActiveProvider.notifier).toggle(),
+                  )
+                : null,
+              title: isSearchActive
+                ? ScribesTextField(
                     hintText: 'Search...',
-                    hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                    prefixIcon: Icon(Icons.search, size: 18, color: colors.secondaryText),
+                    autofocus: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: colors.surfaceRaised,
+                    onSubmitted: (query) {
+                      ref.read(exploreSearchQueryProvider.notifier).setQuery(query.isEmpty ? null : query);
+                    },
+                  )
+                : Text(
+                    'Explore',
+                    style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
                   ),
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-                  onSubmitted: (query) {
-                    ref.read(exploreSearchQueryProvider.notifier).setQuery(query.isEmpty ? null : query);
-                  },
-                ),
-              ),
               actions: [
-                ScribesIconButton(
-                  icon: Icons.menu_book_outlined,
-                  color: colors.secondaryText,
-                  onPressed: () => _showScriptureFilterSheet(context, ref, colors),
-                ),
-                const SizedBox(width: 8),
+                if (!isSearchActive) ...[
+                  ScribesIconButton(
+                    icon: LucideIcons.search,
+                    color: colors.secondaryText,
+                    onPressed: () => ref.read(exploreSearchActiveProvider.notifier).toggle(),
+                  ),
+                  const SizedBox(width: 8),
+                  ScribesIconButton(
+                    icon: LucideIcons.book_open,
+                    color: colors.secondaryText,
+                    onPressed: () => _showScriptureFilterSheet(context, ref, colors),
+                  ),
+                  const SizedBox(width: 8),
+                ]
               ],
             ),
             
-            // Categories Sticky Header
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _CategoryHeaderDelegate(
-                height: 56.0,
-                backgroundColor: colors.background,
-                child: categoriesState.when(
-                  data: (categories) {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      itemCount: categories.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          // "All" chip
+            if (isSearchActive) ...[
+              SliverToBoxAdapter(
+                child: _buildSearchModeToggle(searchMode, ref, colors),
+              ),
+              if (searchMode == ExploreSearchMode.posts)
+                _buildPostsFeed(postsState, selectedCategory, colors, ref)
+              else
+                _buildUsersFeed(ref, colors),
+            ] else ...[
+              // Categories Sticky Header
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _CategoryHeaderDelegate(
+                  height: 56.0,
+                  backgroundColor: colors.background,
+                  child: categoriesState.when(
+                    data: (categories) {
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        itemCount: categories.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            // "All" chip
+                            return _buildCategoryChip(
+                              context: context,
+                              label: 'All',
+                              isSelected: selectedCategory == null,
+                              colors: colors,
+                              onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(null),
+                            );
+                          }
+                          final cat = categories[index - 1];
                           return _buildCategoryChip(
                             context: context,
-                            label: 'All',
-                            isSelected: selectedCategory == null,
+                            label: cat.name,
+                            isSelected: selectedCategory == cat.id,
                             colors: colors,
-                            onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(null),
+                            onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(cat.id),
                           );
-                        }
-                        final cat = categories[index - 1];
-                        return _buildCategoryChip(
-                          context: context,
-                          label: cat.name,
-                          isSelected: selectedCategory == cat.id,
-                          colors: colors,
-                          onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(cat.id),
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const Center(child: ScribesLoadingIndicator()),
-                  error: (e, st) => Center(child: Text('Error', style: TextStyle(color: colors.primaryText))),
+                        },
+                      );
+                    },
+                    loading: () => const Center(child: ScribesLoadingIndicator()),
+                    error: (e, st) => Center(child: Text('Error', style: TextStyle(color: colors.primaryText))),
+                  ),
                 ),
               ),
-            ),
 
-            // Divider below sticky header
-            SliverToBoxAdapter(
-              child: Divider(
-                color: colors.border,
-                height: 1,
-                thickness: 1,
+              // Divider below sticky header
+              SliverToBoxAdapter(
+                child: Divider(
+                  color: colors.border,
+                  height: 1,
+                  thickness: 1,
+                ),
               ),
-            ),
 
-            // Posts Feed
-            postsState.when(
-              data: (posts) {
-                if (posts.isEmpty) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: Text(
-                        'No posts found.',
-                        style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              // Posts Feed
+              _buildPostsFeed(postsState, selectedCategory, colors, ref),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPostsFeed(AsyncValue<List<Post>> postsState, String? selectedCategory, dynamic colors, WidgetRef ref) {
+    return postsState.when(
+                data: (posts) {
+                  if (posts.isEmpty) {
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: Text(
+                          'No posts found.',
+                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return SliverPadding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index == posts.length) {
+                            ref.read(explorePostsProvider.notifier).loadMore();
+                            return const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(child: ScribesLoadingIndicator()),
+                            );
+                          }
+
+                          final post = posts[index];
+                          final isFeatured = index == 0 && selectedCategory == null;
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: ScribesConnectedPostCard(
+                              post: post,
+                              isFeatured: isFeatured,
+                            ),
+                          );
+                        },
+                        childCount: posts.length + (ref.read(explorePostsProvider.notifier).hasMore ? 1 : 0),
                       ),
                     ),
                   );
-                }
-
-                return SliverPadding(
+                },
+                loading: () => SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        if (index == posts.length) {
-                          ref.read(explorePostsProvider.notifier).loadMore();
-                          return const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: ScribesLoadingIndicator()),
-                          );
-                        }
-
-                        final post = posts[index];
-                        final isFeatured = index == 0 && selectedCategory == null;
-
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          child: ScribesConnectedPostCard(
-                            post: post,
-                            isFeatured: isFeatured,
+                          child: ScribesShimmer(
+                            child: Container(
+                              height: 180,
+                              decoration: BoxDecoration(
+                                color: colors.surfaceRaised,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
                           ),
                         );
                       },
-                      childCount: posts.length + (ref.read(explorePostsProvider.notifier).hasMore ? 1 : 0),
+                      childCount: 4,
                     ),
                   ),
-                );
-              },
-              loading: () => const SliverFillRemaining(
-                child: Center(child: ScribesLoadingIndicator()),
-              ),
-              error: (e, st) => SliverFillRemaining(
-                child: Center(
-                  child: Text('Error: \$e', style: TextStyle(color: colors.primaryText)),
                 ),
-              ),
-            ),
-          ],
+      error: (e, st) => SliverFillRemaining(
+        child: Center(
+          child: Text('Error: \$e', style: TextStyle(color: colors.primaryText)),
         ),
       ),
     );
@@ -199,29 +237,15 @@ class ExploreScreen extends ConsumerWidget {
             children: [
               Text('Filter by Scripture', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
               const SizedBox(height: 16),
-              TextField(
+              ScribesTextField(
                 controller: bookController,
-                decoration: InputDecoration(
-                  labelText: 'Book (e.g. John)',
-                  labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.background,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                ),
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                labelText: 'Book (e.g. John)',
               ),
               const SizedBox(height: 12),
-              TextField(
+              ScribesTextField(
                 controller: chapterController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Chapter (Optional)',
-                  labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.background,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                ),
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                labelText: 'Chapter (Optional)',
               ),
               const SizedBox(height: 24),
               Row(
@@ -256,6 +280,100 @@ class ExploreScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildUsersFeed(WidgetRef ref, dynamic colors) {
+    final userSearchState = ref.watch(exploreUserSearchProvider);
+    final query = ref.watch(exploreSearchQueryProvider);
+
+    if (query == null || query.trim().isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Text(
+            'Type to search for people.',
+            style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+          ),
+        ),
+      );
+    }
+
+    return userSearchState.when(
+      data: (users) {
+        if (users.isEmpty) {
+          return SliverFillRemaining(
+            child: Center(
+              child: Text(
+                'No users found.',
+                style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              ),
+            ),
+          );
+        }
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final user = users[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: colors.surfaceRaised,
+                    child: Text(
+                      user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
+                      style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                    ),
+                  ),
+                  title: Text(user.displayName, style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
+                  subtitle: Text('@${user.handle}', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
+                  onTap: () => context.push('/users/${user.id}'),
+                );
+              },
+              childCount: users.length,
+            ),
+          ),
+        );
+      },
+      loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+      error: (err, st) => SliverFillRemaining(child: Center(child: Text('Error: $err', style: TextStyle(color: colors.primaryText)))),
+    );
+  }
+
+  Widget _buildSearchModeToggle(ExploreSearchMode mode, WidgetRef ref, dynamic colors) {
+    return Container(
+      height: 32,
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      decoration: BoxDecoration(
+        color: colors.surfaceRaised,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildToggleItem('Posts', ExploreSearchMode.posts, mode, ref, colors)),
+          Expanded(child: _buildToggleItem('People', ExploreSearchMode.users, mode, ref, colors)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleItem(String label, ExploreSearchMode value, ExploreSearchMode current, WidgetRef ref, dynamic colors) {
+    final isSelected = current == value;
+    return GestureDetector(
+      onTap: () => ref.read(exploreSearchModeProvider.notifier).toggleMode(value),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? colors.primaryText : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Text(
+          label,
+          style: ScribesTextStyles.labelLg.copyWith(
+            color: isSelected ? colors.background : colors.secondaryText,
+          ),
+        ),
+      ),
     );
   }
 

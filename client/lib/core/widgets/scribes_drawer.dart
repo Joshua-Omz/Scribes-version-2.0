@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 import '../theme/theme_provider.dart';
 import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 import '../../features/auth/application/auth_notifier.dart';
+import 'scribes_author_header.dart';
 
 class ScribesDrawer extends ConsumerWidget {
   const ScribesDrawer({super.key});
@@ -33,62 +35,28 @@ class ScribesDrawer extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(
-                    colors.background.computeLuminance() > 0.5 
-                        ? 'assets/app_icon.png' 
-                        : 'assets/app_icon_dark.png',
-                    width: 48,
-                    height: 48,
-                  ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
                   if (user != null)
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: colors.surfaceRaised,
-                      child: user.avatarUrl != null
-                          ? ClipOval(
-                              child: Image.network(
-                                user.avatarUrl!,
-                                width: 48,
-                                height: 48,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Text(
-                              user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                              style: ScribesTextStyles.displayMd.copyWith(color: colors.gold),
-                            ),
+                    ScribesAuthorHeader(
+                      authorName: user.displayName,
+                      authorHandle: user.handle,
+                      avatarUrl: user.avatarUrl,
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.push('/profile');
+                      },
                     )
                   else
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: colors.surfaceRaised,
-                      child: Icon(Icons.person_outline, color: colors.gold),
-                    ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: user != null
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user.displayName,
-                                style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '@${user.handle}',
-                                style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          )
-                        : Column(
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: colors.surfaceRaised,
+                          child: Icon(LucideIcons.user, color: colors.gold),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -102,31 +70,22 @@ class ScribesDrawer extends ConsumerWidget {
                               ),
                             ],
                           ),
-                  ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
-            ],
-          ),
         ),
         
         const SizedBox(height: 16),
             
             // Menu Items
             if (user != null) ...[
+
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: Icons.person_outline,
-                title: 'Profile',
-                onTap: () {
-                  Navigator.pop(context); // Close drawer
-                  context.push('/profile');
-                },
-              ),
-              _buildMenuItem(
-                context: context,
-                colors: colors,
-                icon: Icons.edit_note,
+                icon: LucideIcons.file_pen,
                 title: 'Notes Workspace',
                 onTap: () {
                   Navigator.pop(context);
@@ -136,7 +95,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: Icons.edit_document,
+                icon: LucideIcons.file_text,
                 title: 'Drafts Workspace',
                 onTap: () {
                   Navigator.pop(context);
@@ -146,7 +105,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: Icons.bookmark_border,
+                icon: LucideIcons.bookmark,
                 title: 'Bookmarks',
                 onTap: () {
                   Navigator.pop(context);
@@ -160,7 +119,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: Icons.login,
+                icon: LucideIcons.log_in,
                 title: 'Sign In / Join',
                 onTap: () {
                   Navigator.pop(context);
@@ -174,7 +133,7 @@ class ScribesDrawer extends ConsumerWidget {
             _buildMenuItem(
               context: context,
               colors: colors,
-              icon: Icons.palette_outlined,
+              icon: LucideIcons.palette,
               title: 'Change Theme',
               onTap: () {
                 _cycleTheme(ref, colors);
@@ -184,7 +143,7 @@ class ScribesDrawer extends ConsumerWidget {
             _buildMenuItem(
               context: context,
               colors: colors,
-              icon: Icons.settings_outlined,
+              icon: LucideIcons.settings,
               title: 'Settings',
               onTap: () {
                 Navigator.pop(context);
@@ -201,7 +160,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: Icons.logout,
+                icon: LucideIcons.log_out,
                 title: 'Sign Out',
                 textColor: colors.orange,
                 iconColor: colors.orange,

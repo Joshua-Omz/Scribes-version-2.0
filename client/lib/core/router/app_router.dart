@@ -14,6 +14,7 @@ import '../../features/compose/presentation/draft_preview_screen.dart';
 import '../../features/compose/presentation/publish_metadata_screen.dart';
 import '../../features/draft/presentation/drafts_list_screen.dart';
 import '../../features/profile/presentation/private_profile_screen.dart';
+import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
@@ -26,7 +27,7 @@ GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     redirect: (context, state) {
       if (authState is AsyncLoading) {
         return null; // wait
@@ -132,6 +133,13 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const EditProfileScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/users/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return PublicProfileScreen(userId: id);
+        },
       ),
       GoRoute(
         path: '/notes/edit',

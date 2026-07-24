@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 
-class ScaffoldWithNavBar extends StatelessWidget {
+class ScaffoldWithNavBar extends ConsumerWidget {
   const ScaffoldWithNavBar({
     required this.navigationShell,
     Key? key,
@@ -37,7 +38,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Map branch index back to UI index
     int uiIndex = 0;
     if (navigationShell.currentIndex == 0) uiIndex = 0;
@@ -55,12 +56,26 @@ class ScaffoldWithNavBar extends StatelessWidget {
   }
 }
 
+class BottomNavVisibilityNotifier extends Notifier<bool> {
+  @override
+  bool build() => true;
+
+  void show() => state = true;
+  void hide() => state = false;
+}
+
+final bottomNavVisibilityProvider = NotifierProvider<BottomNavVisibilityNotifier, bool>(() {
+  return BottomNavVisibilityNotifier();
+});
+
 class ScribesBottomNav extends ConsumerWidget {
   final int currentIndex;
+  final Color backgroundColor;
   final Function(int) onTap;
 
   const ScribesBottomNav({
     super.key,
+    this.backgroundColor = Colors.transparent,
     required this.currentIndex,
     required this.onTap,
   });
@@ -68,31 +83,37 @@ class ScribesBottomNav extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
+    final isVisible = ref.watch(bottomNavVisibilityProvider);
 
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.bottomCenter,
-      children: [
-        Container(
+    // AnimatedContainer collapses height to 0 when hidden so that no
+    // ghost layer is left behind in the Scaffold's layout space.
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      height: isVisible ? 70 : 0,
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(
+          top: BorderSide(color: colors.border),
+        ),
+      ),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: SizedBox(
           height: 70,
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border(
-              top: BorderSide(color: colors.border),
-            ),
-          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildNavItem(context, colors, Icons.breakfast_dining, 'scroll', 0),
-              _buildNavItem(context, colors, Icons.search, 'Search', 1),
-              _buildNavItem(context, colors, Icons.drafts_outlined, 'Drafts', 3),
-              _buildNavItem(context, colors, Icons.note_add_outlined, 'Notes', 4),
+              _buildNavItem(context, colors, LucideIcons.scroll, 'Scroll', 0),
+              _buildNavItem(context, colors, LucideIcons.search, 'Search', 1),
+              _buildNavItem(context, colors, LucideIcons.file_text, 'Drafts', 3),
+              _buildNavItem(context, colors, LucideIcons.file_pen, 'Notes', 4),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -101,8 +122,9 @@ class ScribesBottomNav extends ConsumerWidget {
     final color = isSelected ? colors.gold : colors.secondaryText;
 
     return Expanded(
-      child: InkWell(
+      child: GestureDetector(
         onTap: () => onTap(index),
+        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,7 +22,7 @@ class DraftPreviewScreen extends ConsumerWidget {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -79,7 +80,7 @@ class DraftPreviewScreen extends ConsumerWidget {
           context.push('/compose');
         },
         backgroundColor: colors.surfaceRaised,
-        icon: Icon(Icons.edit, color: colors.primaryText),
+        icon: Icon(LucideIcons.pen, color: colors.primaryText),
         label: Text('Edit', style: TextStyle(color: colors.primaryText)),
       ),
     );

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_shimmer.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
@@ -121,7 +124,7 @@ class PublishMetadataScreen extends ConsumerWidget {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () {
             context.pop(); // Go back to Preview
           },
@@ -225,7 +228,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                         ),
                         if (composeState.scriptureRefs.length < 3)
                           TextButton.icon(
-                            icon: Icon(Icons.add, size: 16, color: colors.gold),
+                            icon: Icon(LucideIcons.plus, size: 16, color: colors.gold),
                             label: Text('Add', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
                             onPressed: () => _showAddScriptureSheet(context, ref, colors),
                           ),
@@ -296,9 +299,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                           }).toList(),
                         );
                       },
-                      loading: () => Shimmer.fromColors(
-                        baseColor: colors.surfaceRaised,
-                        highlightColor: colors.border,
+                      loading: () => ScribesShimmer(
                         child: Wrap(
                           spacing: 8.0,
                           runSpacing: 8.0,
@@ -308,7 +309,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                               width: 80.0 + (index % 3 * 20),
                               height: 36.0,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: colors.surfaceRaised,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                             ),
@@ -328,27 +329,12 @@ class PublishMetadataScreen extends ConsumerWidget {
                       style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
                     ),
                     const SizedBox(height: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colors.background,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: colors.border),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      child: TextFormField(
-                        initialValue: composeState.caption,
-                        style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-                        maxLines: 4,
-                        minLines: 2,
-                        decoration: InputDecoration(
-                          hintText: 'Share a thought about this note...',
-                          hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText.withOpacity(0.5)),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                        onChanged: (value) => ref.read(composeProvider.notifier).updateMetadata(caption: value),
-                      ),
+                    ScribesTextField(
+                      initialValue: composeState.caption,
+                      maxLines: 4,
+                      minLines: 2,
+                      hintText: 'Share a thought about this note...',
+                      onChanged: (value) => ref.read(composeProvider.notifier).updateMetadata(caption: value),
                     ),
                     const SizedBox(height: 40),
 
@@ -368,7 +354,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                         children: [
                           _buildPremiumField(
                             label: 'Preacher',
-                            icon: Icons.person_outline,
+                            icon: LucideIcons.user,
                             initialValue: composeState.sermonSource?.preacher,
                             colors: colors,
                             onChanged: (value) {
@@ -379,7 +365,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                           Divider(height: 1, color: colors.border, indent: 48),
                           _buildPremiumField(
                             label: 'Church',
-                            icon: Icons.church_outlined,
+                            icon: LucideIcons.church,
                             initialValue: composeState.sermonSource?.church,
                             colors: colors,
                             onChanged: (value) {
@@ -390,7 +376,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                           Divider(height: 1, color: colors.border, indent: 48),
                           _buildPremiumField(
                             label: 'Series',
-                            icon: Icons.collections_bookmark_outlined,
+                            icon: LucideIcons.book_marked,
                             initialValue: composeState.sermonSource?.series,
                             colors: colors,
                             onChanged: (value) {
@@ -431,7 +417,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                               child: Row(
                                 children: [
-                                  Icon(Icons.calendar_today_outlined, size: 20, color: colors.secondaryText),
+                                  Icon(LucideIcons.calendar, size: 20, color: colors.secondaryText),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Text(
@@ -443,7 +429,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   ),
-                                  Icon(Icons.chevron_right, size: 20, color: colors.secondaryText.withOpacity(0.5)),
+                                  Icon(LucideIcons.chevron_right, size: 20, color: colors.secondaryText.withOpacity(0.5)),
                                 ],
                               ),
                             ),
@@ -476,18 +462,9 @@ class PublishMetadataScreen extends ConsumerWidget {
           Icon(icon, size: 20, color: colors.secondaryText),
           const SizedBox(width: 16),
           Expanded(
-            child: TextFormField(
+            child: ScribesTextField(
               initialValue: initialValue,
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-              decoration: InputDecoration(
-                hintText: label,
-                hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText.withOpacity(0.5)),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+              hintText: label,
               onChanged: onChanged,
             ),
           ),
@@ -521,62 +498,34 @@ class PublishMetadataScreen extends ConsumerWidget {
             children: [
               Text('Add Scripture Tag', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
               const SizedBox(height: 16),
-              TextField(
+              ScribesTextField(
                 controller: bookController,
-                decoration: InputDecoration(
-                  labelText: 'Book (e.g. John)',
-                  labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                  filled: true,
-                  fillColor: colors.background,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                ),
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                labelText: 'Book (e.g. John)',
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
+                    child: ScribesTextField(
                       controller: chapterController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Chapter',
-                        labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                        filled: true,
-                        fillColor: colors.background,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                      ),
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                      labelText: 'Chapter',
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: TextField(
+                    child: ScribesTextField(
                       controller: verseStartController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Verse Start',
-                        labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                        filled: true,
-                        fillColor: colors.background,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                      ),
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                      labelText: 'Verse Start',
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: TextField(
+                    child: ScribesTextField(
                       controller: verseEndController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Verse End',
-                        labelStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                        filled: true,
-                        fillColor: colors.background,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                      ),
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                      labelText: 'Verse End',
                     ),
                   ),
                 ],

@@ -11,7 +11,7 @@ _ScriptureRef _$ScriptureRefFromJson(Map<String, dynamic> json) =>
       book: json['book'] as String,
       chapter: (json['chapter'] as num).toInt(),
       verseStart: (json['verse_start'] as num).toInt(),
-      verseEnd: (json['verse_end'] as num?)?.toInt(),
+      verseEnd: _verseEndFromJson(json['verse_end']),
     );
 
 Map<String, dynamic> _$ScriptureRefToJson(_ScriptureRef instance) =>

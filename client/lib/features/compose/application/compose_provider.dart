@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../draft/data/draft_repository.dart';
+import '../../draft/application/drafts_list_provider.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 
@@ -170,6 +171,8 @@ class ComposeNotifier extends Notifier<ComposeState> {
       // but for v1 it might be handled in Draft Repository.
     );
 
+    ref.read(draftsListProvider.notifier).refresh();
+
     state = state.copyWith(
       isSaving: false,
       lastSavedAt: DateTime.now(),
@@ -202,4 +205,3 @@ class ComposeNotifier extends Notifier<ComposeState> {
     );
   }
 }
-

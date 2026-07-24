@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -76,7 +77,7 @@ class ScribesNoteCard extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, color: colors.secondaryText, size: 20),
+                    icon: Icon(LucideIcons.trash_2, color: colors.secondaryText, size: 20),
                     onPressed: () {
                       showDialog(
                         context: context,
@@ -117,7 +118,7 @@ class ScribesNoteCard extends ConsumerWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 14, color: colors.secondaryText),
+                  Icon(LucideIcons.clock, size: 14, color: colors.secondaryText),
                   const SizedBox(width: 4),
                   Text(
                     dateStr,
@@ -128,7 +129,7 @@ class ScribesNoteCard extends ConsumerWidget {
                   const Spacer(),
                   // Cloud synced indicator
                   Icon(
-                    note.id.isEmpty ? Icons.cloud_off : Icons.cloud_done_outlined, // Simplified sync indicator
+                    note.id.isEmpty ? LucideIcons.cloud_off : LucideIcons.cloud, // Simplified sync indicator
                     size: 16,
                     color: colors.secondaryText.withValues(alpha: 0.5),
                   ),

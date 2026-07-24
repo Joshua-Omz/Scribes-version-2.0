@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/scribes_radius.dart';
 import '../../../core/widgets/scribes_avatar.dart';
+import '../../../core/widgets/scribes_text_field.dart';
 import '../../auth/application/auth_notifier.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -44,7 +46,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () => context.pop(),
         ),
         title: Text('Edit Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
@@ -81,53 +83,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(color: colors.background, width: 4),
                   ),
-                  child: Icon(Icons.camera_alt, size: 16, color: colors.surfaceRaised),
+                  child: Icon(LucideIcons.camera, size: 16, color: colors.surfaceRaised),
                 ),
               ],
             ),
             const SizedBox(height: 48),
-            _buildInput('Display Name', _nameCtrl, colors),
+            ScribesTextField(
+              labelText: 'Display Name',
+              controller: _nameCtrl,
+            ),
             const SizedBox(height: 24),
-            _buildInput('Bio', _bioCtrl, colors, maxLines: 3),
+            ScribesTextField(
+              labelText: 'Bio',
+              controller: _bioCtrl,
+              maxLines: 3,
+            ),
             const SizedBox(height: 48),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildInput(String label, TextEditingController ctrl, dynamic colors, {int maxLines = 1}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: ScribesTextStyles.caption.copyWith(
-            color: colors.secondaryText,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: ctrl,
-          maxLines: maxLines,
-          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ScribesRadius.input),
-              borderSide: BorderSide(color: colors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ScribesRadius.input),
-              borderSide: BorderSide(color: colors.gold, width: 1.5),
-            ),
-            filled: true,
-            fillColor: colors.surface,
-          ),
-        ),
-      ],
     );
   }
 }

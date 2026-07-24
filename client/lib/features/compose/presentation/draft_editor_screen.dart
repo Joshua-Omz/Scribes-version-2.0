@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_quill/flutter_quill.dart' hide Text;
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
@@ -63,7 +64,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () async {
             await ref.read(composeProvider.notifier).forceSave();
             if (context.mounted) {
@@ -198,7 +199,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
               showClearFormat: false,
               customButtons: [
                 QuillToolbarCustomButtonOptions(
-                  icon: const Icon(Icons.menu_book),
+                  icon: const Icon(LucideIcons.book_open),
                   tooltip: 'Tag as Scripture',
                   onPressed: () {
                     final selection = _controller.selection;

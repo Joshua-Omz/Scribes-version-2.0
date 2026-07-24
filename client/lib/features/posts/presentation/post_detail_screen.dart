@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
@@ -11,6 +12,7 @@ import 'package:scribes/features/posts/presentation/widgets/post_rich_text.dart'
 import 'package:scribes/features/posts/presentation/widgets/version_history_sheet.dart';
 import 'package:scribes/core/widgets/scribes_comment_sheet.dart';
 import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
+import 'package:scribes/core/widgets/scribes_scripture_chip.dart';
 import 'package:scribes/core/widgets/scribes_unauth_banner.dart';
 import 'package:scribes/features/social/application/post_social_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
@@ -34,12 +36,12 @@ class PostDetailScreen extends ConsumerWidget {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
+          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.history, color: colors.primaryText),
+            icon: Icon(LucideIcons.history, color: colors.primaryText),
             onPressed: () {
               ref.read(postDetailProvider(postId).notifier).loadVersions();
               VersionHistorySheet.show(context, postId);
@@ -62,7 +64,7 @@ class PostDetailScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, color: colors.orange, size: 16),
+                        Icon(LucideIcons.info, color: colors.orange, size: 16),
                         const SizedBox(width: 8),
                         Text(
                           'This post corrects an original note.',
@@ -103,9 +105,26 @@ class PostDetailScreen extends ConsumerWidget {
                         publishedAt: post.publishedAt,
                         isCorrection: post.isCorrection,
                         onTap: () {
-                          // Navigate to author profile
+                          context.push('/users/${post.authorId}');
                         },
                       ),
+                      if (post.scriptureRefs.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: post.scriptureRefs.map((ref) {
+                              final refStr = ref.verseEnd != null
+                                  ? '${ref.book} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}'
+                                  : '${ref.book} ${ref.chapter}:${ref.verseStart}';
+                              return ScribesScriptureChip(
+                                reference: refStr,
+                                onTap: () {},
+                              );
+                            }).toList(),
+                          ),
+                        ),
                       const SizedBox(height: 32),
                       const ScribesOrnamentDivider(),
                       const SizedBox(height: 32),
@@ -164,7 +183,7 @@ class PostDetailScreen extends ConsumerWidget {
                               if (post.sermonSource != null && post.sermonSource!.isNotEmpty)
                                 Row(
                                   children: [
-                                    Icon(Icons.church_outlined, size: 14, color: colors.gold),
+                                    Icon(LucideIcons.church, size: 14, color: colors.gold),
                                     const SizedBox(width: 6),
                                     Text(
                                       post.sermonSource!.displayTitle,

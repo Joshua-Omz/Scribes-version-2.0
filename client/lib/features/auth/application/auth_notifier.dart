@@ -76,6 +76,16 @@ class AuthNotifier extends _$AuthNotifier {
     });
   }
 
+  Future<void> loginWithGoogle(String idToken) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repo = ref.read(authRepositoryProvider);
+      final user = await repo.loginWithGoogle(idToken);
+      _triggerSync();
+      return user;
+    });
+  }
+
   Future<void> logout() async {
     final repo = ref.read(authRepositoryProvider);
     await repo.logout();

@@ -53,6 +53,15 @@ class AuthRepository {
     return User.fromJson(response['user'] as Map<String, dynamic>);
   }
 
+  Future<User> loginWithGoogle(String idToken) async {
+    final response = await _api.loginWithGoogle(idToken);
+
+    final token = response['token'] as String;
+    await _storage.saveToken(token);
+
+    return User.fromJson(response['user'] as Map<String, dynamic>);
+  }
+
   Future<User> getMe() async {
     final response = await _api.getMe();
     return User.fromJson(response);

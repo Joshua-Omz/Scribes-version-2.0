@@ -39,6 +39,19 @@ class FeedRepository {
     }
   }
 
+  Future<PaginatedFeed> getFollowingFeed({String? cursor}) async {
+    try {
+      final rawData = await _api.getFollowingFeed(cursor: cursor);
+      return _mapPaginatedFeed(rawData);
+    } catch (e) {
+      // Offline fallback: for v1, we just return empty as we don't sync the follows table locally yet.
+      return PaginatedFeed.fromJson({
+        'posts': [],
+        'next_cursor': null,
+      });
+    }
+  }
+
   Map<String, dynamic> _mapRecordToMap(Post record) {
     dynamic contentDecoded;
     try {

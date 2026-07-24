@@ -43,6 +43,13 @@ class AuthApi {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
+    final response = await _dio.post('${Endpoints.base}/auth/google', data: {
+      'id_token': idToken,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> getMe() async {
     final response = await _dio.get(Endpoints.me);
     return response.data as Map<String, dynamic>;

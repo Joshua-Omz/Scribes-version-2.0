@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -84,7 +85,7 @@ class ScribesDraftCard extends ConsumerWidget {
                       Material(
                         color: Colors.transparent,
                         child: IconButton(
-                          icon: Icon(Icons.close, color: colors.secondaryText, size: 20),
+                          icon: Icon(LucideIcons.x, color: colors.secondaryText, size: 20),
                           onPressed: onDelete,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -112,7 +113,7 @@ class ScribesDraftCard extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Icon(Icons.access_time, size: 14, color: colors.secondaryText),
+                    Icon(LucideIcons.clock, size: 14, color: colors.secondaryText),
                     const SizedBox(width: 6),
                     Text(
                       'Last saved $formattedDate',
@@ -124,7 +125,7 @@ class ScribesDraftCard extends ConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.church_outlined, size: 14, color: colors.gold),
+                            Icon(LucideIcons.church, size: 14, color: colors.gold),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,6 +9,7 @@ import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../compose/application/compose_provider.dart';
 import '../application/drafts_list_provider.dart';
 import 'widgets/scribes_draft_card.dart';
+import '../../../core/widgets/scribes_shimmer.dart';
 
 class DraftsListScreen extends ConsumerStatefulWidget {
   const DraftsListScreen({super.key});
@@ -42,7 +44,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
             pinned: true,
             expandedHeight: 120,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: colors.primaryText),
+              icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
               onPressed: () {
                 if (context.canPop()) {
                   context.pop();
@@ -63,7 +65,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     right: -20,
                     top: -20,
                     child: Icon(
-                      Icons.edit_document,
+                      LucideIcons.file_text,
                       size: 140,
                       color: colors.gold.withOpacity(0.05),
                     ),
@@ -80,7 +82,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.inbox_outlined, size: 48, color: colors.goldMuted.withOpacity(0.5)),
+                        Icon(LucideIcons.inbox, size: 48, color: colors.goldMuted.withOpacity(0.5)),
                         const SizedBox(height: 16),
                         Text(
                           'No drafts yet.',
@@ -131,8 +133,27 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                 ),
               );
             },
-            loading: () => SliverFillRemaining(
-              child: Center(child: ScribesLoadingIndicator()),
+            loading: () => SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: ScribesShimmer(
+                        child: Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: colors.surfaceRaised,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: 4,
+                ),
+              ),
             ),
             error: (err, stack) => SliverFillRemaining(
               child: Center(
@@ -146,6 +167,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
         backgroundColor: colors.gold,
         foregroundColor: colors.surfaceRaised,
         elevation: 4,
@@ -153,7 +175,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
           ref.read(composeProvider.notifier).reset();
           context.push('/compose');
         },
-        icon: const Icon(Icons.add),
+        icon: const Icon(LucideIcons.plus),
         label: Text('New Draft', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
       ),
     );

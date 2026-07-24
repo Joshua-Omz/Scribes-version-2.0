@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 
@@ -14,7 +15,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: colors.background,
       ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -39,7 +40,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 children: [
                   const SizedBox(width: 8),
                   ScribesIconButton(
-                    icon: Icons.notifications_none_outlined,
+                    icon: LucideIcons.bell,
                     onPressed: () {},
                     color: colors.secondaryText,
                   ),

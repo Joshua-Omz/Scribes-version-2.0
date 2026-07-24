@@ -56,3 +56,48 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 }
+
+@riverpod
+class FollowingFeedNotifier extends _$FollowingFeedNotifier {
+  String? _nextCursor;
+
+  bool get hasMore => _nextCursor != null;
+
+  @override
+  FutureOr<List<Post>> build() async {
+    final repo = ref.read(feedRepositoryProvider);
+    final response = await repo.getFollowingFeed();
+    _nextCursor = response.nextCursor;
+    return response.posts;
+  }
+
+  Future<void> loadMore() async {
+    if (_nextCursor == null) return;
+    
+    if (state.isLoading || state.isRefreshing) return;
+    
+    try {
+      final repo = ref.read(feedRepositoryProvider);
+      final response = await repo.getFollowingFeed(cursor: _nextCursor);
+      _nextCursor = response.nextCursor;
+      
+      final currentPosts = state.value ?? [];
+      state = AsyncData([...currentPosts, ...response.posts]);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _nextCursor = null;
+    try {
+      final repo = ref.read(feedRepositoryProvider);
+      final response = await repo.getFollowingFeed();
+      _nextCursor = response.nextCursor;
+      state = AsyncData(response.posts);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+}

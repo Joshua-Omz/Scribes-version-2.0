@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
@@ -13,6 +14,7 @@ import '../../../core/widgets/scribes_profile_draft_card.dart';
 import '../../posts/application/my_posts_provider.dart';
 import '../../draft/application/drafts_list_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
+import '../../../core/widgets/scribes_shimmer.dart';
 
 class PrivateProfileScreen extends ConsumerStatefulWidget {
   const PrivateProfileScreen({super.key});
@@ -48,20 +50,20 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
             pinned: true,
             leading: context.canPop()
                 ? IconButton(
-                    icon: Icon(Icons.arrow_back, color: colors.primaryText),
+                    icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
                     onPressed: () => context.pop(),
                   )
                 : null,
             title: Text('Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
             actions: [
               IconButton(
-                icon: Icon(Icons.settings_outlined, color: colors.primaryText),
+                icon: Icon(LucideIcons.settings, color: colors.primaryText),
                 onPressed: () {
                   // Navigate to Settings
                 },
               ),
               IconButton(
-                icon: Icon(Icons.logout, color: colors.primaryText),
+                icon: Icon(LucideIcons.log_out, color: colors.primaryText),
                 onPressed: () {
                   ref.read(authProvider.notifier).logout();
                   context.go('/');
@@ -139,7 +141,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.feed_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                              Icon(LucideIcons.newspaper, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
                               const SizedBox(height: 16),
                               Text('No posts yet.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
                             ],
@@ -188,7 +190,28 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                       ),
                     );
                   },
-                  loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                  loading: () => SliverPadding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: ScribesShimmer(
+                              child: Container(
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceRaised,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: 4,
+                      ),
+                    ),
+                  ),
                   error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
                 );
               },
@@ -205,7 +228,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.edit_note_outlined, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                              Icon(LucideIcons.file_pen, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
                               const SizedBox(height: 16),
                               Text('No drafts.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
                             ],
@@ -240,7 +263,28 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                       ),
                     );
                   },
-                  loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                  loading: () => SliverPadding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: ScribesShimmer(
+                              child: Container(
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceRaised,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: 4,
+                      ),
+                    ),
+                  ),
                   error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
                 );
               },
@@ -257,7 +301,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.bookmark_outline, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
+                              Icon(LucideIcons.bookmark, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
                               const SizedBox(height: 16),
                               Text('No saved posts.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
                             ],
@@ -305,7 +349,28 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                       ),
                     );
                   },
-                  loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
+                  loading: () => SliverPadding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: ScribesShimmer(
+                              child: Container(
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceRaised,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: 4,
+                      ),
+                    ),
+                  ),
                   error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
                 );
               },
