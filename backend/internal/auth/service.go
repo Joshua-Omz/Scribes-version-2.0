@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -122,7 +123,7 @@ func (s *Service) LoginWithGoogle(ctx context.Context, idTokenStr string) (User,
 	// Validate the ID token using the google api library
 	payload, err := idtoken.Validate(ctx, idTokenStr, "773705773175-msk4fhvmllc34ovhlgu301g53f5cvdrd.apps.googleusercontent.com")
 	if err != nil {
-		return User{}, "", errors.New("invalid google token")
+		return User{}, "", fmt.Errorf("google token validation failed: %v", err)
 	}
 
 	email, ok := payload.Claims["email"].(string)

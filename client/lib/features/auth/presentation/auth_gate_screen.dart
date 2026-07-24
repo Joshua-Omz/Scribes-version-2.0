@@ -49,14 +49,25 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     final notifier = ref.read(authProvider.notifier);
     
     try {
+      debugPrint('Starting Google Sign-In...');
       final googleUser = await GoogleSignIn.instance.authenticate();
+      debugPrint('googleUser returned: \$googleUser');
+      
       if (googleUser != null) {
         final googleAuth = await googleUser.authentication;
+        debugPrint('googleAuth retrieved. idToken is null? \${googleAuth.idToken == null}');
+        
         if (googleAuth.idToken != null) {
+          debugPrint('Calling backend with idToken...');
           notifier.loginWithGoogle(googleAuth.idToken!);
+        } else {
+          debugPrint('ERROR: idToken is null! Check Google Cloud console SHA-1 and Client ID config.');
         }
+      } else {
+        debugPrint('Google Sign-In cancelled by user or returned null.');
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Google Sign-In exception: \$e\\n\$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -246,9 +257,9 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                     ),
                   ),
                   onPressed: authState.isLoading ? null : _signInWithGoogle,
-                  icon: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-                    height: 24,
+                  icon: const Icon(
+                    Icons.g_mobiledata,
+                    size: 32,
                   ),
                   label: Text('Continue with Google', style: ScribesTextStyles.labelLg),
                 ),

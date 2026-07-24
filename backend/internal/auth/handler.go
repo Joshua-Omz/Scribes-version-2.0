@@ -84,7 +84,7 @@ func (h *Handler) LoginWithGoogle(c *gin.Context) {
 
 	user, token, err := h.svc.LoginWithGoogle(c.Request.Context(), input.IDToken)
 	if err != nil {
-		respond.Error(c, http.StatusUnauthorized, "invalid google token")
+		respond.Error(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
