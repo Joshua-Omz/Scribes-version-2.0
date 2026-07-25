@@ -9,11 +9,21 @@ interface PrimaryCTAProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
 }
 
-export function PrimaryCTA({ href, children, className, onClick }: PrimaryCTAProps) {
+export function PrimaryCTA({
+  href,
+  children,
+  className,
+  onClick,
+  type = 'button',
+  disabled = false,
+}: PrimaryCTAProps) {
   const baseClasses = cn(
     "inline-block font-sans text-[14px] font-medium text-[var(--color-background)] bg-[var(--color-gold-primary)] px-[36px] py-[14px] rounded-[3px] tracking-[0.04em] border-none cursor-pointer transition-colors duration-200 no-underline",
+    disabled && "pointer-events-none opacity-70",
     className
   );
 
@@ -47,6 +57,8 @@ export function PrimaryCTA({ href, children, className, onClick }: PrimaryCTAPro
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={baseClasses}
       onClick={onClick}
+      type={type}
+      disabled={disabled}
     >
       {children}
     </motion.button>
