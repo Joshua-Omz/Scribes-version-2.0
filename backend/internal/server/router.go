@@ -46,6 +46,8 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/users/search", authHandler.SearchUsers)
 	r.GET("/users/:id", authHandler.GetPublicProfile)
 	r.GET("/users/:id/posts", postHandler.ListByAuthor)
+	r.GET("/users/:id/followers", socialHandler.GetFollowers)
+	r.GET("/users/:id/following", socialHandler.GetFollowing)
 
 	// Feed & Explore
 	r.GET("/explore", feedHandler.GetExplore)

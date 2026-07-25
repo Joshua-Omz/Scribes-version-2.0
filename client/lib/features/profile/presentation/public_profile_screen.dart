@@ -74,9 +74,13 @@ class PublicProfileScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildStatItem('Followers', user.followersCount.toString(), colors),
+                          _buildStatItem('Followers', user.followersCount.toString(), colors, onTap: () {
+                            context.push('/users/${user.id}/connections?tab=0');
+                          }),
                           const SizedBox(width: 40),
-                          _buildStatItem('Following', user.followingCount.toString(), colors),
+                          _buildStatItem('Following', user.followingCount.toString(), colors, onTap: () {
+                            context.push('/users/${user.id}/connections?tab=1');
+                          }),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -93,8 +97,8 @@ class PublicProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String count, dynamic colors) {
-    return Column(
+  Widget _buildStatItem(String label, String count, dynamic colors, {VoidCallback? onTap}) {
+    final child = Column(
       children: [
         Text(
           count,
@@ -106,6 +110,17 @@ class PublicProfileScreen extends ConsumerWidget {
         ),
       ],
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: child,
+        ),
+      );
+    }
+    return child;
   }
 
   Widget _buildFollowButton(WidgetRef ref, dynamic colors) {

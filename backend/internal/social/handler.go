@@ -3,6 +3,7 @@ package social
 import (
 	"net/http"
 
+	"scribes-api/internal/db/generated"
 	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
 
@@ -77,6 +78,44 @@ func (h *Handler) IsFollowing(c *gin.Context) {
 		return
 	}
 	respond.JSON(c, http.StatusOK, gin.H{"is_following": isFollowing})
+}
+
+func (h *Handler) GetFollowers(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	followers, err := h.svc.GetFollowers(c.Request.Context(), userID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to fetch followers")
+		return
+	}
+	
+	if followers == nil {
+		followers = []generated.GetFollowersRow{}
+	}
+	respond.JSON(c, http.StatusOK, followers)
+}
+
+func (h *Handler) GetFollowing(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	following, err := h.svc.GetFollowing(c.Request.Context(), userID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to fetch following")
+		return
+	}
+	
+	if following == nil {
+		following = []generated.GetFollowingRow{}
+	}
+	respond.JSON(c, http.StatusOK, following)
 }
 
 type ReactRequest struct {

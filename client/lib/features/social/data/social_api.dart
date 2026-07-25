@@ -83,6 +83,18 @@ class SocialApi {
     return response.data['is_following'] as bool;
   }
 
+  Future<List<dynamic>> getFollowers(String userId) async {
+    final response = await _dio.get('${Endpoints.users}/$userId/followers');
+    if (response.data == null) return [];
+    return response.data as List<dynamic>;
+  }
+
+  Future<List<dynamic>> getFollowing(String userId) async {
+    final response = await _dio.get('${Endpoints.users}/$userId/following');
+    if (response.data == null) return [];
+    return response.data as List<dynamic>;
+  }
+
   // ── Saved ──────────────────────────────────────
 
   Future<void> savePost(String postId, {String type = 'bookmark'}) async {

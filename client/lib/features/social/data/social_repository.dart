@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/features/social/data/social_api.dart';
 import 'package:scribes/features/social/domain/comment.dart';
 import 'package:scribes/features/social/domain/comment_author.dart';
+import 'package:scribes/features/auth/domain/user.dart';
 import 'package:scribes/features/social/domain/reaction_count.dart';
 
 
@@ -74,6 +75,16 @@ class SocialRepository {
 
   Future<bool> isFollowing(String userId) async {
     return _api.isFollowing(userId);
+  }
+
+  Future<List<User>> getFollowers(String userId) async {
+    final data = await _api.getFollowers(userId);
+    return data.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<User>> getFollowing(String userId) async {
+    final data = await _api.getFollowing(userId);
+    return data.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
   }
 
   // ── Saved ──────────────────────────────────────

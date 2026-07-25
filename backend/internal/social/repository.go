@@ -42,6 +42,14 @@ func (r *Repository) CheckIsFollowing(ctx context.Context, followerID, followeeI
 	})
 }
 
+func (r *Repository) GetFollowers(ctx context.Context, userID uuid.UUID) ([]generated.GetFollowersRow, error) {
+	return r.q.GetFollowers(ctx, userID)
+}
+
+func (r *Repository) GetFollowing(ctx context.Context, userID uuid.UUID) ([]generated.GetFollowingRow, error) {
+	return r.q.GetFollowing(ctx, userID)
+}
+
 // ── Reactions ──────────────────────────────────
 
 func (r *Repository) UpsertReaction(ctx context.Context, postID, userID uuid.UUID, reactionType generated.ReactionType) error {

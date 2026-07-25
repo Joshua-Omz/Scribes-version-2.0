@@ -39,6 +39,14 @@ func (s *Service) IsFollowing(ctx context.Context, followerID, followeeID uuid.U
 	return s.repo.CheckIsFollowing(ctx, followerID, followeeID)
 }
 
+func (s *Service) GetFollowers(ctx context.Context, userID uuid.UUID) ([]generated.GetFollowersRow, error) {
+	return s.repo.GetFollowers(ctx, userID)
+}
+
+func (s *Service) GetFollowing(ctx context.Context, userID uuid.UUID) ([]generated.GetFollowingRow, error) {
+	return s.repo.GetFollowing(ctx, userID)
+}
+
 // Reactions
 func (s *Service) React(ctx context.Context, postID, userID uuid.UUID, reactionType string) error {
 	return s.repo.UpsertReaction(ctx, postID, userID, generated.ReactionType(reactionType))

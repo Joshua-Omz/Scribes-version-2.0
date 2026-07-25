@@ -16,6 +16,7 @@ import '../../features/draft/presentation/drafts_list_screen.dart';
 import '../../features/profile/presentation/private_profile_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
 import '../../features/profile/presentation/edit_profile_screen.dart';
+import '../../features/social/presentation/follow_list_screen.dart';
 import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
 import '../widgets/scribes_bottom_nav.dart';
@@ -140,6 +141,16 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id']!;
           return PublicProfileScreen(userId: id);
         },
+        routes: [
+          GoRoute(
+            path: 'connections',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              final tabIndex = int.tryParse(state.uri.queryParameters['tab'] ?? '0') ?? 0;
+              return FollowListScreen(userId: id, initialIndex: tabIndex);
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/notes/edit',

@@ -15,6 +15,24 @@ SELECT EXISTS(
     WHERE follower_id = $1 AND followee_id = $2
 );
 
+-- name: GetFollowers :many
+SELECT u.id, u.handle, u.display_name, u.email, u.bio, u.role, u.created_at,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = u.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = u.id)::int AS following_count
+FROM users u
+JOIN follows f ON f.follower_id = u.id
+WHERE f.followee_id = $1
+ORDER BY f.created_at DESC;
+
+-- name: GetFollowing :many
+SELECT u.id, u.handle, u.display_name, u.email, u.bio, u.role, u.created_at,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = u.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = u.id)::int AS following_count
+FROM users u
+JOIN follows f ON f.followee_id = u.id
+WHERE f.follower_id = $1
+ORDER BY f.created_at DESC;
+
 
 -- ── Reactions ──────────────────────────────────
 
