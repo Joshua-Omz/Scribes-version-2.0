@@ -38,6 +38,30 @@ export function ThePatrons() {
           </p>
           <PrimaryCTA href="#donate">Sow into the Sanctuary</PrimaryCTA>
         </div>
+
+        <div
+          id="donate"
+          className="mt-[80px] text-left max-w-[680px] mx-auto border-[0.5px] border-[var(--color-border)] bg-[var(--color-surface)] rounded-[8px] p-[28px] md:p-[36px]"
+        >
+          <p className="text-[11px] font-medium tracking-[2px] uppercase text-[var(--color-gold-primary)] mb-[12px]">
+            Give
+          </p>
+          <h3 className="font-serif text-[28px] font-light text-[var(--color-primary-text)] mb-[16px]">
+            Reach the team directly.
+          </h3>
+          <p className="text-[15px] font-light text-[var(--color-secondary-text)] leading-[1.8] mb-[20px]">
+            For giving conversations and partnership discussions, contact us at:
+          </p>
+          <a
+            href="mailto:give@scribesplatform.com"
+            className="text-[16px] font-medium text-[var(--color-gold-primary)] hover:text-[var(--color-primary-text)] transition-colors"
+          >
+            give@scribesplatform.com
+          </a>
+          <p className="text-[13px] font-light text-[var(--color-secondary-text)] leading-[1.7] mt-[18px] opacity-80">
+            Contact phone configuration is currently on hold.
+          </p>
+        </div>
       </Reveal>
     </div>
   );
