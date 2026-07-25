@@ -20,7 +20,7 @@ class AuthNotifier extends _$AuthNotifier {
     try {
       final user = await repo.getMe();
       // Trigger sync in background
-      _triggerSync();
+      _triggerSync(user.id);
       return user;
     } catch (e) {
       // If fetching the profile fails (e.g., token expired/invalid on server),
@@ -31,12 +31,12 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  void _triggerSync() {
+  void _triggerSync(String? userId) {
     // Fire and forget
     Future.microtask(() async {
       try {
         final syncService = ref.read(syncServiceProvider);
-        await syncService.sync();
+        await syncService.sync(authorId: userId);
       } catch (e) {
         print('Background sync failed: \$e');
       }
@@ -58,7 +58,7 @@ class AuthNotifier extends _$AuthNotifier {
         displayName: displayName,
         password: password,
       );
-      _triggerSync();
+      _triggerSync(user.id);
       return user;
     });
   }
@@ -71,7 +71,7 @@ class AuthNotifier extends _$AuthNotifier {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
       final user = await repo.login(email: email, password: password);
-      _triggerSync();
+      _triggerSync(user.id);
       return user;
     });
   }
@@ -81,7 +81,7 @@ class AuthNotifier extends _$AuthNotifier {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
       final user = await repo.loginWithGoogle(idToken);
-      _triggerSync();
+      _triggerSync(user.id);
       return user;
     });
   }
