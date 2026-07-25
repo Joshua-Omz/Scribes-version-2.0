@@ -20,6 +20,28 @@ const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
 const MAILCHIMP_SERVER_PREFIX = process.env.MAILCHIMP_SERVER_PREFIX;
 const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID;
 
+function isValidEmail(email: string): boolean {
+  if (!email || email.length > 254 || email.includes(' ')) {
+    return false;
+  }
+
+  const atIndex = email.indexOf('@');
+  const lastAtIndex = email.lastIndexOf('@');
+
+  if (atIndex <= 0 || atIndex !== lastAtIndex) {
+    return false;
+  }
+
+  const domain = email.slice(atIndex + 1);
+  const dotIndex = domain.indexOf('.');
+
+  if (dotIndex <= 0 || dotIndex === domain.length - 1) {
+    return false;
+  }
+
+  return !domain.includes('..');
+}
+
 function sanitizeSubmission(body: unknown): WaitlistSubmission | null {
   if (!body || typeof body !== 'object') {
     return null;
@@ -35,9 +57,8 @@ function sanitizeSubmission(body: unknown): WaitlistSubmission | null {
   const name = typeof raw.name === 'string' ? raw.name.trim() : '';
   const email = typeof raw.email === 'string' ? raw.email.trim().toLowerCase() : '';
   const intent = typeof raw.intent === 'string' ? raw.intent.trim() : '';
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!name || name.length > 120 || !emailRegex.test(email)) {
+  if (!name || name.length > 120 || !isValidEmail(email)) {
     return null;
   }
 
