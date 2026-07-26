@@ -70,8 +70,13 @@ func main() {
 	syncSvc := sync.NewService(syncRepo)
 	syncHandler := sync.NewHandler(syncSvc)
 
+	notificationRepo := notification.NewRepository(queries)
+	notificationWorker := notification.NewWorker(notificationRepo)
+	notificationSvc := notification.NewService(notificationRepo, notificationWorker)
+	notificationHandler := notification.NewHandler(notificationSvc)
+
 	socialRepo := social.NewRepository(queries, db)
-	socialSvc := social.NewService(socialRepo, postRepo)
+	socialSvc := social.NewService(socialRepo, postRepo, notificationSvc)
 	socialHandler := social.NewHandler(socialSvc)
 
 	feedRepo := feed.NewRepository(queries)
@@ -81,10 +86,6 @@ func main() {
 	messageRepo := message.NewRepository(queries, db)
 	messageSvc := message.NewService(messageRepo)
 	messageHandler := message.NewHandler(messageSvc)
-
-	notificationRepo := notification.NewRepository(queries, db)
-	notificationSvc := notification.NewService(notificationRepo)
-	notificationHandler := notification.NewHandler(notificationSvc)
 
 	adminRepo := admin.NewRepository(queries, db)
 	adminSvc := admin.NewService(adminRepo)
@@ -96,6 +97,9 @@ func main() {
 		Addr:    ":" + cfg.Port,
 		Handler: router,
 	}
+
+	// Start Notification Worker
+	go notificationWorker.Start(context.Background())
 
 	go func() {
 		log.Printf("starting server on port %s", cfg.Port)

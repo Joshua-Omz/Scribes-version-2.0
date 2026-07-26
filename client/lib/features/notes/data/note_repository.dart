@@ -147,9 +147,18 @@ class NoteRepository {
       cloudNote = domain.Note.fromJson(data);
     }
     
-    await (_db.update(_db.notes)..where((t) => t.id.equals(id))).write(
-      const NotesCompanion(isSynced: Value(true)),
-    );
+    if (cloudNote.id != id) {
+      await (_db.update(_db.notes)..where((t) => t.id.equals(id))).write(
+        NotesCompanion(
+          id: Value(cloudNote.id),
+          isSynced: const Value(true)
+        ),
+      );
+    } else {
+      await (_db.update(_db.notes)..where((t) => t.id.equals(id))).write(
+        const NotesCompanion(isSynced: Value(true)),
+      );
+    }
     
     return cloudNote;
   }

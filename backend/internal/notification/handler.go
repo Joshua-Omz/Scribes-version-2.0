@@ -18,31 +18,35 @@ func NewHandler(svc *Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-func (h *Handler) GetUnreadNotifications(c *gin.Context) {
+func (h *Handler) GetNotifications(c *gin.Context) {
 	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
 	userID, _ := uuid.Parse(claims.UserID)
 
-	notifications, err := h.svc.GetUnreadNotifications(c.Request.Context(), userID)
+	notifications, err := h.svc.GetForUser(c.Request.Context(), userID)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, "failed to get notifications")
 		return
 	}
-	respond.JSON(c, http.StatusOK, notifications)
+	
+	hasUnread, err := h.svc.HasUnread(c.Request.Context(), userID)
+	if err != nil {
+		// Log error, but don't fail the whole request
+		hasUnread = false
+	}
+
+	respond.JSON(c, http.StatusOK, gin.H{
+		"notifications": notifications,
+		"has_unread":    hasUnread,
+	})
 }
 
-func (h *Handler) MarkAsRead(c *gin.Context) {
+func (h *Handler) MarkAllRead(c *gin.Context) {
 	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
 	userID, _ := uuid.Parse(claims.UserID)
 
-	notifID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		respond.Error(c, http.StatusBadRequest, "invalid notification id")
+	if err := h.svc.MarkAllRead(c.Request.Context(), userID); err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to mark notifications as read")
 		return
 	}
-
-	if err := h.svc.MarkAsRead(c.Request.Context(), notifID, userID); err != nil {
-		respond.Error(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	respond.JSON(c, http.StatusOK, gin.H{"status": "marked read"})
+	respond.JSON(c, http.StatusOK, gin.H{"message": "ok"})
 }

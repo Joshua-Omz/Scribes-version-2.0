@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
+import 'package:go_router/go_router.dart';
+import '../../features/notifications/presentation/notification_badge.dart';
 
 import 'scribes_icon_button.dart';
 
@@ -43,10 +45,14 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(width: 8),
-                  ScribesIconButton(
-                    icon: LucideIcons.bell,
-                    onPressed: () {},
-                    color: colors.secondaryText,
+                  NotificationBadge(
+                    child: ScribesIconButton(
+                      icon: LucideIcons.bell,
+                      onPressed: () {
+                        context.push('/notifications');
+                      },
+                      color: colors.secondaryText,
+                    ),
                   ),
                 ],
               ),

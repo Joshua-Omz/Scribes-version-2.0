@@ -67,7 +67,13 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
 
   void onDocumentChanged(QuillController controller) {
     _lastController = controller;
-    _triggerAutosave();
+    
+    final newDelta = controller.document.toDelta().toJson();
+    final isContentDifferent = state.contentDelta == null || jsonEncode(state.contentDelta) != jsonEncode(newDelta);
+    
+    if (isContentDifferent) {
+      _triggerAutosave();
+    }
   }
 
   void syncContent(QuillController controller) {
@@ -85,9 +91,16 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
   }
 
   Future<void> forceSave() async {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    final wasDebounceActive = _debounce?.isActive ?? false;
+    if (wasDebounceActive) _debounce?.cancel();
+    
     if (_lastController != null) {
-      await _saveNoteLocally(_lastController!);
+      final newDelta = _lastController!.document.toDelta().toJson();
+      final isContentDifferent = state.contentDelta == null || jsonEncode(state.contentDelta) != jsonEncode(newDelta);
+      
+      if (isContentDifferent || wasDebounceActive) {
+        await _saveNoteLocally(_lastController!);
+      }
     }
   }
 
@@ -113,7 +126,10 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
     // Trigger cloud sync in background
     () async {
       try {
-        await repo.pushToCloud(state.noteId);
+        final cloudNote = await repo.pushToCloud(state.noteId);
+        if (cloudNote.id != state.noteId) {
+          state = state.copyWith(noteId: cloudNote.id);
+        }
       } catch (_) {}
     }();
 

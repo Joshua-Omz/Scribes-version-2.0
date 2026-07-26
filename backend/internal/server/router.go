@@ -119,8 +119,8 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.DELETE("/messages/:id", messageHandler.SoftDeleteMessage)
 
 		// Notification endpoints
-		protected.GET("/notifications", notificationHandler.GetUnreadNotifications)
-		protected.POST("/notifications/:id/read", notificationHandler.MarkAsRead)
+		protected.GET("/notifications", notificationHandler.GetNotifications)
+		protected.POST("/notifications/read-all", notificationHandler.MarkAllRead)
 
 		// Admin & Reporting endpoints
 		protected.POST("/reports", adminHandler.SubmitReport)

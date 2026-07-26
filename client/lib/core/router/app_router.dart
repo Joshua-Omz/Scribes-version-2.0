@@ -19,6 +19,7 @@ import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/social/presentation/follow_list_screen.dart';
 import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
+import '../../features/notifications/presentation/notification_screen.dart';
 import '../widgets/scribes_bottom_nav.dart';
 
 part 'app_router.g.dart';
@@ -155,6 +156,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/notes/edit',
         builder: (context, state) => const NoteEditorScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationScreen(),
       ),
     ],
   );

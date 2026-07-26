@@ -2,7 +2,6 @@ package notification
 
 import (
 	"context"
-	"database/sql"
 
 	"scribes-api/internal/db/generated"
 
@@ -13,34 +12,36 @@ type Repository struct {
 	q *generated.Queries
 }
 
-func NewRepository(q *generated.Queries, db *sql.DB) *Repository {
+func NewRepository(q *generated.Queries) *Repository {
 	return &Repository{q: q}
 }
 
-func (r *Repository) CreateNotification(ctx context.Context, recipientID uuid.UUID, ntype generated.NotifType, refID uuid.UUID, isRealtime bool) (generated.Notification, error) {
-	return r.q.CreateNotification(ctx, generated.CreateNotificationParams{
-		RecipientID: recipientID,
-		Type:        ntype,
-		RefID:       refID,
-		IsRealtime:  isRealtime,
+func (r *Repository) Insert(ctx context.Context, event Event) (generated.Notification, error) {
+	return r.q.InsertNotification(ctx, generated.InsertNotificationParams{
+		RecipientID: event.RecipientID,
+		Type:        event.Type.ToDB(),
+		RefID:       event.RefID,
+		ActorID:     uuid.NullUUID{UUID: event.ActorID, Valid: event.ActorID != uuid.Nil},
+		IsRealtime:  event.IsRealtime,
 	})
 }
 
-func (r *Repository) GetUnreadNotificationsForUser(ctx context.Context, userID uuid.UUID) ([]generated.Notification, error) {
-	return r.q.GetUnreadNotificationsForUser(ctx, userID)
+func (r *Repository) ListAllByUser(ctx context.Context, userID uuid.UUID) ([]generated.ListAllByUserRow, error) {
+	return r.q.ListAllByUser(ctx, userID)
 }
 
-func (r *Repository) MarkNotificationAsRead(ctx context.Context, id, userID uuid.UUID) error {
-	return r.q.MarkNotificationAsRead(ctx, generated.MarkNotificationAsReadParams{
-		ID:          id,
-		RecipientID: userID,
-	})
+func (r *Repository) ListUnreadByUser(ctx context.Context, userID uuid.UUID) ([]generated.ListUnreadByUserRow, error) {
+	return r.q.ListUnreadByUser(ctx, userID)
 }
 
-func (r *Repository) GetUnsentBatchedNotifications(ctx context.Context) ([]generated.Notification, error) {
-	return r.q.GetUnsentBatchedNotifications(ctx)
+func (r *Repository) MarkAllRead(ctx context.Context, userID uuid.UUID) error {
+	return r.q.MarkAllReadByUser(ctx, userID)
 }
 
-func (r *Repository) MarkNotificationsAsSent(ctx context.Context, ids []uuid.UUID) error {
-	return r.q.MarkNotificationsAsSent(ctx, ids)
+func (r *Repository) FlushBatch(ctx context.Context) error {
+	return r.q.FlushPendingBatch(ctx)
+}
+
+func (r *Repository) HasUnread(ctx context.Context, userID uuid.UUID) (bool, error) {
+	return r.q.HasUnread(ctx, userID)
 }

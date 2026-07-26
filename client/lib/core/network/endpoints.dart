@@ -26,4 +26,8 @@ class Endpoints {
   // Notes
   static const String notes = '/notes';
   static const String notebooks = '/notebooks';
+
+  // Notifications
+  static const String notifications = '/notifications';
+  static const String notificationsReadAll = '/notifications/read-all';
 }

@@ -6,20 +6,27 @@ import (
 	"errors"
 
 	"scribes-api/internal/db/generated"
+	"scribes-api/internal/notification"
 	"scribes-api/internal/post"
 
 	"github.com/google/uuid"
 )
 
+type NotificationEnqueuer interface {
+	Enqueue(event notification.Event)
+}
+
 type Service struct {
 	repo     *Repository
 	postRepo *post.Repository
+	notif    NotificationEnqueuer
 }
 
-func NewService(repo *Repository, postRepo *post.Repository) *Service {
+func NewService(repo *Repository, postRepo *post.Repository, notif NotificationEnqueuer) *Service {
 	return &Service{
 		repo:     repo,
 		postRepo: postRepo,
+		notif:    notif,
 	}
 }
 
@@ -28,7 +35,17 @@ func (s *Service) Follow(ctx context.Context, followerID, followeeID uuid.UUID) 
 	if followerID == followeeID {
 		return errors.New("cannot follow yourself")
 	}
-	return s.repo.FollowUser(ctx, followerID, followeeID)
+	err := s.repo.FollowUser(ctx, followerID, followeeID)
+	if err == nil && s.notif != nil {
+		s.notif.Enqueue(notification.Event{
+			Type:        notification.NotifTypeFollow,
+			RecipientID: followeeID,
+			RefID:       followerID, // The ref for a follow is the follower
+			IsRealtime:  true,
+			ActorID:     followerID,
+		})
+	}
+	return err
 }
 
 func (s *Service) Unfollow(ctx context.Context, followerID, followeeID uuid.UUID) error {
@@ -49,7 +66,20 @@ func (s *Service) GetFollowing(ctx context.Context, userID uuid.UUID) ([]generat
 
 // Reactions
 func (s *Service) React(ctx context.Context, postID, userID uuid.UUID, reactionType string) error {
-	return s.repo.UpsertReaction(ctx, postID, userID, generated.ReactionType(reactionType))
+	err := s.repo.UpsertReaction(ctx, postID, userID, generated.ReactionType(reactionType))
+	if err == nil && s.notif != nil {
+		p, errP := s.postRepo.GetPostByID(ctx, postID)
+		if errP == nil && p.AuthorID != userID {
+			s.notif.Enqueue(notification.Event{
+				Type:        notification.NotifTypeReaction,
+				RecipientID: p.AuthorID,
+				RefID:       postID,
+				IsRealtime:  true,
+				ActorID:     userID,
+			})
+		}
+	}
+	return err
 }
 
 func (s *Service) Unreact(ctx context.Context, postID, userID uuid.UUID) error {
@@ -62,7 +92,33 @@ func (s *Service) GetReactionCounts(ctx context.Context, postID uuid.UUID) ([]ge
 
 // Comments
 func (s *Service) AddComment(ctx context.Context, postID, authorID uuid.UUID, body string, mentions []uuid.UUID) (generated.Comment, error) {
-	return s.repo.CreateComment(ctx, postID, authorID, body, mentions)
+	comment, err := s.repo.CreateComment(ctx, postID, authorID, body, mentions)
+	if err == nil && s.notif != nil {
+		p, errP := s.postRepo.GetPostByID(ctx, postID)
+		if errP == nil && p.AuthorID != authorID {
+			s.notif.Enqueue(notification.Event{
+				Type:        notification.NotifTypeComment,
+				RecipientID: p.AuthorID,
+				RefID:       postID,
+				IsRealtime:  true,
+				ActorID:     authorID,
+			})
+		}
+		
+		// Handle mentions
+		for _, m := range mentions {
+			if m != authorID { // don't notify self
+				s.notif.Enqueue(notification.Event{
+					Type:        notification.NotifTypeMention,
+					RecipientID: m,
+					RefID:       postID,
+					IsRealtime:  true,
+					ActorID:     authorID,
+				})
+			}
+		}
+	}
+	return comment, err
 }
 
 func (s *Service) DeleteComment(ctx context.Context, commentID, authorID uuid.UUID) error {
