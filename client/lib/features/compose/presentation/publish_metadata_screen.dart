@@ -8,6 +8,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_shimmer.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
@@ -87,16 +88,12 @@ class PublishMetadataScreen extends ConsumerWidget {
                         Navigator.pop(ctx);
                         ref.read(composeProvider.notifier).publishToCloud().then((_) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Post published!')),
-                            );
+                            ScribesToast.show(context, 'Post published!', colors, icon: LucideIcons.check_circle);
                             context.go('/');
                           }
                         }).catchError((err) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error publishing: $err')),
-                            );
+                            ScribesToast.show(context, 'Error publishing: $err', colors, isError: true);
                           }
                         });
                       },
@@ -138,21 +135,15 @@ class PublishMetadataScreen extends ConsumerWidget {
           TextButton(
             onPressed: () {
               if (composeState.title.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please add a title before publishing.')),
-                );
+                ScribesToast.show(context, 'Please add a title before publishing.', colors, isError: true);
                 return;
               }
               if (composeState.contentDelta == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Post body cannot be empty.')),
-                );
+                ScribesToast.show(context, 'Post body cannot be empty.', colors, isError: true);
                 return;
               }
               if (composeState.scriptureRefs.length < 2) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please add between 2 and 3 scripture tags.')),
-                );
+                ScribesToast.show(context, 'Please add between 2 and 3 scripture tags.', colors, isError: true);
                 return;
               }
               _showPublishConfirmation(context, ref);
@@ -552,9 +543,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                       final verseEnd = int.tryParse(verseEndController.text.trim());
 
                       if (book.isEmpty || chapter == null || verseStart == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Book, chapter, and verse start are required.')),
-                        );
+                        ScribesToast.show(context, 'Book, chapter, and verse start are required.', colors, isError: true);
                         return;
                       }
 

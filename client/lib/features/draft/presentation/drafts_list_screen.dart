@@ -26,6 +26,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
     Future.microtask(() {
       ref.read(draftsListProvider.notifier).refresh();
     });
+    
   }
 
   @override

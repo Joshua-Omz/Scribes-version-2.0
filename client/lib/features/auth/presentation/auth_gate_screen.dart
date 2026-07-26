@@ -9,6 +9,7 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../application/auth_notifier.dart';
 import '../domain/user.dart';
 
@@ -69,12 +70,8 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     } catch (e, stack) {
       debugPrint('Google Sign-In exception: \$e\\n\$stack');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google Sign-In failed: \$e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        final colors = ref.read(themeProvider);
+        ScribesToast.show(context, 'Google Sign-In failed: $e', colors, isError: true);
       }
     }
   }
@@ -105,13 +102,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           message = error.message;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: colors.orange,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ScribesToast.show(context, message, colors, isError: true);
       }
     });
 

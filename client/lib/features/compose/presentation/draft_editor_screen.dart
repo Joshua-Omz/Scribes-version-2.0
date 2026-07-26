@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_auto_save_dot.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../application/compose_provider.dart';
 
 class DraftEditorScreen extends ConsumerStatefulWidget {
@@ -210,14 +211,12 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                       );
                       if (text.trim().isNotEmpty) {
                         _controller.formatSelection(Attribute('scripture', AttributeScope.inline, text.trim()));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Tagged as Scripture: ${text.trim()}')),
-                        );
+                        final colors = ref.read(themeProvider);
+                        ScribesToast.show(context, 'Tagged as Scripture: ${text.trim()}', colors, icon: LucideIcons.book_open);
                       }
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Highlight text to tag as scripture')),
-                      );
+                      final colors = ref.read(themeProvider);
+                      ScribesToast.show(context, 'Highlight text to tag as scripture', colors, icon: LucideIcons.book_open);
                     }
                   },
                 ),

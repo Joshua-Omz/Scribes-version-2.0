@@ -7,6 +7,7 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_avatar.dart';
 import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../../auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_profile_post_card.dart';
@@ -181,10 +182,10 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                             onSaveToggle: () {
                               if (isSaved) {
                                 ref.read(savedPostsProvider.notifier).unsavePost(post.id);
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post unsaved')));
+                                ScribesToast.show(context, 'Post unsaved', colors, icon: LucideIcons.bookmark_minus);
                               } else {
                                 ref.read(savedPostsProvider.notifier).savePost(post.id);
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post saved')));
+                                ScribesToast.show(context, 'Post saved', colors, icon: LucideIcons.bookmark_check);
                               }
                             },
                             onTap: () => context.push('/posts/${post.id}'),

@@ -8,6 +8,7 @@ import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_colors.dart';
 import 'scribes_shimmer.dart';
 import 'scribes_text_field.dart';
+import 'scribes_toast.dart';
 import 'scribes_avatar.dart';
 import '../../features/social/application/post_social_providers.dart';
 import '../../features/social/application/user_lookup_provider.dart';
@@ -233,12 +234,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                 label: 'Reply via DM',
                 onTap: () {
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Direct messaging is coming soon.'),
-                      backgroundColor: colors.surfaceRaised,
-                    ),
-                  );
+                  ScribesToast.show(context, 'Direct messaging is coming soon.', colors, icon: LucideIcons.mail);
                 },
               ),
 

@@ -8,6 +8,7 @@ import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 import '../../features/auth/application/auth_notifier.dart';
 import 'scribes_author_header.dart';
+import 'scribes_toast.dart';
 
 class ScribesDrawer extends ConsumerWidget {
   const ScribesDrawer({super.key});
@@ -110,9 +111,7 @@ class ScribesDrawer extends ConsumerWidget {
                 onTap: () {
                   Navigator.pop(context);
                   // TODO: Navigate to bookmarks
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bookmarks coming soon')),
-                  );
+                  ScribesToast.show(context, 'Bookmarks coming soon', colors, icon: LucideIcons.bookmark);
                 },
               ),
             ] else ...[
@@ -148,9 +147,7 @@ class ScribesDrawer extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Navigate to settings
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Settings coming soon')),
-                );
+                ScribesToast.show(context, 'Settings coming soon', colors, icon: LucideIcons.settings);
               },
             ),
             
