@@ -54,20 +54,16 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
       final googleUser = await GoogleSignIn.instance.authenticate();
       debugPrint('googleUser returned: \$googleUser');
       
-      if (googleUser != null) {
-        final googleAuth = await googleUser.authentication;
-        debugPrint('googleAuth retrieved. idToken is null? \${googleAuth.idToken == null}');
-        
-        if (googleAuth.idToken != null) {
-          debugPrint('Calling backend with idToken...');
-          notifier.loginWithGoogle(googleAuth.idToken!);
-        } else {
-          debugPrint('ERROR: idToken is null! Check Google Cloud console SHA-1 and Client ID config.');
-        }
+      final googleAuth = await googleUser.authentication;
+      debugPrint('googleAuth retrieved. idToken is null? \${googleAuth.idToken == null}');
+      
+      if (googleAuth.idToken != null) {
+        debugPrint('Calling backend with idToken...');
+        notifier.loginWithGoogle(googleAuth.idToken!);
       } else {
-        debugPrint('Google Sign-In cancelled by user or returned null.');
+        debugPrint('ERROR: idToken is null! Check Google Cloud console SHA-1 and Client ID config.');
       }
-    } catch (e, stack) {
+    } catch (e) {
       debugPrint('Google Sign-In exception: \$e\\n\$stack');
       if (mounted) {
         final colors = ref.read(themeProvider);

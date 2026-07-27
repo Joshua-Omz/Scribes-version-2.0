@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 
@@ -54,8 +54,7 @@ class _ScribesLoadingIndicatorState extends ConsumerState<ScribesLoadingIndicato
           scale: _scaleAnimation.value,
           child: Opacity(
             opacity: _opacityAnimation.value,
-            child: Icon(
-              LucideIcons.gem, // The scribes ornament
+            child: HugeIcon(icon: HugeIcons.strokeRoundedDiamond01, // The scribes ornament
               size: widget.size,
               color: colors.gold,
             ),

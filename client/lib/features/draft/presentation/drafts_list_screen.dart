@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -45,7 +45,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
             pinned: true,
             expandedHeight: 120,
             leading: IconButton(
-              icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
               onPressed: () {
                 if (context.canPop()) {
                   context.pop();
@@ -65,8 +65,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                   Positioned(
                     right: -20,
                     top: -20,
-                    child: Icon(
-                      LucideIcons.file_text,
+                    child: HugeIcon(icon: HugeIcons.strokeRoundedFile01,
                       size: 140,
                       color: colors.gold.withValues(alpha: 0.05),
                     ),
@@ -83,7 +82,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(LucideIcons.inbox, size: 48, color: colors.goldMuted.withValues(alpha: 0.5)),
+                        HugeIcon(icon: HugeIcons.strokeRoundedInbox, size: 48, color: colors.goldMuted.withValues(alpha: 0.5)),
                         const SizedBox(height: 16),
                         Text(
                           'No drafts yet.',
@@ -174,7 +173,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
           ref.read(composeProvider.notifier).reset();
           context.push('/compose');
         },
-        icon: const Icon(LucideIcons.plus),
+        icon: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign),
         label: Text('New Draft', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
       ),
     );

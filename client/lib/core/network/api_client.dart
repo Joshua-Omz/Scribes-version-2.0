@@ -36,13 +36,13 @@ Dio apiClient(Ref ref) {
       onError: (DioException e, handler) {
         String message = 'An unexpected error occurred';
         if (e.response != null && e.response?.data is Map<String, dynamic>) {
-          print('API ERROR DATA: ${e.response?.data}');
+          // print('API ERROR DATA: ${e.response?.data}');
           final data = e.response!.data as Map<String, dynamic>;
           if (data.containsKey('error')) {
             message = data['error'];
           }
         } else if (e.response != null) {
-          print('API RAW ERROR: ${e.response?.statusCode} ${e.response?.data}');
+          // print('API RAW ERROR: ${e.response?.statusCode} ${e.response?.data}');
           if (e.response!.statusCode == 404) {
              message = 'Endpoint not found or resource does not exist (404)';
           } else {

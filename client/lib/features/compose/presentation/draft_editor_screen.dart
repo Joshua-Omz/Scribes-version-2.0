@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:go_router/go_router.dart';
@@ -65,7 +65,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
           onPressed: () async {
             await ref.read(composeProvider.notifier).forceSave();
             if (context.mounted) {
@@ -200,7 +200,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
               showClearFormat: false,
               customButtons: [
                 QuillToolbarCustomButtonOptions(
-                  icon: const Icon(LucideIcons.book_open),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedBookOpen01),
                   tooltip: 'Tag as Scripture',
                   onPressed: () {
                     final selection = _controller.selection;
@@ -212,11 +212,11 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                       if (text.trim().isNotEmpty) {
                         _controller.formatSelection(Attribute('scripture', AttributeScope.inline, text.trim()));
                         final colors = ref.read(themeProvider);
-                        ScribesToast.show(context, 'Tagged as Scripture: ${text.trim()}', colors, icon: LucideIcons.book_open);
+                        ScribesToast.show(context, 'Tagged as Scripture: ${text.trim()}', colors, icon: HugeIcons.strokeRoundedBookOpen01);
                       }
                     } else {
                       final colors = ref.read(themeProvider);
-                      ScribesToast.show(context, 'Highlight text to tag as scripture', colors, icon: LucideIcons.book_open);
+                      ScribesToast.show(context, 'Highlight text to tag as scripture', colors, icon: HugeIcons.strokeRoundedBookOpen01);
                     }
                   },
                 ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
@@ -12,6 +12,8 @@ import '../application/explore_notifier.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_empty_state.dart';
+import '../../../core/widgets/scribes_error_state.dart';
 
 class ExploreScreen extends ConsumerWidget {
   const ExploreScreen({super.key});
@@ -40,7 +42,7 @@ class ExploreScreen extends ConsumerWidget {
               centerTitle: !isSearchActive,
               leading: isSearchActive 
                 ? IconButton(
-                    icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
                     onPressed: () => ref.read(exploreSearchActiveProvider.notifier).toggle(),
                   )
                 : null,
@@ -60,13 +62,13 @@ class ExploreScreen extends ConsumerWidget {
               actions: [
                 if (!isSearchActive) ...[
                   ScribesIconButton(
-                    icon: LucideIcons.search,
+                    icon: HugeIcons.strokeRoundedSearch01,
                     color: colors.secondaryText,
                     onPressed: () => ref.read(exploreSearchActiveProvider.notifier).toggle(),
                   ),
                   const SizedBox(width: 8),
                   ScribesIconButton(
-                    icon: LucideIcons.book_open,
+                    icon: HugeIcons.strokeRoundedBookOpen01,
                     color: colors.secondaryText,
                     onPressed: () => _showScriptureFilterSheet(context, ref, colors),
                   ),
@@ -119,7 +121,7 @@ class ExploreScreen extends ConsumerWidget {
                       );
                     },
                     loading: () => const Center(child: ScribesLoadingIndicator()),
-                    error: (e, st) => Center(child: Text('Error', style: TextStyle(color: colors.primaryText))),
+                    error: (e, st) => const Center(child: HugeIcon(icon: HugeIcons.strokeRoundedAlert01, color: Colors.orange, size: 24)),
                   ),
                 ),
               ),
@@ -146,11 +148,12 @@ class ExploreScreen extends ConsumerWidget {
     return postsState.when(
                 data: (posts) {
                   if (posts.isEmpty) {
-                    return SliverFillRemaining(
+                    return const SliverFillRemaining(
                       child: Center(
-                        child: Text(
-                          'No posts found.',
-                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                        child: ScribesEmptyState(
+                          icon: HugeIcons.strokeRoundedSearch01,
+                          title: 'No posts found',
+                          subtitle: 'Try a different category or search term.',
                         ),
                       ),
                     );
@@ -208,8 +211,10 @@ class ExploreScreen extends ConsumerWidget {
                   ),
                 ),
       error: (e, st) => SliverFillRemaining(
-        child: Center(
-          child: Text('Error: \$e', style: TextStyle(color: colors.primaryText)),
+        child: ScribesErrorState(
+          title: 'Could not load posts',
+          subtitle: e.toString(),
+          onRetry: () => ref.read(explorePostsProvider.notifier).refresh(),
         ),
       ),
     );
@@ -288,11 +293,12 @@ class ExploreScreen extends ConsumerWidget {
     final query = ref.watch(exploreSearchQueryProvider);
 
     if (query == null || query.trim().isEmpty) {
-      return SliverFillRemaining(
+      return const SliverFillRemaining(
         child: Center(
-          child: Text(
-            'Type to search for people.',
-            style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+          child: ScribesEmptyState(
+            icon: HugeIcons.strokeRoundedUserMultiple,
+            title: 'Find People',
+            subtitle: 'Search for other scribes by name or handle.',
           ),
         ),
       );
@@ -301,11 +307,12 @@ class ExploreScreen extends ConsumerWidget {
     return userSearchState.when(
       data: (users) {
         if (users.isEmpty) {
-          return SliverFillRemaining(
+          return const SliverFillRemaining(
             child: Center(
-              child: Text(
-                'No users found.',
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              child: ScribesEmptyState(
+                icon: HugeIcons.strokeRoundedUserRemove01,
+                title: 'No users found',
+                subtitle: 'We couldn\'t find anyone matching your search.',
               ),
             ),
           );
@@ -335,7 +342,12 @@ class ExploreScreen extends ConsumerWidget {
         );
       },
       loading: () => const SliverFillRemaining(child: Center(child: ScribesLoadingIndicator())),
-      error: (err, st) => SliverFillRemaining(child: Center(child: Text('Error: $err', style: TextStyle(color: colors.primaryText)))),
+      error: (err, st) => SliverFillRemaining(
+        child: ScribesErrorState(
+          title: 'Could not load users',
+          subtitle: err.toString(),
+        ),
+      ),
     );
   }
 

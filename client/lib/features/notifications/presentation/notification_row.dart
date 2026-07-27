@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
 import '../../../core/theme/scribes_colors.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_avatar.dart';
@@ -11,9 +10,9 @@ class NotificationRow extends StatelessWidget {
   final NotificationItem notification;
 
   const NotificationRow({
-    Key? key,
+    super.key,
     required this.notification,
-  }) : super(key: key);
+  });
 
   void _handleTap(BuildContext context) {
     // Navigate based on type + ref_id

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_top_app_bar.dart';
@@ -13,7 +13,9 @@ import '../../../core/theme/theme_provider.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../../core/widgets/scribes_unauth_banner.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
-import '../../../core/widgets/scribes_shimmer.dart';
+import '../../../core/widgets/scribes_post_card_skeleton.dart';
+import '../../../core/widgets/scribes_empty_state.dart';
+import '../../../core/widgets/scribes_error_state.dart';
 
 import 'package:flutter/rendering.dart';
 import '../../../core/widgets/scribes_drawer.dart';
@@ -68,7 +70,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> with SingleTickerProvid
           duration: const Duration(milliseconds: 250),
           opacity: _isFabVisible ? 1.0 : 0.0,
           child: ScribesDiamondFab(
-            icon: LucideIcons.plus,
+            icon: HugeIcons.strokeRoundedPlusSign,
             onPressed: () {
               ref.read(composeProvider.notifier).reset();
               context.push('/compose');
@@ -218,7 +220,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen> with SingleTickerProvid
               );
             },
             loading: () => _buildShimmer(colors),
-            error: (e, st) => SliverFillRemaining(child: Center(child: Text('Error: $e'))),
+            error: (e, st) => SliverFillRemaining(
+              child: ScribesErrorState(
+                title: 'Could not load feed',
+                subtitle: e.toString(),
+                onRetry: () => ref.read(feedProvider.notifier).refresh(),
+              ),
+            ),
           ),
         ],
       ),
@@ -227,54 +235,26 @@ class _FeedScreenState extends ConsumerState<FeedScreen> with SingleTickerProvid
 
   Widget _buildShimmer(ScribesColors colors) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: ScribesShimmer(
-                child: Container(
-                  height: 180,
-                  decoration: BoxDecoration(
-                    color: colors.surfaceRaised,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
+            return const ScribesPostCardSkeleton(
+              showImage: true,
             );
           },
-          childCount: 4,
+          childCount: 3,
         ),
       ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context, ScribesColors colors) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(LucideIcons.newspaper, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
-          const SizedBox(height: 16),
-          Text(
-            'Your scroll is empty',
-            style: TextStyle(
-              fontFamily: 'CormorantGaramond',
-              fontSize: 24,
-              color: colors.primaryText,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Follow other writers or explore to discover new insights.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'DMSans',
-              color: colors.secondaryText,
-            ),
-          ),
-        ],
+    return const Center(
+      child: ScribesEmptyState(
+        icon: HugeIcons.strokeRoundedNote01,
+        title: 'Your scroll is empty',
+        subtitle: 'Follow other writers or explore to discover new insights.',
       ),
     );
   }

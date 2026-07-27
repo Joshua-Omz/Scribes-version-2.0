@@ -8,7 +8,7 @@ class ScribesToast {
     BuildContext context, 
     String message, 
     ScribesColors colors, {
-    IconData icon = Icons.check_circle_outline,
+    dynamic icon = Icons.check_circle_outline,
     bool isError = false,
   }) {
     final snackBar = SnackBar(

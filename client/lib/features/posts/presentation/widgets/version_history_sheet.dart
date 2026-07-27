@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
@@ -41,7 +41,7 @@ class VersionHistorySheet extends ConsumerWidget {
               children: [
                 Text('Version History', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
                 IconButton(
-                  icon: Icon(LucideIcons.x, color: colors.primaryText),
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.primaryText),
                   onPressed: () => context.pop(),
                 ),
               ],
@@ -66,7 +66,7 @@ class VersionHistorySheet extends ConsumerWidget {
                     return ListTile(
                       title: Text('Version ${version.versionNumber}', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
                       subtitle: Text('Saved on ${version.snapshottedAt.toLocal().toString().split('.')[0]}', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
-                      trailing: Icon(LucideIcons.chevron_right, color: colors.secondaryText),
+                      trailing: HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: colors.secondaryText),
                       onTap: () {
                         // TODO: Navigate to diff view or specific version
                       },

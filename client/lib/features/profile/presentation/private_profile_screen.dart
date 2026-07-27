@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
@@ -15,7 +15,9 @@ import '../../../core/widgets/scribes_profile_draft_card.dart';
 import '../../posts/application/my_posts_provider.dart';
 import '../../draft/application/drafts_list_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
-import '../../../core/widgets/scribes_shimmer.dart';
+import '../../../core/widgets/scribes_post_card_skeleton.dart';
+import '../../../core/widgets/scribes_empty_state.dart';
+import '../../../core/widgets/scribes_error_state.dart';
 
 class PrivateProfileScreen extends ConsumerStatefulWidget {
   const PrivateProfileScreen({super.key});
@@ -51,20 +53,20 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
             pinned: true,
             leading: context.canPop()
                 ? IconButton(
-                    icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
                     onPressed: () => context.pop(),
                   )
                 : null,
             title: Text('Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
             actions: [
               IconButton(
-                icon: Icon(LucideIcons.settings, color: colors.primaryText),
+                icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: colors.primaryText),
                 onPressed: () {
                   // Navigate to Settings
                 },
               ),
               IconButton(
-                icon: Icon(LucideIcons.log_out, color: colors.primaryText),
+                icon: HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: colors.primaryText),
                 onPressed: () {
                   ref.read(authProvider.notifier).logout();
                   context.go('/');
@@ -141,15 +143,12 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                 return postsState.when(
                   data: (posts) {
                     if (posts.isEmpty) {
-                      return SliverFillRemaining(
+                      return const SliverFillRemaining(
                         child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(LucideIcons.newspaper, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
-                              const SizedBox(height: 16),
-                              Text('No posts yet.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-                            ],
+                          child: ScribesEmptyState(
+                            icon: HugeIcons.strokeRoundedNews,
+                            title: 'No posts yet',
+                            subtitle: 'You haven\'t published anything.',
                           ),
                         ),
                       );
@@ -182,10 +181,10 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                             onSaveToggle: () {
                               if (isSaved) {
                                 ref.read(savedPostsProvider.notifier).unsavePost(post.id);
-                                ScribesToast.show(context, 'Post unsaved', colors, icon: LucideIcons.bookmark_minus);
+                                ScribesToast.show(context, 'Post unsaved', colors, icon: HugeIcons.strokeRoundedRemove01);
                               } else {
                                 ref.read(savedPostsProvider.notifier).savePost(post.id);
-                                ScribesToast.show(context, 'Post saved', colors, icon: LucideIcons.bookmark_check);
+                                ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
                               }
                             },
                             onTap: () => context.push('/posts/${post.id}'),
@@ -196,28 +195,23 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                     );
                   },
                   loading: () => SliverPadding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            child: ScribesShimmer(
-                              child: Container(
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceRaised,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                            ),
-                          );
+                          return const ScribesPostCardSkeleton(showAvatar: false);
                         },
-                        childCount: 4,
+                        childCount: 3,
                       ),
                     ),
                   ),
-                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
+                  error: (err, stack) => SliverFillRemaining(
+                    child: ScribesErrorState(
+                      title: 'Could not load posts',
+                      subtitle: err.toString(),
+                      onRetry: () => ref.read(myPostsProvider.notifier).refresh(),
+                    ),
+                  ),
                 );
               },
             ),
@@ -228,15 +222,12 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                 return draftsState.when(
                   data: (drafts) {
                     if (drafts.isEmpty) {
-                      return SliverFillRemaining(
+                      return const SliverFillRemaining(
                         child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(LucideIcons.file_pen, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
-                              const SizedBox(height: 16),
-                              Text('No drafts.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-                            ],
+                          child: ScribesEmptyState(
+                            icon: HugeIcons.strokeRoundedFileEdit,
+                            title: 'No drafts',
+                            subtitle: 'Your workspace is clear.',
                           ),
                         ),
                       );
@@ -269,28 +260,23 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                     );
                   },
                   loading: () => SliverPadding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            child: ScribesShimmer(
-                              child: Container(
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceRaised,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                            ),
-                          );
+                          return const ScribesPostCardSkeleton(showAvatar: false);
                         },
-                        childCount: 4,
+                        childCount: 3,
                       ),
                     ),
                   ),
-                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
+                  error: (err, stack) => SliverFillRemaining(
+                    child: ScribesErrorState(
+                      title: 'Could not load drafts',
+                      subtitle: err.toString(),
+                      onRetry: () => ref.read(draftsListProvider.notifier).refresh(),
+                    ),
+                  ),
                 );
               },
             ),
@@ -301,15 +287,12 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                 return savedPostsState.when(
                   data: (savedPosts) {
                     if (savedPosts.isEmpty) {
-                      return SliverFillRemaining(
+                      return const SliverFillRemaining(
                         child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(LucideIcons.bookmark, size: 64, color: colors.secondaryText.withValues(alpha: 0.3)),
-                              const SizedBox(height: 16),
-                              Text('No saved posts.', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-                            ],
+                          child: ScribesEmptyState(
+                            icon: HugeIcons.strokeRoundedBookmark01,
+                            title: 'No saved posts',
+                            subtitle: 'Posts you save will appear here.',
                           ),
                         ),
                       );
@@ -355,28 +338,23 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                     );
                   },
                   loading: () => SliverPadding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                            child: ScribesShimmer(
-                              child: Container(
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceRaised,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                            ),
-                          );
+                          return const ScribesPostCardSkeleton(showAvatar: false);
                         },
-                        childCount: 4,
+                        childCount: 3,
                       ),
                     ),
                   ),
-                  error: (err, stack) => SliverFillRemaining(child: Center(child: Text('Error: $err'))),
+                  error: (err, stack) => SliverFillRemaining(
+                    child: ScribesErrorState(
+                      title: 'Could not load saved posts',
+                      subtitle: err.toString(),
+                      onRetry: () => ref.invalidate(savedPostsProvider),
+                    ),
+                  ),
                 );
               },
             ),

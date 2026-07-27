@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scribes/core/theme/scribes_radius.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
@@ -10,6 +10,7 @@ import '../../features/posts/domain/scripture_ref.dart';
 import 'scribes_reaction_bar.dart';
 import 'scribes_ornament_divider.dart';
 import 'scribes_author_header.dart';
+import 'scribes_bounce_button.dart';
 
 class ScribesPostCard extends ConsumerStatefulWidget {
   final String title;
@@ -72,13 +73,22 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
     final hasEmbeddedContent = (widget.caption != null && widget.caption!.isNotEmpty) || 
                                (widget.sermonSource != null && widget.sermonSource!.isNotEmpty);
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      behavior: HitTestBehavior.opaque,
+    return ScribesBounceButton(
+      onTap: widget.onTap ?? () {},
+      scaleFactor: 0.98,
       child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: colors.background, // Match screen background for flat look
+          color: colors.surfaceRaised, 
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colors.border.withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +98,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 alignment: Alignment.topLeft,
                 child: Opacity(
                   opacity: 0.16,
-                  child: Icon(LucideIcons.sparkles, color: colors.gold, size: 24),
+                  child: HugeIcon(icon: HugeIcons.strokeRoundedSparkles, color: colors.gold, size: 24),
                 ),
               ),
             Row(
@@ -112,8 +122,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                         color: widget.isSaved ? colors.gold : Colors.transparent,
                         borderRadius: BorderRadius.circular(ScribesRadius.button),
                       ),
-                      child: Icon(
-                        LucideIcons.bookmark,
+                      child: HugeIcon(icon: HugeIcons.strokeRoundedBookmark01,
                         color: widget.isSaved ? colors.surface : colors.secondaryText,
                         size: 20,
                       ),
@@ -146,13 +155,22 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
-              widget.bodyExcerpt,
-              style: ScribesTextStyles.bodyLg.copyWith(
-                color: colors.secondaryText,
+            ShaderMask(
+              shaderCallback: (Rect bounds) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [colors.secondaryText, colors.secondaryText.withValues(alpha: 0.2)],
+                  stops: const [0.7, 1.0],
+                ).createShader(bounds);
+              },
+              blendMode: BlendMode.srcIn,
+              child: Text(
+                widget.bodyExcerpt,
+                style: ScribesTextStyles.bodyLg,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
             ),
             
             if (hasEmbeddedContent) ...[
@@ -166,8 +184,8 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 behavior: HitTestBehavior.opaque,
                 child: Row(
                   children: [
-                    Icon(
-                      _isExpanded ? LucideIcons.chevron_up : LucideIcons.chevron_down,
+                    HugeIcon(
+                      icon: _isExpanded ? HugeIcons.strokeRoundedArrowUp01 : HugeIcons.strokeRoundedArrowDown01,
                       color: colors.secondaryText,
                       size: 16,
                     ),
@@ -248,7 +266,7 @@ class _EmbeddedContentBox extends StatelessWidget {
           if (sermonSource != null && sermonSource!.isNotEmpty)
             Row(
               children: [
-                Icon(LucideIcons.church, size: 14, color: colors.gold),
+                HugeIcon(icon: HugeIcons.strokeRoundedChurch, size: 14, color: colors.gold),
                 const SizedBox(width: 6),
                 Text(
                   sermonSource!,

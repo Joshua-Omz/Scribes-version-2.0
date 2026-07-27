@@ -1,5 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
@@ -34,7 +35,7 @@ class ScribesReactionBar extends ConsumerWidget {
       child: Row(
         children: [
           _ReactionChip(
-            icon: LucideIcons.flame,
+            icon: HugeIcons.strokeRoundedFire,
             label: 'Amen',
             count: amenCount.toString(),
             onTap: () => onReact('amen'),
@@ -44,7 +45,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: LucideIcons.lightbulb,
+            icon: HugeIcons.strokeRoundedIdea01,
             label: 'Insight',
             count: insightCount.toString(),
             onTap: () => onReact('insightful'),
@@ -54,7 +55,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: LucideIcons.gem,
+            icon: HugeIcons.strokeRoundedDiamond01,
             label: 'Deep',
             count: thoughtProvokingCount.toString(),
             onTap: () => onReact('thought_provoking'),
@@ -64,7 +65,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: LucideIcons.message_circle,
+            icon: HugeIcons.strokeRoundedMessage01,
             label: 'Discuss',
             count: commentCount.toString(),
             onTap: onComment,
@@ -78,7 +79,7 @@ class ScribesReactionBar extends ConsumerWidget {
 }
 
 class _ReactionChip extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String label;
   final String count;
   final VoidCallback onTap;
@@ -104,24 +105,44 @@ class _ReactionChip extends StatelessWidget {
       onTap: onTap,
       scaleFactor: 0.95,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: displayColor.withValues(alpha: isSelected ? 1.0 : 0.2),
-          ),
           borderRadius: BorderRadius.circular(16),
-          color: isSelected ? displayColor.withValues(alpha: 0.1) : Colors.transparent,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: displayColor.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                  )
+                ]
+              : null,
         ),
-        child: Row(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: displayColor.withValues(alpha: isSelected ? 1.0 : 0.2),
+                ),
+                borderRadius: BorderRadius.circular(16),
+                color: isSelected ? displayColor.withValues(alpha: 0.15) : displayColor.withValues(alpha: 0.05),
+              ),
+              child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: displayColor),
+            HugeIcon(icon: icon, size: 18, color: displayColor),
             const SizedBox(width: 6),
             Text(
               '$label $count',
               style: ScribesTextStyles.labelLg.copyWith(color: displayColor),
             ),
           ],
+        ),
+            ),
+          ),
         ),
       ),
     );

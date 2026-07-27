@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
-import '../../../core/theme/scribes_radius.dart';
 import '../../../core/widgets/scribes_avatar.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_toast.dart';
@@ -47,7 +46,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
           onPressed: () => context.pop(),
         ),
         title: Text('Edit Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
@@ -55,6 +54,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           TextButton(
             onPressed: () {
               // TODO: Implement backend patch
+              
+
               ScribesToast.show(context, 'Profile updated successfully!', colors);
               context.pop();
             },
@@ -82,7 +83,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     shape: BoxShape.circle,
                     border: Border.all(color: colors.background, width: 4),
                   ),
-                  child: Icon(LucideIcons.camera, size: 16, color: colors.surfaceRaised),
+                  child: HugeIcon(icon: HugeIcons.strokeRoundedCamera01, size: 16, color: colors.surfaceRaised),
                 ),
               ],
             ),

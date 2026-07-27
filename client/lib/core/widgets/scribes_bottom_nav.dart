@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'scribes_bounce_button.dart';
@@ -115,11 +115,12 @@ class ScribesBottomNav extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildNavItem(context, colors, LucideIcons.scroll, 'Scroll', 0),
-              _buildNavItem(context, colors, LucideIcons.search, 'Search', 1),
-              _buildNavItem(context, colors, LucideIcons.file_text, 'Drafts', 3),
-              _buildNavItem(context, colors, LucideIcons.file_pen, 'Notes', 4),
+              _buildNavItem(context, colors, HugeIcons.strokeRoundedNote01, 'Scroll', 0),
+              _buildNavItem(context, colors, HugeIcons.strokeRoundedSearch01, 'Search', 1),
+              _buildNavItem(context, colors, HugeIcons.strokeRoundedFile01, 'Drafts', 3),
+              _buildNavItem(context, colors, HugeIcons.strokeRoundedFileEdit, 'Notes', 4),
             ],
+            
           ),
         ),
       ),
@@ -128,7 +129,7 @@ class ScribesBottomNav extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, colors, IconData icon, String label, int index) {
+  Widget _buildNavItem(BuildContext context, colors, dynamic icon, String label, int index) {
     final isSelected = currentIndex == index;
     final color = isSelected ? colors.gold : colors.secondaryText;
 
@@ -145,7 +146,7 @@ class ScribesBottomNav extends ConsumerWidget {
                     : null,
               ),
               padding: const EdgeInsets.only(top: 4),
-              child: Icon(icon, color: color, size: 24),
+              child: HugeIcon(icon: icon, color: color, size: 24),
             ),
             const SizedBox(height: 4),
             Text(

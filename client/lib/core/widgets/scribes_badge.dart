@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class ScribesBadge extends ConsumerWidget {
   final String label;
-  final IconData? icon;
+  final dynamic icon;
   final bool isFilled;
 
   const ScribesBadge({
@@ -32,8 +33,7 @@ class ScribesBadge extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(
-              icon,
+            HugeIcon(icon: icon,
               size: 14,
               color: isFilled ? colors.gold : colors.secondaryText,
             ),

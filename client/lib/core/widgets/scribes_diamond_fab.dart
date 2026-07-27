@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'scribes_bounce_button.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class ScribesDiamondFab extends ConsumerWidget {
   final VoidCallback onPressed;
-  final IconData icon;
+  final dynamic icon;
 
   const ScribesDiamondFab({
     super.key,
@@ -31,8 +32,7 @@ class ScribesDiamondFab extends ConsumerWidget {
           ),
           child: Transform.rotate(
             angle: -45 * 3.1415927 / 180,
-            child: Icon(
-              icon,
+            child: HugeIcon(icon: icon,
               color: colors.surfaceRaised,
               size: 28,
             ),

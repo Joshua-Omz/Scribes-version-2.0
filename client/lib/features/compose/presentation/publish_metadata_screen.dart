@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
@@ -88,7 +87,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                         Navigator.pop(ctx);
                         ref.read(composeProvider.notifier).publishToCloud().then((_) {
                           if (context.mounted) {
-                            ScribesToast.show(context, 'Post published!', colors, icon: LucideIcons.check_circle);
+                            ScribesToast.show(context, 'Post published!', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
                             context.go('/');
                           }
                         }).catchError((err) {
@@ -121,7 +120,7 @@ class PublishMetadataScreen extends ConsumerWidget {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
           onPressed: () {
             context.pop(); // Go back to Preview
           },
@@ -219,7 +218,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                         ),
                         if (composeState.scriptureRefs.length < 3)
                           TextButton.icon(
-                            icon: Icon(LucideIcons.plus, size: 16, color: colors.gold),
+                            icon: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign, size: 16, color: colors.gold),
                             label: Text('Add', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
                             onPressed: () => _showAddScriptureSheet(context, ref, colors),
                           ),
@@ -345,7 +344,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                         children: [
                           _buildPremiumField(
                             label: 'Preacher',
-                            icon: LucideIcons.user,
+                            icon: HugeIcons.strokeRoundedUser,
                             initialValue: composeState.sermonSource?.preacher,
                             colors: colors,
                             onChanged: (value) {
@@ -356,7 +355,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                           Divider(height: 1, color: colors.border, indent: 48),
                           _buildPremiumField(
                             label: 'Church',
-                            icon: LucideIcons.church,
+                            icon: HugeIcons.strokeRoundedChurch,
                             initialValue: composeState.sermonSource?.church,
                             colors: colors,
                             onChanged: (value) {
@@ -367,7 +366,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                           Divider(height: 1, color: colors.border, indent: 48),
                           _buildPremiumField(
                             label: 'Series',
-                            icon: LucideIcons.book_marked,
+                            icon: HugeIcons.strokeRoundedBookOpen01,
                             initialValue: composeState.sermonSource?.series,
                             colors: colors,
                             onChanged: (value) {
@@ -408,7 +407,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                               child: Row(
                                 children: [
-                                  Icon(LucideIcons.calendar, size: 20, color: colors.secondaryText),
+                                  HugeIcon(icon: HugeIcons.strokeRoundedCalendar01, size: 20, color: colors.secondaryText),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Text(
@@ -420,7 +419,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                                       ),
                                     ),
                                   ),
-                                  Icon(LucideIcons.chevron_right, size: 20, color: colors.secondaryText.withOpacity(0.5)),
+                                  HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, size: 20, color: colors.secondaryText.withOpacity(0.5)),
                                 ],
                               ),
                             ),
@@ -441,7 +440,7 @@ class PublishMetadataScreen extends ConsumerWidget {
 
   Widget _buildPremiumField({
     required String label,
-    required IconData icon,
+    required dynamic icon,
     required String? initialValue,
     required dynamic colors,
     required Function(String) onChanged,
@@ -450,7 +449,7 @@ class PublishMetadataScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: colors.secondaryText),
+          HugeIcon(icon: icon, size: 20, color: colors.secondaryText),
           const SizedBox(width: 16),
           Expanded(
             child: ScribesTextField(

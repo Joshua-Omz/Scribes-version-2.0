@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
+import 'package:scribes/core/theme/theme_provider.dart';
 import 'package:scribes/features/posts/application/post_detail_provider.dart';
 import 'package:scribes/core/widgets/scribes_ornament_divider.dart';
 import 'package:scribes/core/widgets/scribes_reaction_bar.dart';
@@ -14,6 +14,7 @@ import 'package:scribes/core/widgets/scribes_comment_sheet.dart';
 import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/core/widgets/scribes_scripture_chip.dart';
 import 'package:scribes/core/widgets/scribes_unauth_banner.dart';
+import 'package:scribes/core/widgets/scribes_error_state.dart';
 import 'package:scribes/features/social/application/post_social_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +26,7 @@ class PostDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).extension<ScribesColors>()!;
+    final colors = ref.watch(themeProvider);
     final state = ref.watch(postDetailProvider(postId));
     final authState = ref.watch(authProvider);
     final isAuthenticated = authState.value != null;
@@ -36,12 +37,12 @@ class PostDetailScreen extends ConsumerWidget {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: Icon(LucideIcons.history, color: colors.primaryText),
+            icon: HugeIcon(icon: HugeIcons.strokeRoundedClock01, color: colors.primaryText),
             onPressed: () {
               ref.read(postDetailProvider(postId).notifier).loadVersions();
               VersionHistorySheet.show(context, postId);
@@ -64,7 +65,7 @@ class PostDetailScreen extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(LucideIcons.info, color: colors.orange, size: 16),
+                        HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: colors.orange, size: 16),
                         const SizedBox(width: 8),
                         Text(
                           'This post corrects an original note.',
@@ -183,7 +184,7 @@ class PostDetailScreen extends ConsumerWidget {
                               if (post.sermonSource != null && post.sermonSource!.isNotEmpty)
                                 Row(
                                   children: [
-                                    Icon(LucideIcons.church, size: 14, color: colors.gold),
+                                    HugeIcon(icon: HugeIcons.strokeRoundedChurch, size: 14, color: colors.gold),
                                     const SizedBox(width: 6),
                                     Text(
                                       post.sermonSource!.displayTitle,
@@ -242,8 +243,10 @@ class PostDetailScreen extends ConsumerWidget {
           );
         },
         loading: () => Center(child: ScribesLoadingIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Error loading post: $err', style: TextStyle(color: colors.primaryText)),
+        error: (err, stack) => ScribesErrorState(
+          title: 'Error loading post',
+          subtitle: err.toString(),
+          onRetry: () => ref.refresh(postDetailProvider(postId)),
         ),
       ),
       bottomNavigationBar: isAuthenticated

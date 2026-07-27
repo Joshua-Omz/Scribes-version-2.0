@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:go_router/go_router.dart';
@@ -58,9 +58,10 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
 
   Future<void> _promoteToDraft() async {
     final colors = ref.read(themeProvider);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     
+
     try {
+      
       // Trigger promotion logic
       final draftId = await ref.read(noteEditorProvider.notifier).promoteToDraft();
       
@@ -105,7 +106,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.arrow_left, color: colors.primaryText),
+          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
           onPressed: () async {
             await ref.read(noteEditorProvider.notifier).forceSave();
             if (context.mounted) {
@@ -140,7 +141,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     ),
                   TextButton.icon(
                     onPressed: _promoteToDraft,
-                    icon: Icon(LucideIcons.file_output, color: colors.orange, size: 18),
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedFileExport, color: colors.orange, size: 18),
                     label: Text(
                       'Copy to Drafts',
                       style: ScribesTextStyles.labelLg.copyWith(color: colors.orange),

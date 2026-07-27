@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
+
 
 class ScribesIconButton extends ConsumerWidget {
-  final IconData icon;
+  final dynamic icon;
   final VoidCallback onPressed;
   final double size;
   final Color? color;
@@ -30,8 +32,7 @@ class ScribesIconButton extends ConsumerWidget {
       highlightColor: colors.gold.withValues(alpha: 0.05),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Icon(
-          icon,
+        child: HugeIcon(icon: icon,
           size: size,
           color: iconColor,
         ),

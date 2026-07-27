@@ -21,6 +21,7 @@ import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
 import '../../features/notifications/presentation/notification_screen.dart';
 import '../widgets/scribes_bottom_nav.dart';
+import 'transitions.dart';
 
 part 'app_router.g.dart';
 
@@ -96,70 +97,69 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/splash',
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const SplashScreen()),
       ),
       GoRoute(
         path: '/auth',
-        builder: (context, state) => const AuthGateScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const AuthGateScreen()),
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const OnboardingScreen()),
       ),
-
       GoRoute(
         path: '/compose',
-        builder: (context, state) => const DraftEditorScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const DraftEditorScreen()),
       ),
       GoRoute(
         path: '/compose/preview',
-        builder: (context, state) => const DraftPreviewScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const DraftPreviewScreen()),
       ),
       GoRoute(
         path: '/compose/publish',
-        builder: (context, state) => const PublishMetadataScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const PublishMetadataScreen()),
       ),
       GoRoute(
         path: '/posts/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return PostDetailScreen(postId: id);
+          return buildPageWithDefaultTransition(context: context, state: state, child: PostDetailScreen(postId: id));
         },
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const PrivateProfileScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const PrivateProfileScreen()),
         routes: [
           GoRoute(
             path: 'edit',
-            builder: (context, state) => const EditProfileScreen(),
+            pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const EditProfileScreen()),
           ),
         ],
       ),
       GoRoute(
         path: '/users/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return PublicProfileScreen(userId: id);
+          return buildPageWithDefaultTransition(context: context, state: state, child: PublicProfileScreen(userId: id));
         },
         routes: [
           GoRoute(
             path: 'connections',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final id = state.pathParameters['id']!;
               final tabIndex = int.tryParse(state.uri.queryParameters['tab'] ?? '0') ?? 0;
-              return FollowListScreen(userId: id, initialIndex: tabIndex);
+              return buildPageWithDefaultTransition(context: context, state: state, child: FollowListScreen(userId: id, initialIndex: tabIndex));
             },
           ),
         ],
       ),
       GoRoute(
         path: '/notes/edit',
-        builder: (context, state) => const NoteEditorScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const NoteEditorScreen()),
       ),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => const NotificationScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const NotificationScreen()),
       ),
     ],
   );

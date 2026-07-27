@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +28,21 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-          
+              Builder(
+                builder: (context) {
+                  if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
+                    return ScribesIconButton(
+                      icon: HugeIcons.strokeRoundedMenu01,
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                      color: colors.secondaryText,
+                    );
+                  } else {
+                    return const SizedBox(width: 40); // Placeholder for balance
+                  }
+                },
+              ),
               Expanded(
                 child: Center(
                   child: Text(
@@ -47,7 +61,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   const SizedBox(width: 8),
                   NotificationBadge(
                     child: ScribesIconButton(
-                      icon: LucideIcons.bell,
+                      icon: HugeIcons.strokeRoundedNotification01,
                       onPressed: () {
                         context.push('/notifications');
                       },

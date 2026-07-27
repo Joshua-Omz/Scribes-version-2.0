@@ -121,7 +121,7 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (User, string, er
 
 func (s *Service) LoginWithGoogle(ctx context.Context, idTokenStr string) (User, string, error) {
 	// Validate the ID token using the google api library
-	payload, err := idtoken.Validate(ctx, idTokenStr, "773705773175-msk4fhvmllc34ovhlgu301g53f5cvdrd.apps.googleusercontent.com")
+	payload, err := idtoken.Validate(ctx, idTokenStr, "773705773175-i6dnlubf2aqcae5j4ltkmlkssf0nnkhq.apps.googleusercontent.com")
 	if err != nil {
 		return User{}, "", fmt.Errorf("google token validation failed: %v", err)
 	}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../theme/theme_provider.dart';
 import '../theme/scribes_colors.dart';
@@ -53,7 +53,7 @@ class ScribesDrawer extends ConsumerWidget {
                         CircleAvatar(
                           radius: 20,
                           backgroundColor: colors.surfaceRaised,
-                          child: Icon(LucideIcons.user, color: colors.gold),
+                          child: HugeIcon(icon: HugeIcons.strokeRoundedUser, color: colors.gold),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -86,7 +86,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: LucideIcons.file_pen,
+                icon: HugeIcons.strokeRoundedFileEdit,
                 title: 'Notes Workspace',
                 onTap: () {
                   Navigator.pop(context);
@@ -96,7 +96,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: LucideIcons.file_text,
+                icon: HugeIcons.strokeRoundedFile01,
                 title: 'Drafts Workspace',
                 onTap: () {
                   Navigator.pop(context);
@@ -106,19 +106,19 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: LucideIcons.bookmark,
+                icon: HugeIcons.strokeRoundedBookmark01,
                 title: 'Bookmarks',
                 onTap: () {
                   Navigator.pop(context);
                   // TODO: Navigate to bookmarks
-                  ScribesToast.show(context, 'Bookmarks coming soon', colors, icon: LucideIcons.bookmark);
+                  ScribesToast.show(context, 'Bookmarks coming soon', colors, icon: HugeIcons.strokeRoundedBookmark01);
                 },
               ),
             ] else ...[
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: LucideIcons.log_in,
+                icon: HugeIcons.strokeRoundedLogin01,
                 title: 'Sign In / Join',
                 onTap: () {
                   Navigator.pop(context);
@@ -132,7 +132,7 @@ class ScribesDrawer extends ConsumerWidget {
             _buildMenuItem(
               context: context,
               colors: colors,
-              icon: LucideIcons.palette,
+              icon: HugeIcons.strokeRoundedPaintBoard,
               title: 'Change Theme',
               onTap: () {
                 _cycleTheme(ref, colors);
@@ -142,12 +142,12 @@ class ScribesDrawer extends ConsumerWidget {
             _buildMenuItem(
               context: context,
               colors: colors,
-              icon: LucideIcons.settings,
+              icon: HugeIcons.strokeRoundedSettings01,
               title: 'Settings',
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Navigate to settings
-                ScribesToast.show(context, 'Settings coming soon', colors, icon: LucideIcons.settings);
+                ScribesToast.show(context, 'Settings coming soon', colors, icon: HugeIcons.strokeRoundedSettings01);
               },
             ),
             
@@ -157,7 +157,7 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: LucideIcons.log_out,
+                icon: HugeIcons.strokeRoundedLogout01,
                 title: 'Sign Out',
                 textColor: colors.orange,
                 iconColor: colors.orange,
@@ -190,15 +190,14 @@ class ScribesDrawer extends ConsumerWidget {
   Widget _buildMenuItem({
     required BuildContext context,
     required ScribesColors colors,
-    required IconData icon,
+    required dynamic icon,
     required String title,
     required VoidCallback onTap,
     Color? textColor,
     Color? iconColor,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
+      leading: HugeIcon(icon: icon,
         color: iconColor ?? colors.secondaryText,
         size: 24,
       ),

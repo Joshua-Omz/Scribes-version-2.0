@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
-import '../../../core/theme/scribes_colors.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_icon_button.dart';
 import '../application/notification_provider.dart';
 import '../data/notification_repository.dart';
 import 'notification_row.dart';
+import '../../../core/widgets/scribes_empty_state.dart';
+import '../../../core/widgets/scribes_error_state.dart';
 
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).extension<ScribesColors>()!;
+    final colors = ref.watch(themeProvider);
     final notificationsAsync = ref.watch(notificationProvider);
     final repo = ref.watch(notificationRepositoryProvider);
 
@@ -26,7 +28,7 @@ class NotificationScreen extends ConsumerWidget {
         title: Text('Notifications', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
         actions: [
           ScribesIconButton(
-            icon: LucideIcons.check_check,
+            icon: HugeIcons.strokeRoundedCheckmarkBadge01,
             onPressed: () {
               ref.read(notificationProvider.notifier).markAllRead();
             },
@@ -41,10 +43,11 @@ class NotificationScreen extends ConsumerWidget {
         child: notificationsAsync.when(
           data: (items) {
             if (items.isEmpty) {
-              return Center(
-                child: Text(
-                  'No notifications yet.',
-                  style: ScribesTextStyles.bodyLg.copyWith(color: colors.secondaryText),
+              return const Center(
+                child: ScribesEmptyState(
+                  icon: HugeIcons.strokeRoundedNotification01,
+                  title: 'All caught up',
+                  subtitle: 'You have no new notifications.',
                 ),
               );
             }
@@ -77,11 +80,10 @@ class NotificationScreen extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: ScribesLoadingIndicator()),
-          error: (err, stack) => Center(
-            child: Text(
-              'Error loading notifications',
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-            ),
+          error: (err, stack) => ScribesErrorState(
+            title: 'Could not load notifications',
+            subtitle: err.toString(),
+            onRetry: () => ref.read(notificationProvider.notifier).refresh(),
           ),
         ),
       ),

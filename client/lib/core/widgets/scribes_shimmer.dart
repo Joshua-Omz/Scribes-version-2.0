@@ -10,11 +10,13 @@ class ScribesShimmer extends ConsumerWidget {
   /// If true, this just wraps the child in a Shimmer.fromColors.
   /// If false, this is typically a custom use of Shimmer.
   final bool enabled;
+  final Duration period;
 
   const ScribesShimmer({
     super.key,
     required this.child,
     this.enabled = true,
+    this.period = const Duration(milliseconds: 1500),
   });
 
   @override
@@ -35,6 +37,7 @@ class ScribesShimmer extends ConsumerWidget {
     return Shimmer.fromColors(
       baseColor: baseColor,
       highlightColor: highlightColor,
+      period: period,
       child: child,
     );
   }

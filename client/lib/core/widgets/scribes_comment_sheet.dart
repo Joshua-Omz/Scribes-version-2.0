@@ -1,7 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scribes/core/widgets/scribes_error_state.dart';
 import 'dart:async';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
@@ -10,6 +11,7 @@ import 'scribes_shimmer.dart';
 import 'scribes_text_field.dart';
 import 'scribes_toast.dart';
 import 'scribes_avatar.dart';
+import 'scribes_empty_state.dart';
 import '../../features/social/application/post_social_providers.dart';
 import '../../features/social/application/user_lookup_provider.dart';
 import '../../features/social/domain/comment.dart';
@@ -204,7 +206,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
               if (isCommentAuthor)
                 _buildActionTile(
                   colors: colors,
-                  icon: LucideIcons.trash_2,
+                  icon: HugeIcons.strokeRoundedDelete02,
                   label: 'Delete my comment',
                   isDestructive: true,
                   onTap: () {
@@ -218,7 +220,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
               if (isPostAuthor && !isCommentAuthor)
                 _buildActionTile(
                   colors: colors,
-                  icon: LucideIcons.eye_off,
+                  icon: HugeIcons.strokeRoundedViewOff,
                   label: 'Hide this comment',
                   onTap: () {
                     Navigator.pop(ctx);
@@ -230,11 +232,11 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
 
               _buildActionTile(
                 colors: colors,
-                icon: LucideIcons.mail,
+                icon: HugeIcons.strokeRoundedMail01,
                 label: 'Reply via DM',
                 onTap: () {
                   Navigator.pop(ctx);
-                  ScribesToast.show(context, 'Direct messaging is coming soon.', colors, icon: LucideIcons.mail);
+                  ScribesToast.show(context, 'Direct messaging is coming soon.', colors, icon: HugeIcons.strokeRoundedMail01);
                 },
               ),
 
@@ -248,14 +250,14 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
 
   Widget _buildActionTile({
     required ScribesColors colors,
-    required IconData icon,
+    required dynamic icon,
     required String label,
     required VoidCallback onTap,
     bool isDestructive = false,
   }) {
     final color = isDestructive ? colors.orange : colors.primaryText;
     return ListTile(
-      leading: Icon(icon, color: color, size: 22),
+      leading: HugeIcon(icon: icon, color: color, size: 22),
       title: Text(
         label,
         style: ScribesTextStyles.bodyMd.copyWith(color: color),
@@ -322,12 +324,11 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
               child: commentsState.when(
                 data: (comments) {
                   if (comments.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No thoughts yet. Share yours!',
-                        style: ScribesTextStyles.bodyMd.copyWith(
-                          color: colors.secondaryText,
-                        ),
+                    return const Center(
+                      child: ScribesEmptyState(
+                        icon: HugeIcons.strokeRoundedMessage01,
+                        title: 'No thoughts yet',
+                        subtitle: 'Be the first to share your thoughts!',
                       ),
                     );
                   }
@@ -398,11 +399,10 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                     ),
                   ),
                 ),
-                error: (error, stack) => Center(
-                  child: Text(
-                    'Failed to load comments.',
-                    style: TextStyle(color: colors.primaryText),
-                  ),
+                error: (error, stack) => ScribesErrorState(
+                  title: 'Failed to load comments',
+                  subtitle: error.toString(),
+                  onRetry: () => ref.refresh(postCommentsProvider(widget.postId)),
                 ),
               ),
             ),
@@ -455,8 +455,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: Icon(
-                            LucideIcons.send,
+                          icon: HugeIcon(icon: HugeIcons.strokeRoundedSent,
                             color: colors.surfaceRaised,
                           ),
                           onPressed: _submitComment,
@@ -528,7 +527,7 @@ class _CommentTile extends ConsumerWidget {
             error: (_, _) => CircleAvatar(
               radius: 18,
               backgroundColor: colors.surfaceRaised,
-              child: Icon(LucideIcons.user, size: 20, color: colors.gold),
+              child: HugeIcon(icon: HugeIcons.strokeRoundedUser, size: 20, color: colors.gold),
             ),
           ),
           const SizedBox(width: 12),
@@ -605,8 +604,7 @@ class _CommentTile extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(
-            LucideIcons.circle_minus,
+          HugeIcon(icon: HugeIcons.strokeRoundedRemove01,
             size: 16,
             color: colors.secondaryText.withValues(alpha: 0.5),
           ),

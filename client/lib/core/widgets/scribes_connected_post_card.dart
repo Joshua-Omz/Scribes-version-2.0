@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'scribes_post_card.dart';
@@ -72,10 +72,10 @@ class ScribesConnectedPostCard extends ConsumerWidget {
             }
             if (isSaved) {
               ref.read(savedPostsProvider.notifier).unsavePost(post.id);
-              ScribesToast.show(context, 'Post unsaved', colors, icon: LucideIcons.bookmark_minus);
+              ScribesToast.show(context, 'Post unsaved', colors, icon: HugeIcons.strokeRoundedRemove01);
             } else {
               ref.read(savedPostsProvider.notifier).savePost(post.id);
-              ScribesToast.show(context, 'Post saved', colors, icon: LucideIcons.bookmark_check);
+              ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
             }
           },
           onTap: () => context.push('/posts/${post.id}'),

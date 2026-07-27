@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:scribes/core/network/api_exception.dart';
 
 class OnboardingApi {
+  // ignore: unused_field
   final Dio _client;
 
   OnboardingApi(this._client);

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
@@ -34,8 +34,7 @@ class ScribesScriptureChip extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              LucideIcons.book_open,
+            HugeIcon(icon: HugeIcons.strokeRoundedBookOpen01,
               size: 14,
               color: colors.gold,
             ),

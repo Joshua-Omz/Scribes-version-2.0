@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
@@ -67,8 +67,7 @@ class ScribesProfilePostCard extends ConsumerWidget {
                         color: isSaved ? colors.gold : Colors.transparent,
                         borderRadius: BorderRadius.circular(ScribesRadius.button),
                       ),
-                      child: Icon(
-                        LucideIcons.bookmark,
+                      child: HugeIcon(icon: HugeIcons.strokeRoundedBookmark01,
                         color: isSaved ? colors.surface : colors.secondaryText,
                         size: 20,
                       ),
