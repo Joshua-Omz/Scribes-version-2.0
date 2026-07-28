@@ -99,6 +99,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> with SingleTickerProvid
               child: NestedScrollView(
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   SliverAppBar(
+                    automaticallyImplyLeading: false,
                     floating: true,
                     pinned: false,
                     elevation: 0,

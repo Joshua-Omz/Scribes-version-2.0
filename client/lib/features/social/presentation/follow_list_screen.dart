@@ -146,7 +146,7 @@ class _UserListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push('/profile/${user.id}'),
+      onTap: () => context.push('/users/${user.id}'),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(

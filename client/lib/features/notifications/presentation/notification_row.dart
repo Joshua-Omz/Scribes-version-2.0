@@ -16,14 +16,14 @@ class NotificationRow extends StatelessWidget {
 
   void _handleTap(BuildContext context) {
     // Navigate based on type + ref_id
-    switch (notification.type) {
+    switch (notification.safeType) {
       case NotifType.mention:
       case NotifType.reaction:
       case NotifType.comment:
-        context.push('/posts/${notification.refId}');
+        context.push('/posts/${notification.safeRefId}');
         break;
       case NotifType.follow:
-        context.push('/users/${notification.refId}');
+        context.push('/users/${notification.safeRefId}');
         break;
       case NotifType.adminAlert:
         // Admin detail (out of scope for standard users in v1)
@@ -52,7 +52,7 @@ class NotificationRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Unread dot
-            if (!notification.isRead)
+            if (!notification.safeIsRead)
               Padding(
                 padding: const EdgeInsets.only(top: 14, right: 8),
                 child: Container(
@@ -81,14 +81,14 @@ class NotificationRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    notification.body,
+                    notification.safeBody,
                     style: ScribesTextStyles.bodyMd.copyWith(
-                      color: notification.isRead ? colors.secondaryText : colors.primaryText,
+                      color: notification.safeIsRead ? colors.secondaryText : colors.primaryText,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    timeago.format(notification.createdAt),
+                    timeago.format(notification.safeCreatedAt),
                     style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
                   ),
                 ],

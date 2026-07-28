@@ -21,21 +21,27 @@ abstract class NotificationItem with _$NotificationItem {
   const NotificationItem._();
 
   const factory NotificationItem({
-    @JsonKey(name: 'id') required String id,
-    @JsonKey(name: 'type') required NotifType type,
-    @JsonKey(name: 'is_realtime') required bool isRealtime,
-    @JsonKey(name: 'is_read') required bool isRead,
-    @JsonKey(name: 'body') required String body,
-    @JsonKey(name: 'ref_id') required String refId,
+    @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,
+    @JsonKey(name: 'is_realtime') bool? isRealtime,
+    @JsonKey(name: 'is_read') bool? isRead,
+    @JsonKey(name: 'body') String? body,
+    @JsonKey(name: 'ref_id') String? refId,
     @JsonKey(name: 'actor_handle') String? actorHandle,
     @JsonKey(name: 'actor_avatar') String? actorAvatar,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _NotificationItem;
 
   factory NotificationItem.fromJson(Map<String, dynamic> json) =>
       _$NotificationItemFromJson(json);
 
-  bool get showRealtimeAccent => isRealtime;
+  bool get showRealtimeAccent => isRealtime ?? false;
+  bool get safeIsRead => isRead ?? false;
+  String get safeBody => body ?? '';
+  String get safeRefId => refId ?? '';
+  DateTime get safeCreatedAt => createdAt ?? DateTime.now();
+  String get safeId => id ?? '';
+  NotifType get safeType => type ?? NotifType.adminAlert;
 }
 
 @freezed

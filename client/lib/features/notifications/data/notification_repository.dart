@@ -21,12 +21,12 @@ class NotificationRepository {
   Map<String, List<NotificationItem>> groupByTime(List<NotificationItem> items) {
     final now = DateTime.now();
     final today = items.where((n) {
-      final diff = now.difference(n.createdAt);
-      return diff.inHours < 24 && now.day == n.createdAt.day;
+      final diff = now.difference(n.safeCreatedAt);
+      return diff.inHours < 24 && now.day == n.safeCreatedAt.day;
     }).toList();
 
     final thisWeek = items.where((n) {
-      final diff = now.difference(n.createdAt);
+      final diff = now.difference(n.safeCreatedAt);
       return diff.inDays < 7 && !today.contains(n);
     }).toList();
 

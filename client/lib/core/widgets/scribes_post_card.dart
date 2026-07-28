@@ -81,7 +81,6 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: colors.surfaceRaised, 
-          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: colors.border.withValues(alpha: 0.15),

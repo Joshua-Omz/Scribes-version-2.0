@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:dio/dio.dart';
@@ -25,8 +26,12 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _passwordCtrl2 = TextEditingController();
   final _handleCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _obscurePassword2 = true;
 
   void _submit() {
     final notifier = ref.read(authProvider.notifier);
@@ -37,6 +42,12 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         password: _passwordCtrl.text,
       );
     } else {
+      if (_passwordCtrl.text != _passwordCtrl2.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Passwords don't match")),
+        );
+        return;
+      }
       notifier.register(
         email: _emailCtrl.text,
         handle: _handleCtrl.text,
@@ -213,7 +224,41 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                 ],
                 ScribesTextField(labelText: 'Email', controller: _emailCtrl, keyboardType: TextInputType.emailAddress),
                 const SizedBox(height: 16),
-                ScribesTextField(labelText: 'Password', controller: _passwordCtrl, obscureText: true),
+                ScribesTextField(
+                  labelText: 'Password', 
+                  controller: _passwordCtrl, 
+                  obscureText: _obscurePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: colors.secondaryText,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+                if (!_isLogin) ...[
+                  const SizedBox(height: 16),
+                  ScribesTextField(
+                    labelText: "Re-enter Password", 
+                    controller: _passwordCtrl2, 
+                    obscureText: _obscurePassword2,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword2 ? Icons.visibility_off : Icons.visibility,
+                        color: colors.secondaryText,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword2 = !_obscurePassword2;
+                        });
+                      },
+                    ),
+                  ),
+                ],
                 
                 const SizedBox(height: 40),
                 ElevatedButton(
@@ -244,9 +289,10 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                     ),
                   ),
                   onPressed: authState.isLoading ? null : _signInWithGoogle,
-                  icon: const Icon(
-                    Icons.g_mobiledata,
-                    size: 32,
+                  icon: Image.network(
+                    'https://developers.google.com/identity/images/g-logo.png',
+                    width: 20,
+                    height: 20,
                   ),
                   label: Text('Continue with Google', style: ScribesTextStyles.labelLg),
                 ),
