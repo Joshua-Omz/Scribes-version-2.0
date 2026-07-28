@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/post.dart';
@@ -58,7 +59,7 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
       }
     } catch (e) {
       // Ignore API errors, fallback to local DB
-      print("Error fetching my posts from API: $e");
+      debugPrint("Error fetching my posts from API: $e");
     }
 
     final localPosts = await (db.select(db.posts)..where((t) => t.authorId.equals(user.id))).get();

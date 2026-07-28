@@ -8,7 +8,7 @@ part 'user_lookup_provider.g.dart';
 /// Used by comment tiles to resolve author_id → displayName + handle.
 /// Uses keepAlive so repeated renders of the same author don't refetch.
 @riverpod
-Future<CommentAuthor> commentAuthor(ref, String userId) async {
+Future<CommentAuthor> commentAuthor(Ref ref, String userId) async {
   final repo = ref.watch(socialRepositoryProvider);
   final author = await repo.getUserProfile(userId);
   ref.keepAlive();
@@ -18,7 +18,7 @@ Future<CommentAuthor> commentAuthor(ref, String userId) async {
 /// Searches users by handle prefix for @mention autocomplete.
 /// Debouncing should be handled at the UI layer, not here.
 @riverpod
-Future<List<CommentAuthor>> userSearch(ref, String query) async {
+Future<List<CommentAuthor>> userSearch(Ref ref, String query) async {
   if (query.isEmpty) return [];
   final repo = ref.watch(socialRepositoryProvider);
   return repo.searchUsers(query);

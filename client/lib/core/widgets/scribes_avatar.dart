@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
+import '../theme/scribes_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ScribesAvatar extends ConsumerWidget {
@@ -38,7 +39,7 @@ class ScribesAvatar extends ConsumerWidget {
     );
   }
 
-  Widget _buildFallback(colors) {
+  Widget _buildFallback(ScribesColors colors) {
     return Center(
       child: Text(
         authorName.isNotEmpty ? authorName[0].toUpperCase() : '?',

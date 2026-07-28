@@ -24,10 +24,10 @@ class ScaffoldWithNavBar extends ConsumerWidget {
 
     // Map UI indices to branch indices
     int branchIndex = 0;
-    if (index == 0) branchIndex = 0;
-    else if (index == 1) branchIndex = 1;
-    else if (index == 3) branchIndex = 2;
-    else if (index == 4) branchIndex = 3;
+    if (index == 0) { branchIndex = 0; }
+    else if (index == 1) { branchIndex = 1; }
+    else if (index == 3) { branchIndex = 2; }
+    else if (index == 4) { branchIndex = 3; }
 
     // When navigating to a new branch, it's recommended to use the goBranch
     // method, as doing so makes sure the last navigation state of the
@@ -43,10 +43,10 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Map branch index back to UI index
     int uiIndex = 0;
-    if (navigationShell.currentIndex == 0) uiIndex = 0;
-    else if (navigationShell.currentIndex == 1) uiIndex = 1;
-    else if (navigationShell.currentIndex == 2) uiIndex = 3;
-    else if (navigationShell.currentIndex == 3) uiIndex = 4;
+    if (navigationShell.currentIndex == 0) { uiIndex = 0; }
+    else if (navigationShell.currentIndex == 1) { uiIndex = 1; }
+    else if (navigationShell.currentIndex == 2) { uiIndex = 3; }
+    else if (navigationShell.currentIndex == 3) { uiIndex = 4; }
 
     return Scaffold(
       body: navigationShell,

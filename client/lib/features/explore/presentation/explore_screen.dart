@@ -50,7 +50,11 @@ class ExploreScreen extends ConsumerWidget {
                 ? ScribesTextField(
                     hintText: 'Search...',
                     autofocus: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                    isSearchPill: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    onChanged: (query) {
+                      ref.read(exploreSearchQueryProvider.notifier).setQuery(query.isEmpty ? null : query);
+                    },
                     onSubmitted: (query) {
                       ref.read(exploreSearchQueryProvider.notifier).setQuery(query.isEmpty ? null : query);
                     },
@@ -78,8 +82,17 @@ class ExploreScreen extends ConsumerWidget {
             ),
             
             if (isSearchActive) ...[
-              SliverToBoxAdapter(
-                child: _buildSearchModeToggle(searchMode, ref, colors),
+              // Sticky Header for Search Mode Toggle
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _CategoryHeaderDelegate(
+                  height: 60.0,
+                  backgroundColor: colors.background,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: _buildSearchModeToggle(searchMode, ref, colors),
+                  ),
+                ),
               ),
               if (searchMode == ExploreSearchMode.posts)
                 _buildPostsFeed(postsState, selectedCategory, colors, ref)
@@ -353,12 +366,12 @@ class ExploreScreen extends ConsumerWidget {
 
   Widget _buildSearchModeToggle(ExploreSearchMode mode, WidgetRef ref, dynamic colors) {
     return Container(
-      height: 32,
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      height: 44,
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: colors.surfaceRaised,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -373,16 +386,26 @@ class ExploreScreen extends ConsumerWidget {
     final isSelected = current == value;
     return GestureDetector(
       onTap: () => ref.read(exploreSearchModeProvider.notifier).toggleMode(value),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? colors.primaryText : Colors.transparent,
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            )
+          ] : null,
         ),
         child: Text(
           label,
           style: ScribesTextStyles.labelLg.copyWith(
             color: isSelected ? colors.background : colors.secondaryText,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ),

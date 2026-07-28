@@ -213,8 +213,8 @@ return $default(_that.id,_that.handle,_that.displayName,_that.bio,_that.follower
 /// @nodoc
 @JsonSerializable()
 
-class _CommentAuthor implements CommentAuthor {
-  const _CommentAuthor({required this.id, required this.handle, @JsonKey(name: 'display_name') required this.displayName, this.bio, @JsonKey(name: 'followers_count') this.followersCount = 0, @JsonKey(name: 'following_count') this.followingCount = 0});
+class _CommentAuthor extends CommentAuthor {
+  const _CommentAuthor({required this.id, required this.handle, @JsonKey(name: 'display_name') required this.displayName, this.bio, @JsonKey(name: 'followers_count') this.followersCount = 0, @JsonKey(name: 'following_count') this.followingCount = 0}): super._();
   factory _CommentAuthor.fromJson(Map<String, dynamic> json) => _$CommentAuthorFromJson(json);
 
 @override final  String id;

@@ -115,6 +115,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.GET("/conversations/:id/messages", messageHandler.GetMessages)
 		protected.GET("/conversations/:id/stream", messageHandler.StreamMessages)
 		protected.POST("/conversations/:id/messages", messageHandler.SendMessage)
+		protected.PATCH("/conversations/:id/messages/:msg_id", messageHandler.UpdateMessage)
 		protected.POST("/conversations/:id/block", messageHandler.BlockConversation)
 		protected.DELETE("/messages/:id", messageHandler.SoftDeleteMessage)
 

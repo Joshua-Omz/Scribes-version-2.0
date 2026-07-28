@@ -77,8 +77,8 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
       onTap: widget.onTap ?? () {},
       scaleFactor: 0.98,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: colors.surfaceRaised, 
           boxShadow: [

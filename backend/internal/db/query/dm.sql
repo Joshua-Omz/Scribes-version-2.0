@@ -43,8 +43,8 @@ WHERE id = $1;
 -- ── Messages ───────────────────────────────────
 
 -- name: CreateMessage :one
-INSERT INTO messages (conversation_id, sender_id, body)
-VALUES ($1, $2, $3)
+INSERT INTO messages (conversation_id, sender_id, body, reply_to_id)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetMessagesForConversation :many
@@ -58,3 +58,9 @@ LIMIT sqlc.arg(limit_count)::int;
 UPDATE messages
 SET is_deleted = true
 WHERE id = $1 AND sender_id = $2;
+
+-- name: UpdateMessage :one
+UPDATE messages
+SET body = $3, edited_at = now()
+WHERE id = $1 AND sender_id = $2 AND is_deleted = false
+RETURNING *;

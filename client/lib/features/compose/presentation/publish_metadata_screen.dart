@@ -32,7 +32,7 @@ class PublishMetadataScreen extends ConsumerWidget {
             border: Border.all(color: colors.border),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               )
@@ -188,7 +188,7 @@ class PublishMetadataScreen extends ConsumerWidget {
                   border: Border(top: BorderSide(color: colors.border)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
+                      color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, -4),
                     )
@@ -414,12 +414,12 @@ class PublishMetadataScreen extends ConsumerWidget {
                                       composeState.sermonSource?.date ?? 'Date Preached',
                                       style: ScribesTextStyles.bodyMd.copyWith(
                                         color: composeState.sermonSource?.date == null 
-                                          ? colors.secondaryText.withOpacity(0.5) 
+                                          ? colors.secondaryText.withValues(alpha: 0.5) 
                                           : colors.primaryText,
                                       ),
                                     ),
                                   ),
-                                  HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, size: 20, color: colors.secondaryText.withOpacity(0.5)),
+                                  HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, size: 20, color: colors.secondaryText.withValues(alpha: 0.5)),
                                 ],
                               ),
                             ),

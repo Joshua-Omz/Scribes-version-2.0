@@ -304,7 +304,7 @@ final class ExploreUserSearchProvider
   }
 }
 
-String _$exploreUserSearchHash() => r'64b87d9d315bc5e25aeac8d9f0f6cb2afc6b0ffd';
+String _$exploreUserSearchHash() => r'68c597324f814d8592497b7c19fc0d0dded1b196';
 
 @ProviderFor(ExploreScriptureFilter)
 final exploreScriptureFilterProvider = ExploreScriptureFilterProvider._();

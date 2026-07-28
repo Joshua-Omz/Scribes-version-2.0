@@ -2515,6 +2515,934 @@ class NotesCompanion extends UpdateCompanion<Note> {
   }
 }
 
+class $ConversationsTable extends Conversations
+    with TableInfo<$ConversationsTable, Conversation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ConversationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userAIdMeta = const VerificationMeta(
+    'userAId',
+  );
+  @override
+  late final GeneratedColumn<String> userAId = GeneratedColumn<String>(
+    'user_a_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userBIdMeta = const VerificationMeta(
+    'userBId',
+  );
+  @override
+  late final GeneratedColumn<String> userBId = GeneratedColumn<String>(
+    'user_b_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _blockedMeta = const VerificationMeta(
+    'blocked',
+  );
+  @override
+  late final GeneratedColumn<bool> blocked = GeneratedColumn<bool>(
+    'blocked',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("blocked" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastActiveMeta = const VerificationMeta(
+    'lastActive',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastActive = GeneratedColumn<DateTime>(
+    'last_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userAId,
+    userBId,
+    blocked,
+    createdAt,
+    lastActive,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'conversations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Conversation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_a_id')) {
+      context.handle(
+        _userAIdMeta,
+        userAId.isAcceptableOrUnknown(data['user_a_id']!, _userAIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userAIdMeta);
+    }
+    if (data.containsKey('user_b_id')) {
+      context.handle(
+        _userBIdMeta,
+        userBId.isAcceptableOrUnknown(data['user_b_id']!, _userBIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userBIdMeta);
+    }
+    if (data.containsKey('blocked')) {
+      context.handle(
+        _blockedMeta,
+        blocked.isAcceptableOrUnknown(data['blocked']!, _blockedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('last_active')) {
+      context.handle(
+        _lastActiveMeta,
+        lastActive.isAcceptableOrUnknown(data['last_active']!, _lastActiveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lastActiveMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Conversation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Conversation(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userAId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_a_id'],
+      )!,
+      userBId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_b_id'],
+      )!,
+      blocked: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}blocked'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      lastActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_active'],
+      )!,
+    );
+  }
+
+  @override
+  $ConversationsTable createAlias(String alias) {
+    return $ConversationsTable(attachedDatabase, alias);
+  }
+}
+
+class Conversation extends DataClass implements Insertable<Conversation> {
+  final String id;
+  final String userAId;
+  final String userBId;
+  final bool blocked;
+  final DateTime createdAt;
+  final DateTime lastActive;
+  const Conversation({
+    required this.id,
+    required this.userAId,
+    required this.userBId,
+    required this.blocked,
+    required this.createdAt,
+    required this.lastActive,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_a_id'] = Variable<String>(userAId);
+    map['user_b_id'] = Variable<String>(userBId);
+    map['blocked'] = Variable<bool>(blocked);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['last_active'] = Variable<DateTime>(lastActive);
+    return map;
+  }
+
+  ConversationsCompanion toCompanion(bool nullToAbsent) {
+    return ConversationsCompanion(
+      id: Value(id),
+      userAId: Value(userAId),
+      userBId: Value(userBId),
+      blocked: Value(blocked),
+      createdAt: Value(createdAt),
+      lastActive: Value(lastActive),
+    );
+  }
+
+  factory Conversation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Conversation(
+      id: serializer.fromJson<String>(json['id']),
+      userAId: serializer.fromJson<String>(json['userAId']),
+      userBId: serializer.fromJson<String>(json['userBId']),
+      blocked: serializer.fromJson<bool>(json['blocked']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      lastActive: serializer.fromJson<DateTime>(json['lastActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userAId': serializer.toJson<String>(userAId),
+      'userBId': serializer.toJson<String>(userBId),
+      'blocked': serializer.toJson<bool>(blocked),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'lastActive': serializer.toJson<DateTime>(lastActive),
+    };
+  }
+
+  Conversation copyWith({
+    String? id,
+    String? userAId,
+    String? userBId,
+    bool? blocked,
+    DateTime? createdAt,
+    DateTime? lastActive,
+  }) => Conversation(
+    id: id ?? this.id,
+    userAId: userAId ?? this.userAId,
+    userBId: userBId ?? this.userBId,
+    blocked: blocked ?? this.blocked,
+    createdAt: createdAt ?? this.createdAt,
+    lastActive: lastActive ?? this.lastActive,
+  );
+  Conversation copyWithCompanion(ConversationsCompanion data) {
+    return Conversation(
+      id: data.id.present ? data.id.value : this.id,
+      userAId: data.userAId.present ? data.userAId.value : this.userAId,
+      userBId: data.userBId.present ? data.userBId.value : this.userBId,
+      blocked: data.blocked.present ? data.blocked.value : this.blocked,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      lastActive: data.lastActive.present
+          ? data.lastActive.value
+          : this.lastActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Conversation(')
+          ..write('id: $id, ')
+          ..write('userAId: $userAId, ')
+          ..write('userBId: $userBId, ')
+          ..write('blocked: $blocked, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastActive: $lastActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, userAId, userBId, blocked, createdAt, lastActive);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Conversation &&
+          other.id == this.id &&
+          other.userAId == this.userAId &&
+          other.userBId == this.userBId &&
+          other.blocked == this.blocked &&
+          other.createdAt == this.createdAt &&
+          other.lastActive == this.lastActive);
+}
+
+class ConversationsCompanion extends UpdateCompanion<Conversation> {
+  final Value<String> id;
+  final Value<String> userAId;
+  final Value<String> userBId;
+  final Value<bool> blocked;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> lastActive;
+  final Value<int> rowid;
+  const ConversationsCompanion({
+    this.id = const Value.absent(),
+    this.userAId = const Value.absent(),
+    this.userBId = const Value.absent(),
+    this.blocked = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.lastActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ConversationsCompanion.insert({
+    required String id,
+    required String userAId,
+    required String userBId,
+    this.blocked = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime lastActive,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userAId = Value(userAId),
+       userBId = Value(userBId),
+       createdAt = Value(createdAt),
+       lastActive = Value(lastActive);
+  static Insertable<Conversation> custom({
+    Expression<String>? id,
+    Expression<String>? userAId,
+    Expression<String>? userBId,
+    Expression<bool>? blocked,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? lastActive,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userAId != null) 'user_a_id': userAId,
+      if (userBId != null) 'user_b_id': userBId,
+      if (blocked != null) 'blocked': blocked,
+      if (createdAt != null) 'created_at': createdAt,
+      if (lastActive != null) 'last_active': lastActive,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ConversationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userAId,
+    Value<String>? userBId,
+    Value<bool>? blocked,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? lastActive,
+    Value<int>? rowid,
+  }) {
+    return ConversationsCompanion(
+      id: id ?? this.id,
+      userAId: userAId ?? this.userAId,
+      userBId: userBId ?? this.userBId,
+      blocked: blocked ?? this.blocked,
+      createdAt: createdAt ?? this.createdAt,
+      lastActive: lastActive ?? this.lastActive,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userAId.present) {
+      map['user_a_id'] = Variable<String>(userAId.value);
+    }
+    if (userBId.present) {
+      map['user_b_id'] = Variable<String>(userBId.value);
+    }
+    if (blocked.present) {
+      map['blocked'] = Variable<bool>(blocked.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (lastActive.present) {
+      map['last_active'] = Variable<DateTime>(lastActive.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ConversationsCompanion(')
+          ..write('id: $id, ')
+          ..write('userAId: $userAId, ')
+          ..write('userBId: $userBId, ')
+          ..write('blocked: $blocked, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastActive: $lastActive, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _conversationIdMeta = const VerificationMeta(
+    'conversationId',
+  );
+  @override
+  late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
+    'conversation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _senderIdMeta = const VerificationMeta(
+    'senderId',
+  );
+  @override
+  late final GeneratedColumn<String> senderId = GeneratedColumn<String>(
+    'sender_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _sentAtMeta = const VerificationMeta('sentAt');
+  @override
+  late final GeneratedColumn<DateTime> sentAt = GeneratedColumn<DateTime>(
+    'sent_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _replyToIdMeta = const VerificationMeta(
+    'replyToId',
+  );
+  @override
+  late final GeneratedColumn<String> replyToId = GeneratedColumn<String>(
+    'reply_to_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _editedAtMeta = const VerificationMeta(
+    'editedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> editedAt = GeneratedColumn<DateTime>(
+    'edited_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    conversationId,
+    senderId,
+    body,
+    isDeleted,
+    sentAt,
+    replyToId,
+    editedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'messages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Message> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('conversation_id')) {
+      context.handle(
+        _conversationIdMeta,
+        conversationId.isAcceptableOrUnknown(
+          data['conversation_id']!,
+          _conversationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_conversationIdMeta);
+    }
+    if (data.containsKey('sender_id')) {
+      context.handle(
+        _senderIdMeta,
+        senderId.isAcceptableOrUnknown(data['sender_id']!, _senderIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_senderIdMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('sent_at')) {
+      context.handle(
+        _sentAtMeta,
+        sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sentAtMeta);
+    }
+    if (data.containsKey('reply_to_id')) {
+      context.handle(
+        _replyToIdMeta,
+        replyToId.isAcceptableOrUnknown(data['reply_to_id']!, _replyToIdMeta),
+      );
+    }
+    if (data.containsKey('edited_at')) {
+      context.handle(
+        _editedAtMeta,
+        editedAt.isAcceptableOrUnknown(data['edited_at']!, _editedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Message map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Message(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      conversationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conversation_id'],
+      )!,
+      senderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sender_id'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
+      sentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}sent_at'],
+      )!,
+      replyToId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reply_to_id'],
+      ),
+      editedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}edited_at'],
+      ),
+    );
+  }
+
+  @override
+  $MessagesTable createAlias(String alias) {
+    return $MessagesTable(attachedDatabase, alias);
+  }
+}
+
+class Message extends DataClass implements Insertable<Message> {
+  final String id;
+  final String conversationId;
+  final String senderId;
+  final String body;
+  final bool isDeleted;
+  final DateTime sentAt;
+  final String? replyToId;
+  final DateTime? editedAt;
+  const Message({
+    required this.id,
+    required this.conversationId,
+    required this.senderId,
+    required this.body,
+    required this.isDeleted,
+    required this.sentAt,
+    this.replyToId,
+    this.editedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['conversation_id'] = Variable<String>(conversationId);
+    map['sender_id'] = Variable<String>(senderId);
+    map['body'] = Variable<String>(body);
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['sent_at'] = Variable<DateTime>(sentAt);
+    if (!nullToAbsent || replyToId != null) {
+      map['reply_to_id'] = Variable<String>(replyToId);
+    }
+    if (!nullToAbsent || editedAt != null) {
+      map['edited_at'] = Variable<DateTime>(editedAt);
+    }
+    return map;
+  }
+
+  MessagesCompanion toCompanion(bool nullToAbsent) {
+    return MessagesCompanion(
+      id: Value(id),
+      conversationId: Value(conversationId),
+      senderId: Value(senderId),
+      body: Value(body),
+      isDeleted: Value(isDeleted),
+      sentAt: Value(sentAt),
+      replyToId: replyToId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replyToId),
+      editedAt: editedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(editedAt),
+    );
+  }
+
+  factory Message.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Message(
+      id: serializer.fromJson<String>(json['id']),
+      conversationId: serializer.fromJson<String>(json['conversationId']),
+      senderId: serializer.fromJson<String>(json['senderId']),
+      body: serializer.fromJson<String>(json['body']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      sentAt: serializer.fromJson<DateTime>(json['sentAt']),
+      replyToId: serializer.fromJson<String?>(json['replyToId']),
+      editedAt: serializer.fromJson<DateTime?>(json['editedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'conversationId': serializer.toJson<String>(conversationId),
+      'senderId': serializer.toJson<String>(senderId),
+      'body': serializer.toJson<String>(body),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'sentAt': serializer.toJson<DateTime>(sentAt),
+      'replyToId': serializer.toJson<String?>(replyToId),
+      'editedAt': serializer.toJson<DateTime?>(editedAt),
+    };
+  }
+
+  Message copyWith({
+    String? id,
+    String? conversationId,
+    String? senderId,
+    String? body,
+    bool? isDeleted,
+    DateTime? sentAt,
+    Value<String?> replyToId = const Value.absent(),
+    Value<DateTime?> editedAt = const Value.absent(),
+  }) => Message(
+    id: id ?? this.id,
+    conversationId: conversationId ?? this.conversationId,
+    senderId: senderId ?? this.senderId,
+    body: body ?? this.body,
+    isDeleted: isDeleted ?? this.isDeleted,
+    sentAt: sentAt ?? this.sentAt,
+    replyToId: replyToId.present ? replyToId.value : this.replyToId,
+    editedAt: editedAt.present ? editedAt.value : this.editedAt,
+  );
+  Message copyWithCompanion(MessagesCompanion data) {
+    return Message(
+      id: data.id.present ? data.id.value : this.id,
+      conversationId: data.conversationId.present
+          ? data.conversationId.value
+          : this.conversationId,
+      senderId: data.senderId.present ? data.senderId.value : this.senderId,
+      body: data.body.present ? data.body.value : this.body,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
+      replyToId: data.replyToId.present ? data.replyToId.value : this.replyToId,
+      editedAt: data.editedAt.present ? data.editedAt.value : this.editedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Message(')
+          ..write('id: $id, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('senderId: $senderId, ')
+          ..write('body: $body, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('sentAt: $sentAt, ')
+          ..write('replyToId: $replyToId, ')
+          ..write('editedAt: $editedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    conversationId,
+    senderId,
+    body,
+    isDeleted,
+    sentAt,
+    replyToId,
+    editedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Message &&
+          other.id == this.id &&
+          other.conversationId == this.conversationId &&
+          other.senderId == this.senderId &&
+          other.body == this.body &&
+          other.isDeleted == this.isDeleted &&
+          other.sentAt == this.sentAt &&
+          other.replyToId == this.replyToId &&
+          other.editedAt == this.editedAt);
+}
+
+class MessagesCompanion extends UpdateCompanion<Message> {
+  final Value<String> id;
+  final Value<String> conversationId;
+  final Value<String> senderId;
+  final Value<String> body;
+  final Value<bool> isDeleted;
+  final Value<DateTime> sentAt;
+  final Value<String?> replyToId;
+  final Value<DateTime?> editedAt;
+  final Value<int> rowid;
+  const MessagesCompanion({
+    this.id = const Value.absent(),
+    this.conversationId = const Value.absent(),
+    this.senderId = const Value.absent(),
+    this.body = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.sentAt = const Value.absent(),
+    this.replyToId = const Value.absent(),
+    this.editedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MessagesCompanion.insert({
+    required String id,
+    required String conversationId,
+    required String senderId,
+    required String body,
+    this.isDeleted = const Value.absent(),
+    required DateTime sentAt,
+    this.replyToId = const Value.absent(),
+    this.editedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       conversationId = Value(conversationId),
+       senderId = Value(senderId),
+       body = Value(body),
+       sentAt = Value(sentAt);
+  static Insertable<Message> custom({
+    Expression<String>? id,
+    Expression<String>? conversationId,
+    Expression<String>? senderId,
+    Expression<String>? body,
+    Expression<bool>? isDeleted,
+    Expression<DateTime>? sentAt,
+    Expression<String>? replyToId,
+    Expression<DateTime>? editedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (conversationId != null) 'conversation_id': conversationId,
+      if (senderId != null) 'sender_id': senderId,
+      if (body != null) 'body': body,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (sentAt != null) 'sent_at': sentAt,
+      if (replyToId != null) 'reply_to_id': replyToId,
+      if (editedAt != null) 'edited_at': editedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MessagesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? conversationId,
+    Value<String>? senderId,
+    Value<String>? body,
+    Value<bool>? isDeleted,
+    Value<DateTime>? sentAt,
+    Value<String?>? replyToId,
+    Value<DateTime?>? editedAt,
+    Value<int>? rowid,
+  }) {
+    return MessagesCompanion(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      senderId: senderId ?? this.senderId,
+      body: body ?? this.body,
+      isDeleted: isDeleted ?? this.isDeleted,
+      sentAt: sentAt ?? this.sentAt,
+      replyToId: replyToId ?? this.replyToId,
+      editedAt: editedAt ?? this.editedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (conversationId.present) {
+      map['conversation_id'] = Variable<String>(conversationId.value);
+    }
+    if (senderId.present) {
+      map['sender_id'] = Variable<String>(senderId.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (sentAt.present) {
+      map['sent_at'] = Variable<DateTime>(sentAt.value);
+    }
+    if (replyToId.present) {
+      map['reply_to_id'] = Variable<String>(replyToId.value);
+    }
+    if (editedAt.present) {
+      map['edited_at'] = Variable<DateTime>(editedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('senderId: $senderId, ')
+          ..write('body: $body, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('sentAt: $sentAt, ')
+          ..write('replyToId: $replyToId, ')
+          ..write('editedAt: $editedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScribesDatabase extends GeneratedDatabase {
   _$ScribesDatabase(QueryExecutor e) : super(e);
   $ScribesDatabaseManager get managers => $ScribesDatabaseManager(this);
@@ -2523,6 +3451,8 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
   late final $SyncMetadataTable syncMetadata = $SyncMetadataTable(this);
   late final $NotebooksTable notebooks = $NotebooksTable(this);
   late final $NotesTable notes = $NotesTable(this);
+  late final $ConversationsTable conversations = $ConversationsTable(this);
+  late final $MessagesTable messages = $MessagesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2533,6 +3463,8 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
     syncMetadata,
     notebooks,
     notes,
+    conversations,
+    messages,
   ];
 }
 
@@ -3790,6 +4722,486 @@ typedef $$NotesTableProcessedTableManager =
       Note,
       PrefetchHooks Function()
     >;
+typedef $$ConversationsTableCreateCompanionBuilder =
+    ConversationsCompanion Function({
+      required String id,
+      required String userAId,
+      required String userBId,
+      Value<bool> blocked,
+      required DateTime createdAt,
+      required DateTime lastActive,
+      Value<int> rowid,
+    });
+typedef $$ConversationsTableUpdateCompanionBuilder =
+    ConversationsCompanion Function({
+      Value<String> id,
+      Value<String> userAId,
+      Value<String> userBId,
+      Value<bool> blocked,
+      Value<DateTime> createdAt,
+      Value<DateTime> lastActive,
+      Value<int> rowid,
+    });
+
+class $$ConversationsTableFilterComposer
+    extends Composer<_$ScribesDatabase, $ConversationsTable> {
+  $$ConversationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userAId => $composableBuilder(
+    column: $table.userAId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userBId => $composableBuilder(
+    column: $table.userBId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get blocked => $composableBuilder(
+    column: $table.blocked,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastActive => $composableBuilder(
+    column: $table.lastActive,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ConversationsTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $ConversationsTable> {
+  $$ConversationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userAId => $composableBuilder(
+    column: $table.userAId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userBId => $composableBuilder(
+    column: $table.userBId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get blocked => $composableBuilder(
+    column: $table.blocked,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastActive => $composableBuilder(
+    column: $table.lastActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ConversationsTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $ConversationsTable> {
+  $$ConversationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userAId =>
+      $composableBuilder(column: $table.userAId, builder: (column) => column);
+
+  GeneratedColumn<String> get userBId =>
+      $composableBuilder(column: $table.userBId, builder: (column) => column);
+
+  GeneratedColumn<bool> get blocked =>
+      $composableBuilder(column: $table.blocked, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastActive => $composableBuilder(
+    column: $table.lastActive,
+    builder: (column) => column,
+  );
+}
+
+class $$ConversationsTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $ConversationsTable,
+          Conversation,
+          $$ConversationsTableFilterComposer,
+          $$ConversationsTableOrderingComposer,
+          $$ConversationsTableAnnotationComposer,
+          $$ConversationsTableCreateCompanionBuilder,
+          $$ConversationsTableUpdateCompanionBuilder,
+          (
+            Conversation,
+            BaseReferences<
+              _$ScribesDatabase,
+              $ConversationsTable,
+              Conversation
+            >,
+          ),
+          Conversation,
+          PrefetchHooks Function()
+        > {
+  $$ConversationsTableTableManager(
+    _$ScribesDatabase db,
+    $ConversationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ConversationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ConversationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ConversationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userAId = const Value.absent(),
+                Value<String> userBId = const Value.absent(),
+                Value<bool> blocked = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> lastActive = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ConversationsCompanion(
+                id: id,
+                userAId: userAId,
+                userBId: userBId,
+                blocked: blocked,
+                createdAt: createdAt,
+                lastActive: lastActive,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userAId,
+                required String userBId,
+                Value<bool> blocked = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime lastActive,
+                Value<int> rowid = const Value.absent(),
+              }) => ConversationsCompanion.insert(
+                id: id,
+                userAId: userAId,
+                userBId: userBId,
+                blocked: blocked,
+                createdAt: createdAt,
+                lastActive: lastActive,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ConversationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $ConversationsTable,
+      Conversation,
+      $$ConversationsTableFilterComposer,
+      $$ConversationsTableOrderingComposer,
+      $$ConversationsTableAnnotationComposer,
+      $$ConversationsTableCreateCompanionBuilder,
+      $$ConversationsTableUpdateCompanionBuilder,
+      (
+        Conversation,
+        BaseReferences<_$ScribesDatabase, $ConversationsTable, Conversation>,
+      ),
+      Conversation,
+      PrefetchHooks Function()
+    >;
+typedef $$MessagesTableCreateCompanionBuilder =
+    MessagesCompanion Function({
+      required String id,
+      required String conversationId,
+      required String senderId,
+      required String body,
+      Value<bool> isDeleted,
+      required DateTime sentAt,
+      Value<String?> replyToId,
+      Value<DateTime?> editedAt,
+      Value<int> rowid,
+    });
+typedef $$MessagesTableUpdateCompanionBuilder =
+    MessagesCompanion Function({
+      Value<String> id,
+      Value<String> conversationId,
+      Value<String> senderId,
+      Value<String> body,
+      Value<bool> isDeleted,
+      Value<DateTime> sentAt,
+      Value<String?> replyToId,
+      Value<DateTime?> editedAt,
+      Value<int> rowid,
+    });
+
+class $$MessagesTableFilterComposer
+    extends Composer<_$ScribesDatabase, $MessagesTable> {
+  $$MessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get senderId => $composableBuilder(
+    column: $table.senderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get replyToId => $composableBuilder(
+    column: $table.replyToId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get editedAt => $composableBuilder(
+    column: $table.editedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MessagesTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $MessagesTable> {
+  $$MessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get senderId => $composableBuilder(
+    column: $table.senderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get replyToId => $composableBuilder(
+    column: $table.replyToId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get editedAt => $composableBuilder(
+    column: $table.editedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MessagesTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $MessagesTable> {
+  $$MessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get senderId =>
+      $composableBuilder(column: $table.senderId, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get sentAt =>
+      $composableBuilder(column: $table.sentAt, builder: (column) => column);
+
+  GeneratedColumn<String> get replyToId =>
+      $composableBuilder(column: $table.replyToId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get editedAt =>
+      $composableBuilder(column: $table.editedAt, builder: (column) => column);
+}
+
+class $$MessagesTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $MessagesTable,
+          Message,
+          $$MessagesTableFilterComposer,
+          $$MessagesTableOrderingComposer,
+          $$MessagesTableAnnotationComposer,
+          $$MessagesTableCreateCompanionBuilder,
+          $$MessagesTableUpdateCompanionBuilder,
+          (Message, BaseReferences<_$ScribesDatabase, $MessagesTable, Message>),
+          Message,
+          PrefetchHooks Function()
+        > {
+  $$MessagesTableTableManager(_$ScribesDatabase db, $MessagesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MessagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MessagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> conversationId = const Value.absent(),
+                Value<String> senderId = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<DateTime> sentAt = const Value.absent(),
+                Value<String?> replyToId = const Value.absent(),
+                Value<DateTime?> editedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MessagesCompanion(
+                id: id,
+                conversationId: conversationId,
+                senderId: senderId,
+                body: body,
+                isDeleted: isDeleted,
+                sentAt: sentAt,
+                replyToId: replyToId,
+                editedAt: editedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String conversationId,
+                required String senderId,
+                required String body,
+                Value<bool> isDeleted = const Value.absent(),
+                required DateTime sentAt,
+                Value<String?> replyToId = const Value.absent(),
+                Value<DateTime?> editedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MessagesCompanion.insert(
+                id: id,
+                conversationId: conversationId,
+                senderId: senderId,
+                body: body,
+                isDeleted: isDeleted,
+                sentAt: sentAt,
+                replyToId: replyToId,
+                editedAt: editedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $MessagesTable,
+      Message,
+      $$MessagesTableFilterComposer,
+      $$MessagesTableOrderingComposer,
+      $$MessagesTableAnnotationComposer,
+      $$MessagesTableCreateCompanionBuilder,
+      $$MessagesTableUpdateCompanionBuilder,
+      (Message, BaseReferences<_$ScribesDatabase, $MessagesTable, Message>),
+      Message,
+      PrefetchHooks Function()
+    >;
 
 class $ScribesDatabaseManager {
   final _$ScribesDatabase _db;
@@ -3804,4 +5216,8 @@ class $ScribesDatabaseManager {
       $$NotebooksTableTableManager(_db, _db.notebooks);
   $$NotesTableTableManager get notes =>
       $$NotesTableTableManager(_db, _db.notes);
+  $$ConversationsTableTableManager get conversations =>
+      $$ConversationsTableTableManager(_db, _db.conversations);
+  $$MessagesTableTableManager get messages =>
+      $$MessagesTableTableManager(_db, _db.messages);
 }

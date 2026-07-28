@@ -20,6 +20,8 @@ import '../../features/social/presentation/follow_list_screen.dart';
 import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
 import '../../features/notifications/presentation/notification_screen.dart';
+import '../../features/messages/presentation/inbox_screen.dart';
+import '../../features/messages/presentation/conversation_screen.dart';
 import '../widgets/scribes_bottom_nav.dart';
 import 'transitions.dart';
 
@@ -160,6 +162,17 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/notifications',
         pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const NotificationScreen()),
+      ),
+      GoRoute(
+        path: '/inbox',
+        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const InboxScreen()),
+      ),
+      GoRoute(
+        path: '/conversation/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return buildPageWithDefaultTransition(context: context, state: state, child: ConversationScreen(conversationId: id));
+        },
       ),
     ],
   );

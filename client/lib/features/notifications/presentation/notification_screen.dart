@@ -12,7 +12,7 @@ import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
 
 class NotificationScreen extends ConsumerWidget {
-  const NotificationScreen({Key? key}) : super(key: key);
+  const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,7 +73,7 @@ class NotificationScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    ...groupItems.map((n) => NotificationRow(notification: n)).toList(),
+                    ...groupItems.map((n) => NotificationRow(notification: n)),
                   ],
                 );
               },

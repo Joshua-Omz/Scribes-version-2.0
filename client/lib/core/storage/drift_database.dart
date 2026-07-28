@@ -76,12 +76,38 @@ class SyncMetadata extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes])
+class Conversations extends Table {
+  TextColumn get id => text()();
+  TextColumn get userAId => text()();
+  TextColumn get userBId => text()();
+  BoolColumn get blocked => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get lastActive => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class Messages extends Table {
+  TextColumn get id => text()();
+  TextColumn get conversationId => text()();
+  TextColumn get senderId => text()();
+  TextColumn get body => text()();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get sentAt => dateTime()();
+  TextColumn get replyToId => text().nullable()();
+  DateTimeColumn get editedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages])
 class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -104,6 +130,14 @@ class ScribesDatabase extends _$ScribesDatabase {
         }
         if (from < 5) {
           await m.addColumn(drafts, drafts.categoryIds);
+        }
+        if (from < 6) {
+          await m.createTable(conversations);
+          await m.createTable(messages);
+        }
+        if (from < 7) {
+          await m.addColumn(messages, messages.replyToId);
+          await m.addColumn(messages, messages.editedAt);
         }
       },
     );

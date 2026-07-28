@@ -43,12 +43,12 @@ class ScribesDraftCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: colors.gold.withOpacity(0.04),
+            color: colors.gold.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: colors.border.withOpacity(0.5)),
+        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -56,8 +56,8 @@ class ScribesDraftCard extends ConsumerWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          splashColor: colors.gold.withOpacity(0.1),
-          highlightColor: colors.gold.withOpacity(0.05),
+          splashColor: colors.gold.withValues(alpha: 0.1),
+          highlightColor: colors.gold.withValues(alpha: 0.05),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -69,7 +69,7 @@ class ScribesDraftCard extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: colors.orange.withOpacity(0.1),
+                        color: colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -109,7 +109,7 @@ class ScribesDraftCard extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 20),
-                Divider(height: 1, color: colors.border.withOpacity(0.5)),
+                Divider(height: 1, color: colors.border.withValues(alpha: 0.5)),
                 const SizedBox(height: 16),
                 Row(
                   children: [

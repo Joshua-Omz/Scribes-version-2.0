@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../posts/domain/post.dart';
 import '../../auth/domain/user.dart';
-import '../../social/data/social_api.dart';
+import '../data/explore_user_repository.dart';
 import '../data/explore_repository.dart';
 import '../domain/category.dart';
 
@@ -68,9 +68,14 @@ Future<List<User>> exploreUserSearch(Ref ref) async {
   final query = ref.watch(exploreSearchQueryProvider);
   if (query == null || query.trim().isEmpty) return [];
   
-  final api = ref.watch(socialApiProvider);
-  final results = await api.searchUsers(query);
-  return results.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+  // Debounce search
+  var isDisposed = false;
+  ref.onDispose(() => isDisposed = true);
+  await Future.delayed(const Duration(milliseconds: 400));
+  if (isDisposed) return [];
+
+  final repo = ref.watch(exploreUserRepositoryProvider);
+  return repo.searchUsers(query);
 }
 
 class ScriptureFilter {

@@ -20,6 +20,7 @@ class ScribesTextField extends ConsumerWidget {
   final ValueChanged<String>? onSubmitted;
   final EdgeInsetsGeometry? contentPadding;
   final bool autofocus;
+  final bool isSearchPill;
 
   const ScribesTextField({
     super.key,
@@ -38,6 +39,7 @@ class ScribesTextField extends ConsumerWidget {
     this.onSubmitted,
     this.contentPadding,
     this.autofocus = false,
+    this.isSearchPill = false,
   });
 
   @override
@@ -81,23 +83,23 @@ class ScribesTextField extends ConsumerWidget {
             suffixIcon: suffixIcon,
             // Modern look: More border radius, very subtle border
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.0),
-              borderSide: BorderSide(color: colors.border.withValues(alpha: 0.5)),
+              borderRadius: BorderRadius.circular(isSearchPill ? 30.0 : 16.0),
+              borderSide: isSearchPill ? BorderSide.none : BorderSide(color: colors.border.withValues(alpha: 0.5)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.0),
-              borderSide: BorderSide(color: colors.gold, width: 1.5),
+              borderRadius: BorderRadius.circular(isSearchPill ? 30.0 : 16.0),
+              borderSide: isSearchPill ? BorderSide.none : BorderSide(color: colors.gold, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.0),
+              borderRadius: BorderRadius.circular(isSearchPill ? 30.0 : 16.0),
               borderSide: BorderSide(color: colors.orange, width: 1.0),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16.0),
+              borderRadius: BorderRadius.circular(isSearchPill ? 30.0 : 16.0),
               borderSide: BorderSide(color: colors.orange, width: 1.5),
             ),
             filled: true,
-            fillColor: colors.surfaceRaised,
+            fillColor: isSearchPill ? colors.surfaceRaised.withValues(alpha: 0.7) : colors.surfaceRaised,
           ),
         ),
       ],

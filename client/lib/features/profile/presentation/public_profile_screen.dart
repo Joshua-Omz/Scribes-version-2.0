@@ -16,6 +16,8 @@ import '../../social/application/is_following_user_provider.dart';
 import '../../posts/application/user_posts_provider.dart';
 import '../../social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
+import '../../messages/presentation/widgets/dm_request_modal.dart';
+import '../../auth/application/auth_notifier.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -149,7 +151,7 @@ class PublicProfileScreen extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      _buildFollowButton(ref, colors),
+                      _buildActionButtons(context, ref, colors),
                     ],
                   ),
                 ),
@@ -197,8 +199,10 @@ class PublicProfileScreen extends ConsumerWidget {
     return child;
   }
 
-  Widget _buildFollowButton(WidgetRef ref, dynamic colors) {
+  Widget _buildActionButtons(BuildContext context, WidgetRef ref, dynamic colors) {
     final followState = ref.watch(isFollowingUserProvider(userId));
+    final currentUser = ref.watch(authProvider).value;
+    
     return followState.when(
       loading: () => const SizedBox(
         width: 120,
@@ -207,8 +211,9 @@ class PublicProfileScreen extends ConsumerWidget {
       ),
       error: (error, stack) => const SizedBox(width: 120, height: 40),
       data: (isFollowing) {
+        Widget followBtn;
         if (isFollowing) {
-          return OutlinedButton(
+          followBtn = OutlinedButton(
             style: OutlinedButton.styleFrom(
               foregroundColor: colors.primaryText,
               side: BorderSide(color: colors.border),
@@ -220,7 +225,7 @@ class PublicProfileScreen extends ConsumerWidget {
             child: Text('Unfollow', style: ScribesTextStyles.labelLg),
           );
         } else {
-          return FilledButton(
+          followBtn = FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: colors.primaryText,
               foregroundColor: colors.background,
@@ -232,6 +237,34 @@ class PublicProfileScreen extends ConsumerWidget {
             child: Text('Follow', style: ScribesTextStyles.labelLg),
           );
         }
+        
+        if (currentUser?.id == userId) {
+          return followBtn;
+        }
+        
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            followBtn,
+            const SizedBox(width: 12),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.surfaceRaised,
+                foregroundColor: colors.primaryText,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(color: colors.border),
+                ),
+              ),
+              onPressed: () {
+                DmRequestModal.show(context, userId);
+              },
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, size: 18, color: colors.primaryText),
+              label: Text('Message', style: ScribesTextStyles.labelLg),
+            ),
+          ],
+        );
       },
     );
   }

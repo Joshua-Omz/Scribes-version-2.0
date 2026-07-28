@@ -9,6 +9,7 @@ import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../auth/application/auth_notifier.dart';
+import '../../messages/application/inbox_providers.dart';
 import 'package:scribes/features/social/application/saved_posts_provider.dart';
 import 'dart:ui';
 import '../../../core/widgets/scribes_grid_card.dart';
@@ -66,16 +67,70 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                 : null,
             title: Text('Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
             actions: [
-              IconButton(
-                icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, color: colors.primaryText),
-                onPressed: () {
-                  // Navigate to Settings
-                },
+              Stack(
+                children: [
+                  IconButton(
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, color: colors.primaryText),
+                    onPressed: () {
+                      context.push('/inbox');
+                    },
+                  ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final unreadCount = ref.watch(unreadMessagesCountProvider);
+                      if (unreadCount > 0) {
+                        return Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              unreadCount > 9 ? '9+' : unreadCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
               ),
               IconButton(
                 icon: HugeIcon(icon: HugeIcons.strokeRoundedLogout01, color: colors.primaryText),
                 onPressed: () {
-                  ref.read(authProvider.notifier).logout();
+                  showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: colors.surface,
+                          title: Text('Logout?', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+                          content: Text('Are you sure you want to logout?', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text('Cancel', style: TextStyle(color: colors.primaryText)),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                ref.read(authProvider.notifier).logout();
+                                context.go('/');
+                              },
+                              child: Text('Yes, Logout', style: TextStyle(color: Colors.red.shade400)),
+                            ),
+                          ],
+                        ),
+                      );
+
+                  
                   context.go('/');
                 },
               ),
@@ -158,7 +213,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
             delegate: ScribesTabBarDelegate(
               child: ScribesTabBar(
                 selectedIndex: _selectedTabIndex,
-                tabs: const ['Posts', 'Drafts', 'Saved'],
+                tabs: const ['Posts', 'Saved'],
                 onTabChanged: (index) {
                   setState(() {
                     _selectedTabIndex = index;

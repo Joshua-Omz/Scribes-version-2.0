@@ -114,7 +114,11 @@ func (s *Service) ApproveRequest(ctx context.Context, requestID, userID uuid.UUI
 	}
 
 	// Create the first message that was in the request
-	msg, err := s.repo.CreateMessage(ctx, conv.ID, req.FromUserID, req.FirstMessage)
+	msg, err := s.repo.CreateMessage(ctx, generated.CreateMessageParams{
+		ConversationID: conv.ID,
+		SenderID:       req.FromUserID,
+		Body:           req.FirstMessage,
+	})
 	if err == nil {
 		s.broadcast(&msg)
 	}
@@ -155,7 +159,7 @@ func (s *Service) BlockConversation(ctx context.Context, conversationID, userID 
 
 // ── Messages ───────────────────────────────────
 
-func (s *Service) SendMessage(ctx context.Context, conversationID, senderID uuid.UUID, body string) (generated.Message, error) {
+func (s *Service) SendMessage(ctx context.Context, conversationID, senderID uuid.UUID, body string, replyToID *uuid.UUID) (generated.Message, error) {
 	conv, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
 		return generated.Message{}, err
@@ -169,7 +173,17 @@ func (s *Service) SendMessage(ctx context.Context, conversationID, senderID uuid
 		return generated.Message{}, errors.New("unauthorized to send in this conversation")
 	}
 
-	msg, err := s.repo.CreateMessage(ctx, conversationID, senderID, body)
+	var replyTo uuid.NullUUID
+	if replyToID != nil {
+		replyTo = uuid.NullUUID{UUID: *replyToID, Valid: true}
+	}
+
+	msg, err := s.repo.CreateMessage(ctx, generated.CreateMessageParams{
+		ConversationID: conversationID,
+		SenderID:       senderID,
+		Body:           body,
+		ReplyToID:      replyTo,
+	})
 	if err != nil {
 		return generated.Message{}, err
 	}
@@ -198,4 +212,19 @@ func (s *Service) GetMessages(ctx context.Context, conversationID, userID uuid.U
 
 func (s *Service) SoftDeleteMessage(ctx context.Context, messageID, senderID uuid.UUID) error {
 	return s.repo.SoftDeleteMessage(ctx, messageID, senderID)
+}
+
+func (s *Service) UpdateMessage(ctx context.Context, messageID, senderID uuid.UUID, body string) (generated.Message, error) {
+	msg, err := s.repo.UpdateMessage(ctx, generated.UpdateMessageParams{
+		ID:       messageID,
+		SenderID: senderID,
+		Body:     body,
+	})
+	if err != nil {
+		return generated.Message{}, err
+	}
+	
+	s.broadcast(&msg)
+	
+	return msg, nil
 }

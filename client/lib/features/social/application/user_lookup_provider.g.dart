@@ -74,7 +74,7 @@ final class CommentAuthorProvider
   }
 }
 
-String _$commentAuthorHash() => r'a6943a79591871181c15225ce77846f6d418da4e';
+String _$commentAuthorHash() => r'ae176c2d232ce0e9402e302b1690d44374d0d261';
 
 /// Fetches and caches a single user's public profile by UUID.
 /// Used by comment tiles to resolve author_id → displayName + handle.
@@ -167,7 +167,7 @@ final class UserSearchProvider
   }
 }
 
-String _$userSearchHash() => r'a6b19e32edc92845be7a58221382735b1060bd6d';
+String _$userSearchHash() => r'fe2845062767980c8c4f440e59264cf8eee669c7';
 
 /// Searches users by handle prefix for @mention autocomplete.
 /// Debouncing should be handled at the UI layer, not here.

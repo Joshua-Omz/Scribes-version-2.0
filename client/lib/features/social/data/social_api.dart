@@ -106,7 +106,7 @@ class SocialApi {
   }
 
   Future<List<dynamic>> getSavedPosts({String type = 'bookmark'}) async {
-    final response = await _dio.get('${Endpoints.saved}', queryParameters: {'type': type});
+    final response = await _dio.get(Endpoints.saved, queryParameters: {'type': type});
     if (response.data == null) return [];
     return response.data as List<dynamic>;
   }

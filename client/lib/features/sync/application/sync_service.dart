@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,7 +41,7 @@ class SyncService {
         await _noteRepo.pushToCloud(note.id);
       } catch (e) {
         // Log error and continue to the next note
-        print('Failed to push note ${note.id}: $e');
+        debugPrint('Failed to push note ${note.id}: $e');
       }
     }
   }
@@ -53,7 +54,7 @@ class SyncService {
         await _draftRepo.pushToCloud(draft.id);
       } catch (e) {
         // Log error and continue to the next draft
-        print('Failed to push draft ${draft.id}: $e');
+        debugPrint('Failed to push draft ${draft.id}: $e');
       }
     }
   }
@@ -99,7 +100,7 @@ class SyncService {
         );
       });
     } catch (e) {
-      print('Failed to pull sync events: $e');
+      debugPrint('Failed to pull sync events: $e');
     }
   }
 

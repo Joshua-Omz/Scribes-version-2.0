@@ -7,6 +7,8 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_radius.dart';
 import 'scribes_bounce_button.dart';
+import '../../features/draft/domain/draft.dart';
+
 
 class ScribesGridCard extends ConsumerWidget {
   final String title;
@@ -16,6 +18,8 @@ class ScribesGridCard extends ConsumerWidget {
   final bool isDraft;
   final bool isSaved;
   final VoidCallback? onSaveToggle;
+  final VoidCallback? onPinToggle;
+  final VoidCallback? onDelete;
 
   const ScribesGridCard({
     super.key,
@@ -26,6 +30,8 @@ class ScribesGridCard extends ConsumerWidget {
     this.isDraft = false,
     this.isSaved = false,
     this.onSaveToggle,
+    this.onPinToggle,
+    this.onDelete,
   });
 
   @override

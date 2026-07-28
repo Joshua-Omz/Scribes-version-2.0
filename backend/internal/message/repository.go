@@ -68,12 +68,8 @@ func (r *Repository) BlockConversation(ctx context.Context, conversationID uuid.
 
 // ── Messages ───────────────────────────────────
 
-func (r *Repository) CreateMessage(ctx context.Context, conversationID, senderID uuid.UUID, body string) (generated.Message, error) {
-	return r.q.CreateMessage(ctx, generated.CreateMessageParams{
-		ConversationID: conversationID,
-		SenderID:       senderID,
-		Body:           body,
-	})
+func (r *Repository) CreateMessage(ctx context.Context, arg generated.CreateMessageParams) (generated.Message, error) {
+	return r.q.CreateMessage(ctx, arg)
 }
 
 func (r *Repository) GetMessagesForConversation(ctx context.Context, conversationID uuid.UUID, cursorTs time.Time, limit int) ([]generated.Message, error) {
@@ -100,4 +96,8 @@ func (r *Repository) SoftDeleteMessage(ctx context.Context, messageID, senderID 
 		ID:       messageID,
 		SenderID: senderID,
 	})
+}
+
+func (r *Repository) UpdateMessage(ctx context.Context, arg generated.UpdateMessageParams) (generated.Message, error) {
+	return r.q.UpdateMessage(ctx, arg)
 }

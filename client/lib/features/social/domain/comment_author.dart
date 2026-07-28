@@ -15,6 +15,15 @@ abstract class CommentAuthor with _$CommentAuthor {
     @JsonKey(name: 'followers_count') @Default(0) int followersCount,
     @JsonKey(name: 'following_count') @Default(0) int followingCount,
   }) = _CommentAuthor;
+  
+  const CommentAuthor._();
+
+  String get safeDisplayName {
+    if (displayName.startsWith('user+')) {
+      return handle.startsWith('user+') ? 'Scribes User' : '@$handle';
+    }
+    return displayName;
+  }
 
   factory CommentAuthor.fromJson(Map<String, dynamic> json) =>
       _$CommentAuthorFromJson(json);

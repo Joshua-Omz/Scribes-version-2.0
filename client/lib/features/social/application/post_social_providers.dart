@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scribes/features/social/data/social_repository.dart';
 import 'package:scribes/features/social/domain/reaction_count.dart';
@@ -22,7 +23,7 @@ class PostReactionsNotifier extends _$PostReactionsNotifier {
       final counts = await repo.getReactions(postId);
       return PostReactionsState(counts: counts);
     } catch (e) {
-      print('[PostReactionsNotifier] Reactions fetch failed: $e');
+      debugPrint('[PostReactionsNotifier] Reactions fetch failed: $e');
       return PostReactionsState(counts: []);
     }
   }
@@ -96,7 +97,7 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
     try {
       return await repo.getComments(postId);
     } catch (e) {
-      print('[PostCommentsNotifier] Comments fetch failed: $e');
+      debugPrint('[PostCommentsNotifier] Comments fetch failed: $e');
       return [];
     }
   }
@@ -107,9 +108,9 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
       await repo.addComment(postId, body, mentions);
       ref.invalidateSelf();
     } catch (e) {
-      print('[PostCommentsNotifier] Failed to add comment: $e');
+      debugPrint('[PostCommentsNotifier] Failed to add comment: $e');
       if (e is DioException) {
-        print('[PostCommentsNotifier] Dio response: ${e.response?.data}');
+        debugPrint('[PostCommentsNotifier] Dio response: ${e.response?.data}');
       }
       rethrow;
     }

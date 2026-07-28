@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/auth_repository.dart';
@@ -38,7 +39,7 @@ class AuthNotifier extends _$AuthNotifier {
         final syncService = ref.read(syncServiceProvider);
         await syncService.sync(authorId: userId);
       } catch (e) {
-        print('Background sync failed: \$e');
+        debugPrint('Background sync failed: \$e');
       }
     });
   }

@@ -7,7 +7,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../compose/application/compose_provider.dart';
 import '../application/drafts_list_provider.dart';
-import 'widgets/scribes_draft_card.dart';
+import '../../../core/widgets/scribes_grid_card.dart';
 import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_toast.dart';
 
@@ -101,29 +101,44 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
 
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                sliver: SliverList(
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.8,
+                  ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final draft = drafts[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: ScribesDraftCard(
-                          draft: draft,
-                          onTap: () {
-                            ref.read(composeProvider.notifier).loadDraft(
-                              draft.id,
-                              draft.content,
-                              caption: draft.caption,
-                              sermonSource: draft.sermonSource,
-                              categoryIds: draft.categoryIds,
-                            );
-                            context.push('/compose');
-                          },
-                          onDelete: () {
-                            ref.read(draftsListProvider.notifier).deleteDraft(draft.id);
-                            ScribesToast.show(context, 'Draft deleted', colors);
-                          },
-                        ),
+                      String title = 'Untitled Draft';
+                      String excerpt = 'No content';
+                      if (draft.content.containsKey('title') && draft.content['title'].toString().trim().isNotEmpty) {
+                        title = draft.content['title'];
+                      }
+                      if (draft.content.containsKey('excerpt') && draft.content['excerpt'].toString().trim().isNotEmpty) {
+                        excerpt = draft.content['excerpt'];
+                      }
+                      return ScribesGridCard(
+                        title: title,
+                        excerpt: excerpt,
+                        date: draft.updatedAt,
+                        isDraft: true,
+                        onTap: () {
+                          ref.read(composeProvider.notifier).loadDraft(
+                            draft.id,
+                            draft.content,
+                            caption: draft.caption,
+                            sermonSource: draft.sermonSource,
+                            categoryIds: draft.categoryIds,
+                          );
+                          context.push('/compose');
+                        },
+                        onDelete: () {
+                          ref.read(draftsListProvider.notifier).deleteDraft(draft.id);
+                          final colors = ref.read(themeProvider);
+                          ScribesToast.show(context, 'Draft deleted', colors);
+                        },
                       );
                     },
                     childCount: drafts.length,
@@ -133,23 +148,25 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
             },
             loading: () => SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-              sliver: SliverList(
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.8,
+                ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: ScribesShimmer(
-                        child: Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: colors.surfaceRaised,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                    return ScribesShimmer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: colors.surfaceRaised,
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                     );
                   },
-                  childCount: 4,
+                  childCount: 6,
                 ),
               ),
             ),

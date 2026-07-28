@@ -6,6 +6,7 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/notifications/presentation/notification_badge.dart';
+import '../../features/messages/application/inbox_providers.dart';
 
 import 'scribes_icon_button.dart';
 
@@ -58,6 +59,45 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  const SizedBox(width: 8),
+                  Stack(
+                    children: [
+                      ScribesIconButton(
+                        icon: HugeIcons.strokeRoundedMail01,
+                        onPressed: () {
+                          context.push('/inbox');
+                        },
+                        color: colors.secondaryText,
+                      ),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final unreadCount = ref.watch(unreadMessagesCountProvider);
+                          if (unreadCount > 0) {
+                            return Positioned(
+                              right: 4,
+                              top: 4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  unreadCount > 9 ? '9+' : unreadCount.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
+                  ),
                   const SizedBox(width: 8),
                   NotificationBadge(
                     child: ScribesIconButton(

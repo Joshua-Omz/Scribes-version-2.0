@@ -17,6 +17,8 @@ import '../../features/social/application/user_lookup_provider.dart';
 import '../../features/social/domain/comment.dart';
 import '../../features/social/domain/comment_author.dart';
 import '../../features/auth/application/auth_notifier.dart';
+import 'package:scribes/features/messages/presentation/widgets/dm_request_modal.dart';
+import '../../features/messages/data/message_repository.dart';
 
 class ScribesCommentSheet extends ConsumerStatefulWidget {
   final String postId;
@@ -236,7 +238,7 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                 label: 'Reply via DM',
                 onTap: () {
                   Navigator.pop(ctx);
-                  ScribesToast.show(context, 'Direct messaging is coming soon.', colors, icon: HugeIcons.strokeRoundedMail01);
+                  _showReplyViaDMDialog(context, comment, colors);
                 },
               ),
 
@@ -244,6 +246,58 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showReplyViaDMDialog(BuildContext context, Comment comment, ScribesColors colors) {
+    final controller = TextEditingController(text: 'Replying to your comment: "${comment.body}"\n\n');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.surface,
+        title: Text('Reply via DM', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText, fontSize: 20)),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+          decoration: InputDecoration(
+            hintText: 'Type your message...',
+            hintStyle: TextStyle(color: colors.secondaryText),
+            filled: true,
+            fillColor: colors.background,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: TextStyle(color: colors.secondaryText)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: colors.gold, elevation: 0),
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                Navigator.pop(ctx);
+                try {
+                  await ref.read(messageRepositoryProvider).sendRequest(comment.authorId, text);
+                  if (context.mounted) {
+                    ScribesToast.show(context, 'Message request sent', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScribesToast.show(context, 'Failed to send message', colors, icon: HugeIcons.strokeRoundedAlert01);
+                  }
+                }
+              }
+            },
+            child: const Text('Send', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
@@ -591,6 +645,53 @@ class _CommentTile extends ConsumerWidget {
                     color: colors.primaryText,
                   ),
                 ),
+                const SizedBox(height: 8),
+                // Actions row
+                Row(
+                  children: [
+                    // Reply button (placeholder logic for now)
+                    InkWell(
+                      onTap: () {
+                        // TODO: trigger reply
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                        child: Text(
+                          'Reply',
+                          style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Message button
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final currentUserId = ref.watch(authProvider).value?.id;
+                        if (currentUserId == comment.authorId) {
+                          return const SizedBox.shrink(); // Can't message self
+                        }
+                        return InkWell(
+                          onTap: () {
+                            DmRequestModal.show(context, comment.authorId);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                            child: Row(
+                              children: [
+                                HugeIcon(icon: HugeIcons.strokeRoundedMail01, size: 14, color: colors.secondaryText),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Message',
+                                  style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -698,7 +799,7 @@ class _MentionSuggestions extends ConsumerWidget {
           ),
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (err, stack) => const SizedBox.shrink(),
     );
   }
 }

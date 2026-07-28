@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:dio/dio.dart';
@@ -65,7 +65,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
       final googleUser = await GoogleSignIn.instance.authenticate();
       debugPrint('googleUser returned: \$googleUser');
       
-      final googleAuth = await googleUser.authentication;
+      final googleAuth = googleUser.authentication;
       debugPrint('googleAuth retrieved. idToken is null? \${googleAuth.idToken == null}');
       
       if (googleAuth.idToken != null) {

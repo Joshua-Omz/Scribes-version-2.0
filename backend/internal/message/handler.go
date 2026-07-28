@@ -137,7 +137,8 @@ func (h *Handler) BlockConversation(c *gin.Context) {
 // ── Messages ───────────────────────────────────
 
 type SendMessagePayload struct {
-	Body string `json:"body" binding:"required"`
+	Body      string  `json:"body" binding:"required"`
+	ReplyToID *string `json:"reply_to_id,omitempty"`
 }
 
 func (h *Handler) SendMessage(c *gin.Context) {
@@ -156,7 +157,15 @@ func (h *Handler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	msg, err := h.svc.SendMessage(c.Request.Context(), convID, senderID, req.Body)
+	var replyTo *uuid.UUID
+	if req.ReplyToID != nil {
+		id, err := uuid.Parse(*req.ReplyToID)
+		if err == nil {
+			replyTo = &id
+		}
+	}
+
+	msg, err := h.svc.SendMessage(c.Request.Context(), convID, senderID, req.Body, replyTo)
 	if err != nil {
 		respond.Error(c, http.StatusBadRequest, err.Error())
 		return
@@ -198,6 +207,35 @@ func (h *Handler) GetMessages(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, msgs)
 }
 
+type UpdateMessagePayload struct {
+	Body string `json:"body" binding:"required"`
+}
+
+func (h *Handler) UpdateMessage(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	senderID, _ := uuid.Parse(claims.UserID)
+
+	// Conversation ID isn't strictly needed for the DB query since message ID + sender ID is enough,
+	// but it's in the route /conversations/:id/messages/:msg_id
+	msgID, err := uuid.Parse(c.Param("msg_id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid message id")
+		return
+	}
+
+	var req UpdateMessagePayload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	msg, err := h.svc.UpdateMessage(c.Request.Context(), msgID, senderID, req.Body)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	respond.JSON(c, http.StatusOK, msg)
+}
 func (h *Handler) SoftDeleteMessage(c *gin.Context) {
 	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
 	senderID, _ := uuid.Parse(claims.UserID)
