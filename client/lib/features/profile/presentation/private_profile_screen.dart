@@ -354,7 +354,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                               title: draft.content['title'] ?? '',
                               excerpt: excerpt,
                               date: draft.updatedAt,
-                              isDraft: true,
+                              badgeText: 'DRAFT',
                               onTap: () => context.push('/drafts/${draft.id}'),
                             );
                           },

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"scribes-api/internal/db/generated"
 	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
 
@@ -136,6 +137,35 @@ func (h *Handler) BlockConversation(c *gin.Context) {
 
 // ── Messages ───────────────────────────────────
 
+type MessageDTO struct {
+	ID             uuid.UUID  `json:"id"`
+	ConversationID uuid.UUID  `json:"conversation_id"`
+	SenderID       uuid.UUID  `json:"sender_id"`
+	Body           string     `json:"body"`
+	IsDeleted      bool       `json:"is_deleted"`
+	SentAt         time.Time  `json:"sent_at"`
+	ReplyToID      *uuid.UUID `json:"reply_to_id"`
+	EditedAt       *time.Time `json:"edited_at"`
+}
+
+func toMessageDTO(m generated.Message) MessageDTO {
+	dto := MessageDTO{
+		ID:             m.ID,
+		ConversationID: m.ConversationID,
+		SenderID:       m.SenderID,
+		Body:           m.Body,
+		IsDeleted:      m.IsDeleted,
+		SentAt:         m.SentAt,
+	}
+	if m.ReplyToID.Valid {
+		dto.ReplyToID = &m.ReplyToID.UUID
+	}
+	if m.EditedAt.Valid {
+		dto.EditedAt = &m.EditedAt.Time
+	}
+	return dto
+}
+
 type SendMessagePayload struct {
 	Body      string  `json:"body" binding:"required"`
 	ReplyToID *string `json:"reply_to_id,omitempty"`
@@ -170,7 +200,7 @@ func (h *Handler) SendMessage(c *gin.Context) {
 		respond.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	respond.JSON(c, http.StatusCreated, msg)
+	respond.JSON(c, http.StatusCreated, toMessageDTO(msg))
 }
 
 func (h *Handler) GetMessages(c *gin.Context) {
@@ -204,7 +234,14 @@ func (h *Handler) GetMessages(c *gin.Context) {
 		respond.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respond.JSON(c, http.StatusOK, msgs)
+	var dtos []MessageDTO
+	for _, m := range msgs {
+		dtos = append(dtos, toMessageDTO(m))
+	}
+	if dtos == nil {
+		dtos = []MessageDTO{}
+	}
+	respond.JSON(c, http.StatusOK, dtos)
 }
 
 type UpdateMessagePayload struct {
@@ -234,7 +271,7 @@ func (h *Handler) UpdateMessage(c *gin.Context) {
 		respond.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	respond.JSON(c, http.StatusOK, msg)
+	respond.JSON(c, http.StatusOK, toMessageDTO(msg))
 }
 func (h *Handler) SoftDeleteMessage(c *gin.Context) {
 	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
@@ -307,7 +344,7 @@ func (h *Handler) StreamMessages(c *gin.Context) {
 			if !ok {
 				return false
 			}
-			c.SSEvent("message", msg)
+			c.SSEvent("message", toMessageDTO(*msg))
 			return true
 		case <-c.Request.Context().Done():
 			// Client disconnected

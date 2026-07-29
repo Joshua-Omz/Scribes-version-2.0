@@ -166,6 +166,6 @@ func (s *Service) GetPublicProfile(ctx context.Context, id uuid.UUID) (PublicPro
 	return s.repo.GetPublicProfile(ctx, id)
 }
 
-func (s *Service) SearchUsersByHandle(ctx context.Context, query string) ([]UserSearchResult, error) {
-	return s.repo.SearchUsersByHandle(ctx, query)
+func (s *Service) SearchUsers(ctx context.Context, query string) ([]UserSearchResult, error) {
+	return s.repo.SearchUsers(ctx, query)
 }

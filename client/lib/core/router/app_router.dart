@@ -41,13 +41,10 @@ GoRouter appRouter(Ref ref) {
       final isAuth = authState.value != null;
       final isGoingToAuth = state.matchedLocation == '/auth';
       final isGoingToSplash = state.matchedLocation == '/splash';
-      final isExplore = state.matchedLocation == '/explore';
-      final isFeed = state.matchedLocation == '/';
-      final isPost = state.matchedLocation.startsWith('/posts/');
       
-      // Allow unauthenticated access to splash, auth, explore, feed, and post detail
-      if (!isAuth && !isGoingToSplash && !isGoingToAuth && !isExplore && !isFeed && !isPost) {
-        return '/auth'; // Redirect directly to auth if trying to access protected routes
+      // Redirect directly to auth if trying to access protected routes and not authenticated
+      if (!isAuth && !isGoingToSplash && !isGoingToAuth) {
+        return '/auth'; 
       }
 
       // If authenticated and on auth or splash, go to feed 

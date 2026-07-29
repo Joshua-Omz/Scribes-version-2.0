@@ -10,6 +10,7 @@ import 'package:scribes/features/messages/application/conversation_providers.dar
 import 'package:scribes/features/messages/application/inbox_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/user_lookup_provider.dart';
+import 'package:scribes/core/widgets/scribes_author_header.dart';
 import 'package:scribes/features/messages/domain/message.dart';
 
 class ConversationScreen extends ConsumerStatefulWidget {
@@ -73,9 +74,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
+          Positioned.fill(
             child: messagesStream.when(
               data: (messages) {
                 if (messages.isEmpty) {
@@ -89,7 +90,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
                 return ListView.builder(
                   reverse: true, // Show newest at the bottom
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                  padding: EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 100 + MediaQuery.of(context).padding.bottom),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
@@ -106,7 +107,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               error: (e, st) => Center(child: Text('Error: $e')),
             ),
           ),
-          _buildMessageInput(colors),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _buildMessageInput(colors),
+          ),
         ],
       ),
     );
@@ -238,15 +242,23 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             ),
           ),
         Container(
-          padding: EdgeInsets.only(
+          margin: EdgeInsets.only(
             left: 16,
             right: 16,
-            top: 12,
-            bottom: 12 + MediaQuery.of(context).padding.bottom,
+            bottom: 16 + MediaQuery.of(context).padding.bottom,
           ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border(top: BorderSide(color: colors.border)),
+            color: colors.surfaceRaised,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+            border: Border.all(color: colors.border.withOpacity(0.5)),
           ),
           child: Row(
             children: [
@@ -257,21 +269,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   decoration: InputDecoration(
                     hintText: 'Type a message...',
                     hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide(color: colors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide(color: colors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide(color: colors.gold),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    filled: true,
-                    fillColor: colors.background,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    filled: false,
                   ),
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),
@@ -320,19 +322,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final authorState = ref.watch(commentAuthorProvider(otherUserId));
 
     return authorState.when(
-      data: (author) => Row(
-        children: [
-          ScribesAvatar(authorName: author.safeDisplayName, radius: 18),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              author.safeDisplayName,
-              style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+      data: (author) => ScribesAuthorHeader(
+        authorName: author.safeDisplayName,
+        authorHandle: author.handle,
+        onTap: () => context.push('/users/${author.id}'),
       ),
       loading: () => const Row(children: [CircleAvatar(radius: 18, backgroundColor: Colors.grey)]),
       error: (e, st) => Row(

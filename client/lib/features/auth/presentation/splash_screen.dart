@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
@@ -34,12 +35,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              colors.background.computeLuminance() > 0.5 
-                  ? 'assets/app_icon.png' 
-                  : 'assets/app_icon_dark.png',
+            SvgPicture.asset(
+              'assets/logo.svg',
               width: 120,
               height: 120,
+              colorFilter: ColorFilter.mode(colors.gold, BlendMode.srcIn),
             ),
             const SizedBox(height: 24),
             const Padding(

@@ -42,9 +42,12 @@ SELECT
 FROM users
 WHERE id = $1 AND is_deleted = false LIMIT 1;
 
--- name: SearchUsersByHandle :many
-SELECT id, handle, display_name
+-- name: SearchUsers :many
+SELECT 
+    *,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
 FROM users
-WHERE handle ILIKE $1 || '%' AND is_deleted = false
+WHERE (handle ILIKE $1 || '%' OR display_name ILIKE '%' || $1 || '%') AND is_deleted = false
 ORDER BY handle ASC
 LIMIT 10;

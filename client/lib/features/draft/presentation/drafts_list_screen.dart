@@ -19,6 +19,8 @@ class DraftsListScreen extends ConsumerStatefulWidget {
 }
 
 class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
+  final Set<String> _selectedIds = {};
+
   @override
   void initState() {
     super.initState();
@@ -26,13 +28,23 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
     Future.microtask(() {
       ref.read(draftsListProvider.notifier).refresh();
     });
-    
+  }
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final draftsState = ref.watch(draftsListProvider);
+    final isSelectionMode = _selectedIds.isNotEmpty;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -45,9 +57,11 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
             pinned: true,
             expandedHeight: 120,
             leading: IconButton(
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+              icon: HugeIcon(icon: isSelectionMode ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
               onPressed: () {
-                if (context.canPop()) {
+                if (isSelectionMode) {
+                  setState(() => _selectedIds.clear());
+                } else if (context.canPop()) {
                   context.pop();
                 } else {
                   context.go('/');
@@ -57,7 +71,7 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
               title: Text(
-                'Drafts Workspace',
+                isSelectionMode ? '${_selectedIds.length} Selected' : 'Drafts Workspace',
                 style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
               ),
               background: Stack(
@@ -65,7 +79,8 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                   Positioned(
                     right: -20,
                     top: -20,
-                    child: HugeIcon(icon: HugeIcons.strokeRoundedFile01,
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedFile01,
                       size: 140,
                       color: colors.gold.withValues(alpha: 0.05),
                     ),
@@ -123,21 +138,22 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                         title: title,
                         excerpt: excerpt,
                         date: draft.updatedAt,
-                        isDraft: true,
+                        badgeText: 'DRAFT',
+                        isSelected: _selectedIds.contains(draft.id),
+                        onLongPress: () => _toggleSelection(draft.id),
                         onTap: () {
-                          ref.read(composeProvider.notifier).loadDraft(
-                            draft.id,
-                            draft.content,
-                            caption: draft.caption,
-                            sermonSource: draft.sermonSource,
-                            categoryIds: draft.categoryIds,
-                          );
-                          context.push('/compose');
-                        },
-                        onDelete: () {
-                          ref.read(draftsListProvider.notifier).deleteDraft(draft.id);
-                          final colors = ref.read(themeProvider);
-                          ScribesToast.show(context, 'Draft deleted', colors);
+                          if (isSelectionMode) {
+                            _toggleSelection(draft.id);
+                          } else {
+                            ref.read(composeProvider.notifier).loadDraft(
+                              draft.id,
+                              draft.content,
+                              caption: draft.caption,
+                              sermonSource: draft.sermonSource,
+                              categoryIds: draft.categoryIds,
+                            );
+                            context.push('/compose');
+                          }
                         },
                       );
                     },
@@ -181,18 +197,35 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: null,
-        backgroundColor: colors.gold,
-        foregroundColor: colors.surfaceRaised,
-        elevation: 4,
-        onPressed: () {
-          ref.read(composeProvider.notifier).reset();
-          context.push('/compose');
-        },
-        icon: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign),
-        label: Text('New Draft', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
-      ),
+      floatingActionButton: isSelectionMode
+          ? FloatingActionButton.extended(
+              heroTag: null,
+              backgroundColor: Colors.red.shade400,
+              foregroundColor: colors.surfaceRaised,
+              elevation: 4,
+              onPressed: () {
+                for (final id in _selectedIds) {
+                  ref.read(draftsListProvider.notifier).deleteDraft(id);
+                }
+                final count = _selectedIds.length;
+                setState(() => _selectedIds.clear());
+                ScribesToast.show(context, 'Deleted $count draft(s)', colors);
+              },
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete02, color: colors.surfaceRaised),
+              label: Text('Delete', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
+            )
+          : FloatingActionButton.extended(
+              heroTag: null,
+              backgroundColor: colors.gold,
+              foregroundColor: colors.surfaceRaised,
+              elevation: 4,
+              onPressed: () {
+                ref.read(composeProvider.notifier).reset();
+                context.push('/compose');
+              },
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign, color: colors.surfaceRaised),
+              label: Text('New Draft', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
+            ),
     );
   }
 }

@@ -274,11 +274,13 @@ final exploreUserSearchProvider = ExploreUserSearchProvider._();
 final class ExploreUserSearchProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<User>>,
-          List<User>,
-          FutureOr<List<User>>
+          AsyncValue<List<CommentAuthor>>,
+          List<CommentAuthor>,
+          FutureOr<List<CommentAuthor>>
         >
-    with $FutureModifier<List<User>>, $FutureProvider<List<User>> {
+    with
+        $FutureModifier<List<CommentAuthor>>,
+        $FutureProvider<List<CommentAuthor>> {
   ExploreUserSearchProvider._()
     : super(
         from: null,
@@ -295,16 +297,17 @@ final class ExploreUserSearchProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<User>> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+  $FutureProviderElement<List<CommentAuthor>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<User>> create(Ref ref) {
+  FutureOr<List<CommentAuthor>> create(Ref ref) {
     return exploreUserSearch(ref);
   }
 }
 
-String _$exploreUserSearchHash() => r'68c597324f814d8592497b7c19fc0d0dded1b196';
+String _$exploreUserSearchHash() => r'4ac5badfe83836f9af0df1341fa387dc64d19f81';
 
 @ProviderFor(ExploreScriptureFilter)
 final exploreScriptureFilterProvider = ExploreScriptureFilterProvider._();

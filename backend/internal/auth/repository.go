@@ -166,22 +166,33 @@ func (r *Repository) GetPublicProfile(ctx context.Context, id uuid.UUID) (Public
 }
 
 type UserSearchResult struct {
-	ID          uuid.UUID `json:"id"`
-	Handle      string    `json:"handle"`
-	DisplayName string    `json:"display_name"`
+	ID             uuid.UUID `json:"id"`
+	Handle         string    `json:"handle"`
+	DisplayName    string    `json:"display_name"`
+	Bio            *string   `json:"bio,omitempty"`
+	FollowersCount int       `json:"followers_count"`
+	FollowingCount int       `json:"following_count"`
 }
 
-func (r *Repository) SearchUsersByHandle(ctx context.Context, query string) ([]UserSearchResult, error) {
-	rows, err := r.q.SearchUsersByHandle(ctx, sql.NullString{String: query, Valid: query != ""})
+func (r *Repository) SearchUsers(ctx context.Context, query string) ([]UserSearchResult, error) {
+	rows, err := r.q.SearchUsers(ctx, sql.NullString{String: query, Valid: query != ""})
 	if err != nil {
 		return nil, err
 	}
 	results := make([]UserSearchResult, len(rows))
 	for i, row := range rows {
+		var bio *string
+		if row.Bio.Valid {
+			b := row.Bio.String
+			bio = &b
+		}
 		results[i] = UserSearchResult{
-			ID:          row.ID,
-			Handle:      row.Handle,
-			DisplayName: row.DisplayName,
+			ID:             row.ID,
+			Handle:         row.Handle,
+			DisplayName:    row.DisplayName,
+			Bio:            bio,
+			FollowersCount: int(row.FollowersCount),
+			FollowingCount: int(row.FollowingCount),
 		}
 	}
 	return results, nil

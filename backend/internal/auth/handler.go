@@ -136,7 +136,7 @@ func (h *Handler) SearchUsers(c *gin.Context) {
 		return
 	}
 
-	results, err := h.svc.SearchUsersByHandle(c.Request.Context(), query)
+	results, err := h.svc.SearchUsers(c.Request.Context(), query)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, "search failed")
 		return

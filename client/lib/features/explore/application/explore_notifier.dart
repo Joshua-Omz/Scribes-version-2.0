@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../posts/domain/post.dart';
-import '../../auth/domain/user.dart';
+import '../../social/domain/comment_author.dart';
 import '../data/explore_user_repository.dart';
 import '../data/explore_repository.dart';
 import '../domain/category.dart';
@@ -64,7 +64,7 @@ class ExploreSearchModeNotifier extends _$ExploreSearchModeNotifier {
 }
 
 @riverpod
-Future<List<User>> exploreUserSearch(Ref ref) async {
+Future<List<CommentAuthor>> exploreUserSearch(Ref ref) async {
   final query = ref.watch(exploreSearchQueryProvider);
   if (query == null || query.trim().isEmpty) return [];
   

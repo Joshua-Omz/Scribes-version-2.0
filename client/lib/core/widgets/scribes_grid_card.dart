@@ -7,19 +7,17 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_radius.dart';
 import 'scribes_bounce_button.dart';
-import '../../features/draft/domain/draft.dart';
-
 
 class ScribesGridCard extends ConsumerWidget {
   final String title;
   final String excerpt;
   final DateTime? date;
   final VoidCallback onTap;
-  final bool isDraft;
+  final VoidCallback? onLongPress;
+  final String? badgeText;
   final bool isSaved;
+  final bool isSelected;
   final VoidCallback? onSaveToggle;
-  final VoidCallback? onPinToggle;
-  final VoidCallback? onDelete;
 
   const ScribesGridCard({
     super.key,
@@ -27,135 +25,160 @@ class ScribesGridCard extends ConsumerWidget {
     required this.excerpt,
     this.date,
     required this.onTap,
-    this.isDraft = false,
+    this.onLongPress,
+    this.badgeText,
     this.isSaved = false,
+    this.isSelected = false,
     this.onSaveToggle,
-    this.onPinToggle,
-    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
+    final hasBadge = badgeText != null;
 
     return ScribesBounceButton(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDraft ? colors.background : colors.surfaceRaised,
-          borderRadius: BorderRadius.circular(ScribesRadius.card),
-          border: Border.all(
-            color: colors.border.withValues(alpha: isDraft ? 0.3 : 0.6),
-          ),
-          boxShadow: isDraft
-              ? []
-              : [
-                  BoxShadow(
-                    color: colors.border.withValues(alpha: 0.15),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Row (Draft Badge or Save Icon)
-            if (isDraft || isSaved)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (isDraft)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: colors.goldMuted.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(ScribesRadius.chip),
-                          border: Border.all(
-                            color: colors.goldMuted.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Text(
-                          'DRAFT',
-                          style: ScribesTextStyles.caption.copyWith(
-                            color: colors.gold,
-                            letterSpacing: 1.0,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    if (isSaved)
-                      GestureDetector(
-                        onTap: onSaveToggle,
-                        child: HugeIcon(
-                          icon: HugeIcons.strokeRoundedBookmark02,
-                          color: colors.gold,
-                          size: 18,
-                        ),
-                      ),
-                  ],
-                ),
+      onLongPress: onLongPress,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: hasBadge ? colors.background : colors.surfaceRaised,
+              borderRadius: BorderRadius.circular(ScribesRadius.card),
+              border: Border.all(
+                color: isSelected 
+                  ? colors.gold 
+                  : colors.border.withValues(alpha: hasBadge ? 0.3 : 0.6),
+                width: isSelected ? 2.0 : 1.0,
               ),
-
-            // Title
-            Text(
-              title.isEmpty ? 'Untitled' : title,
-              style: ScribesTextStyles.displayMd.copyWith(
-                color: colors.primaryText,
-                fontSize: 18,
-                height: 1.1,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-
-            // Excerpt (Faded out at bottom)
-            Expanded(
-              child: ShaderMask(
-                shaderCallback: (bounds) {
-                  return LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black,
-                      Colors.black.withValues(alpha: 0.8),
-                      Colors.transparent,
+              boxShadow: hasBadge
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: colors.border.withValues(alpha: 0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
                     ],
-                    stops: const [0.0, 0.6, 1.0],
-                  ).createShader(bounds);
-                },
-                blendMode: BlendMode.dstIn,
-                child: Text(
-                  excerpt.isEmpty ? 'No excerpt' : excerpt,
-                  style: ScribesTextStyles.bodyMd.copyWith(
-                    color: colors.secondaryText,
-                    fontSize: 14,
-                  ),
-                  overflow: TextOverflow.clip,
-                ),
-              ),
             ),
-
-            // Date Footer
-            if (date != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  timeago.format(date!),
-                  style: ScribesTextStyles.caption.copyWith(
-                    color: colors.secondaryText.withValues(alpha: 0.7),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Row (Badge or Save Icon)
+                if (hasBadge || isSaved)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (hasBadge)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: colors.goldMuted.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(ScribesRadius.chip),
+                              border: Border.all(
+                                color: colors.goldMuted.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              badgeText!.toUpperCase(),
+                              style: ScribesTextStyles.caption.copyWith(
+                                color: colors.gold,
+                                letterSpacing: 1.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        if (isSaved)
+                          GestureDetector(
+                            onTap: onSaveToggle,
+                            child: HugeIcon(
+                              icon: HugeIcons.strokeRoundedBookmark02,
+                              color: colors.gold,
+                              size: 18,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                  maxLines: 1,
+
+                // Title
+                Text(
+                  title.isEmpty ? 'Untitled' : title,
+                  style: ScribesTextStyles.displayMd.copyWith(
+                    color: colors.primaryText,
+                    fontSize: 18,
+                    height: 1.1,
+                  ),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 8),
+
+                // Excerpt (Faded out at bottom)
+                Expanded(
+                  child: ShaderMask(
+                    shaderCallback: (bounds) {
+                      return LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black,
+                          Colors.black.withValues(alpha: 0.8),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: Text(
+                      excerpt.isEmpty ? 'No excerpt' : excerpt,
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                        fontSize: 14,
+                      ),
+                      overflow: TextOverflow.clip,
+                    ),
+                  ),
+                ),
+
+                // Date Footer
+                if (date != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      timeago.format(date!),
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText.withValues(alpha: 0.7),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          
+          if (isSelected)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: colors.gold,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.check, size: 16, color: colors.surfaceRaised),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 }
+
