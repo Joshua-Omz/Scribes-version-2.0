@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
+import 'package:hugeicons/hugeicons.dart';
 
+import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../../draft/data/draft_repository.dart';
 import '../../draft/application/drafts_list_provider.dart';
 import '../../posts/domain/sermon_source.dart';
@@ -178,6 +182,17 @@ class ComposeNotifier extends Notifier<ComposeState> {
       lastSavedAt: DateTime.now(),
       contentDelta: controller.document.toDelta().toJson(),
     );
+
+    // Show a small global toast for autosave
+    try {
+      final themeColors = ref.read(themeProvider);
+      ScribesToast.show(
+        null, // Use global scaffold key
+        'Draft saved',
+        themeColors,
+        icon: HugeIcons.strokeRoundedCloudSavingDone01,
+      );
+    } catch (_) {}
   }
 
   Future<void> publishToCloud() async {

@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/storage/secure_storage.dart';
+import '../../settings/domain/notification_preferences.dart';
 import '../domain/user.dart';
 import 'auth_api.dart';
 
@@ -62,8 +63,6 @@ class AuthRepository {
     return User.fromJson(response['user'] as Map<String, dynamic>);
   }
 
-
-
   Future<User> getMe() async {
     final response = await _api.getMe();
     return User.fromJson(response);
@@ -76,5 +75,54 @@ class AuthRepository {
   Future<bool> hasToken() async {
     final token = await _storage.getToken();
     return token != null;
+  }
+
+  Future<User> updateProfile({
+    required String handle,
+    required String displayName,
+    String? bio,
+  }) async {
+    final response = await _api.updateProfile(
+      handle: handle,
+      displayName: displayName,
+      bio: bio,
+    );
+    return User.fromJson(response);
+  }
+
+  Future<void> updateEmail({
+    required String newEmail,
+    required String currentPassword,
+  }) async {
+    await _api.updateEmail(
+      newEmail: newEmail,
+      currentPassword: currentPassword,
+    );
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _api.updatePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
+
+  Future<NotificationPreferences> getNotificationPreferences() async {
+    final response = await _api.getNotificationPreferences();
+    return NotificationPreferences.fromJson(response);
+  }
+
+  Future<NotificationPreferences> updateNotificationPreferences(
+      NotificationPreferences preferences) async {
+    final response = await _api.updateNotificationPreferences(
+      pushEnabled: preferences.pushEnabled,
+      emailEnabled: preferences.emailEnabled,
+      dmAlerts: preferences.dmAlerts,
+      newFollowerAlerts: preferences.newFollowerAlerts,
+    );
+    return NotificationPreferences.fromJson(response);
   }
 }

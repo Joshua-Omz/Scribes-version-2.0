@@ -75,7 +75,7 @@ func NewRepository(q *generated.Queries) *Repository {
 	return &Repository{q: q}
 }
 
-func (r *Repository) CreateNote(ctx context.Context, authorID uuid.UUID, content json.RawMessage, title *string, notebookID *uuid.UUID, sourceType *string, sourceLabel *string) (Note, error) {
+func (r *Repository) CreateNote(ctx context.Context, id *uuid.UUID, authorID uuid.UUID, content json.RawMessage, title *string, notebookID *uuid.UUID, sourceType *string, sourceLabel *string) (Note, error) {
 	var dbTitle sql.NullString
 	if title != nil {
 		dbTitle = sql.NullString{String: *title, Valid: true}
@@ -99,7 +99,13 @@ func (r *Repository) CreateNote(ctx context.Context, authorID uuid.UUID, content
 		dbSourceLabel = sql.NullString{String: *sourceLabel, Valid: true}
 	}
 
+	var dbID interface{}
+	if id != nil {
+		dbID = *id
+	}
+
 	dbNote, err := r.q.CreateNote(ctx, generated.CreateNoteParams{
+		Column1:     dbID,
 		AuthorID:    authorID,
 		Content:     content,
 		Title:       dbTitle,

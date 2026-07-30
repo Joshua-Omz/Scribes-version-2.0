@@ -1,5 +1,6 @@
 -- name: CreateNote :one
 INSERT INTO notes (
+    id,
     author_id,
     content,
     title,
@@ -7,7 +8,7 @@ INSERT INTO notes (
     source_type,
     source_label
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    COALESCE(NULLIF($1, '00000000-0000-0000-0000-000000000000')::uuid, gen_random_uuid()), $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: GetNoteByID :one

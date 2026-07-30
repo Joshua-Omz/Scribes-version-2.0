@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
+import 'package:scribes/core/theme/theme_provider.dart';
+import 'package:scribes/core/widgets/scribes_toast.dart';
 
 part 'inbox_providers.g.dart';
 
@@ -28,16 +33,76 @@ class PendingRequests extends _$PendingRequests {
 
 @riverpod
 class ConversationsNotifier extends _$ConversationsNotifier {
+  Timer? _pollingTimer;
+  int _lastTotalMessages = 0; // simplistic way to detect new messages across conversations
+
   @override
   Future<List<Conversation>> build() async {
     final repo = ref.watch(messageRepositoryProvider);
-    return repo.getConversations();
+    
+    ref.onDispose(() {
+      _pollingTimer?.cancel();
+    });
+
+    _startPolling();
+
+    final convos = await repo.getConversations();
+    _updateTotalMessages(convos);
+    return convos;
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) async {
+      try {
+        final repo = ref.read(messageRepositoryProvider);
+        final convos = await repo.getConversations();
+        
+        // Detect if there are new unread messages
+        int currentTotal = 0;
+        bool hasNew = false;
+        
+        for (var c in convos) {
+          currentTotal += c.lastActive.millisecondsSinceEpoch;
+        }
+        
+        if (_lastTotalMessages != 0 && currentTotal != _lastTotalMessages) {
+          hasNew = true;
+        }
+        
+        _lastTotalMessages = currentTotal;
+
+        if (hasNew) {
+          try {
+            final themeColors = ref.read(themeProvider);
+            ScribesToast.show(
+              null, // uses global key
+              'New message received',
+              themeColors,
+              icon: HugeIcons.strokeRoundedMail01,
+            );
+          } catch (_) {}
+        }
+        
+        state = AsyncData(convos);
+      } catch (_) {}
+    });
+  }
+
+  void _updateTotalMessages(List<Conversation> convos) {
+    int currentTotal = 0;
+    for (var c in convos) {
+      currentTotal += c.lastActive.millisecondsSinceEpoch;
+    }
+    _lastTotalMessages = currentTotal;
   }
 
   Future<void> refresh() async {
     final repo = ref.read(messageRepositoryProvider);
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => repo.getConversations());
+    final convos = await repo.getConversations();
+    _updateTotalMessages(convos);
+    state = AsyncData(convos);
   }
 }
 

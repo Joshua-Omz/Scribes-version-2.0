@@ -12,7 +12,7 @@ class ScribesTabBar extends ConsumerWidget {
     super.key,
     required this.selectedIndex,
     required this.onTabChanged,
-    this.tabs = const ['Following', 'Seek'], // Default for backward compatibility
+    this.tabs = const ['Following', 'Seek'],
   });
 
   @override
@@ -21,46 +21,54 @@ class ScribesTabBar extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: colors.background,
-        border: Border(
-          bottom: BorderSide(color: colors.border),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: tabs.asMap().entries.map((entry) {
-          final isLast = entry.key == tabs.length - 1;
-          return Row(
-            children: [
-              _buildTab(context, colors, entry.value, entry.key),
-              if (!isLast) const SizedBox(width: 32),
+      color: colors.background,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: colors.surfaceRaised,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: colors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
-          );
-        }).toList(),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: tabs.asMap().entries.map((entry) {
+              return _buildTab(context, colors, entry.value, entry.key);
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
-  Widget _buildTab(BuildContext context, colors, String label, int index) {
+
+  Widget _buildTab(BuildContext context, dynamic colors, String label, int index) {
     final isSelected = selectedIndex == index;
 
     return GestureDetector(
       onTap: () => onTabChanged(index),
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
         decoration: BoxDecoration(
-          border: isSelected
-              ? Border(bottom: BorderSide(color: colors.gold, width: 2))
-              : null,
+          color: isSelected ? colors.gold : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
         ),
         child: Text(
           label,
           style: ScribesTextStyles.labelLg.copyWith(
-            color: isSelected ? colors.gold : colors.secondaryText,
+            color: isSelected ? colors.surfaceRaised : colors.secondaryText,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-            letterSpacing: 1.5,
+            letterSpacing: 1.2,
           ),
         ),
       ),

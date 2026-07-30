@@ -24,6 +24,10 @@ import '../../features/notes/presentation/note_editor_screen.dart';
 import '../../features/notifications/presentation/notification_screen.dart';
 import '../../features/messages/presentation/inbox_screen.dart';
 import '../../features/messages/presentation/conversation_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/presentation/email_password_screen.dart';
+import '../../features/settings/presentation/notifications_settings_screen.dart';
+import '../../features/social/presentation/bookmarks_screen.dart';
 import '../widgets/scribes_bottom_nav.dart';
 import 'transitions.dart';
 
@@ -106,50 +110,68 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/splash',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const SplashScreen()),
+        pageBuilder: (context, state) => buildPageWithFadeTransition(context: context, state: state, child: const SplashScreen()),
       ),
       GoRoute(
         path: '/auth',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const AuthGateScreen()),
+        pageBuilder: (context, state) => buildPageWithFadeTransition(context: context, state: state, child: const AuthGateScreen()),
       ),
       GoRoute(
         path: '/onboarding',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const OnboardingScreen()),
+        pageBuilder: (context, state) => buildPageWithFadeTransition(context: context, state: state, child: const OnboardingScreen()),
       ),
       GoRoute(
         path: '/compose',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const DraftEditorScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideUpTransition(context: context, state: state, child: const DraftEditorScreen()),
       ),
       GoRoute(
         path: '/compose/preview',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const DraftPreviewScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const DraftPreviewScreen()),
       ),
       GoRoute(
         path: '/compose/publish',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const PublishMetadataScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const PublishMetadataScreen()),
       ),
       GoRoute(
         path: '/posts/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return buildPageWithDefaultTransition(context: context, state: state, child: PostDetailScreen(postId: id));
+          return buildPageWithSlideRightTransition(context: context, state: state, child: PostDetailScreen(postId: id));
         },
       ),
       GoRoute(
         path: '/profile',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const PrivateProfileScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const PrivateProfileScreen()),
         routes: [
           GoRoute(
             path: 'edit',
-            pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const EditProfileScreen()),
+            pageBuilder: (context, state) => buildPageWithSlideUpTransition(context: context, state: state, child: const EditProfileScreen()),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const SettingsScreen()),
+        routes: [
+          GoRoute(
+            path: 'security',
+            pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const EmailPasswordScreen()),
+          ),
+          GoRoute(
+            path: 'notifications',
+            pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const NotificationsSettingsScreen()),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/bookmarks',
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const BookmarksScreen()),
       ),
       GoRoute(
         path: '/users/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return buildPageWithDefaultTransition(context: context, state: state, child: PublicProfileScreen(userId: id));
+          return buildPageWithSlideRightTransition(context: context, state: state, child: PublicProfileScreen(userId: id));
         },
         routes: [
           GoRoute(
@@ -157,28 +179,28 @@ GoRouter appRouter(Ref ref) {
             pageBuilder: (context, state) {
               final id = state.pathParameters['id']!;
               final tabIndex = int.tryParse(state.uri.queryParameters['tab'] ?? '0') ?? 0;
-              return buildPageWithDefaultTransition(context: context, state: state, child: FollowListScreen(userId: id, initialIndex: tabIndex));
+              return buildPageWithSlideRightTransition(context: context, state: state, child: FollowListScreen(userId: id, initialIndex: tabIndex));
             },
           ),
         ],
       ),
       GoRoute(
         path: '/notes/edit',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const NoteEditorScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideUpTransition(context: context, state: state, child: const NoteEditorScreen()),
       ),
       GoRoute(
         path: '/notifications',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const NotificationScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const NotificationScreen()),
       ),
       GoRoute(
         path: '/inbox',
-        pageBuilder: (context, state) => buildPageWithDefaultTransition(context: context, state: state, child: const InboxScreen()),
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const InboxScreen()),
       ),
       GoRoute(
         path: '/conversation/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
-          return buildPageWithDefaultTransition(context: context, state: state, child: ConversationScreen(conversationId: id));
+          return buildPageWithSlideRightTransition(context: context, state: state, child: ConversationScreen(conversationId: id));
         },
       ),
     ],

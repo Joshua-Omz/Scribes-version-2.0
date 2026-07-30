@@ -14,6 +14,31 @@ import (
 	"github.com/lib/pq"
 )
 
+const clearAllByUser = `-- name: ClearAllByUser :exec
+DELETE FROM notifications
+WHERE recipient_id = $1
+`
+
+func (q *Queries) ClearAllByUser(ctx context.Context, recipientID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, clearAllByUser, recipientID)
+	return err
+}
+
+const deleteNotifications = `-- name: DeleteNotifications :exec
+DELETE FROM notifications
+WHERE id = ANY($1::uuid[]) AND recipient_id = $2
+`
+
+type DeleteNotificationsParams struct {
+	Column1     []uuid.UUID `json:"column_1"`
+	RecipientID uuid.UUID   `json:"recipient_id"`
+}
+
+func (q *Queries) DeleteNotifications(ctx context.Context, arg DeleteNotificationsParams) error {
+	_, err := q.db.ExecContext(ctx, deleteNotifications, pq.Array(arg.Column1), arg.RecipientID)
+	return err
+}
+
 const flushPendingBatch = `-- name: FlushPendingBatch :exec
 UPDATE notifications
 SET sent_at = now()
@@ -209,31 +234,6 @@ WHERE recipient_id = $1
 
 func (q *Queries) MarkAllReadByUser(ctx context.Context, recipientID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, markAllReadByUser, recipientID)
-	return err
-}
-
-const clearAllByUser = `-- name: ClearAllByUser :exec
-DELETE FROM notifications
-WHERE recipient_id = $1
-`
-
-func (q *Queries) ClearAllByUser(ctx context.Context, recipientID uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, clearAllByUser, recipientID)
-	return err
-}
-
-const deleteNotifications = `-- name: DeleteNotifications :exec
-DELETE FROM notifications
-WHERE id = ANY($1::uuid[]) AND recipient_id = $2
-`
-
-type DeleteNotificationsParams struct {
-	Column1     []uuid.UUID `json:"column_1"`
-	RecipientID uuid.UUID   `json:"recipient_id"`
-}
-
-func (q *Queries) DeleteNotifications(ctx context.Context, arg DeleteNotificationsParams) error {
-	_, err := q.db.ExecContext(ctx, deleteNotifications, pq.Array(arg.Column1), arg.RecipientID)
 	return err
 }
 

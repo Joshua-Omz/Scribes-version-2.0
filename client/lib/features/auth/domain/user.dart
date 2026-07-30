@@ -10,6 +10,7 @@ abstract class User with _$User {
     required String email,
     required String handle,
     @JsonKey(name: 'display_name') required String displayName,
+    @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'followers_count') @Default(0) int followersCount,

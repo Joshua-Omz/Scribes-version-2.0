@@ -4,7 +4,9 @@ class Endpoints {
   static const String login = '/auth/login';
   static const String googleLogin = '/auth/google';
   static const String me = '/me';
-
+  static const String updateEmail = '/me/email';
+  static const String updatePassword = '/me/password';
+  static const String notificationPreferences = '/me/notifications';
   // Feed
   static const String feed = '/feed';
   static const String explore = '/explore';

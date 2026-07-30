@@ -268,11 +268,9 @@ class PublicProfileScreen extends ConsumerWidget {
                   side: BorderSide(color: colors.border),
                 ),
               ),
-              onPressed: () {
-                final conversations =
-                    ref.read(conversationsProvider).value ?? [];
-  // 2. Check if a conversation with this specific user already exists
-
+              onPressed: () async {
+                final conversations = await ref.read(conversationsProvider.future);
+                // 2. Check if a conversation with this specific user already exists
                 final existingConversation = conversations
                     .where(
                       (conv) =>
@@ -280,13 +278,14 @@ class PublicProfileScreen extends ConsumerWidget {
                     )
                     .firstOrNull;
 
-                      // 3. If a conversation exists, push straight to the conversation screen!
-                      if (existingConversation != null){
-                        context.push('/conversations/${existingConversation.id}');
-                        
-                      }else{
-                        DmRequestModal.show(context, userId);
-                      }
+                if (!context.mounted) return;
+
+                // 3. If a conversation exists, push straight to the conversation screen!
+                if (existingConversation != null) {
+                  context.push('/conversation/${existingConversation.id}');
+                } else {
+                  DmRequestModal.show(context, userId);
+                }
               },
               icon: HugeIcon(
                 icon: HugeIcons.strokeRoundedMail01,

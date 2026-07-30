@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"scribes-api/internal/db/generated"
 	"scribes-api/pkg/password"
 	"scribes-api/pkg/token"
 
@@ -169,3 +170,115 @@ func (s *Service) GetPublicProfile(ctx context.Context, id uuid.UUID) (PublicPro
 func (s *Service) SearchUsers(ctx context.Context, query string) ([]UserSearchResult, error) {
 	return s.repo.SearchUsers(ctx, query)
 }
+
+
+type UpdateProfileInput struct {
+	Handle      string  `json:"handle"`
+	DisplayName string  `json:"display_name"`
+	Bio         *string `json:"bio"`
+}
+
+func (s *Service) UpdateProfile(ctx context.Context, id uuid.UUID, input UpdateProfileInput) (User, error) {
+	input.Handle = strings.TrimSpace(strings.ToLower(input.Handle))
+	if !regexp.MustCompile(`^[a-z0-9_]+$`).MatchString(input.Handle) {
+		return User{}, errors.New("handle must be alphanumeric and underscores only")
+	}
+
+	user, err := s.repo.UpdateUserProfile(ctx, id, input.Handle, input.DisplayName, input.Bio)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			if strings.Contains(pqErr.Message, "users_handle_key") {
+				return User{}, ErrHandleTaken
+			}
+		}
+		return User{}, err
+	}
+	return user, nil
+}
+
+type UpdateEmailInput struct {
+	NewEmail        string `json:"new_email"`
+	CurrentPassword string `json:"current_password"`
+}
+
+func (s *Service) UpdateEmail(ctx context.Context, id uuid.UUID, input UpdateEmailInput) error {
+	input.NewEmail = strings.TrimSpace(strings.ToLower(input.NewEmail))
+	if !strings.Contains(input.NewEmail, "@") {
+		return errors.New("invalid email format")
+	}
+
+	currentHash, err := s.repo.q.GetUserPasswordHash(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := password.Compare(currentHash, input.CurrentPassword); err != nil {
+		return ErrInvalidCredentials
+	}
+
+	return s.repo.UpdateUserEmail(ctx, id, input.NewEmail)
+}
+
+type UpdatePasswordInput struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+func (s *Service) UpdatePassword(ctx context.Context, id uuid.UUID, input UpdatePasswordInput) error {
+	if len(input.NewPassword) < 8 {
+		return errors.New("password must be at least 8 characters")
+	}
+
+	currentHash, err := s.repo.q.GetUserPasswordHash(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := password.Compare(currentHash, input.CurrentPassword); err != nil {
+		return ErrInvalidCredentials
+	}
+
+	hash, err := password.Hash(input.NewPassword, s.cfg.BcryptCost)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.UpdateUserPassword(ctx, id, hash)
+}
+
+
+func (s *Service) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (generated.NotificationPreference, error) {
+	prefs, err := s.repo.GetNotificationPreferences(ctx, userID)
+	if err != nil {
+		// If not found, return defaults (true for all)
+		if err.Error() == "sql: no rows in result set" {
+			return generated.NotificationPreference{
+				UserID:            userID,
+				PushEnabled:       true,
+				EmailEnabled:      true,
+				DmAlerts:          true,
+				NewFollowerAlerts: true,
+			}, nil
+		}
+		return generated.NotificationPreference{}, err
+	}
+	return prefs, nil
+}
+
+type UpdateNotificationPreferencesInput struct {
+	PushEnabled       bool `json:"push_enabled"`
+	EmailEnabled      bool `json:"email_enabled"`
+	DmAlerts          bool `json:"dm_alerts"`
+	NewFollowerAlerts bool `json:"new_follower_alerts"`
+}
+
+func (s *Service) UpdateNotificationPreferences(ctx context.Context, userID uuid.UUID, input UpdateNotificationPreferencesInput) (generated.NotificationPreference, error) {
+	return s.repo.UpsertNotificationPreferences(ctx, generated.UpsertNotificationPreferencesParams{
+		UserID:            userID,
+		PushEnabled:       input.PushEnabled,
+		EmailEnabled:      input.EmailEnabled,
+		DmAlerts:          input.DmAlerts,
+		NewFollowerAlerts: input.NewFollowerAlerts,
+	})
+}
+

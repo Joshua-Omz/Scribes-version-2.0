@@ -110,8 +110,7 @@ class ScribesDrawer extends ConsumerWidget {
                 title: 'Bookmarks',
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to bookmarks
-                  ScribesToast.show(context, 'Bookmarks coming soon', colors, icon: HugeIcons.strokeRoundedBookmark01);
+                  context.push('/bookmarks');
                 },
               ),
             ] else ...[
@@ -132,22 +131,11 @@ class ScribesDrawer extends ConsumerWidget {
             _buildMenuItem(
               context: context,
               colors: colors,
-              icon: HugeIcons.strokeRoundedPaintBoard,
-              title: 'Change Theme',
-              onTap: () {
-                _cycleTheme(ref, colors);
-              },
-            ),
-            
-            _buildMenuItem(
-              context: context,
-              colors: colors,
               icon: HugeIcons.strokeRoundedSettings01,
               title: 'Settings',
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Navigate to settings
-                ScribesToast.show(context, 'Settings coming soon', colors, icon: HugeIcons.strokeRoundedSettings01);
+                context.push('/settings');
               },
             ),
             

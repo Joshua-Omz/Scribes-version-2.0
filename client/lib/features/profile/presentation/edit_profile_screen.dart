@@ -18,21 +18,56 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _nameCtrl;
+  late TextEditingController _handleCtrl;
   late TextEditingController _bioCtrl;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     final user = ref.read(authProvider).value;
     _nameCtrl = TextEditingController(text: user?.displayName ?? '');
-    _bioCtrl = TextEditingController(text: ''); // User domain model currently lacks bio
+    _handleCtrl = TextEditingController(text: user?.handle ?? '');
+    _bioCtrl = TextEditingController(text: user?.bio ?? ''); 
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _handleCtrl.dispose();
     _bioCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _save() async {
+    final displayName = _nameCtrl.text.trim();
+    final handle = _handleCtrl.text.trim();
+    final bio = _bioCtrl.text.trim();
+    final colors = ref.read(themeProvider);
+
+    if (displayName.isEmpty || handle.isEmpty) {
+      ScribesToast.show(context, 'Display name and handle are required', colors, isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authProvider.notifier).updateProfile(
+            handle: handle,
+            displayName: displayName,
+            bio: bio.isEmpty ? null : bio,
+          );
+      if (mounted) {
+        ScribesToast.show(context, 'Profile updated successfully!', colors);
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScribesToast.show(context, e.toString(), colors, isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -52,14 +87,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         title: Text('Edit Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
         actions: [
           TextButton(
-            onPressed: () {
-              // TODO: Implement backend patch
-              
-
-              ScribesToast.show(context, 'Profile updated successfully!', colors);
-              context.pop();
-            },
-            child: Text('Save', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
+            onPressed: _isLoading ? null : _save,
+            child: _isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: colors.gold),
+                  )
+                : Text('Save', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
           ),
           const SizedBox(width: 8),
         ],
@@ -94,11 +129,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             const SizedBox(height: 24),
             ScribesTextField(
+              labelText: 'Handle',
+              controller: _handleCtrl,
+            ),
+            const SizedBox(height: 24),
+            ScribesTextField(
               labelText: 'Bio',
               controller: _bioCtrl,
-              maxLines: 3,
+              maxLines: 4,
             ),
-            const SizedBox(height: 48),
           ],
         ),
       ),

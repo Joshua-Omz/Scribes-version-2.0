@@ -97,6 +97,7 @@ class Messages extends Table {
   DateTimeColumn get sentAt => dateTime()();
   TextColumn get replyToId => text().nullable()();
   DateTimeColumn get editedAt => dateTime().nullable()();
+  TextColumn get status => text().withDefault(const Constant('sent'))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -107,7 +108,7 @@ class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -138,6 +139,9 @@ class ScribesDatabase extends _$ScribesDatabase {
         if (from < 7) {
           await m.addColumn(messages, messages.replyToId);
           await m.addColumn(messages, messages.editedAt);
+        }
+        if (from < 8) {
+          await m.addColumn(messages, messages.status);
         }
       },
     );

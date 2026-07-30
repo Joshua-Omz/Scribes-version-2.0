@@ -15,6 +15,7 @@ var (
 )
 
 type CreateInput struct {
+	ID          *uuid.UUID      `json:"id,omitempty"`
 	Content     json.RawMessage `json:"content" binding:"required"`
 	Title       *string         `json:"title,omitempty"`
 	NotebookID  *uuid.UUID      `json:"notebook_id,omitempty"`
@@ -43,7 +44,7 @@ func (s *Service) List(ctx context.Context, authorID uuid.UUID) ([]Note, error) 
 }
 
 func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateInput) (Note, error) {
-	return s.repo.CreateNote(ctx, authorID, input.Content, input.Title, input.NotebookID, input.SourceType, input.SourceLabel)
+	return s.repo.CreateNote(ctx, input.ID, authorID, input.Content, input.Title, input.NotebookID, input.SourceType, input.SourceLabel)
 }
 
 func (s *Service) Update(ctx context.Context, authorID, noteID uuid.UUID, input CreateInput) (Note, error) {

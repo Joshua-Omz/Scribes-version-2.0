@@ -123,7 +123,7 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
               ],
             ),
             loading: () => const SizedBox(height: 48),
-            error: (_, __) => const SizedBox(height: 48),
+            error: (_, _) => const SizedBox(height: 48),
           ),
           
           const SizedBox(height: 24),

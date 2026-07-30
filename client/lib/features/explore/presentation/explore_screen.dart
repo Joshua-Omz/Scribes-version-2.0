@@ -14,6 +14,7 @@ import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
+import '../../../core/widgets/scribes_scripture_selector.dart';
 
 class ExploreScreen extends ConsumerWidget {
   const ExploreScreen({super.key});
@@ -234,69 +235,12 @@ class ExploreScreen extends ConsumerWidget {
   }
 
   void _showScriptureFilterSheet(BuildContext context, WidgetRef ref, dynamic colors) {
-    final bookController = TextEditingController(text: ref.read(exploreScriptureFilterProvider)?.book ?? '');
-    final chapterController = TextEditingController(text: ref.read(exploreScriptureFilterProvider)?.chapter?.toString() ?? '');
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            left: 16, right: 16, top: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Filter by Scripture', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-              const SizedBox(height: 16),
-              ScribesTextField(
-                controller: bookController,
-                labelText: 'Book (e.g. John)',
-              ),
-              const SizedBox(height: 12),
-              ScribesTextField(
-                controller: chapterController,
-                keyboardType: TextInputType.number,
-                labelText: 'Chapter (Optional)',
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      ref.read(exploreScriptureFilterProvider.notifier).clear();
-                      Navigator.pop(context);
-                    },
-                    child: Text('Clear', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.gold,
-                      foregroundColor: colors.surface,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () {
-                      if (bookController.text.isNotEmpty) {
-                        int? chapter = int.tryParse(chapterController.text);
-                        ref.read(exploreScriptureFilterProvider.notifier).setFilter(bookController.text, chapter);
-                      }
-                      Navigator.pop(context);
-                    },
-                    child: Text('Apply', style: ScribesTextStyles.labelLg),
-                  ),
-                ],
-              )
-            ],
-          ),
-        );
+    ScribesScriptureSelector.show(
+      context,
+      isExplore: true,
+      colors: colors,
+      onSelected: (book, chapter, verseStart, verseEnd) {
+        ref.read(exploreScriptureFilterProvider.notifier).setFilter(book, chapter);
       },
     );
   }

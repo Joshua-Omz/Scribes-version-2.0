@@ -157,54 +157,66 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _isLogin = true),
-                          behavior: HitTestBehavior.opaque,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: _isLogin ? colors.surfaceRaised : Colors.transparent,
-                              borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
-                              boxShadow: _isLogin ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                )
-                              ] : null,
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Log in', 
-                              style: ScribesTextStyles.labelLg.copyWith(
-                                color: _isLogin ? colors.primaryText : colors.secondaryText,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => setState(() => _isLogin = true),
+                            borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
+                            splashColor: colors.gold.withValues(alpha: 0.1),
+                            highlightColor: colors.gold.withValues(alpha: 0.05),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: _isLogin ? colors.surfaceRaised : Colors.transparent,
+                                borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
+                                boxShadow: _isLogin ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ] : null,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Log in', 
+                                style: ScribesTextStyles.labelLg.copyWith(
+                                  color: _isLogin ? colors.primaryText : colors.secondaryText,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                       Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _isLogin = false),
-                          behavior: HitTestBehavior.opaque,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: !_isLogin ? colors.surfaceRaised : Colors.transparent,
-                              borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
-                              boxShadow: !_isLogin ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                )
-                              ] : null,
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Sign up', 
-                              style: ScribesTextStyles.labelLg.copyWith(
-                                color: !_isLogin ? colors.primaryText : colors.secondaryText,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => setState(() => _isLogin = false),
+                            borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
+                            splashColor: colors.gold.withValues(alpha: 0.1),
+                            highlightColor: colors.gold.withValues(alpha: 0.05),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              decoration: BoxDecoration(
+                                color: !_isLogin ? colors.surfaceRaised : Colors.transparent,
+                                borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
+                                boxShadow: !_isLogin ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ] : null,
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Sign up', 
+                                style: ScribesTextStyles.labelLg.copyWith(
+                                  color: !_isLogin ? colors.primaryText : colors.secondaryText,
+                                ),
                               ),
                             ),
                           ),

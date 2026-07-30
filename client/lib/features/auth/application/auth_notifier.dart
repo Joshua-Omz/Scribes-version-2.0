@@ -39,7 +39,7 @@ class AuthNotifier extends _$AuthNotifier {
         final syncService = ref.read(syncServiceProvider);
         await syncService.sync(authorId: userId);
       } catch (e) {
-        debugPrint('Background sync failed: \$e');
+        debugPrint('Background sync failed: $e');
       }
     });
   }
@@ -91,5 +91,44 @@ class AuthNotifier extends _$AuthNotifier {
     final repo = ref.read(authRepositoryProvider);
     await repo.logout();
     state = const AsyncData(null);
+  }
+
+  Future<void> updateProfile({
+    required String handle,
+    required String displayName,
+    String? bio,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    final updatedUser = await repo.updateProfile(
+      handle: handle,
+      displayName: displayName,
+      bio: bio,
+    );
+    state = AsyncData(updatedUser);
+  }
+
+  Future<void> updateEmail({
+    required String newEmail,
+    required String currentPassword,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.updateEmail(
+      newEmail: newEmail,
+      currentPassword: currentPassword,
+    );
+    // Reload user to get updated email
+    final user = await repo.getMe();
+    state = AsyncData(user);
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.updatePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
   }
 }

@@ -14,6 +14,7 @@ import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/user_lookup_provider.dart';
 import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
+import 'package:scribes/features/messages/application/last_read_provider.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
   const InboxScreen({super.key});
@@ -160,7 +161,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
   }
 }
 
-class _ConversationTile extends ConsumerWidget {
+class _ConversationTile extends ConsumerStatefulWidget {
   final dynamic conversation;
   final String otherUserId;
   final dynamic colors;
@@ -172,28 +173,43 @@ class _ConversationTile extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authorState = ref.watch(commentAuthorProvider(otherUserId));
+  ConsumerState<_ConversationTile> createState() => _ConversationTileState();
+}
+
+class _ConversationTileState extends ConsumerState<_ConversationTile> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(lastReadProvider.notifier).loadForConversation(widget.conversation.id);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authorState = ref.watch(commentAuthorProvider(widget.otherUserId));
+    final lastReadMap = ref.watch(lastReadProvider);
+    final lastReadTime = lastReadMap[widget.conversation.id];
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       leading: authorState.when(
         data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 24),
         loading: () => const CircleAvatar(radius: 24, backgroundColor: Colors.grey),
-        error: (_, __) => const ScribesAvatar(authorName: 'Unknown', radius: 24),
+        error: (_, _) => const ScribesAvatar(authorName: 'Unknown', radius: 24),
       ),
       title: authorState.when(
         data: (author) => Text(
           author.safeDisplayName,
-          style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold),
+          style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
-        error: (_, __) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
+        error: (_, _) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold)),
       ),
       subtitle: StreamBuilder<List<Message>>(
-        stream: ref.watch(messageRepositoryProvider).watchMessages(conversation.id),
+        stream: ref.watch(messageRepositoryProvider).watchMessages(widget.conversation.id),
         builder: (context, snapshot) {
           final messages = snapshot.data ?? [];
           final lastMessage = messages.firstOrNull;
@@ -201,14 +217,14 @@ class _ConversationTile extends ConsumerWidget {
           if (lastMessage == null) {
             return Text(
               'Tap to view conversation',
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              style: ScribesTextStyles.bodyMd.copyWith(color: widget.colors.secondaryText),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             );
           }
 
-          // In V1, we naively assume unread if the last message was from the other user
-          final isUnread = lastMessage.senderId == otherUserId;
+          final isFromOther = lastMessage.senderId == widget.otherUserId;
+          final isUnread = isFromOther && (lastReadTime == null || lastMessage.sentAt.isAfter(lastReadTime));
 
           return Row(
             children: [
@@ -216,7 +232,7 @@ class _ConversationTile extends ConsumerWidget {
                 child: Text(
                   lastMessage.body,
                   style: ScribesTextStyles.bodyMd.copyWith(
-                    color: isUnread ? colors.primaryText : colors.secondaryText,
+                    color: isUnread ? widget.colors.primaryText : widget.colors.secondaryText,
                     fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
                   ),
                   maxLines: 1,
@@ -239,7 +255,7 @@ class _ConversationTile extends ConsumerWidget {
         },
       ),
       onTap: () {
-        context.push('/conversation/${conversation.id}');
+        context.push('/conversation/${widget.conversation.id}');
       },
     );
   }
@@ -272,7 +288,7 @@ class _RequestTile extends ConsumerWidget {
               authorState.when(
                 data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 20),
                 loading: () => const CircleAvatar(radius: 20, backgroundColor: Colors.grey),
-                error: (_, __) => const ScribesAvatar(authorName: 'Unknown', radius: 20),
+                error: (_, _) => const ScribesAvatar(authorName: 'Unknown', radius: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -291,7 +307,7 @@ class _RequestTile extends ConsumerWidget {
                     ],
                   ),
                   loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
-                  error: (_, __) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
+                  error: (_, _) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

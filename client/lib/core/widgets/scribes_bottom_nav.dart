@@ -95,7 +95,7 @@ class ScribesBottomNav extends ConsumerWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOutCubic,
-          height: isVisible ? 70 : 0,
+          height: isVisible ? 85 : 0,
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
             color: colors.surface.withValues(alpha: 0.8),
@@ -110,8 +110,11 @@ class ScribesBottomNav extends ConsumerWidget {
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
         child: SizedBox(
-          height: 70,
-          child: Row(
+          height: 85,
+          child: SafeArea(
+            bottom: true,
+            top: false,
+            child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -120,9 +123,9 @@ class ScribesBottomNav extends ConsumerWidget {
               _buildNavItem(context, colors, HugeIcons.strokeRoundedFile01, 'Drafts', 3),
               _buildNavItem(context, colors, HugeIcons.strokeRoundedFileEdit, 'Notes', 4),
             ],
-            
           ),
         ),
+      ),
       ),
         ),
       ),
@@ -136,24 +139,33 @@ class ScribesBottomNav extends ConsumerWidget {
     return Expanded(
       child: ScribesBounceButton(
         onTap: () => onTap(index),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: isSelected
-                    ? Border(top: BorderSide(color: colors.gold, width: 2))
-                    : null,
-              ),
-              padding: const EdgeInsets.only(top: 4),
-              child: HugeIcon(icon: icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: ScribesTextStyles.labelSm.copyWith(color: color, fontSize: 10),
-            ),
-          ],
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: EdgeInsets.symmetric(vertical: isSelected ? 8 : 10),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              HugeIcon(icon: icon, color: color, size: 24),
+              if (isSelected) ...[
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: ScribesTextStyles.labelSm.copyWith(
+                    color: color, 
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

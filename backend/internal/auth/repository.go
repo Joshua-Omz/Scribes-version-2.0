@@ -197,3 +197,43 @@ func (r *Repository) SearchUsers(ctx context.Context, query string) ([]UserSearc
 	}
 	return results, nil
 }
+
+func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle, displayName string, bio *string) (User, error) {
+	b := sql.NullString{}
+	if bio != nil {
+		b.String = *bio
+		b.Valid = true
+	}
+	dbUser, err := r.q.UpdateUserProfile(ctx, generated.UpdateUserProfileParams{
+		ID:          id,
+		Handle:      handle,
+		DisplayName: displayName,
+		Bio:         b,
+	})
+	if err != nil {
+		return User{}, err
+	}
+	return mapCreatedUser(dbUser), nil
+}
+
+func (r *Repository) UpdateUserEmail(ctx context.Context, id uuid.UUID, email string) error {
+	return r.q.UpdateUserEmail(ctx, generated.UpdateUserEmailParams{
+		ID:    id,
+		Email: email,
+	})
+}
+
+func (r *Repository) UpdateUserPassword(ctx context.Context, id uuid.UUID, passwordHash string) error {
+	return r.q.UpdateUserPassword(ctx, generated.UpdateUserPasswordParams{
+		ID:           id,
+		PasswordHash: passwordHash,
+	})
+}
+
+func (r *Repository) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (generated.NotificationPreference, error) {
+	return r.q.GetNotificationPreferences(ctx, userID)
+}
+
+func (r *Repository) UpsertNotificationPreferences(ctx context.Context, arg generated.UpsertNotificationPreferencesParams) (generated.NotificationPreference, error) {
+	return r.q.UpsertNotificationPreferences(ctx, arg)
+}

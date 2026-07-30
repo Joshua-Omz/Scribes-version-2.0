@@ -4,13 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/theme_provider.dart';
 
+late SharedPreferences sharedPrefs;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+  sharedPrefs = await SharedPreferences.getInstance();
 
   try {
     await GoogleSignIn.instance.initialize(
@@ -23,6 +27,8 @@ void main() async {
   runApp(const ProviderScope(child: ScribesApp()));
 }
 
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 class ScribesApp extends ConsumerWidget {
   const ScribesApp({super.key});
 
@@ -32,6 +38,7 @@ class ScribesApp extends ConsumerWidget {
     final themeColors = ref.watch(themeProvider);
 
     return MaterialApp.router(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       title: 'Scribes',
       builder: (context, child) {

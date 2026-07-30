@@ -4,6 +4,7 @@ import 'package:scribes/core/storage/database_provider.dart';
 import 'package:scribes/core/storage/drift_database.dart' as db;
 import 'package:scribes/features/messages/data/message_api.dart';
 import 'package:scribes/features/messages/domain/message.dart';
+import 'package:uuid/uuid.dart';
 
 final messageRepositoryProvider = Provider((ref) {
   final api = ref.watch(messageApiProvider);
@@ -78,6 +79,7 @@ class MessageRepository {
             sentAt: m.sentAt,
             replyToId: m.replyToId,
             editedAt: m.editedAt,
+            status: m.status,
           )).toList();
     });
   }
@@ -97,6 +99,7 @@ class MessageRepository {
                 sentAt: m.sentAt,
                 replyToId: m.replyToId,
                 editedAt: m.editedAt,
+                status: 'sent', // from API is always sent
               )),
           mode: drift.InsertMode.insertOrReplace,
         );
@@ -106,22 +109,50 @@ class MessageRepository {
     }
   }
 
-  Future<Message> sendMessage(String conversationId, String body, {String? replyToId}) async {
-    final msg = await _api.sendMessage(conversationId, body, replyToId: replyToId);
-    await _db.into(_db.messages).insert(
-      db.Message(
-        id: msg.id,
-        conversationId: msg.conversationId,
-        senderId: msg.senderId,
-        body: msg.body,
-        isDeleted: msg.isDeleted,
-        sentAt: msg.sentAt,
-        replyToId: msg.replyToId,
-        editedAt: msg.editedAt,
-      ),
-      mode: drift.InsertMode.insertOrReplace,
+  Future<void> sendMessage(String conversationId, String body, String senderId, {String? replyToId}) async {
+    // 1. Optimistic UI: Insert pending message
+    final pendingId = const Uuid().v4();
+    final tempMsg = db.Message(
+      id: pendingId,
+      conversationId: conversationId,
+      senderId: senderId,
+      body: body,
+      isDeleted: false,
+      sentAt: DateTime.now(),
+      replyToId: replyToId,
+      editedAt: null,
+      status: 'pending',
     );
-    return msg;
+    await _db.into(_db.messages).insert(tempMsg);
+
+    // 2. Perform API call asynchronously
+    try {
+      final msg = await _api.sendMessage(conversationId, body, replyToId: replyToId);
+      
+      // 3. On success, delete pending and insert real message
+      await _db.transaction(() async {
+        await (_db.delete(_db.messages)..where((t) => t.id.equals(pendingId))).go();
+        await _db.into(_db.messages).insert(
+          db.Message(
+            id: msg.id,
+            conversationId: msg.conversationId,
+            senderId: msg.senderId,
+            body: msg.body,
+            isDeleted: msg.isDeleted,
+            sentAt: msg.sentAt,
+            replyToId: msg.replyToId,
+            editedAt: msg.editedAt,
+            status: 'sent',
+          ),
+          mode: drift.InsertMode.insertOrReplace,
+        );
+      });
+    } catch (e) {
+      // 4. On error, mark pending as error
+      await (_db.update(_db.messages)..where((t) => t.id.equals(pendingId))).write(
+        const db.MessagesCompanion(status: drift.Value('error')),
+      );
+    }
   }
   
   Stream<Message> streamRealtimeMessages(String conversationId) async* {
@@ -136,6 +167,7 @@ class MessageRepository {
           sentAt: msg.sentAt,
           replyToId: msg.replyToId,
           editedAt: msg.editedAt,
+          status: 'sent',
         ),
         mode: drift.InsertMode.insertOrReplace,
       );

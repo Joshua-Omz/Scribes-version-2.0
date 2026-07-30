@@ -144,3 +144,137 @@ func (h *Handler) SearchUsers(c *gin.Context) {
 
 	respond.JSON(c, http.StatusOK, results)
 }
+
+func (h *Handler) UpdateProfile(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	var input UpdateProfileInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		return
+	}
+
+	user, err := h.svc.UpdateProfile(c.Request.Context(), userID, input)
+	if err != nil {
+		if err == ErrHandleTaken {
+			respond.Error(c, http.StatusConflict, err.Error())
+		} else {
+			respond.Error(c, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+	respond.JSON(c, http.StatusOK, user)
+}
+
+func (h *Handler) UpdateEmail(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	var input UpdateEmailInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		return
+	}
+
+	if err := h.svc.UpdateEmail(c.Request.Context(), userID, input); err != nil {
+		if err == ErrInvalidCredentials {
+			respond.Error(c, http.StatusForbidden, err.Error())
+		} else {
+			respond.Error(c, http.StatusBadRequest, err.Error())
+		}
+		return
+	}
+	respond.JSON(c, http.StatusOK, map[string]string{"status": "success"})
+}
+
+func (h *Handler) UpdatePassword(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	var input UpdatePasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		return
+	}
+
+	if err := h.svc.UpdatePassword(c.Request.Context(), userID, input); err != nil {
+		if err == ErrInvalidCredentials {
+			respond.Error(c, http.StatusForbidden, err.Error())
+		} else {
+			respond.Error(c, http.StatusBadRequest, err.Error())
+		}
+		return
+	}
+	respond.JSON(c, http.StatusOK, map[string]string{"status": "success"})
+}
+
+func (h *Handler) GetNotificationPreferences(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	prefs, err := h.svc.GetNotificationPreferences(c.Request.Context(), userID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respond.JSON(c, http.StatusOK, prefs)
+}
+
+func (h *Handler) UpdateNotificationPreferences(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	var input UpdateNotificationPreferencesInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		return
+	}
+
+	prefs, err := h.svc.UpdateNotificationPreferences(c.Request.Context(), userID, input)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respond.JSON(c, http.StatusOK, prefs)
+}

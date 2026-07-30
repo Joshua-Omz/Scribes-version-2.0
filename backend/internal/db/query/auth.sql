@@ -51,3 +51,22 @@ FROM users
 WHERE (handle ILIKE $1 || '%' OR display_name ILIKE '%' || $1 || '%') AND is_deleted = false
 ORDER BY handle ASC
 LIMIT 10;
+
+-- name: UpdateUserProfile :one
+UPDATE users
+SET handle = $2, display_name = $3, bio = $4
+WHERE id = $1 AND is_deleted = false
+RETURNING *;
+
+-- name: UpdateUserEmail :exec
+UPDATE users
+SET email = $2
+WHERE id = $1 AND is_deleted = false;
+
+-- name: UpdateUserPassword :exec
+UPDATE users
+SET password_hash = $2
+WHERE id = $1 AND is_deleted = false;
+
+-- name: GetUserPasswordHash :one
+SELECT password_hash FROM users WHERE id = $1 AND is_deleted = false LIMIT 1;

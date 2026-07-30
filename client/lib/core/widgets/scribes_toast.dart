@@ -1,16 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
+import '../../main.dart';
 import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 
 class ScribesToast {
   static void show(
-    BuildContext context, 
+    BuildContext? context, 
     String message, 
     ScribesColors colors, {
     dynamic icon = Icons.check_circle_outline,
     bool isError = false,
   }) {
+    Widget buildIcon() {
+      if (icon is Widget) return icon;
+      if (icon is IconData) {
+        return Icon(
+          isError ? Icons.error_outline : icon,
+          color: isError ? colors.surface : colors.gold,
+          size: 20,
+        );
+      }
+      // Fallback for HugeIcons which are List<List<dynamic>>
+      return HugeIcon(
+        icon: isError ? HugeIcons.strokeRoundedAlert01 : icon,
+        color: isError ? colors.surface : colors.gold,
+        size: 20,
+      );
+    }
+
     final snackBar = SnackBar(
       elevation: 0,
       behavior: SnackBarBehavior.floating,
@@ -36,11 +55,7 @@ class ScribesToast {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                isError ? Icons.error_outline : icon,
-                color: isError ? colors.surface : colors.gold,
-                size: 20,
-              ),
+              buildIcon(),
               const SizedBox(width: 12),
               Flexible(
                 child: Text(
@@ -58,8 +73,14 @@ class ScribesToast {
       duration: const Duration(seconds: 3),
     );
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(snackBar);
+    if (context != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
+    } else {
+      scaffoldMessengerKey.currentState
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
+    }
   }
 }

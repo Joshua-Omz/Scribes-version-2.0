@@ -1,0 +1,9 @@
+CREATE TABLE notification_preferences (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    push_enabled BOOLEAN NOT NULL DEFAULT true,
+    email_enabled BOOLEAN NOT NULL DEFAULT true,
+    dm_alerts BOOLEAN NOT NULL DEFAULT true,
+    new_follower_alerts BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

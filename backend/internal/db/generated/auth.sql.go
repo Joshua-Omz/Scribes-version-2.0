@@ -217,6 +217,17 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 	return i, err
 }
 
+const getUserPasswordHash = `-- name: GetUserPasswordHash :one
+SELECT password_hash FROM users WHERE id = $1 AND is_deleted = false LIMIT 1
+`
+
+func (q *Queries) GetUserPasswordHash(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRowContext(ctx, getUserPasswordHash, id)
+	var password_hash string
+	err := row.Scan(&password_hash)
+	return password_hash, err
+}
+
 const searchUsers = `-- name: SearchUsers :many
 SELECT 
     id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
@@ -275,4 +286,72 @@ func (q *Queries) SearchUsers(ctx context.Context, dollar_1 sql.NullString) ([]S
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUserEmail = `-- name: UpdateUserEmail :exec
+UPDATE users
+SET email = $2
+WHERE id = $1 AND is_deleted = false
+`
+
+type UpdateUserEmailParams struct {
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserEmail, arg.ID, arg.Email)
+	return err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :exec
+UPDATE users
+SET password_hash = $2
+WHERE id = $1 AND is_deleted = false
+`
+
+type UpdateUserPasswordParams struct {
+	ID           uuid.UUID `json:"id"`
+	PasswordHash string    `json:"password_hash"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
+	return err
+}
+
+const updateUserProfile = `-- name: UpdateUserProfile :one
+UPDATE users
+SET handle = $2, display_name = $3, bio = $4
+WHERE id = $1 AND is_deleted = false
+RETURNING id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at
+`
+
+type UpdateUserProfileParams struct {
+	ID          uuid.UUID      `json:"id"`
+	Handle      string         `json:"handle"`
+	DisplayName string         `json:"display_name"`
+	Bio         sql.NullString `json:"bio"`
+}
+
+func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserProfile,
+		arg.ID,
+		arg.Handle,
+		arg.DisplayName,
+		arg.Bio,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Handle,
+		&i.DisplayName,
+		&i.Email,
+		&i.PasswordHash,
+		&i.Bio,
+		&i.Role,
+		&i.IsDeleted,
+		&i.CreatedAt,
+	)
+	return i, err
 }

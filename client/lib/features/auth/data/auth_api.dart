@@ -54,4 +54,57 @@ class AuthApi {
     final response = await _dio.get(Endpoints.me);
     return response.data as Map<String, dynamic>;
   }
+
+  Future<Map<String, dynamic>> updateProfile({
+    required String handle,
+    required String displayName,
+    String? bio,
+  }) async {
+    final response = await _dio.patch(Endpoints.me, data: {
+      'handle': handle,
+      'display_name': displayName,
+      'bio': bio,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<void> updateEmail({
+    required String newEmail,
+    required String currentPassword,
+  }) async {
+    await _dio.patch(Endpoints.updateEmail, data: {
+      'new_email': newEmail,
+      'current_password': currentPassword,
+    });
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.patch(Endpoints.updatePassword, data: {
+      'current_password': currentPassword,
+      'new_password': newPassword,
+    });
+  }
+
+  Future<Map<String, dynamic>> getNotificationPreferences() async {
+    final response = await _dio.get(Endpoints.notificationPreferences);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateNotificationPreferences({
+    required bool pushEnabled,
+    required bool emailEnabled,
+    required bool dmAlerts,
+    required bool newFollowerAlerts,
+  }) async {
+    final response = await _dio.patch(Endpoints.notificationPreferences, data: {
+      'push_enabled': pushEnabled,
+      'email_enabled': emailEnabled,
+      'dm_alerts': dmAlerts,
+      'new_follower_alerts': newFollowerAlerts,
+    });
+    return response.data as Map<String, dynamic>;
+  }
 }

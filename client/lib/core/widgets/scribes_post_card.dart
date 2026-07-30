@@ -145,6 +145,8 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               style: ScribesTextStyles.displayMd.copyWith(
                 color: colors.primaryText,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
             ShaderMask(
@@ -167,26 +169,33 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
             
             if (hasEmbeddedContent) ...[
               const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                behavior: HitTestBehavior.opaque,
-                child: Row(
-                  children: [
-                    HugeIcon(
-                      icon: _isExpanded ? HugeIcons.strokeRoundedArrowUp01 : HugeIcons.strokeRoundedArrowDown01,
-                      color: colors.secondaryText,
-                      size: 16,
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isExpanded = !_isExpanded;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        HugeIcon(
+                          icon: _isExpanded ? HugeIcons.strokeRoundedArrowUp01 : HugeIcons.strokeRoundedArrowDown01,
+                          color: colors.secondaryText,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _isExpanded ? 'Hide references' : 'Show references',
+                          style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _isExpanded ? 'Hide references' : 'Show references',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
-                    ),
-                  ],
+                  ),
                 ),
               ),
               AnimatedCrossFade(

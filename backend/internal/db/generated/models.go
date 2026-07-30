@@ -460,6 +460,16 @@ type Notification struct {
 	ActorID     uuid.NullUUID `json:"actor_id"`
 }
 
+type NotificationPreference struct {
+	UserID            uuid.UUID    `json:"user_id"`
+	PushEnabled       bool         `json:"push_enabled"`
+	EmailEnabled      bool         `json:"email_enabled"`
+	DmAlerts          bool         `json:"dm_alerts"`
+	NewFollowerAlerts bool         `json:"new_follower_alerts"`
+	CreatedAt         sql.NullTime `json:"created_at"`
+	UpdatedAt         sql.NullTime `json:"updated_at"`
+}
+
 type Post struct {
 	ID             uuid.UUID       `json:"id"`
 	AuthorID       uuid.UUID       `json:"author_id"`

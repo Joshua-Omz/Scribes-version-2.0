@@ -36,27 +36,32 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     builder: (context) {
                       final hasDrawer = Scaffold.maybeOf(context)?.hasDrawer ?? false;
                       
-                      return GestureDetector(
-                        onTap: hasDrawer ? () => Scaffold.of(context).openDrawer() : null,
-                        behavior: HitTestBehavior.opaque,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                'assets/logo.svg',
-                                height: 24,
-                                colorFilter: ColorFilter.mode(colors.primaryText, BlendMode.srcIn),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'Scribes',
-                                style: ScribesTextStyles.displayMd.copyWith(
-                                  fontSize: 22,
-                                  color: colors.primaryText,
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: hasDrawer ? () => Scaffold.of(context).openDrawer() : null,
+                          borderRadius: BorderRadius.circular(8),
+                          splashColor: colors.gold.withValues(alpha: 0.1),
+                          highlightColor: colors.gold.withValues(alpha: 0.05),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/logo.svg',
+                                  height: 24,
+                                  colorFilter: ColorFilter.mode(colors.primaryText, BlendMode.srcIn),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Scribes',
+                                  style: ScribesTextStyles.displayMd.copyWith(
+                                    fontSize: 22,
+                                    color: colors.primaryText,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );

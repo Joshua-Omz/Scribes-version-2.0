@@ -131,6 +131,7 @@ class NoteRepository {
     if (local == null) throw Exception('Note not found locally');
 
     final payload = {
+      'id': id,
       'content': local.content,
       'title': local.title,
       'notebook_id': local.notebookId,

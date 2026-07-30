@@ -31,7 +31,7 @@ class ScribesIconButton extends ConsumerWidget {
       splashColor: colors.gold.withValues(alpha: 0.1),
       highlightColor: colors.gold.withValues(alpha: 0.05),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0), // 24 + 20 = 44px min touch target
         child: HugeIcon(icon: icon,
           size: size,
           color: iconColor,

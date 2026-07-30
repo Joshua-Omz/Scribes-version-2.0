@@ -11,6 +11,7 @@ import '../../../core/widgets/scribes_toast.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
+import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../explore/application/explore_notifier.dart';
 
 class PublishMetadataScreen extends ConsumerWidget {
@@ -464,105 +465,20 @@ class PublishMetadataScreen extends ConsumerWidget {
   }
 
   void _showAddScriptureSheet(BuildContext context, WidgetRef ref, dynamic colors) {
-    final bookController = TextEditingController();
-    final chapterController = TextEditingController();
-    final verseStartController = TextEditingController();
-    final verseEndController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.surface,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            left: 16, right: 16, top: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Add Scripture Tag', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-              const SizedBox(height: 16),
-              ScribesTextField(
-                controller: bookController,
-                labelText: 'Book (e.g. John)',
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: ScribesTextField(
-                      controller: chapterController,
-                      keyboardType: TextInputType.number,
-                      labelText: 'Chapter',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ScribesTextField(
-                      controller: verseStartController,
-                      keyboardType: TextInputType.number,
-                      labelText: 'Verse Start',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ScribesTextField(
-                      controller: verseEndController,
-                      keyboardType: TextInputType.number,
-                      labelText: 'Verse End',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.gold,
-                      foregroundColor: colors.surface,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () {
-                      final book = bookController.text.trim();
-                      final chapter = int.tryParse(chapterController.text.trim());
-                      final verseStart = int.tryParse(verseStartController.text.trim());
-                      final verseEnd = int.tryParse(verseEndController.text.trim());
-
-                      if (book.isEmpty || chapter == null || verseStart == null) {
-                        ScribesToast.show(context, 'Book, chapter, and verse start are required.', colors, isError: true);
-                        return;
-                      }
-
-                      ref.read(composeProvider.notifier).addScriptureRef(
-                        ScriptureRef(
-                          book: book,
-                          chapter: chapter,
-                          verseStart: verseStart,
-                          verseEnd: verseEnd,
-                        )
-                      );
-                      Navigator.pop(context);
-                    },
-                    child: Text('Add', style: ScribesTextStyles.labelLg),
-                  ),
-                ],
-              )
-            ],
-          ),
-        );
+    ScribesScriptureSelector.show(
+      context,
+      colors: colors,
+      onSelected: (book, chapter, verseStart, verseEnd) {
+        if (chapter != null && verseStart != null) {
+          ref.read(composeProvider.notifier).addScriptureRef(
+            ScriptureRef(
+              book: book,
+              chapter: chapter,
+              verseStart: verseStart,
+              verseEnd: verseEnd,
+            ),
+          );
+        }
       },
     );
   }

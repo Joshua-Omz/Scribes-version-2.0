@@ -47,6 +47,7 @@ abstract class Message with _$Message {
     @JsonKey(name: 'sent_at') required DateTime sentAt,
     @JsonKey(name: 'reply_to_id') String? replyToId,
     @JsonKey(name: 'edited_at') DateTime? editedAt,
+    @Default('sent') String status,
   }) = _Message;
 
   factory Message.fromJson(Map<String, dynamic> json) =>

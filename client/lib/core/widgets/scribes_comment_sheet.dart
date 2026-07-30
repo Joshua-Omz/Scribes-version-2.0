@@ -257,20 +257,11 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.surface,
         title: Text('Reply via DM', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText, fontSize: 20)),
-        content: TextField(
+        content: ScribesTextField(
           controller: controller,
           maxLines: 4,
-          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-          decoration: InputDecoration(
-            hintText: 'Type your message...',
-            hintStyle: TextStyle(color: colors.secondaryText),
-            filled: true,
-            fillColor: colors.background,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
+          minLines: 4,
+          hintText: 'Type your message...',
         ),
         actions: [
           TextButton(
@@ -335,6 +326,9 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom - 40,
+            ),
             height: MediaQuery.of(context).size.height * 0.75,
             decoration: BoxDecoration(
               color: colors.surface.withValues(alpha: 0.8),

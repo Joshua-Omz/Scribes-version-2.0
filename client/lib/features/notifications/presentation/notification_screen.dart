@@ -80,8 +80,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     }
                   }
                 }
-                ref.read(notificationProvider.notifier).markSelectedRead(allIds);
-                _clearSelection();
+                if (allIds.isNotEmpty) {
+                  ref.read(notificationProvider.notifier).markSelectedRead(allIds).then((_) {
+                    _clearSelection();
+                  }).catchError((e) {
+                    debugPrint('Error marking read: $e');
+                    _clearSelection();
+                  });
+                } else {
+                  _clearSelection();
+                }
               },
               color: colors.secondaryText,
             ),
@@ -101,8 +109,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                     }
                   }
                 }
-                ref.read(notificationProvider.notifier).deleteSelected(allIds);
-                _clearSelection();
+                if (allIds.isNotEmpty) {
+                  ref.read(notificationProvider.notifier).deleteSelected(allIds).then((_) {
+                    _clearSelection();
+                  }).catchError((e) {
+                    debugPrint('Error deleting: $e');
+                    _clearSelection();
+                  });
+                } else {
+                  _clearSelection();
+                }
               },
               color: Colors.red,
             ),

@@ -41,7 +41,7 @@ final class ThemeNotifierProvider
   }
 }
 
-String _$themeNotifierHash() => r'429191bb6ddf394b91ddfdb4e70250de151a4f01';
+String _$themeNotifierHash() => r'1fab3826ea611536acf5b4515122bae9794bad26';
 
 abstract class _$ThemeNotifier extends $Notifier<ScribesColors> {
   ScribesColors build();

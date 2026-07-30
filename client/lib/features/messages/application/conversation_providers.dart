@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
+import 'package:scribes/features/auth/application/auth_notifier.dart';
 
 part 'conversation_providers.g.dart';
 
@@ -40,6 +41,8 @@ class ConversationMessages extends _$ConversationMessages {
 
   Future<void> sendMessage(String body, {String? replyToId}) async {
     final repo = ref.read(messageRepositoryProvider);
-    await repo.sendMessage(conversationId, body, replyToId: replyToId);
+    final user = ref.read(authProvider).value;
+    if (user == null) return;
+    await repo.sendMessage(conversationId, body, user.id, replyToId: replyToId);
   }
 }

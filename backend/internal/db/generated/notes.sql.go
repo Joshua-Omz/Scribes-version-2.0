@@ -15,6 +15,7 @@ import (
 
 const createNote = `-- name: CreateNote :one
 INSERT INTO notes (
+    id,
     author_id,
     content,
     title,
@@ -22,11 +23,12 @@ INSERT INTO notes (
     source_type,
     source_label
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    COALESCE(NULLIF($1, '00000000-0000-0000-0000-000000000000')::uuid, gen_random_uuid()), $2, $3, $4, $5, $6, $7
 ) RETURNING id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at, server_sequence
 `
 
 type CreateNoteParams struct {
+	Column1     interface{}        `json:"column_1"`
 	AuthorID    uuid.UUID          `json:"author_id"`
 	Content     json.RawMessage    `json:"content"`
 	Title       sql.NullString     `json:"title"`
@@ -37,6 +39,7 @@ type CreateNoteParams struct {
 
 func (q *Queries) CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error) {
 	row := q.db.QueryRowContext(ctx, createNote,
+		arg.Column1,
 		arg.AuthorID,
 		arg.Content,
 		arg.Title,

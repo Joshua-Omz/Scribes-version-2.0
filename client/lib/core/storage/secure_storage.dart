@@ -39,4 +39,12 @@ class SecureStorage {
     if (value == null || value.isEmpty) return null;
     return value.split(',');
   }
+
+  Future<void> saveLastRead(String conversationId, String isoDate) async {
+    await _storage.write(key: 'lastRead_$conversationId', value: isoDate);
+  }
+
+  Future<String?> getLastRead(String conversationId) async {
+    return await _storage.read(key: 'lastRead_$conversationId');
+  }
 }

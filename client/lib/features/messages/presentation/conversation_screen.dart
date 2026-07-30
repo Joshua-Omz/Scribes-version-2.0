@@ -13,6 +13,7 @@ import 'package:scribes/features/social/application/user_lookup_provider.dart';
 import 'package:scribes/core/widgets/scribes_author_header.dart';
 import 'package:scribes/core/widgets/scribes_text_field.dart';
 import 'package:scribes/features/messages/domain/message.dart';
+import 'package:scribes/features/messages/application/last_read_provider.dart';
 
 class ConversationScreen extends ConsumerStatefulWidget {
   final String conversationId;
@@ -26,6 +27,14 @@ class ConversationScreen extends ConsumerStatefulWidget {
 class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   final TextEditingController _messageController = TextEditingController();
   Message? _replyingTo;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(lastReadProvider.notifier).markAsRead(widget.conversationId);
+    });
+  }
 
   @override
   void dispose() {
@@ -98,6 +107,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                     final isMe = message.senderId == currentUser?.id;
                     return _buildMessageBubble(
                       message: message,
+                      messages: messages,
                       isMe: isMe,
                       colors: colors,
                     );
@@ -119,11 +129,17 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
   Widget _buildMessageBubble({
     required Message message,
+    required List<Message> messages,
     required bool isMe,
     required dynamic colors,
   }) {
     final text = message.body;
     final timestamp = message.sentAt;
+    
+    Message? replyMessage;
+    if (message.replyToId != null) {
+      replyMessage = messages.where((m) => m.id == message.replyToId).firstOrNull;
+    }
     
     Widget bubble = Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -145,23 +161,31 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Check if there is a reply
-            if (message.replyToId != null)
+            if (replyMessage != null)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isMe ? Colors.white24 : colors.background,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border(left: BorderSide(color: isMe ? Colors.white : colors.gold, width: 4)),
+                  color: isMe ? Colors.white.withValues(alpha: 0.15) : colors.background,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  'Replying...', // In a real app we would resolve the text of the message being replied to
-                  style: ScribesTextStyles.caption.copyWith(
-                    color: isMe ? Colors.white : colors.secondaryText,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.reply, size: 14, color: isMe ? Colors.white70 : colors.gold),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        replyMessage.body,
+                        style: ScribesTextStyles.labelLg.copyWith(
+                          color: isMe ? Colors.white : colors.primaryText,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             Text(

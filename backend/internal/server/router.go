@@ -58,7 +58,11 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	protected.Use(middleware.ValidateJWT(jwtSecret))
 	{
 		protected.GET("/me", authHandler.GetMe)
-
+		protected.PATCH("/me", authHandler.UpdateProfile)
+		protected.PATCH("/me/email", authHandler.UpdateEmail)
+		protected.PATCH("/me/password", authHandler.UpdatePassword)
+		protected.GET("/me/notifications", authHandler.GetNotificationPreferences)
+		protected.PATCH("/me/notifications", authHandler.UpdateNotificationPreferences)
 		// Authenticated feed
 		protected.GET("/feed", feedHandler.GetFeed)
 		protected.GET("/feed/following", feedHandler.GetFollowingFeed)
