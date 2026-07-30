@@ -50,3 +50,52 @@ func (h *Handler) MarkAllRead(c *gin.Context) {
 	}
 	respond.JSON(c, http.StatusOK, gin.H{"message": "ok"})
 }
+
+func (h *Handler) ClearAll(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	if err := h.svc.ClearAll(c.Request.Context(), userID); err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to clear notifications")
+		return
+	}
+	respond.JSON(c, http.StatusOK, gin.H{"message": "ok"})
+}
+
+type BulkRequest struct {
+	IDs []uuid.UUID `json:"ids"`
+}
+
+func (h *Handler) BulkDelete(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	var req BulkRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := h.svc.DeleteBulk(c.Request.Context(), userID, req.IDs); err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to delete notifications")
+		return
+	}
+	respond.JSON(c, http.StatusOK, gin.H{"message": "ok"})
+}
+
+func (h *Handler) BulkRead(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	var req BulkRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if err := h.svc.MarkBulkRead(c.Request.Context(), userID, req.IDs); err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to mark notifications as read")
+		return
+	}
+	respond.JSON(c, http.StatusOK, gin.H{"message": "ok"})
+}

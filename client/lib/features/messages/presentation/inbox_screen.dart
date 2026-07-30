@@ -12,6 +12,8 @@ import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/features/messages/application/inbox_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/user_lookup_provider.dart';
+import 'package:scribes/features/messages/data/message_repository.dart';
+import 'package:scribes/features/messages/domain/message.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
   const InboxScreen({super.key});
@@ -190,11 +192,51 @@ class _ConversationTile extends ConsumerWidget {
         loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
         error: (_, __) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
       ),
-      subtitle: Text(
-        'Tap to view conversation',
-        style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      subtitle: StreamBuilder<List<Message>>(
+        stream: ref.watch(messageRepositoryProvider).watchMessages(conversation.id),
+        builder: (context, snapshot) {
+          final messages = snapshot.data ?? [];
+          final lastMessage = messages.firstOrNull;
+
+          if (lastMessage == null) {
+            return Text(
+              'Tap to view conversation',
+              style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            );
+          }
+
+          // In V1, we naively assume unread if the last message was from the other user
+          final isUnread = lastMessage.senderId == otherUserId;
+
+          return Row(
+            children: [
+              Expanded(
+                child: Text(
+                  lastMessage.body,
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: isUnread ? colors.primaryText : colors.secondaryText,
+                    fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isUnread) ...[
+                const SizedBox(width: 8),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
       ),
       onTap: () {
         context.push('/conversation/${conversation.id}');

@@ -11,6 +11,7 @@ import 'package:scribes/features/messages/application/inbox_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/user_lookup_provider.dart';
 import 'package:scribes/core/widgets/scribes_author_header.dart';
+import 'package:scribes/core/widgets/scribes_text_field.dart';
 import 'package:scribes/features/messages/domain/message.dart';
 
 class ConversationScreen extends ConsumerStatefulWidget {
@@ -210,6 +211,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               border: Border(top: BorderSide(color: colors.border)),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.reply_rounded, size: 20, color: colors.gold),
                 const SizedBox(width: 12),
@@ -224,7 +226,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                       Text(
                         _replyingTo!.body,
                         style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-                        maxLines: 1,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -247,40 +249,23 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
             right: 16,
             bottom: 16 + MediaQuery.of(context).padding.bottom,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: colors.surfaceRaised,
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
-            border: Border.all(color: colors.border.withOpacity(0.5)),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
-                child: TextField(
+                child: ScribesTextField(
                   controller: _messageController,
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-                  decoration: InputDecoration(
-                    hintText: 'Type a message...',
-                    hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    filled: false,
-                  ),
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _sendMessage(),
+                  hintText: 'Type a message...',
+                  isSearchPill: true,
+                  minLines: 1,
+                  maxLines: 5,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
               ),
               const SizedBox(width: 8),
               Container(
+                margin: const EdgeInsets.only(bottom: 2), // Align with text field
                 decoration: BoxDecoration(
                   color: colors.gold,
                   shape: BoxShape.circle,

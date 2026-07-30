@@ -20,6 +20,17 @@ class NotificationApi {
   Future<void> markAllRead() async {
     await _dio.post(Endpoints.notificationsReadAll);
   }
+  Future<void> clearAll() async {
+    await _dio.delete(Endpoints.notificationsClearAll);
+  }
+
+  Future<void> bulkDelete(List<String> ids) async {
+    await _dio.post(Endpoints.notificationsBulkDelete, data: {'ids': ids});
+  }
+
+  Future<void> bulkRead(List<String> ids) async {
+    await _dio.post(Endpoints.notificationsBulkRead, data: {'ids': ids});
+  }
 }
 
 @riverpod

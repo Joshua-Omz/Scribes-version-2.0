@@ -43,3 +43,16 @@ SELECT EXISTS (
       AND is_read = false
       AND sent_at IS NOT NULL
 ) AS has_unread;
+
+-- name: ClearAllByUser :exec
+DELETE FROM notifications
+WHERE recipient_id = $1;
+
+-- name: DeleteNotifications :exec
+DELETE FROM notifications
+WHERE id = ANY($1::uuid[]) AND recipient_id = $2;
+
+-- name: MarkNotificationsRead :exec
+UPDATE notifications
+SET is_read = true
+WHERE id = ANY($1::uuid[]) AND recipient_id = $2;

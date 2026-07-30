@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/application/auth_notifier.dart';
+import '../../features/auth/domain/user.dart';
 import '../../features/auth/presentation/auth_gate_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -29,11 +31,19 @@ part 'app_router.g.dart';
 
 @riverpod
 GoRouter appRouter(Ref ref) {
-  final authState = ref.watch(authProvider);
+  // Use a ValueNotifier to trigger GoRouter redirects without recreating the entire GoRouter instance
+  final authStateNotifier = ValueNotifier<AsyncValue<User?>>(const AsyncLoading());
+  
+  ref.listen<AsyncValue<User?>>(authProvider, (_, next) {
+    authStateNotifier.value = next;
+  });
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authStateNotifier,
     redirect: (context, state) {
+      final authState = authStateNotifier.value;
+      
       if (authState is AsyncLoading) {
         return null; // wait
       }

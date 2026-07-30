@@ -41,6 +41,18 @@ class NotificationRepository {
     
     return result;
   }
+
+  Future<void> clearAll() async {
+    await _api.clearAll();
+  }
+
+  Future<void> bulkDelete(List<String> ids) async {
+    await _api.bulkDelete(ids);
+  }
+
+  Future<void> bulkRead(List<String> ids) async {
+    await _api.bulkRead(ids);
+  }
 }
 
 @riverpod

@@ -33,6 +33,26 @@ class NotificationNotifier extends _$NotificationNotifier {
   Future<void> refresh() async {
     ref.invalidateSelf();
   }
+  Future<void> clearAll() async {
+    final repo = ref.read(notificationRepositoryProvider);
+    await repo.clearAll();
+    ref.invalidateSelf();
+    ref.invalidate(hasUnreadNotificationsProvider);
+  }
+
+  Future<void> deleteSelected(List<String> ids) async {
+    final repo = ref.read(notificationRepositoryProvider);
+    await repo.bulkDelete(ids);
+    ref.invalidateSelf();
+    ref.invalidate(hasUnreadNotificationsProvider);
+  }
+
+  Future<void> markSelectedRead(List<String> ids) async {
+    final repo = ref.read(notificationRepositoryProvider);
+    await repo.bulkRead(ids);
+    ref.invalidateSelf();
+    ref.invalidate(hasUnreadNotificationsProvider);
+  }
 }
 
 // Separate lightweight provider for the badge dot

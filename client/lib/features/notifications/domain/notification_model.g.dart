@@ -9,6 +9,7 @@ part of 'notification_model.dart';
 _NotificationItem _$NotificationItemFromJson(Map<String, dynamic> json) =>
     _NotificationItem(
       id: json['id'] as String?,
+      ids: (json['ids'] as List<dynamic>?)?.map((e) => e as String).toList(),
       type: $enumDecodeNullable(
         _$NotifTypeEnumMap,
         json['type'],
@@ -28,6 +29,7 @@ _NotificationItem _$NotificationItemFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$NotificationItemToJson(_NotificationItem instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'ids': instance.ids,
       'type': _$NotifTypeEnumMap[instance.type],
       'is_realtime': instance.isRealtime,
       'is_read': instance.isRead,

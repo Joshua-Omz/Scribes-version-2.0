@@ -11,29 +11,124 @@ import 'notification_row.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
 
-class NotificationScreen extends ConsumerWidget {
+class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends ConsumerState<NotificationScreen> {
+  final Set<String> _selectedIds = {};
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedIds.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final notificationsAsync = ref.watch(notificationProvider);
     final repo = ref.watch(notificationRepositoryProvider);
+    final isSelectionMode = _selectedIds.isNotEmpty;
 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: colors.background,
         elevation: 0,
-        title: Text('Notifications', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+        leading: isSelectionMode
+            ? IconButton(
+                icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.primaryText),
+                onPressed: _clearSelection,
+              )
+            : IconButton(
+                icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+        title: Text(
+          isSelectionMode ? '${_selectedIds.length} Selected' : 'Notifications',
+          style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+        ),
         actions: [
-          ScribesIconButton(
-            icon: HugeIcons.strokeRoundedCheckmarkBadge01,
-            onPressed: () {
-              ref.read(notificationProvider.notifier).markAllRead();
-            },
-            color: colors.secondaryText,
-          ),
+          if (isSelectionMode) ...[
+            ScribesIconButton(
+              icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+              onPressed: () {
+                final allIds = <String>[];
+                if (notificationsAsync.value != null) {
+                  final items = notificationsAsync.value!;
+                  final grouped = repo.groupByTime(items);
+                  for (var groupItems in grouped.values) {
+                    for (var n in groupItems) {
+                      final id = n.id ?? n.refId.toString();
+                      if (_selectedIds.contains(id)) {
+                        allIds.addAll(n.safeIds);
+                      }
+                    }
+                  }
+                }
+                ref.read(notificationProvider.notifier).markSelectedRead(allIds);
+                _clearSelection();
+              },
+              color: colors.secondaryText,
+            ),
+            ScribesIconButton(
+              icon: HugeIcons.strokeRoundedDelete01,
+              onPressed: () {
+                final allIds = <String>[];
+                if (notificationsAsync.value != null) {
+                  final items = notificationsAsync.value!;
+                  final grouped = repo.groupByTime(items);
+                  for (var groupItems in grouped.values) {
+                    for (var n in groupItems) {
+                      final id = n.id ?? n.refId.toString();
+                      if (_selectedIds.contains(id)) {
+                        allIds.addAll(n.safeIds);
+                      }
+                    }
+                  }
+                }
+                ref.read(notificationProvider.notifier).deleteSelected(allIds);
+                _clearSelection();
+              },
+              color: Colors.red,
+            ),
+          ] else ...[
+            PopupMenuButton<String>(
+              icon: HugeIcon(icon: HugeIcons.strokeRoundedMoreVerticalCircle01, color: colors.secondaryText),
+              color: colors.surface,
+              onSelected: (value) {
+                if (value == 'mark_all_read') {
+                  ref.read(notificationProvider.notifier).markAllRead();
+                } else if (value == 'clear_all') {
+                  ref.read(notificationProvider.notifier).clearAll();
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'mark_all_read',
+                  child: Text('Mark all as read', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                ),
+                PopupMenuItem<String>(
+                  value: 'clear_all',
+                  child: Text('Clear all', style: ScribesTextStyles.bodyMd.copyWith(color: Colors.red)),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
       body: RefreshIndicator(
@@ -73,7 +168,16 @@ class NotificationScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    ...groupItems.map((n) => NotificationRow(notification: n)),
+                    ...groupItems.map((n) {
+                      final id = n.id ?? n.refId.toString(); // Fallback for grouped rows without a single id
+                      return NotificationRow(
+                        notification: n,
+                        isSelectionMode: isSelectionMode,
+                        isSelected: _selectedIds.contains(id),
+                        onTap: () => _toggleSelection(id),
+                        onLongPress: () => _toggleSelection(id),
+                      );
+                    }),
                   ],
                 );
               },

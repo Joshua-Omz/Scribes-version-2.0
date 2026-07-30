@@ -22,6 +22,7 @@ abstract class NotificationItem with _$NotificationItem {
 
   const factory NotificationItem({
     @JsonKey(name: 'id') String? id,
+    @JsonKey(name: 'ids') List<String>? ids,
     @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,
     @JsonKey(name: 'is_realtime') bool? isRealtime,
     @JsonKey(name: 'is_read') bool? isRead,
@@ -41,6 +42,7 @@ abstract class NotificationItem with _$NotificationItem {
   String get safeRefId => refId ?? '';
   DateTime get safeCreatedAt => createdAt ?? DateTime.now();
   String get safeId => id ?? '';
+  List<String> get safeIds => ids ?? (id != null ? [id!] : []);
   NotifType get safeType => type ?? NotifType.adminAlert;
 }
 

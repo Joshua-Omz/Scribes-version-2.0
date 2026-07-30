@@ -148,11 +148,18 @@ class NoteRepository {
     }
     
     if (cloudNote.id != id) {
-      await (_db.update(_db.notes)..where((t) => t.id.equals(id))).write(
-        NotesCompanion(
-          id: Value(cloudNote.id),
-          isSynced: const Value(true)
-        ),
+      // Drift ignores primary key updates using .write(), so we must delete and recreate.
+      await deleteNoteLocally(id);
+      await saveNoteLocally(
+        cloudNote.id, 
+        jsonEncode(cloudNote.content), 
+        title: cloudNote.title, 
+        notebookId: cloudNote.notebookId,
+      );
+      
+      // Mark the newly inserted note as synced
+      await (_db.update(_db.notes)..where((t) => t.id.equals(cloudNote.id))).write(
+        const NotesCompanion(isSynced: Value(true)),
       );
     } else {
       await (_db.update(_db.notes)..where((t) => t.id.equals(id))).write(

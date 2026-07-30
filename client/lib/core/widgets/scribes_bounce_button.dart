@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 class ScribesBounceButton extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final bool enableHaptic;
   final double scaleFactor;
 
@@ -11,6 +12,7 @@ class ScribesBounceButton extends StatefulWidget {
     super.key,
     required this.child,
     required this.onTap,
+    this.onLongPress,
     this.enableHaptic = true,
     this.scaleFactor = 0.92,
   });
@@ -66,6 +68,13 @@ class _ScribesBounceButtonState extends State<ScribesBounceButton> with SingleTi
     _triggerHaptic();
     widget.onTap();
   }
+  
+  void _onLongPress() {
+    if (widget.onLongPress != null) {
+      _triggerHaptic();
+      widget.onLongPress!();
+    }
+  }
 
   void _onTapCancel() {
     _controller.reverse();
@@ -77,6 +86,7 @@ class _ScribesBounceButtonState extends State<ScribesBounceButton> with SingleTi
       behavior: HitTestBehavior.opaque,
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
+      onLongPress: widget.onLongPress != null ? _onLongPress : null,
       onTapCancel: _onTapCancel,
       child: ScaleTransition(
         scale: _scaleAnimation,

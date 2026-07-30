@@ -51,10 +51,14 @@ type Notification struct {
 
 // NotificationGroup represents grouped batched notifications
 type NotificationGroup struct {
-	Type       NotifType `json:"type"`
-	IsRealtime bool      `json:"is_realtime"`
-	Body       string    `json:"body"`
-	RefID      uuid.UUID `json:"ref_id"`
-	Count      int       `json:"count"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID         uuid.UUID   `json:"id"`
+	IDs        []uuid.UUID `json:"ids"`
+	Type       NotifType   `json:"type"`
+	IsRealtime bool        `json:"is_realtime"`
+	IsRead     bool        `json:"is_read"`
+	Body       string      `json:"body"`
+	RefID      uuid.UUID   `json:"ref_id"`
+	Count      int         `json:"count"`
+	CreatedAt  time.Time   `json:"created_at"`
 }
+

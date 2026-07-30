@@ -77,17 +77,10 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
       onTap: widget.onTap ?? () {},
       scaleFactor: 0.98,
       child: Container(
-      
+        margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
-          color: colors.surfaceRaised, 
-          boxShadow: [
-            BoxShadow(
-              color: colors.border.withValues(alpha: 0.15),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: colors.background, // Match screen background for flat look
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

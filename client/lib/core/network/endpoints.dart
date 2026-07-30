@@ -30,4 +30,7 @@ class Endpoints {
   // Notifications
   static const String notifications = '/notifications';
   static const String notificationsReadAll = '/notifications/read-all';
+  static const String notificationsClearAll = '/notifications/clear-all';
+  static const String notificationsBulkDelete = '/notifications/bulk-delete';
+  static const String notificationsBulkRead = '/notifications/bulk-read';
 }

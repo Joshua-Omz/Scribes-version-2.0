@@ -290,7 +290,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                   ),
                   onPressed: authState.isLoading ? null : _signInWithGoogle,
                   icon: Image.network(
-                    'https://developers.google.com/identity/images/g-logo.png',
+                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
                     width: 20,
                     height: 20,
                   ),

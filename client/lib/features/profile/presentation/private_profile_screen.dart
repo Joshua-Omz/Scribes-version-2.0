@@ -14,7 +14,6 @@ import 'package:scribes/features/social/application/saved_posts_provider.dart';
 import 'dart:ui';
 import '../../../core/widgets/scribes_grid_card.dart';
 import '../../posts/application/my_posts_provider.dart';
-import '../../draft/application/drafts_list_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_post_card_skeleton.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
@@ -310,81 +309,6 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
               },
             ),
           if (_selectedTabIndex == 1)
-            Consumer(
-              builder: (context, ref, child) {
-                final draftsState = ref.watch(draftsListProvider);
-                return draftsState.when(
-                  data: (drafts) {
-                    if (drafts.isEmpty) {
-                      return const SliverFillRemaining(
-                        child: Center(
-                          child: ScribesEmptyState(
-                            icon: HugeIcons.strokeRoundedFileEdit,
-                            title: 'No drafts',
-                            subtitle: 'Your workspace is clear.',
-                          ),
-                        ),
-                      );
-                    }
-                    return SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                      sliver: SliverGrid(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          childAspectRatio: 0.85,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final draft = drafts[index];
-                            String excerpt = '';
-                            if (draft.content['ops'] != null) {
-                              for (var op in draft.content['ops']) {
-                                if (op['insert'] is String) {
-                                  excerpt += op['insert'];
-                                  if (excerpt.length > 100) {
-                                    excerpt = '${excerpt.substring(0, 100)}...';
-                                    break;
-                                  }
-                                }
-                              }
-                            }
-                            return ScribesGridCard(
-                              title: draft.content['title'] ?? '',
-                              excerpt: excerpt,
-                              date: draft.updatedAt,
-                              badgeText: 'DRAFT',
-                              onTap: () => context.push('/drafts/${draft.id}'),
-                            );
-                          },
-                          childCount: drafts.length,
-                        ),
-                      ),
-                    );
-                  },
-                  loading: () => SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return const ScribesPostCardSkeleton(showAvatar: false);
-                        },
-                        childCount: 3,
-                      ),
-                    ),
-                  ),
-                  error: (err, stack) => SliverFillRemaining(
-                    child: ScribesErrorState(
-                      title: 'Could not load drafts',
-                      subtitle: err.toString(),
-                      onRetry: () => ref.read(draftsListProvider.notifier).refresh(),
-                    ),
-                  ),
-                );
-              },
-            ),
-          if (_selectedTabIndex == 2)
             Consumer(
               builder: (context, ref, child) {
                 final savedPostsState = ref.watch(savedPostsProvider);

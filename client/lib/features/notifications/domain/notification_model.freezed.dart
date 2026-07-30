@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NotificationItem {
 
-@JsonKey(name: 'id') String? get id;@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? get type;@JsonKey(name: 'is_realtime') bool? get isRealtime;@JsonKey(name: 'is_read') bool? get isRead;@JsonKey(name: 'body') String? get body;@JsonKey(name: 'ref_id') String? get refId;@JsonKey(name: 'actor_handle') String? get actorHandle;@JsonKey(name: 'actor_avatar') String? get actorAvatar;@JsonKey(name: 'created_at') DateTime? get createdAt;
+@JsonKey(name: 'id') String? get id;@JsonKey(name: 'ids') List<String>? get ids;@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? get type;@JsonKey(name: 'is_realtime') bool? get isRealtime;@JsonKey(name: 'is_read') bool? get isRead;@JsonKey(name: 'body') String? get body;@JsonKey(name: 'ref_id') String? get refId;@JsonKey(name: 'actor_handle') String? get actorHandle;@JsonKey(name: 'actor_avatar') String? get actorAvatar;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of NotificationItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $NotificationItemCopyWith<NotificationItem> get copyWith => _$NotificationItemCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationItem&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.body, body) || other.body == body)&&(identical(other.refId, refId) || other.refId == refId)&&(identical(other.actorHandle, actorHandle) || other.actorHandle == actorHandle)&&(identical(other.actorAvatar, actorAvatar) || other.actorAvatar == actorAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotificationItem&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.ids, ids)&&(identical(other.type, type) || other.type == type)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.body, body) || other.body == body)&&(identical(other.refId, refId) || other.refId == refId)&&(identical(other.actorHandle, actorHandle) || other.actorHandle == actorHandle)&&(identical(other.actorAvatar, actorAvatar) || other.actorAvatar == actorAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,type,isRealtime,isRead,body,refId,actorHandle,actorAvatar,createdAt);
+int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(ids),type,isRealtime,isRead,body,refId,actorHandle,actorAvatar,createdAt);
 
 @override
 String toString() {
-  return 'NotificationItem(id: $id, type: $type, isRealtime: $isRealtime, isRead: $isRead, body: $body, refId: $refId, actorHandle: $actorHandle, actorAvatar: $actorAvatar, createdAt: $createdAt)';
+  return 'NotificationItem(id: $id, ids: $ids, type: $type, isRealtime: $isRealtime, isRead: $isRead, body: $body, refId: $refId, actorHandle: $actorHandle, actorAvatar: $actorAvatar, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $NotificationItemCopyWith<$Res>  {
   factory $NotificationItemCopyWith(NotificationItem value, $Res Function(NotificationItem) _then) = _$NotificationItemCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'id') String? id,@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,@JsonKey(name: 'is_realtime') bool? isRealtime,@JsonKey(name: 'is_read') bool? isRead,@JsonKey(name: 'body') String? body,@JsonKey(name: 'ref_id') String? refId,@JsonKey(name: 'actor_handle') String? actorHandle,@JsonKey(name: 'actor_avatar') String? actorAvatar,@JsonKey(name: 'created_at') DateTime? createdAt
+@JsonKey(name: 'id') String? id,@JsonKey(name: 'ids') List<String>? ids,@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,@JsonKey(name: 'is_realtime') bool? isRealtime,@JsonKey(name: 'is_read') bool? isRead,@JsonKey(name: 'body') String? body,@JsonKey(name: 'ref_id') String? refId,@JsonKey(name: 'actor_handle') String? actorHandle,@JsonKey(name: 'actor_avatar') String? actorAvatar,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -65,10 +65,11 @@ class _$NotificationItemCopyWithImpl<$Res>
 
 /// Create a copy of NotificationItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? type = freezed,Object? isRealtime = freezed,Object? isRead = freezed,Object? body = freezed,Object? refId = freezed,Object? actorHandle = freezed,Object? actorAvatar = freezed,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? ids = freezed,Object? type = freezed,Object? isRealtime = freezed,Object? isRead = freezed,Object? body = freezed,Object? refId = freezed,Object? actorHandle = freezed,Object? actorAvatar = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String?,ids: freezed == ids ? _self.ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as NotifType?,isRealtime: freezed == isRealtime ? _self.isRealtime : isRealtime // ignore: cast_nullable_to_non_nullable
 as bool?,isRead: freezed == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
 as bool?,body: freezed == body ? _self.body : body // ignore: cast_nullable_to_non_nullable
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)  NotifType? type, @JsonKey(name: 'is_realtime')  bool? isRealtime, @JsonKey(name: 'is_read')  bool? isRead, @JsonKey(name: 'body')  String? body, @JsonKey(name: 'ref_id')  String? refId, @JsonKey(name: 'actor_handle')  String? actorHandle, @JsonKey(name: 'actor_avatar')  String? actorAvatar, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: 'ids')  List<String>? ids, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)  NotifType? type, @JsonKey(name: 'is_realtime')  bool? isRealtime, @JsonKey(name: 'is_read')  bool? isRead, @JsonKey(name: 'body')  String? body, @JsonKey(name: 'ref_id')  String? refId, @JsonKey(name: 'actor_handle')  String? actorHandle, @JsonKey(name: 'actor_avatar')  String? actorAvatar, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NotificationItem() when $default != null:
-return $default(_that.id,_that.type,_that.isRealtime,_that.isRead,_that.body,_that.refId,_that.actorHandle,_that.actorAvatar,_that.createdAt);case _:
+return $default(_that.id,_that.ids,_that.type,_that.isRealtime,_that.isRead,_that.body,_that.refId,_that.actorHandle,_that.actorAvatar,_that.createdAt);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.id,_that.type,_that.isRealtime,_that.isRead,_that.body,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)  NotifType? type, @JsonKey(name: 'is_realtime')  bool? isRealtime, @JsonKey(name: 'is_read')  bool? isRead, @JsonKey(name: 'body')  String? body, @JsonKey(name: 'ref_id')  String? refId, @JsonKey(name: 'actor_handle')  String? actorHandle, @JsonKey(name: 'actor_avatar')  String? actorAvatar, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: 'ids')  List<String>? ids, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)  NotifType? type, @JsonKey(name: 'is_realtime')  bool? isRealtime, @JsonKey(name: 'is_read')  bool? isRead, @JsonKey(name: 'body')  String? body, @JsonKey(name: 'ref_id')  String? refId, @JsonKey(name: 'actor_handle')  String? actorHandle, @JsonKey(name: 'actor_avatar')  String? actorAvatar, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _NotificationItem():
-return $default(_that.id,_that.type,_that.isRealtime,_that.isRead,_that.body,_that.refId,_that.actorHandle,_that.actorAvatar,_that.createdAt);case _:
+return $default(_that.id,_that.ids,_that.type,_that.isRealtime,_that.isRead,_that.body,_that.refId,_that.actorHandle,_that.actorAvatar,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.id,_that.type,_that.isRealtime,_that.isRead,_that.body,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)  NotifType? type, @JsonKey(name: 'is_realtime')  bool? isRealtime, @JsonKey(name: 'is_read')  bool? isRead, @JsonKey(name: 'body')  String? body, @JsonKey(name: 'ref_id')  String? refId, @JsonKey(name: 'actor_handle')  String? actorHandle, @JsonKey(name: 'actor_avatar')  String? actorAvatar, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'id')  String? id, @JsonKey(name: 'ids')  List<String>? ids, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)  NotifType? type, @JsonKey(name: 'is_realtime')  bool? isRealtime, @JsonKey(name: 'is_read')  bool? isRead, @JsonKey(name: 'body')  String? body, @JsonKey(name: 'ref_id')  String? refId, @JsonKey(name: 'actor_handle')  String? actorHandle, @JsonKey(name: 'actor_avatar')  String? actorAvatar, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _NotificationItem() when $default != null:
-return $default(_that.id,_that.type,_that.isRealtime,_that.isRead,_that.body,_that.refId,_that.actorHandle,_that.actorAvatar,_that.createdAt);case _:
+return $default(_that.id,_that.ids,_that.type,_that.isRealtime,_that.isRead,_that.body,_that.refId,_that.actorHandle,_that.actorAvatar,_that.createdAt);case _:
   return null;
 
 }
@@ -217,10 +218,19 @@ return $default(_that.id,_that.type,_that.isRealtime,_that.isRead,_that.body,_th
 @JsonSerializable()
 
 class _NotificationItem extends NotificationItem {
-  const _NotificationItem({@JsonKey(name: 'id') this.id, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) this.type, @JsonKey(name: 'is_realtime') this.isRealtime, @JsonKey(name: 'is_read') this.isRead, @JsonKey(name: 'body') this.body, @JsonKey(name: 'ref_id') this.refId, @JsonKey(name: 'actor_handle') this.actorHandle, @JsonKey(name: 'actor_avatar') this.actorAvatar, @JsonKey(name: 'created_at') this.createdAt}): super._();
+  const _NotificationItem({@JsonKey(name: 'id') this.id, @JsonKey(name: 'ids') final  List<String>? ids, @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) this.type, @JsonKey(name: 'is_realtime') this.isRealtime, @JsonKey(name: 'is_read') this.isRead, @JsonKey(name: 'body') this.body, @JsonKey(name: 'ref_id') this.refId, @JsonKey(name: 'actor_handle') this.actorHandle, @JsonKey(name: 'actor_avatar') this.actorAvatar, @JsonKey(name: 'created_at') this.createdAt}): _ids = ids,super._();
   factory _NotificationItem.fromJson(Map<String, dynamic> json) => _$NotificationItemFromJson(json);
 
 @override@JsonKey(name: 'id') final  String? id;
+ final  List<String>? _ids;
+@override@JsonKey(name: 'ids') List<String>? get ids {
+  final value = _ids;
+  if (value == null) return null;
+  if (_ids is EqualUnmodifiableListView) return _ids;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 @override@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) final  NotifType? type;
 @override@JsonKey(name: 'is_realtime') final  bool? isRealtime;
 @override@JsonKey(name: 'is_read') final  bool? isRead;
@@ -243,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationItem&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.body, body) || other.body == body)&&(identical(other.refId, refId) || other.refId == refId)&&(identical(other.actorHandle, actorHandle) || other.actorHandle == actorHandle)&&(identical(other.actorAvatar, actorAvatar) || other.actorAvatar == actorAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NotificationItem&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other._ids, _ids)&&(identical(other.type, type) || other.type == type)&&(identical(other.isRealtime, isRealtime) || other.isRealtime == isRealtime)&&(identical(other.isRead, isRead) || other.isRead == isRead)&&(identical(other.body, body) || other.body == body)&&(identical(other.refId, refId) || other.refId == refId)&&(identical(other.actorHandle, actorHandle) || other.actorHandle == actorHandle)&&(identical(other.actorAvatar, actorAvatar) || other.actorAvatar == actorAvatar)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,type,isRealtime,isRead,body,refId,actorHandle,actorAvatar,createdAt);
+int get hashCode => Object.hash(runtimeType,id,const DeepCollectionEquality().hash(_ids),type,isRealtime,isRead,body,refId,actorHandle,actorAvatar,createdAt);
 
 @override
 String toString() {
-  return 'NotificationItem(id: $id, type: $type, isRealtime: $isRealtime, isRead: $isRead, body: $body, refId: $refId, actorHandle: $actorHandle, actorAvatar: $actorAvatar, createdAt: $createdAt)';
+  return 'NotificationItem(id: $id, ids: $ids, type: $type, isRealtime: $isRealtime, isRead: $isRead, body: $body, refId: $refId, actorHandle: $actorHandle, actorAvatar: $actorAvatar, createdAt: $createdAt)';
 }
 
 
@@ -263,7 +273,7 @@ abstract mixin class _$NotificationItemCopyWith<$Res> implements $NotificationIt
   factory _$NotificationItemCopyWith(_NotificationItem value, $Res Function(_NotificationItem) _then) = __$NotificationItemCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'id') String? id,@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,@JsonKey(name: 'is_realtime') bool? isRealtime,@JsonKey(name: 'is_read') bool? isRead,@JsonKey(name: 'body') String? body,@JsonKey(name: 'ref_id') String? refId,@JsonKey(name: 'actor_handle') String? actorHandle,@JsonKey(name: 'actor_avatar') String? actorAvatar,@JsonKey(name: 'created_at') DateTime? createdAt
+@JsonKey(name: 'id') String? id,@JsonKey(name: 'ids') List<String>? ids,@JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,@JsonKey(name: 'is_realtime') bool? isRealtime,@JsonKey(name: 'is_read') bool? isRead,@JsonKey(name: 'body') String? body,@JsonKey(name: 'ref_id') String? refId,@JsonKey(name: 'actor_handle') String? actorHandle,@JsonKey(name: 'actor_avatar') String? actorAvatar,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -280,10 +290,11 @@ class __$NotificationItemCopyWithImpl<$Res>
 
 /// Create a copy of NotificationItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? type = freezed,Object? isRealtime = freezed,Object? isRead = freezed,Object? body = freezed,Object? refId = freezed,Object? actorHandle = freezed,Object? actorAvatar = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? ids = freezed,Object? type = freezed,Object? isRealtime = freezed,Object? isRead = freezed,Object? body = freezed,Object? refId = freezed,Object? actorHandle = freezed,Object? actorAvatar = freezed,Object? createdAt = freezed,}) {
   return _then(_NotificationItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String?,ids: freezed == ids ? _self._ids : ids // ignore: cast_nullable_to_non_nullable
+as List<String>?,type: freezed == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as NotifType?,isRealtime: freezed == isRealtime ? _self.isRealtime : isRealtime // ignore: cast_nullable_to_non_nullable
 as bool?,isRead: freezed == isRead ? _self.isRead : isRead // ignore: cast_nullable_to_non_nullable
 as bool?,body: freezed == body ? _self.body : body // ignore: cast_nullable_to_non_nullable

@@ -18,6 +18,7 @@ import '../../social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../messages/presentation/widgets/dm_request_modal.dart';
 import '../../auth/application/auth_notifier.dart';
+import '../../messages/application/inbox_providers.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -62,7 +63,10 @@ class PublicProfileScreen extends ConsumerWidget {
               ),
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 32.0,
+                  ),
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       center: Alignment.topCenter,
@@ -199,10 +203,14 @@ class PublicProfileScreen extends ConsumerWidget {
     return child;
   }
 
-  Widget _buildActionButtons(BuildContext context, WidgetRef ref, dynamic colors) {
+  Widget _buildActionButtons(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
     final followState = ref.watch(isFollowingUserProvider(userId));
     final currentUser = ref.watch(authProvider).value;
-    
+
     return followState.when(
       loading: () => const SizedBox(
         width: 120,
@@ -237,11 +245,11 @@ class PublicProfileScreen extends ConsumerWidget {
             child: Text('Follow', style: ScribesTextStyles.labelLg),
           );
         }
-        
+
         if (currentUser?.id == userId) {
           return followBtn;
         }
-        
+
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -251,16 +259,40 @@ class PublicProfileScreen extends ConsumerWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: colors.surfaceRaised,
                 foregroundColor: colors.primaryText,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(color: colors.border),
                 ),
               ),
               onPressed: () {
-                DmRequestModal.show(context, userId);
+                final conversations =
+                    ref.read(conversationsProvider).value ?? [];
+  // 2. Check if a conversation with this specific user already exists
+
+                final existingConversation = conversations
+                    .where(
+                      (conv) =>
+                          conv.userAId == userId || conv.userBId == userId,
+                    )
+                    .firstOrNull;
+
+                      // 3. If a conversation exists, push straight to the conversation screen!
+                      if (existingConversation != null){
+                        context.push('/conversations/${existingConversation.id}');
+                        
+                      }else{
+                        DmRequestModal.show(context, userId);
+                      }
               },
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, size: 18, color: colors.primaryText),
+              icon: HugeIcon(
+                icon: HugeIcons.strokeRoundedMail01,
+                size: 18,
+                color: colors.primaryText,
+              ),
               label: Text('Message', style: ScribesTextStyles.labelLg),
             ),
           ],

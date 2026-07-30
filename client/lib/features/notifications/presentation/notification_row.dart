@@ -6,15 +6,36 @@ import '../../../core/widgets/scribes_avatar.dart';
 import '../domain/notification_model.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class NotificationRow extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../application/notification_provider.dart';
+
+class NotificationRow extends ConsumerWidget {
   final NotificationItem notification;
+  final bool isSelected;
+  final bool isSelectionMode;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onTap;
 
   const NotificationRow({
     super.key,
     required this.notification,
+    this.isSelected = false,
+    this.isSelectionMode = false,
+    this.onLongPress,
+    this.onTap,
   });
 
-  void _handleTap(BuildContext context) {
+  void _handleTap(BuildContext context, WidgetRef ref) {
+    if (isSelectionMode) {
+      if (onTap != null) onTap!();
+      return;
+    }
+    
+    // Auto-mark as read
+    if (!notification.safeIsRead) {
+      ref.read(notificationProvider.notifier).markSelectedRead(notification.safeIds);
+    }
+    
     // Navigate based on type + ref_id
     switch (notification.safeType) {
       case NotifType.mention:
@@ -32,15 +53,16 @@ class NotificationRow extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<ScribesColors>()!;
     
     return InkWell(
-      onTap: () => _handleTap(context),
+      onTap: () => _handleTap(context, ref),
+      onLongPress: onLongPress,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: colors.surface,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.surface,
           border: Border(
             bottom: BorderSide(color: colors.border, width: 0.5),
             left: notification.showRealtimeAccent 
@@ -51,21 +73,33 @@ class NotificationRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Unread dot
-            if (!notification.safeIsRead)
+            // Selection Checkbox
+            if (isSelectionMode)
               Padding(
-                padding: const EdgeInsets.only(top: 14, right: 8),
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: colors.gold,
-                    shape: BoxShape.circle,
-                  ),
+                padding: const EdgeInsets.only(top: 8, right: 12),
+                child: Icon(
+                  isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  color: isSelected ? colors.gold : colors.secondaryText,
+                  size: 20,
                 ),
               )
-            else
-              const SizedBox(width: 16), // space replacement for unread dot
+            else ...[
+              // Unread dot
+              if (!notification.safeIsRead)
+                Padding(
+                  padding: const EdgeInsets.only(top: 14, right: 8),
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: colors.gold,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                )
+              else
+                const SizedBox(width: 16), // space replacement for unread dot
+            ],
               
             // Avatar
             ScribesAvatar(

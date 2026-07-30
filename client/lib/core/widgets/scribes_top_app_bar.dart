@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:go_router/go_router.dart';
@@ -29,32 +30,39 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Builder(
-                builder: (context) {
-                  if (Scaffold.maybeOf(context)?.hasDrawer ?? false) {
-                    return ScribesIconButton(
-                      icon: HugeIcons.strokeRoundedMenu01,
-                      onPressed: () {
-                        Scaffold.of(context).openDrawer();
-                      },
-                      color: colors.secondaryText,
-                    );
-                  } else {
-                    return const SizedBox(width: 40); // Placeholder for balance
-                  }
-                },
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Scribes',
-                    style: ScribesTextStyles.displayMd.copyWith(
-                      color: colors.primaryText,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                    ),
+              Row(
+                children: [
+                  Builder(
+                    builder: (context) {
+                      final hasDrawer = Scaffold.maybeOf(context)?.hasDrawer ?? false;
+                      
+                      return GestureDetector(
+                        onTap: hasDrawer ? () => Scaffold.of(context).openDrawer() : null,
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Row(
+                            children: [
+                              SvgPicture.asset(
+                                'assets/logo.svg',
+                                height: 24,
+                                colorFilter: ColorFilter.mode(colors.primaryText, BlendMode.srcIn),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Scribes',
+                                style: ScribesTextStyles.displayMd.copyWith(
+                                  fontSize: 22,
+                                  color: colors.primaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ),
+                ],
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,

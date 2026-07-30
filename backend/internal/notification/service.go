@@ -87,6 +87,7 @@ func (s *Service) groupNotifications(rows []generated.ListAllByUserRow) []Notifi
 				if diff <= 24*time.Hour {
 					// Add to this group
 					g.Count++
+					g.IDs = append(g.IDs, row.ID)
 					// Don't change body/actor since the group has the most recent one (DESC order)
 					foundGroup = true
 					break
@@ -99,8 +100,11 @@ func (s *Service) groupNotifications(rows []generated.ListAllByUserRow) []Notifi
 			// We compute the body AFTER counting, so we just store the most recent actor handle for now.
 			
 			groups = append(groups, NotificationGroup{
+				ID:         row.ID,
+				IDs:        []uuid.UUID{row.ID},
 				Type:       ntype,
 				IsRealtime: row.IsRealtime,
+				IsRead:     row.IsRead,
 				RefID:      row.RefID,
 				Count:      1,
 				CreatedAt:  row.CreatedAt,
@@ -146,4 +150,16 @@ func (s *Service) generateBody(ntype NotifType, actor string, count int) string 
 	default:
 		return "You have a new notification"
 	}
+}
+
+func (s *Service) ClearAll(ctx context.Context, userID uuid.UUID) error {
+	return s.repo.ClearAll(ctx, userID)
+}
+
+func (s *Service) DeleteBulk(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
+	return s.repo.DeleteBulk(ctx, userID, ids)
+}
+
+func (s *Service) MarkBulkRead(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
+	return s.repo.MarkBulkRead(ctx, userID, ids)
 }
