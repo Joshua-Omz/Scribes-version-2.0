@@ -70,7 +70,7 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
     newContent['body'] = delta;
 
     await ref
-        .read(revisePostNotifierProvider.notifier)
+        .read(revisePostProvider.notifier)
         .revisePost(
           widget.post.id,
           newContent,
@@ -78,19 +78,19 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
           _tags,
         );
 
-    final state = ref.read(revisePostNotifierProvider);
+    final state = ref.read(revisePostProvider);
     if (!state.hasError && mounted) {
       ScribesToast.show(
         context,
-        'Post updated successfully',
+        'Post revised successfully',
         colors,
         icon: HugeIcons.strokeRoundedCheckmarkBadge01,
       );
       context.pop();
-    } else if (state.hasError && mounted) {
+    } else if (mounted) {
       ScribesToast.show(
         context,
-        'Failed to update post',
+        'Error revising post: ${state.error}',
         colors,
         isError: true,
       );
@@ -100,7 +100,7 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
-    final state = ref.watch(revisePostNotifierProvider);
+    final state = ref.watch(revisePostProvider);
 
     return Scaffold(
       backgroundColor: colors.background,

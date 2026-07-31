@@ -7,7 +7,6 @@ import 'package:scribes/core/theme/scribes_text_styles.dart';
 import 'package:scribes/core/widgets/scribes_grid_card.dart';
 import 'package:scribes/core/widgets/scribes_empty_state.dart';
 import 'package:scribes/core/widgets/scribes_error_state.dart';
-import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/core/widgets/scribes_post_card_skeleton.dart';
 import 'package:scribes/core/widgets/scribes_toast.dart';
 import 'package:scribes/features/social/application/saved_posts_provider.dart';

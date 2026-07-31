@@ -33,7 +33,7 @@ class PostDetailNotifier extends _$PostDetailNotifier {
     ref.invalidate(myPostsProvider);
     ref.invalidate(explorePostsProvider);
     if (state.value?.post != null) {
-      ref.invalidate(userPostsProvider(state.value!.post!.authorId));
+      ref.invalidate(userPostsProvider(state.value!.post.authorId));
     }
   }
 }
