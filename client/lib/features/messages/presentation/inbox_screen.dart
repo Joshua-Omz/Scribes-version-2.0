@@ -105,7 +105,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: conversations.length,
-            separatorBuilder: (context, index) => Divider(color: colors.border.withValues(alpha: 0.5), height: 1),
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               final conversation = conversations[index];
               final isUserA = conversation.userAId == currentUser?.id;
@@ -144,7 +144,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
         return ListView.separated(
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: requests.length,
-          separatorBuilder: (context, index) => Divider(color: colors.border.withValues(alpha: 0.5), height: 1),
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final request = requests[index];
             return _RequestTile(
@@ -191,72 +191,94 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
     final lastReadMap = ref.watch(lastReadProvider);
     final lastReadTime = lastReadMap[widget.conversation.id];
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      leading: authorState.when(
-        data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 24),
-        loading: () => const CircleAvatar(radius: 24, backgroundColor: Colors.grey),
-        error: (_, _) => const ScribesAvatar(authorName: 'Unknown', radius: 24),
-      ),
-      title: authorState.when(
-        data: (author) => Text(
-          author.safeDisplayName,
-          style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
-        error: (_, _) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold)),
-      ),
-      subtitle: StreamBuilder<List<Message>>(
-        stream: ref.watch(messageRepositoryProvider).watchMessages(widget.conversation.id),
-        builder: (context, snapshot) {
-          final messages = snapshot.data ?? [];
-          final lastMessage = messages.firstOrNull;
-
-          if (lastMessage == null) {
-            return Text(
-              'Tap to view conversation',
-              style: ScribesTextStyles.bodyMd.copyWith(color: widget.colors.secondaryText),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            );
-          }
-
-          final isFromOther = lastMessage.senderId == widget.otherUserId;
-          final isUnread = isFromOther && (lastReadTime == null || lastMessage.sentAt.isAfter(lastReadTime));
-
-          return Row(
-            children: [
-              Expanded(
-                child: Text(
-                  lastMessage.body,
-                  style: ScribesTextStyles.bodyMd.copyWith(
-                    color: isUnread ? widget.colors.primaryText : widget.colors.secondaryText,
-                    fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            context.push('/conversation/${widget.conversation.id}');
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                authorState.when(
+                  data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 26),
+                  loading: () => const CircleAvatar(radius: 26, backgroundColor: Colors.grey),
+                  error: (_, _) => const ScribesAvatar(authorName: 'Unknown', radius: 26),
                 ),
-              ),
-              if (isUnread) ...[
-                const SizedBox(width: 8),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      authorState.when(
+                        data: (author) => Text(
+                          author.safeDisplayName,
+                          style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
+                        error: (_, _) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(height: 4),
+                      StreamBuilder<List<Message>>(
+                        stream: ref.watch(messageRepositoryProvider).watchMessages(widget.conversation.id),
+                        builder: (context, snapshot) {
+                          final messages = snapshot.data ?? [];
+                          final lastMessage = messages.firstOrNull;
+
+                          if (lastMessage == null) {
+                            return Text(
+                              'Tap to view conversation',
+                              style: ScribesTextStyles.bodyMd.copyWith(color: widget.colors.secondaryText),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          }
+
+                          final isFromOther = lastMessage.senderId == widget.otherUserId;
+                          final isUnread = isFromOther && (lastReadTime == null || lastMessage.sentAt.isAfter(lastReadTime));
+
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  lastMessage.body,
+                                  style: ScribesTextStyles.bodyMd.copyWith(
+                                    color: isUnread ? widget.colors.primaryText : widget.colors.secondaryText,
+                                    fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isUnread) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ],
-          );
-        },
+            ),
+          ),
+        ),
       ),
-      onTap: () {
-        context.push('/conversation/${widget.conversation.id}');
-      },
     );
   }
 }
@@ -317,8 +339,7 @@ class _RequestTile extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: colors.surfaceRaised,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.border),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
               request.firstMessage,

@@ -360,12 +360,6 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
-type Category struct {
-	ID           uuid.UUID `json:"id"`
-	Name         string    `json:"name"`
-	IsDeprecated bool      `json:"is_deprecated"`
-}
-
 type Comment struct {
 	ID        uuid.UUID   `json:"id"`
 	PostID    uuid.UUID   `json:"post_id"`
@@ -395,11 +389,6 @@ type Draft struct {
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 	ServerSequence int64           `json:"server_sequence"`
-}
-
-type DraftCategory struct {
-	DraftID    uuid.UUID `json:"draft_id"`
-	CategoryID uuid.UUID `json:"category_id"`
 }
 
 type Follow struct {
@@ -486,9 +475,9 @@ type Post struct {
 	SearchVector   interface{}     `json:"search_vector"`
 }
 
-type PostCategory struct {
-	PostID     uuid.UUID `json:"post_id"`
-	CategoryID uuid.UUID `json:"category_id"`
+type PostTag struct {
+	PostID uuid.UUID `json:"post_id"`
+	TagID  uuid.UUID `json:"tag_id"`
 }
 
 // INSERT-ONLY. No UPDATE or DELETE permitted. Enforced at repository layer in internal/post/repository.go.
@@ -539,6 +528,15 @@ type ScriptureRef struct {
 	VerseEnd   sql.NullInt32 `json:"verse_end"`
 }
 
+type Tag struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	DisplayName string    `json:"display_name"`
+	PostCount   int32     `json:"post_count"`
+	CreatedAt   time.Time `json:"created_at"`
+	LastUsedAt  time.Time `json:"last_used_at"`
+}
+
 type User struct {
 	ID           uuid.UUID      `json:"id"`
 	Handle       string         `json:"handle"`
@@ -549,9 +547,4 @@ type User struct {
 	Role         UserRole       `json:"role"`
 	IsDeleted    bool           `json:"is_deleted"`
 	CreatedAt    time.Time      `json:"created_at"`
-}
-
-type UserOnboardingCategory struct {
-	UserID     uuid.UUID `json:"user_id"`
-	CategoryID uuid.UUID `json:"category_id"`
 }

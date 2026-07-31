@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"scribes-api/internal/db/generated"
-
 	"github.com/google/uuid"
 )
 
@@ -72,11 +69,11 @@ type PaginatedExploreCategoryResponse struct {
 }
 
 type ExploreParams struct {
-	Cursor          string
-	Limit           int32
-	CategoryID      *uuid.UUID
-	SearchQuery     *string
-	ScriptureBook   *string
+	Cursor           string
+	Limit            int32
+	Tag              *string
+	SearchQuery      *string
+	ScriptureBook    *string
 	ScriptureChapter *int32
 }
 
@@ -151,8 +148,8 @@ func (s *Service) GetExplore(ctx context.Context, params ExploreParams) (interfa
 	}
 
 	var posts []FeedPost
-	if params.CategoryID != nil {
-		posts, err = s.repo.GetExplorePostsByCategory(ctx, *params.CategoryID, t, id, limit+1)
+	if params.Tag != nil {
+		posts, err = s.repo.GetExplorePostsByTag(ctx, *params.Tag, t, id, limit+1)
 	} else if params.SearchQuery != nil && *params.SearchQuery != "" {
 		posts, err = s.repo.SearchExplorePosts(ctx, *params.SearchQuery, t, id, limit+1)
 	} else if params.ScriptureBook != nil && *params.ScriptureBook != "" {
@@ -175,20 +172,9 @@ func (s *Service) GetExplore(ctx context.Context, params ExploreParams) (interfa
 		nextCursor = encodeCursor(last.PublishedAt, last.ID)
 		posts = posts[:limit]
 	}
-	
-	if params.CategoryID != nil {
-		return PaginatedExploreCategoryResponse{
-			Posts:      posts,
-			NextCursor: nextCursor,
-		}, nil
-	}
 
 	return PaginatedExploreResponse{
 		Posts:      posts,
 		NextCursor: nextCursor,
 	}, nil
-}
-
-func (s *Service) ListCategories(ctx context.Context) ([]generated.Category, error) {
-	return s.repo.ListCategories(ctx)
 }

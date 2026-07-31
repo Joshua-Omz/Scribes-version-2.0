@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
@@ -23,7 +22,7 @@ class ComposeState {
   final String caption;
   final SermonSource? sermonSource;
   final List<dynamic>? contentDelta;
-  final List<String> categoryIds;
+  final List<String> tags;
   final List<ScriptureRef> scriptureRefs;
 
   ComposeState({
@@ -34,7 +33,7 @@ class ComposeState {
     this.caption = '',
     this.sermonSource,
     this.contentDelta,
-    this.categoryIds = const [],
+    this.tags = const [],
     this.scriptureRefs = const [],
   });
 
@@ -46,7 +45,7 @@ class ComposeState {
     String? caption,
     SermonSource? sermonSource,
     List<dynamic>? contentDelta,
-    List<String>? categoryIds,
+    List<String>? tags,
     List<ScriptureRef>? scriptureRefs,
   }) {
     return ComposeState(
@@ -57,7 +56,7 @@ class ComposeState {
       caption: caption ?? this.caption,
       sermonSource: sermonSource ?? this.sermonSource,
       contentDelta: contentDelta ?? this.contentDelta,
-      categoryIds: categoryIds ?? this.categoryIds,
+      tags: tags ?? this.tags,
       scriptureRefs: scriptureRefs ?? this.scriptureRefs,
     );
   }
@@ -85,15 +84,25 @@ class ComposeNotifier extends Notifier<ComposeState> {
     _triggerAutosave();
   }
 
-  void toggleCategory(String categoryId) {
-    final current = List<String>.from(state.categoryIds);
-    if (current.contains(categoryId)) {
-      current.remove(categoryId);
-    } else {
-      if (current.length >= 3) return; // Enforce max 3 categories
-      current.add(categoryId);
+  void addTag(String tag) {
+    final current = List<String>.from(state.tags);
+    final normalizedTag = tag.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (normalizedTag.isEmpty) return;
+    // Keep the original casing for display when adding
+    final tagToAdd = tag.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+    
+    if (!current.map((t) => t.toLowerCase()).contains(normalizedTag)) {
+      if (current.length >= 8) return; // Enforce max 8 tags
+      current.add(tagToAdd);
+      state = state.copyWith(tags: current);
+      _triggerAutosave();
     }
-    state = state.copyWith(categoryIds: current);
+  }
+
+  void removeTag(String tag) {
+    final current = List<String>.from(state.tags);
+    current.remove(tag);
+    state = state.copyWith(tags: current);
     _triggerAutosave();
   }
 
@@ -170,7 +179,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
       caption: state.caption.trim().isEmpty ? null : state.caption.trim(),
       sermonSource: sermonSourceJson,
       scriptureTags: scriptureTags,
-      categoryIds: state.categoryIds,
+
       // Note: we might need to serialize scriptureRefs natively to Drafts later, 
       // but for v1 it might be handled in Draft Repository.
     );
@@ -198,7 +207,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
   Future<void> publishToCloud() async {
     await forceSave();
     final repo = ref.read(draftRepositoryProvider);
-    await repo.publishDraft(state.draftId, scriptureRefs: state.scriptureRefs);
+    await repo.publishDraft(state.draftId, tags: state.tags, scriptureRefs: state.scriptureRefs);
   }
 
   void reset() {
@@ -207,7 +216,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
     state = ComposeState(draftId: const Uuid().v4());
   }
 
-  void loadDraft(String draftId, Map<String, dynamic> content, {String? caption, SermonSource? sermonSource, List<String>? categoryIds}) {
+  void loadDraft(String draftId, Map<String, dynamic> content, {String? caption, SermonSource? sermonSource}) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _lastController = null;
     state = ComposeState(
@@ -216,7 +225,6 @@ class ComposeNotifier extends Notifier<ComposeState> {
       caption: caption ?? '',
       sermonSource: sermonSource,
       contentDelta: content['body'] != null ? List<dynamic>.from(content['body']) : null,
-      categoryIds: categoryIds ?? [],
     );
   }
 }

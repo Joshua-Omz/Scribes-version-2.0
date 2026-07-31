@@ -18,6 +18,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final String authorName;
   final String authorHandle;
   final List<ScriptureRef> scriptureRefs;
+  final List<String> tags;
   final String? caption;
   final String? sermonSource;
   final bool isCorrection;
@@ -42,6 +43,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     required this.authorName,
     required this.authorHandle,
     this.scriptureRefs = const [],
+    this.tags = const [],
     this.caption,
     this.sermonSource,
     this.isCorrection = false,
@@ -209,8 +211,23 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 duration: const Duration(milliseconds: 250),
               ),
             ],
+
+            if (widget.tags.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 4.0,
+                children: widget.tags.map((tag) => Text(
+                  '#$tag',
+                  style: ScribesTextStyles.caption.copyWith(
+                    color: colors.goldMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )).toList(),
+              ),
+            ],
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             const ScribesOrnamentDivider(),
             const SizedBox(height: 20),
             ScribesReactionBar(

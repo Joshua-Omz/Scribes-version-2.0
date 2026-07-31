@@ -44,6 +44,7 @@ abstract class Post with _$Post {
     @JsonKey(name: 'corrects_post_id') String? correctsPostId,
     @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,
     @JsonKey(name: 'scripture_refs') @Default([]) List<ScriptureRef> scriptureRefs,
+    @Default([]) List<String> tags,
     @JsonKey(name: 'is_deleted') required bool isDeleted,
     @JsonKey(name: 'published_at') required DateTime publishedAt,
     

@@ -48,53 +48,80 @@ class ScribesConnectedPostCard extends ConsumerWidget {
 
     return Column(
       children: [
-        ScribesPostCard(
-          title: post.content['title'] ?? 'Untitled',
-          authorName: post.authorName,
-          authorHandle: post.authorHandle,
-          bodyExcerpt: post.content['excerpt'] ?? (post.content['body'] is String ? post.content['body'] : ''),
-          caption: post.caption,
-          sermonSource: post.sermonSource?.displayTitle,
-          isCorrection: post.isCorrection,
-          publishedAt: post.publishedAt,
-          scriptureRefs: post.scriptureRefs,
-          isFeatured: isFeatured,
-          amenCount: amenCount,
-          insightCount: insightCount,
-          thoughtProvokingCount: thoughtProvokingCount,
-          commentCount: commentCount,
-          userReactionType: userReaction,
-          isSaved: isSaved,
-          onSaveToggle: () {
-            if (!isAuthenticated) {
-              context.push('/auth');
-              return;
-            }
-            if (isSaved) {
-              ref.read(savedPostsProvider.notifier).unsavePost(post.id);
-              ScribesToast.show(context, 'Post unsaved', colors, icon: HugeIcons.strokeRoundedRemove01);
-            } else {
-              ref.read(savedPostsProvider.notifier).savePost(post.id);
-              ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
-            }
-          },
-          onTap: () => context.push('/posts/${post.id}'),
-          onAuthorTap: () => context.push('/users/${post.authorId}'),
-          onComment: () {
-            if (!isAuthenticated) {
-              context.push('/auth');
-              return;
-            }
-            ScribesCommentSheet.show(context, postId: post.id, postAuthorId: post.authorId);
-          },
-          onReact: (type) {
-            if (!isAuthenticated) {
-              context.push('/auth');
-              return;
-            }
-            ref.read(postReactionsProvider(post.id).notifier).react(type, knownUserReaction: null);
-          },
-        ),
+        if (post.isDeleted)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colors.surfaceRaised,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.border),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    HugeIcon(icon: HugeIcons.strokeRoundedDelete02, color: colors.secondaryText, size: 32),
+                    const SizedBox(height: 12),
+                    Text(
+                      'This post has been deleted',
+                      style: TextStyle(color: colors.secondaryText, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          ScribesPostCard(
+            title: post.content['title'] ?? 'Untitled',
+            authorName: post.authorName,
+            authorHandle: post.authorHandle,
+            bodyExcerpt: post.content['excerpt'] ?? (post.content['body'] is String ? post.content['body'] : ''),
+            caption: post.caption,
+            sermonSource: post.sermonSource?.displayTitle,
+            isCorrection: post.isCorrection,
+            publishedAt: post.publishedAt,
+            scriptureRefs: post.scriptureRefs,
+            tags: post.tags,
+            isFeatured: isFeatured,
+            amenCount: amenCount,
+            insightCount: insightCount,
+            thoughtProvokingCount: thoughtProvokingCount,
+            commentCount: commentCount,
+            userReactionType: userReaction,
+            isSaved: isSaved,
+            onSaveToggle: () {
+              if (!isAuthenticated) {
+                context.push('/auth');
+                return;
+              }
+              if (isSaved) {
+                ref.read(savedPostsProvider.notifier).unsavePost(post.id);
+                ScribesToast.show(context, 'Post unsaved', colors, icon: HugeIcons.strokeRoundedRemove01);
+              } else {
+                ref.read(savedPostsProvider.notifier).savePost(post.id);
+                ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+              }
+            },
+            onTap: () => context.push('/posts/${post.id}'),
+            onAuthorTap: () => context.push('/users/${post.authorId}'),
+            onComment: () {
+              if (!isAuthenticated) {
+                context.push('/auth');
+                return;
+              }
+              ScribesCommentSheet.show(context, postId: post.id, postAuthorId: post.authorId);
+            },
+            onReact: (type) {
+              if (!isAuthenticated) {
+                context.push('/auth');
+                return;
+              }
+              ref.read(postReactionsProvider(post.id).notifier).react(type, knownUserReaction: null);
+            },
+          ),
         Divider(height: 1, thickness: 1, color: colors.border),
       ],
     );

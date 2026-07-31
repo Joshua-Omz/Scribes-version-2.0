@@ -141,7 +141,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       replyMessage = messages.where((m) => m.id == message.replyToId).firstOrNull;
     }
     
-    Widget bubble = Align(
+    Widget bubble = Opacity(
+      opacity: message.status == 'pending' ? 0.6 : 1.0,
+      child: Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -161,7 +163,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Check if there is a reply
-            if (replyMessage != null)
+            if (message.replyToId != null)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -176,12 +178,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        replyMessage.body,
+                        replyMessage?.body ?? 'Original message unavailable',
                         style: ScribesTextStyles.labelLg.copyWith(
                           color: isMe ? Colors.white : colors.primaryText,
                           fontStyle: FontStyle.italic,
                         ),
-                        maxLines: 1,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -195,17 +197,32 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}',
-              style: ScribesTextStyles.caption.copyWith(
-                color: isMe ? Colors.white70 : colors.secondaryText,
-                fontSize: 10,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}',
+                  style: ScribesTextStyles.caption.copyWith(
+                    color: isMe ? Colors.white70 : colors.secondaryText,
+                    fontSize: 10,
+                  ),
+                ),
+                if (isMe) ...[
+                  const SizedBox(width: 4),
+                  if (message.status == 'pending')
+                    const HugeIcon(icon: HugeIcons.strokeRoundedTime01, size: 12, color: Colors.white70)
+                  else if (message.status == 'error')
+                    const HugeIcon(icon: HugeIcons.strokeRoundedAlert01, size: 12, color: Colors.redAccent)
+                  else
+                    const HugeIcon(icon: HugeIcons.strokeRoundedTick02, size: 12, color: Colors.white70),
+                ],
+              ],
             ),
           ],
         ),
       ),
-    );
+    ),
+  );
 
     return Dismissible(
       key: ValueKey(message.id),

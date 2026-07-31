@@ -9,74 +9,28 @@ part of 'explore_notifier.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(CategoriesNotifier)
-final categoriesProvider = CategoriesNotifierProvider._();
+@ProviderFor(ExploreSelectedTag)
+final exploreSelectedTagProvider = ExploreSelectedTagProvider._();
 
-final class CategoriesNotifierProvider
-    extends $AsyncNotifierProvider<CategoriesNotifier, List<PostCategory>> {
-  CategoriesNotifierProvider._()
+final class ExploreSelectedTagProvider
+    extends $NotifierProvider<ExploreSelectedTag, String?> {
+  ExploreSelectedTagProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'categoriesProvider',
+        name: r'exploreSelectedTagProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$categoriesNotifierHash();
+  String debugGetCreateSourceHash() => _$exploreSelectedTagHash();
 
   @$internal
   @override
-  CategoriesNotifier create() => CategoriesNotifier();
-}
-
-String _$categoriesNotifierHash() =>
-    r'9912fc2a467c67370126609da04acafb2c97fe02';
-
-abstract class _$CategoriesNotifier extends $AsyncNotifier<List<PostCategory>> {
-  FutureOr<List<PostCategory>> build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<List<PostCategory>>, List<PostCategory>>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<PostCategory>>, List<PostCategory>>,
-              AsyncValue<List<PostCategory>>,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(ExploreSelectedCategory)
-final exploreSelectedCategoryProvider = ExploreSelectedCategoryProvider._();
-
-final class ExploreSelectedCategoryProvider
-    extends $NotifierProvider<ExploreSelectedCategory, String?> {
-  ExploreSelectedCategoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'exploreSelectedCategoryProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$exploreSelectedCategoryHash();
-
-  @$internal
-  @override
-  ExploreSelectedCategory create() => ExploreSelectedCategory();
+  ExploreSelectedTag create() => ExploreSelectedTag();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(String? value) {
@@ -87,10 +41,10 @@ final class ExploreSelectedCategoryProvider
   }
 }
 
-String _$exploreSelectedCategoryHash() =>
-    r'336ee1daed3470c394af30770d8c4f4d9be76627';
+String _$exploreSelectedTagHash() =>
+    r'07e8e4bbf2cb59b0e0d1d1e20408958eda54be4b';
 
-abstract class _$ExploreSelectedCategory extends $Notifier<String?> {
+abstract class _$ExploreSelectedTag extends $Notifier<String?> {
   String? build();
   @$mustCallSuper
   @override
@@ -387,7 +341,7 @@ final class ExplorePostsNotifierProvider
 }
 
 String _$explorePostsNotifierHash() =>
-    r'af44592a79712259ede1b7cbd4a35057a16c8657';
+    r'c678730502349a4c0aeeb6bea63269aef6f98b0b';
 
 abstract class _$ExplorePostsNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();

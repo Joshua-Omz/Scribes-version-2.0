@@ -21,7 +21,6 @@ type CreateInput struct {
 	Content      json.RawMessage `json:"content" binding:"required"`
 	Caption      *string         `json:"caption,omitempty"`
 	SermonSource *string         `json:"sermon_source,omitempty"`
-	CategoryIDs  []uuid.UUID     `json:"category_ids,omitempty"`
 }
 
 type Service struct {
@@ -56,12 +55,6 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 	if err != nil {
 		return Draft{}, err
 	}
-	if len(input.CategoryIDs) > 0 {
-		err = s.repo.SetDraftCategories(ctx, d.ID, input.CategoryIDs)
-		if err != nil {
-			return Draft{}, err
-		}
-	}
 	return d, nil
 }
 
@@ -78,11 +71,6 @@ func (s *Service) Update(ctx context.Context, authorID, draftID uuid.UUID, input
 	}
 
 	d, err := s.repo.UpdateDraft(ctx, draftID, authorID, input.Content, input.Caption, input.SermonSource)
-	if err != nil {
-		return Draft{}, err
-	}
-
-	err = s.repo.SetDraftCategories(ctx, d.ID, input.CategoryIDs)
 	if err != nil {
 		return Draft{}, err
 	}
@@ -116,13 +104,8 @@ func (s *Service) CreateDraftFromNote(ctx context.Context, authorID uuid.UUID, n
 	return draft.ID, nil
 }
 
-func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID, scriptureRefs []post.ScriptureRefPayload) (post.Post, error) {
+func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID, tags []string, scriptureRefs []post.ScriptureRefPayload) (post.Post, error) {
 	d, err := s.GetByID(ctx, authorID, draftID)
-	if err != nil {
-		return post.Post{}, err
-	}
-
-	catIDs, err := s.repo.GetDraftCategories(ctx, draftID)
 	if err != nil {
 		return post.Post{}, err
 	}
@@ -131,7 +114,7 @@ func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID, scri
 		Content:       d.Content,
 		Caption:       d.Caption,
 		SermonSource:  d.SermonSource,
-		CategoryIDs:   catIDs,
+		Tags:          tags,
 		ScriptureRefs: scriptureRefs,
 	})
 	if err != nil {

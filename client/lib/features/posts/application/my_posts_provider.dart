@@ -116,4 +116,23 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _fetchMyPosts());
   }
+
+  Future<void> deletePost(String id) async {
+    final db = ref.read(databaseProvider);
+    try {
+      final repo = ref.read(postRepositoryProvider);
+      await repo.deletePost(id);
+      
+      // Update local db to mark as deleted
+      await (db.update(db.posts)..where((t) => t.id.equals(id))).write(
+        const PostsCompanion(isDeleted: Value(true)),
+      );
+      
+      // Refresh the state
+      await refresh();
+    } catch (e) {
+      debugPrint("Error deleting post: $e");
+      throw Exception('Failed to delete post: $e');
+    }
+  }
 }

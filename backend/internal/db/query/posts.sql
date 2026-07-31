@@ -58,17 +58,8 @@ INSERT INTO posts (
     $1, $2, $3, $4, $5, true, $6
 ) RETURNING *;
 
--- name: ClearPostCategories :exec
-DELETE FROM post_categories
-WHERE post_id = $1;
-
--- name: AddPostCategory :exec
-INSERT INTO post_categories (post_id, category_id)
-VALUES ($1, $2)
-ON CONFLICT DO NOTHING;
-
--- name: GetPostCategories :many
-SELECT category_id FROM post_categories
+-- name: ClearPostTags :exec
+DELETE FROM post_tags
 WHERE post_id = $1;
 
 -- name: AddScriptureRef :exec

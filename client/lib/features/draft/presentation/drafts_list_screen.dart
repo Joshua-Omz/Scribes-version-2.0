@@ -187,7 +187,6 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                               draft.content,
                               caption: draft.caption,
                               sermonSource: draft.sermonSource,
-                              categoryIds: draft.categoryIds,
                             );
                             context.push('/compose');
                           }

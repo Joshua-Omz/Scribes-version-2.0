@@ -32,4 +32,18 @@ class PostRepository {
     final data = await _api.listByAuthor(userId);
     return data.map((e) => Post.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<void> deletePost(String id) async {
+    await _api.deletePost(id);
+  }
+
+  Future<Post> revisePost(String id, Map<String, dynamic> content, String? caption, List<String>? tags) async {
+    final payload = {
+      'content': content,
+      if (caption != null && caption.isNotEmpty) 'caption': caption,
+      if (tags != null) 'tags': tags,
+    };
+    final data = await _api.revisePost(id, payload);
+    return Post.fromJson(data);
+  }
 }

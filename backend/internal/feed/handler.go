@@ -91,16 +91,9 @@ func (h *Handler) GetExplore(c *gin.Context) {
 		}
 	}
 
-	categoryStr := c.Query("category_id")
-	var categoryID *uuid.UUID
-	if categoryStr != "" {
-		id, err := uuid.Parse(categoryStr)
-		if err == nil {
-			categoryID = &id
-		} else {
-			respond.Error(c, http.StatusBadRequest, "invalid category_id")
-			return
-		}
+	var tag *string
+	if t := c.Query("tag"); t != "" {
+		tag = &t
 	}
 
 	var searchQuery *string
@@ -124,7 +117,7 @@ func (h *Handler) GetExplore(c *gin.Context) {
 	params := ExploreParams{
 		Cursor:          cursor,
 		Limit:           limit,
-		CategoryID:      categoryID,
+		Tag:             tag,
 		SearchQuery:     searchQuery,
 		ScriptureBook:   scriptureBook,
 		ScriptureChapter: scriptureChapter,
@@ -139,11 +132,29 @@ func (h *Handler) GetExplore(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, res)
 }
 
-func (h *Handler) GetCategories(c *gin.Context) {
-	cats, err := h.svc.ListCategories(c.Request.Context())
+func (h *Handler) GetExploreByTag(c *gin.Context) {
+	name := c.Param("name")
+	
+	cursor := c.Query("cursor")
+	limitStr := c.Query("limit")
+	var limit int32 = 20
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
+		}
+	}
+
+	params := ExploreParams{
+		Cursor: cursor,
+		Limit:  limit,
+		Tag:    &name,
+	}
+
+	res, err := h.svc.GetExplore(c.Request.Context(), params)
 	if err != nil {
-		respond.Error(c, http.StatusInternalServerError, "failed to load categories")
+		respond.Error(c, http.StatusBadRequest, "invalid request")
 		return
 	}
-	respond.JSON(c, http.StatusOK, cats)
+
+	respond.JSON(c, http.StatusOK, res)
 }

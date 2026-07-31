@@ -23,6 +23,7 @@ import (
 	"scribes-api/internal/server"
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
+	"scribes-api/internal/tag"
 
 	_ "github.com/lib/pq"
 )
@@ -90,8 +91,11 @@ func main() {
 	adminRepo := admin.NewRepository(queries, db)
 	adminSvc := admin.NewService(adminRepo)
 	adminHandler := admin.NewHandler(adminSvc)
+	tagRepo := tag.NewRepository(queries)
+	tagSvc := tag.NewService(tagRepo)
+	tagHandler := tag.NewHandler(tagSvc)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, cfg.JWTSecret)
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

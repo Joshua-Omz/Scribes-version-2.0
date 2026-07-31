@@ -51,7 +51,7 @@ final class ConversationMessagesProvider
 }
 
 String _$conversationMessagesHash() =>
-    r'7734f3cf522a6e09ff7799539878ab8bbb2b3aa0';
+    r'a084a528bb2f627eb941221103c772b635221d22';
 
 final class ConversationMessagesFamily extends $Family
     with

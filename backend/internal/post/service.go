@@ -28,7 +28,7 @@ type CreateInput struct {
 	Caption       *string               `json:"caption,omitempty"`
 	Visibility    *string               `json:"visibility,omitempty"`
 	SermonSource  *string               `json:"sermon_source,omitempty"`
-	CategoryIDs   []uuid.UUID           `json:"category_ids,omitempty"`
+	Tags          []string              `json:"tags,omitempty"`
 	ScriptureRefs []ScriptureRefPayload `json:"scripture_refs,omitempty"`
 }
 
@@ -52,11 +52,17 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 		return Post{}, err
 	}
 
-	if len(input.CategoryIDs) > 0 {
-		err = s.repo.SetPostCategories(ctx, p.ID, input.CategoryIDs)
+	if len(input.Tags) > 0 {
+		if len(input.Tags) > 8 {
+			return Post{}, errors.New("maximum of 8 tags allowed")
+		}
+		err = s.repo.SetPostTags(ctx, p.ID, input.Tags)
 		if err != nil {
 			return Post{}, err
 		}
+		p.Tags, _ = s.repo.GetPostTags(ctx, p.ID)
+	} else {
+		p.Tags = []string{}
 	}
 
 	if len(input.ScriptureRefs) > 0 {
@@ -159,6 +165,23 @@ func (s *Service) Update(ctx context.Context, authorID, id uuid.UUID, input Crea
 		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
 	}
 
+	if len(input.Tags) > 0 {
+		if len(input.Tags) > 8 {
+			return Post{}, errors.New("maximum of 8 tags allowed")
+		}
+		err = s.repo.SetPostTags(ctx, updatedPost.ID, input.Tags)
+		if err != nil {
+			return Post{}, err
+		}
+		updatedPost.Tags, _ = s.repo.GetPostTags(ctx, updatedPost.ID)
+	} else {
+		err = s.repo.SetPostTags(ctx, updatedPost.ID, []string{})
+		if err != nil {
+			return Post{}, err
+		}
+		updatedPost.Tags = []string{}
+	}
+
 	return updatedPost, nil
 }
 
@@ -173,6 +196,7 @@ func (s *Service) Delete(ctx context.Context, authorID, id uuid.UUID) error {
 type ReviseInput struct {
 	Content       json.RawMessage       `json:"content" binding:"required"`
 	Caption       *string               `json:"caption,omitempty"`
+	Tags          []string              `json:"tags,omitempty"`
 }
 
 func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input ReviseInput) (Post, error) {
@@ -181,7 +205,29 @@ func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input Revi
 		return Post{}, err
 	}
 
-	return s.repo.RevisePost(ctx, id, authorID, existing.Content, existing.CurrentVersion, input.Content, input.Caption)
+	updatedPost, err := s.repo.RevisePost(ctx, id, authorID, existing.Content, existing.CurrentVersion, input.Content, input.Caption)
+	if err != nil {
+		return Post{}, err
+	}
+	
+	if len(input.Tags) > 0 {
+		if len(input.Tags) > 8 {
+			return Post{}, errors.New("maximum of 8 tags allowed")
+		}
+		err = s.repo.SetPostTags(ctx, updatedPost.ID, input.Tags)
+		if err != nil {
+			return Post{}, err
+		}
+		updatedPost.Tags, _ = s.repo.GetPostTags(ctx, updatedPost.ID)
+	} else {
+		err = s.repo.SetPostTags(ctx, updatedPost.ID, []string{})
+		if err != nil {
+			return Post{}, err
+		}
+		updatedPost.Tags = []string{}
+	}
+
+	return updatedPost, nil
 }
 
 func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID uuid.UUID, input CreateInput) (Post, error) {
@@ -199,6 +245,19 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 	p, err := s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID)
 	if err != nil {
 		return Post{}, err
+	}
+
+	if len(input.Tags) > 0 {
+		if len(input.Tags) > 8 {
+			return Post{}, errors.New("maximum of 8 tags allowed")
+		}
+		err = s.repo.SetPostTags(ctx, p.ID, input.Tags)
+		if err != nil {
+			return Post{}, err
+		}
+		p.Tags, _ = s.repo.GetPostTags(ctx, p.ID)
+	} else {
+		p.Tags = []string{}
 	}
 
 	if len(input.ScriptureRefs) > 0 {

@@ -14,6 +14,8 @@ import '../../features/posts/presentation/post_detail_screen.dart';
 import '../../features/compose/presentation/draft_editor_screen.dart';
 import '../../features/compose/presentation/draft_preview_screen.dart';
 import '../../features/compose/presentation/publish_metadata_screen.dart';
+import '../../features/posts/presentation/revise_post_screen.dart';
+import '../../features/posts/domain/post.dart';
 import '../../features/draft/presentation/drafts_list_screen.dart';
 import '../../features/profile/presentation/private_profile_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
@@ -138,6 +140,15 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id']!;
           return buildPageWithSlideRightTransition(context: context, state: state, child: PostDetailScreen(postId: id));
         },
+        routes: [
+          GoRoute(
+            path: 'edit',
+            pageBuilder: (context, state) {
+              final post = state.extra as Post;
+              return buildPageWithSlideUpTransition(context: context, state: state, child: RevisePostScreen(post: post));
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: '/profile',

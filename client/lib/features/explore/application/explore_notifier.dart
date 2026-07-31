@@ -3,26 +3,19 @@ import '../../posts/domain/post.dart';
 import '../../social/domain/comment_author.dart';
 import '../data/explore_user_repository.dart';
 import '../data/explore_repository.dart';
-import '../domain/category.dart';
+
 
 part 'explore_notifier.g.dart';
 
-@riverpod
-class CategoriesNotifier extends _$CategoriesNotifier {
-  @override
-  FutureOr<List<PostCategory>> build() async {
-    final repo = ref.read(exploreRepositoryProvider);
-    return repo.getCategories();
-  }
-}
+
 
 @riverpod
-class ExploreSelectedCategory extends _$ExploreSelectedCategory {
+class ExploreSelectedTag extends _$ExploreSelectedTag {
   @override
   String? build() => null;
 
-  void select(String? categoryId) {
-    state = categoryId;
+  void select(String? tag) {
+    state = tag;
   }
 }
 
@@ -106,17 +99,17 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
 
   @override
   FutureOr<List<Post>> build() async {
-    final categoryId = ref.watch(exploreSelectedCategoryProvider);
+    final tag = ref.watch(exploreSelectedTagProvider);
     final searchQuery = ref.watch(exploreSearchQueryProvider);
     final scriptureFilter = ref.watch(exploreScriptureFilterProvider);
-    return _fetch(categoryId, searchQuery, scriptureFilter, null);
+    return _fetch(tag, searchQuery, scriptureFilter, null);
   }
 
-  Future<List<Post>> _fetch(String? categoryId, String? searchQuery, ScriptureFilter? scriptureFilter, String? cursor) async {
+  Future<List<Post>> _fetch(String? tag, String? searchQuery, ScriptureFilter? scriptureFilter, String? cursor) async {
     final repo = ref.read(exploreRepositoryProvider);
     final response = await repo.getExplore(
       cursor: cursor, 
-      categoryId: categoryId,
+      tag: tag,
       searchQuery: searchQuery,
       scriptureBook: scriptureFilter?.book,
       scriptureChapter: scriptureFilter?.chapter,
@@ -130,10 +123,10 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
     if (state.isLoading || state.isRefreshing) return;
 
     try {
-      final categoryId = ref.read(exploreSelectedCategoryProvider);
+      final tag = ref.read(exploreSelectedTagProvider);
       final searchQuery = ref.read(exploreSearchQueryProvider);
       final scriptureFilter = ref.read(exploreScriptureFilterProvider);
-      final newPosts = await _fetch(categoryId, searchQuery, scriptureFilter, _nextCursor);
+      final newPosts = await _fetch(tag, searchQuery, scriptureFilter, _nextCursor);
       
       final currentPosts = state.value ?? [];
       state = AsyncData([...currentPosts, ...newPosts]);
@@ -146,10 +139,10 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
     state = const AsyncLoading();
     _nextCursor = null;
     try {
-      final categoryId = ref.read(exploreSelectedCategoryProvider);
+      final tag = ref.read(exploreSelectedTagProvider);
       final searchQuery = ref.read(exploreSearchQueryProvider);
       final scriptureFilter = ref.read(exploreScriptureFilterProvider);
-      final posts = await _fetch(categoryId, searchQuery, scriptureFilter, null);
+      final posts = await _fetch(tag, searchQuery, scriptureFilter, null);
       state = AsyncData(posts);
     } catch (e, stack) {
       state = AsyncError(e, stack);

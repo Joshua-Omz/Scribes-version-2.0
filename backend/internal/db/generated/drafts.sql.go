@@ -13,32 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const addDraftCategory = `-- name: AddDraftCategory :exec
-INSERT INTO draft_categories (draft_id, category_id)
-VALUES ($1, $2)
-ON CONFLICT DO NOTHING
-`
-
-type AddDraftCategoryParams struct {
-	DraftID    uuid.UUID `json:"draft_id"`
-	CategoryID uuid.UUID `json:"category_id"`
-}
-
-func (q *Queries) AddDraftCategory(ctx context.Context, arg AddDraftCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, addDraftCategory, arg.DraftID, arg.CategoryID)
-	return err
-}
-
-const clearDraftCategories = `-- name: ClearDraftCategories :exec
-DELETE FROM draft_categories
-WHERE draft_id = $1
-`
-
-func (q *Queries) ClearDraftCategories(ctx context.Context, draftID uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, clearDraftCategories, draftID)
-	return err
-}
-
 const createDraft = `-- name: CreateDraft :one
 INSERT INTO drafts (
     author_id,
@@ -112,34 +86,6 @@ func (q *Queries) GetDraftByID(ctx context.Context, id uuid.UUID) (Draft, error)
 		&i.ServerSequence,
 	)
 	return i, err
-}
-
-const getDraftCategories = `-- name: GetDraftCategories :many
-SELECT category_id FROM draft_categories
-WHERE draft_id = $1
-`
-
-func (q *Queries) GetDraftCategories(ctx context.Context, draftID uuid.UUID) ([]uuid.UUID, error) {
-	rows, err := q.db.QueryContext(ctx, getDraftCategories, draftID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []uuid.UUID
-	for rows.Next() {
-		var category_id uuid.UUID
-		if err := rows.Scan(&category_id); err != nil {
-			return nil, err
-		}
-		items = append(items, category_id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const listDraftsByAuthor = `-- name: ListDraftsByAuthor :many

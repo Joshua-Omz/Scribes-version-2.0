@@ -6,16 +6,27 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_text_field.dart';
-import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
-import '../../explore/application/explore_notifier.dart';
 
-class PublishMetadataScreen extends ConsumerWidget {
+class PublishMetadataScreen extends ConsumerStatefulWidget {
   const PublishMetadataScreen({super.key});
+
+  @override
+  ConsumerState<PublishMetadataScreen> createState() => _PublishMetadataScreenState();
+}
+
+class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
+  final TextEditingController _tagController = TextEditingController();
+
+  @override
+  void dispose() {
+    _tagController.dispose();
+    super.dispose();
+  }
 
   void _showPublishConfirmation(BuildContext context, WidgetRef ref) {
     final colors = ref.read(themeProvider);
@@ -110,10 +121,9 @@ class PublishMetadataScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final composeState = ref.watch(composeProvider);
-    final categoriesState = ref.watch(categoriesProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -249,69 +259,60 @@ class PublishMetadataScreen extends ConsumerWidget {
                       ),
                     const SizedBox(height: 40),
 
-                    // Topics Section
+                    // --- Tags Section ---
+                    const SizedBox(height: 16),
                     Text(
-                      'Topics',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                      'Tags',
+                      style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
-                      'Select up to 3 topics to help others find your post.',
+                      'Add up to 8 tags to help others find your post (e.g. grace, prophecy).',
                       style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText.withValues(alpha: 0.7)),
                     ),
                     const SizedBox(height: 12),
-                    categoriesState.when(
-                      data: (categories) {
-                        if (categories.isEmpty) return const SizedBox.shrink();
-                        return Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: categories.map((cat) {
-                            final isSelected = composeState.categoryIds.contains(cat.id);
-                            return FilterChip(
-                              label: Text(
-                                cat.name,
-                                style: ScribesTextStyles.labelLg.copyWith(
-                                  color: isSelected ? colors.surface : colors.primaryText,
-                                ),
-                              ),
-                              selected: isSelected,
-                              onSelected: (_) {
-                                ref.read(composeProvider.notifier).toggleCategory(cat.id);
-                              },
-                              backgroundColor: colors.surfaceRaised,
-                              selectedColor: colors.primaryText,
-                              side: BorderSide(
-                                color: isSelected ? colors.primaryText : colors.border,
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            );
-                          }).toList(),
-                        );
-                      },
-                      loading: () => ScribesShimmer(
-                        child: Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: List.generate(
-                            4,
-                            (index) => Container(
-                              width: 80.0 + (index % 3 * 20),
-                              height: 36.0,
-                              decoration: BoxDecoration(
-                                color: colors.surfaceRaised,
-                                borderRadius: BorderRadius.circular(20),
+                    if (composeState.tags.isNotEmpty)
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: composeState.tags.map((tag) {
+                          return InputChip(
+                            label: Text(
+                              "#$tag",
+                              style: ScribesTextStyles.labelLg.copyWith(
+                                color: colors.surface,
                               ),
                             ),
-                          ),
-                        ),
+                            backgroundColor: colors.primaryText,
+                            deleteIconColor: colors.surface,
+                            onDeleted: () {
+                              ref.read(composeProvider.notifier).removeTag(tag);
+                            },
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          );
+                        }).toList(),
                       ),
-                      error: (err, stack) => Text(
-                        'Failed to load topics', 
-                        style: ScribesTextStyles.caption.copyWith(color: colors.orange)
+                    if (composeState.tags.isNotEmpty) const SizedBox(height: 12),
+                    if (composeState.tags.length < 8)
+                      ScribesTextField(
+                        controller: _tagController,
+                        hintText: 'Add a tag (press Enter or comma)',
+                        onSubmitted: (value) {
+                          if (value.trim().isNotEmpty) {
+                            ref.read(composeProvider.notifier).addTag(value);
+                            _tagController.clear();
+                          }
+                        },
+                        onChanged: (value) {
+                          if (value.endsWith(',') || value.endsWith(' ')) {
+                            final tag = value.substring(0, value.length - 1);
+                            if (tag.trim().isNotEmpty) {
+                              ref.read(composeProvider.notifier).addTag(tag);
+                              _tagController.clear();
+                            }
+                          }
+                        },
                       ),
-                    ),
                     const SizedBox(height: 40),
 
                     // Caption Field

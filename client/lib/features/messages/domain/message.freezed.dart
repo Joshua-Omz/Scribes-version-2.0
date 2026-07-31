@@ -571,7 +571,7 @@ as DateTime,
 /// @nodoc
 mixin _$Message {
 
- String get id;@JsonKey(name: 'conversation_id') String get conversationId;@JsonKey(name: 'sender_id') String get senderId; String get body;@JsonKey(name: 'is_deleted') bool get isDeleted;@JsonKey(name: 'sent_at') DateTime get sentAt;@JsonKey(name: 'reply_to_id') String? get replyToId;@JsonKey(name: 'edited_at') DateTime? get editedAt;
+ String get id;@JsonKey(name: 'conversation_id') String get conversationId;@JsonKey(name: 'sender_id') String get senderId; String get body;@JsonKey(name: 'is_deleted') bool get isDeleted;@JsonKey(name: 'sent_at') DateTime get sentAt;@JsonKey(name: 'reply_to_id') String? get replyToId;@JsonKey(name: 'edited_at') DateTime? get editedAt; String get status;
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -584,16 +584,16 @@ $MessageCopyWith<Message> get copyWith => _$MessageCopyWithImpl<Message>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Message&&(identical(other.id, id) || other.id == id)&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.body, body) || other.body == body)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.replyToId, replyToId) || other.replyToId == replyToId)&&(identical(other.editedAt, editedAt) || other.editedAt == editedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Message&&(identical(other.id, id) || other.id == id)&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.body, body) || other.body == body)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.replyToId, replyToId) || other.replyToId == replyToId)&&(identical(other.editedAt, editedAt) || other.editedAt == editedAt)&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,conversationId,senderId,body,isDeleted,sentAt,replyToId,editedAt);
+int get hashCode => Object.hash(runtimeType,id,conversationId,senderId,body,isDeleted,sentAt,replyToId,editedAt,status);
 
 @override
 String toString() {
-  return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, body: $body, isDeleted: $isDeleted, sentAt: $sentAt, replyToId: $replyToId, editedAt: $editedAt)';
+  return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, body: $body, isDeleted: $isDeleted, sentAt: $sentAt, replyToId: $replyToId, editedAt: $editedAt, status: $status)';
 }
 
 
@@ -604,7 +604,7 @@ abstract mixin class $MessageCopyWith<$Res>  {
   factory $MessageCopyWith(Message value, $Res Function(Message) _then) = _$MessageCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'conversation_id') String conversationId,@JsonKey(name: 'sender_id') String senderId, String body,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'sent_at') DateTime sentAt,@JsonKey(name: 'reply_to_id') String? replyToId,@JsonKey(name: 'edited_at') DateTime? editedAt
+ String id,@JsonKey(name: 'conversation_id') String conversationId,@JsonKey(name: 'sender_id') String senderId, String body,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'sent_at') DateTime sentAt,@JsonKey(name: 'reply_to_id') String? replyToId,@JsonKey(name: 'edited_at') DateTime? editedAt, String status
 });
 
 
@@ -621,7 +621,7 @@ class _$MessageCopyWithImpl<$Res>
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? conversationId = null,Object? senderId = null,Object? body = null,Object? isDeleted = null,Object? sentAt = null,Object? replyToId = freezed,Object? editedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? conversationId = null,Object? senderId = null,Object? body = null,Object? isDeleted = null,Object? sentAt = null,Object? replyToId = freezed,Object? editedAt = freezed,Object? status = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,conversationId: null == conversationId ? _self.conversationId : conversationId // ignore: cast_nullable_to_non_nullable
@@ -631,7 +631,8 @@ as String,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: 
 as bool,sentAt: null == sentAt ? _self.sentAt : sentAt // ignore: cast_nullable_to_non_nullable
 as DateTime,replyToId: freezed == replyToId ? _self.replyToId : replyToId // ignore: cast_nullable_to_non_nullable
 as String?,editedAt: freezed == editedAt ? _self.editedAt : editedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -716,10 +717,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'conversation_id')  String conversationId, @JsonKey(name: 'sender_id')  String senderId,  String body, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'sent_at')  DateTime sentAt, @JsonKey(name: 'reply_to_id')  String? replyToId, @JsonKey(name: 'edited_at')  DateTime? editedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'conversation_id')  String conversationId, @JsonKey(name: 'sender_id')  String senderId,  String body, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'sent_at')  DateTime sentAt, @JsonKey(name: 'reply_to_id')  String? replyToId, @JsonKey(name: 'edited_at')  DateTime? editedAt,  String status)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
-return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.isDeleted,_that.sentAt,_that.replyToId,_that.editedAt);case _:
+return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.isDeleted,_that.sentAt,_that.replyToId,_that.editedAt,_that.status);case _:
   return orElse();
 
 }
@@ -737,10 +738,10 @@ return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.is
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'conversation_id')  String conversationId, @JsonKey(name: 'sender_id')  String senderId,  String body, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'sent_at')  DateTime sentAt, @JsonKey(name: 'reply_to_id')  String? replyToId, @JsonKey(name: 'edited_at')  DateTime? editedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'conversation_id')  String conversationId, @JsonKey(name: 'sender_id')  String senderId,  String body, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'sent_at')  DateTime sentAt, @JsonKey(name: 'reply_to_id')  String? replyToId, @JsonKey(name: 'edited_at')  DateTime? editedAt,  String status)  $default,) {final _that = this;
 switch (_that) {
 case _Message():
-return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.isDeleted,_that.sentAt,_that.replyToId,_that.editedAt);case _:
+return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.isDeleted,_that.sentAt,_that.replyToId,_that.editedAt,_that.status);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -757,10 +758,10 @@ return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.is
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'conversation_id')  String conversationId, @JsonKey(name: 'sender_id')  String senderId,  String body, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'sent_at')  DateTime sentAt, @JsonKey(name: 'reply_to_id')  String? replyToId, @JsonKey(name: 'edited_at')  DateTime? editedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'conversation_id')  String conversationId, @JsonKey(name: 'sender_id')  String senderId,  String body, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'sent_at')  DateTime sentAt, @JsonKey(name: 'reply_to_id')  String? replyToId, @JsonKey(name: 'edited_at')  DateTime? editedAt,  String status)?  $default,) {final _that = this;
 switch (_that) {
 case _Message() when $default != null:
-return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.isDeleted,_that.sentAt,_that.replyToId,_that.editedAt);case _:
+return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.isDeleted,_that.sentAt,_that.replyToId,_that.editedAt,_that.status);case _:
   return null;
 
 }
@@ -772,7 +773,7 @@ return $default(_that.id,_that.conversationId,_that.senderId,_that.body,_that.is
 @JsonSerializable()
 
 class _Message implements Message {
-  const _Message({required this.id, @JsonKey(name: 'conversation_id') required this.conversationId, @JsonKey(name: 'sender_id') required this.senderId, required this.body, @JsonKey(name: 'is_deleted') required this.isDeleted, @JsonKey(name: 'sent_at') required this.sentAt, @JsonKey(name: 'reply_to_id') this.replyToId, @JsonKey(name: 'edited_at') this.editedAt});
+  const _Message({required this.id, @JsonKey(name: 'conversation_id') required this.conversationId, @JsonKey(name: 'sender_id') required this.senderId, required this.body, @JsonKey(name: 'is_deleted') required this.isDeleted, @JsonKey(name: 'sent_at') required this.sentAt, @JsonKey(name: 'reply_to_id') this.replyToId, @JsonKey(name: 'edited_at') this.editedAt, this.status = 'sent'});
   factory _Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
 @override final  String id;
@@ -783,6 +784,7 @@ class _Message implements Message {
 @override@JsonKey(name: 'sent_at') final  DateTime sentAt;
 @override@JsonKey(name: 'reply_to_id') final  String? replyToId;
 @override@JsonKey(name: 'edited_at') final  DateTime? editedAt;
+@override@JsonKey() final  String status;
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
@@ -797,16 +799,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Message&&(identical(other.id, id) || other.id == id)&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.body, body) || other.body == body)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.replyToId, replyToId) || other.replyToId == replyToId)&&(identical(other.editedAt, editedAt) || other.editedAt == editedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Message&&(identical(other.id, id) || other.id == id)&&(identical(other.conversationId, conversationId) || other.conversationId == conversationId)&&(identical(other.senderId, senderId) || other.senderId == senderId)&&(identical(other.body, body) || other.body == body)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.sentAt, sentAt) || other.sentAt == sentAt)&&(identical(other.replyToId, replyToId) || other.replyToId == replyToId)&&(identical(other.editedAt, editedAt) || other.editedAt == editedAt)&&(identical(other.status, status) || other.status == status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,conversationId,senderId,body,isDeleted,sentAt,replyToId,editedAt);
+int get hashCode => Object.hash(runtimeType,id,conversationId,senderId,body,isDeleted,sentAt,replyToId,editedAt,status);
 
 @override
 String toString() {
-  return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, body: $body, isDeleted: $isDeleted, sentAt: $sentAt, replyToId: $replyToId, editedAt: $editedAt)';
+  return 'Message(id: $id, conversationId: $conversationId, senderId: $senderId, body: $body, isDeleted: $isDeleted, sentAt: $sentAt, replyToId: $replyToId, editedAt: $editedAt, status: $status)';
 }
 
 
@@ -817,7 +819,7 @@ abstract mixin class _$MessageCopyWith<$Res> implements $MessageCopyWith<$Res> {
   factory _$MessageCopyWith(_Message value, $Res Function(_Message) _then) = __$MessageCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'conversation_id') String conversationId,@JsonKey(name: 'sender_id') String senderId, String body,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'sent_at') DateTime sentAt,@JsonKey(name: 'reply_to_id') String? replyToId,@JsonKey(name: 'edited_at') DateTime? editedAt
+ String id,@JsonKey(name: 'conversation_id') String conversationId,@JsonKey(name: 'sender_id') String senderId, String body,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'sent_at') DateTime sentAt,@JsonKey(name: 'reply_to_id') String? replyToId,@JsonKey(name: 'edited_at') DateTime? editedAt, String status
 });
 
 
@@ -834,7 +836,7 @@ class __$MessageCopyWithImpl<$Res>
 
 /// Create a copy of Message
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? conversationId = null,Object? senderId = null,Object? body = null,Object? isDeleted = null,Object? sentAt = null,Object? replyToId = freezed,Object? editedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? conversationId = null,Object? senderId = null,Object? body = null,Object? isDeleted = null,Object? sentAt = null,Object? replyToId = freezed,Object? editedAt = freezed,Object? status = null,}) {
   return _then(_Message(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,conversationId: null == conversationId ? _self.conversationId : conversationId // ignore: cast_nullable_to_non_nullable
@@ -844,7 +846,8 @@ as String,isDeleted: null == isDeleted ? _self.isDeleted : isDeleted // ignore: 
 as bool,sentAt: null == sentAt ? _self.sentAt : sentAt // ignore: cast_nullable_to_non_nullable
 as DateTime,replyToId: freezed == replyToId ? _self.replyToId : replyToId // ignore: cast_nullable_to_non_nullable
 as String?,editedAt: freezed == editedAt ? _self.editedAt : editedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as DateTime?,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

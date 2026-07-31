@@ -17,7 +17,9 @@ class ScribesGridCard extends ConsumerWidget {
   final String? badgeText;
   final bool isSaved;
   final bool isSelected;
+  final bool isDeleted;
   final VoidCallback? onSaveToggle;
+  final VoidCallback? onDelete;
 
   const ScribesGridCard({
     super.key,
@@ -29,7 +31,9 @@ class ScribesGridCard extends ConsumerWidget {
     this.badgeText,
     this.isSaved = false,
     this.isSelected = false,
+    this.isDeleted = false,
     this.onSaveToggle,
+    this.onDelete,
   });
 
   @override
@@ -67,8 +71,8 @@ class ScribesGridCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Row (Badge or Save Icon)
-                if (hasBadge || isSaved)
+                // Header Row (Badge, Save Icon, Delete Icon)
+                if (hasBadge || isSaved || onDelete != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Row(
@@ -92,59 +96,100 @@ class ScribesGridCard extends ConsumerWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-                        if (isSaved)
-                          GestureDetector(
-                            onTap: onSaveToggle,
-                            child: HugeIcon(
-                              icon: HugeIcons.strokeRoundedBookmark02,
-                              color: colors.gold,
-                              size: 18,
-                            ),
-                          ),
+                          )
+                        else
+                          const SizedBox(), // Spacer
+                        Row(
+                          children: [
+                            if (isSaved)
+                              GestureDetector(
+                                onTap: onSaveToggle,
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedBookmark02,
+                                  color: colors.gold,
+                                  size: 18,
+                                ),
+                              ),
+                            if (isSaved && onDelete != null) const SizedBox(width: 8),
+                            if (onDelete != null)
+                              GestureDetector(
+                                onTap: onDelete,
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedDelete02,
+                                  color: Colors.red.shade400,
+                                  size: 18,
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
 
-                // Title
-                Text(
-                  title.isEmpty ? 'Untitled' : title,
-                  style: ScribesTextStyles.displayMd.copyWith(
-                    color: colors.primaryText,
-                    fontSize: 18,
-                    height: 1.1,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-
-                // Excerpt (Faded out at bottom)
-                Expanded(
-                  child: ShaderMask(
-                    shaderCallback: (bounds) {
-                      return LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black,
-                          Colors.black.withValues(alpha: 0.8),
-                          Colors.transparent,
+                if (isDeleted)
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedDelete02,
+                            color: colors.secondaryText,
+                            size: 24,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'This post has been deleted',
+                            style: ScribesTextStyles.labelLg.copyWith(
+                              color: colors.secondaryText,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ],
-                        stops: const [0.0, 0.6, 1.0],
-                      ).createShader(bounds);
-                    },
-                    blendMode: BlendMode.dstIn,
-                    child: Text(
-                      excerpt.isEmpty ? 'No excerpt' : excerpt,
-                      style: ScribesTextStyles.bodyMd.copyWith(
-                        color: colors.secondaryText,
-                        fontSize: 14,
                       ),
-                      overflow: TextOverflow.clip,
+                    ),
+                  )
+                else ...[
+                  // Title
+                  Text(
+                    title.isEmpty ? 'Untitled' : title,
+                    style: ScribesTextStyles.displayMd.copyWith(
+                      color: colors.primaryText,
+                      fontSize: 18,
+                      height: 1.1,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Excerpt (Faded out at bottom)
+                  Expanded(
+                    child: ShaderMask(
+                      shaderCallback: (bounds) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black,
+                            Colors.black.withValues(alpha: 0.8),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.6, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: Text(
+                        excerpt.isEmpty ? 'No excerpt' : excerpt,
+                        style: ScribesTextStyles.bodyMd.copyWith(
+                          color: colors.secondaryText,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.clip,
+                      ),
                     ),
                   ),
-                ),
+                ],
 
                 // Date Footer
                 if (date != null)

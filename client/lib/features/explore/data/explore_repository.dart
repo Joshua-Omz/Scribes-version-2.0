@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../feed/domain/paginated_feed.dart';
-import '../domain/category.dart';
+
 import 'explore_api.dart';
 import '../../../core/network/api_client.dart';
 
@@ -16,14 +16,14 @@ class ExploreRepository {
 
   Future<PaginatedFeed> getExplore({
     String? cursor, 
-    String? categoryId,
+    String? tag,
     String? searchQuery,
     String? scriptureBook,
     int? scriptureChapter,
   }) async {
     final rawData = await _api.getExplore(
       cursor: cursor, 
-      categoryId: categoryId,
+      tag: tag,
       searchQuery: searchQuery,
       scriptureBook: scriptureBook,
       scriptureChapter: scriptureChapter,
@@ -52,7 +52,5 @@ class ExploreRepository {
     };
   }
 
-  Future<List<PostCategory>> getCategories() {
-    return _api.getCategories();
-  }
+
 }

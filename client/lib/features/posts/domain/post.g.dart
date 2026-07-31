@@ -21,6 +21,9 @@ _Post _$PostFromJson(Map<String, dynamic> json) => _Post(
           ?.map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  tags:
+      (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
   isDeleted: json['is_deleted'] as bool,
   publishedAt: DateTime.parse(json['published_at'] as String),
   authorHandle: json['author_handle'] as String,
@@ -38,6 +41,7 @@ Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
   'corrects_post_id': instance.correctsPostId,
   'sermon_source': instance.sermonSource,
   'scripture_refs': instance.scriptureRefs,
+  'tags': instance.tags,
   'is_deleted': instance.isDeleted,
   'published_at': instance.publishedAt.toIso8601String(),
   'author_handle': instance.authorHandle,

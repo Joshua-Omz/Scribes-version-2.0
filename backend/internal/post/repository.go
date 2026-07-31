@@ -28,8 +28,9 @@ type Post struct {
 	CorrectsPostID *uuid.UUID      `json:"corrects_post_id,omitempty"`
 	SermonSource   *string               `json:"sermon_source,omitempty"`
 	IsDeleted      bool                  `json:"is_deleted"`
-	PublishedAt    time.Time             `json:"published_at"`
+	PublishedAt    time.Time                       `json:"published_at"`
 	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
+	Tags           []string                        `json:"tags"`
 }
 
 func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
@@ -173,6 +174,12 @@ func (r *Repository) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error
 	if err == nil {
 		post.ScriptureRefs = refs
 	}
+	tags, err := r.GetPostTags(ctx, id)
+	if err == nil {
+		post.Tags = tags
+	} else {
+		post.Tags = []string{}
+	}
 	return post, nil
 }
 
@@ -188,6 +195,12 @@ func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) 
 		refs, err := r.GetScriptureRefs(ctx, post.ID)
 		if err == nil {
 			post.ScriptureRefs = refs
+		}
+		tags, err := r.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
 		}
 		posts[i] = post
 	}
@@ -326,15 +339,22 @@ func (r *Repository) GetVersionByPostAndNumber(ctx context.Context, postID uuid.
 	return mapPostVersion(dbVersion), nil
 }
 
-func (r *Repository) SetPostCategories(ctx context.Context, postID uuid.UUID, categoryIDs []uuid.UUID) error {
-	err := r.q.ClearPostCategories(ctx, postID)
+func (r *Repository) SetPostTags(ctx context.Context, postID uuid.UUID, tags []string) error {
+	err := r.q.ClearPostTags(ctx, postID)
 	if err != nil {
 		return err
 	}
-	for _, catID := range categoryIDs {
-		err = r.q.AddPostCategory(ctx, generated.AddPostCategoryParams{
-			PostID:     postID,
-			CategoryID: catID,
+	for _, tagName := range tags {
+		tagID, err := r.q.UpsertTag(ctx, generated.UpsertTagParams{
+			PName:        tagName,
+			PDisplayName: tagName,
+		})
+		if err != nil {
+			return err
+		}
+		err = r.q.AddPostTag(ctx, generated.AddPostTagParams{
+			PostID: postID,
+			TagID:  tagID,
 		})
 		if err != nil {
 			return err
@@ -343,8 +363,8 @@ func (r *Repository) SetPostCategories(ctx context.Context, postID uuid.UUID, ca
 	return nil
 }
 
-func (r *Repository) GetPostCategories(ctx context.Context, postID uuid.UUID) ([]uuid.UUID, error) {
-	return r.q.GetPostCategories(ctx, postID)
+func (r *Repository) GetPostTags(ctx context.Context, postID uuid.UUID) ([]string, error) {
+	return r.q.GetPostTags(ctx, postID)
 }
 
 func (r *Repository) SetScriptureRefs(ctx context.Context, postID uuid.UUID, refs []generated.AddScriptureRefParams) error {

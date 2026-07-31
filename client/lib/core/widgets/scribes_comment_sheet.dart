@@ -17,8 +17,10 @@ import '../../features/social/application/user_lookup_provider.dart';
 import '../../features/social/domain/comment.dart';
 import '../../features/social/domain/comment_author.dart';
 import '../../features/auth/application/auth_notifier.dart';
-import 'package:scribes/features/messages/presentation/widgets/dm_request_modal.dart';
+import '../../features/messages/presentation/widgets/dm_request_modal.dart';
 import '../../features/messages/data/message_repository.dart';
+import '../../features/messages/application/inbox_providers.dart';
+import 'package:go_router/go_router.dart';
 
 class ScribesCommentSheet extends ConsumerStatefulWidget {
   final String postId;
@@ -275,9 +277,22 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
               if (text.isNotEmpty) {
                 Navigator.pop(ctx);
                 try {
-                  await ref.read(messageRepositoryProvider).sendRequest(comment.authorId, text);
-                  if (context.mounted) {
-                    ScribesToast.show(context, 'Message request sent', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+                  final conversations = await ref.read(conversationsProvider.future);
+                  final existing = conversations.where((c) => c.userAId == comment.authorId || c.userBId == comment.authorId).firstOrNull;
+                  
+                  if (existing != null) {
+                    final currentUserId = ref.read(authProvider).value?.id;
+                    if (currentUserId != null) {
+                      await ref.read(messageRepositoryProvider).sendMessage(existing.id, text, currentUserId);
+                      if (context.mounted) {
+                        ScribesToast.show(context, 'Message sent', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+                      }
+                    }
+                  } else {
+                    await ref.read(messageRepositoryProvider).sendRequest(comment.authorId, text);
+                    if (context.mounted) {
+                      ScribesToast.show(context, 'Message request sent', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+                    }
                   }
                 } catch (e) {
                   if (context.mounted) {
@@ -665,8 +680,16 @@ class _CommentTile extends ConsumerWidget {
                           return const SizedBox.shrink(); // Can't message self
                         }
                         return InkWell(
-                          onTap: () {
-                            DmRequestModal.show(context, comment.authorId);
+                          onTap: () async {
+                            final conversations = await ref.read(conversationsProvider.future);
+                            final existing = conversations.where((c) => c.userAId == comment.authorId || c.userBId == comment.authorId).firstOrNull;
+                            if (!context.mounted) return;
+                            if (existing != null) {
+                              Navigator.of(context).pop();
+                              context.push('/conversation/${existing.id}');
+                            } else {
+                              DmRequestModal.show(context, comment.authorId);
+                            }
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),

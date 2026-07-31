@@ -57,6 +57,7 @@ _Message _$MessageFromJson(Map<String, dynamic> json) => _Message(
   editedAt: json['edited_at'] == null
       ? null
       : DateTime.parse(json['edited_at'] as String),
+  status: json['status'] as String? ?? 'sent',
 );
 
 Map<String, dynamic> _$MessageToJson(_Message instance) => <String, dynamic>{
@@ -68,4 +69,5 @@ Map<String, dynamic> _$MessageToJson(_Message instance) => <String, dynamic>{
   'sent_at': instance.sentAt.toIso8601String(),
   'reply_to_id': instance.replyToId,
   'edited_at': instance.editedAt?.toIso8601String(),
+  'status': instance.status,
 };

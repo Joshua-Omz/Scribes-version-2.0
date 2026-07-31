@@ -183,6 +183,7 @@ func (h *Handler) Publish(c *gin.Context) {
 	}
 
 	var input struct {
+		Tags          []string                   `json:"tags"`
 		ScriptureRefs []post.ScriptureRefPayload `json:"scripture_refs"`
 	}
 	// We use ShouldBindJSON but ignore EOF if the body is empty
@@ -190,7 +191,7 @@ func (h *Handler) Publish(c *gin.Context) {
 		// Log the error but proceed as empty payload if we just couldn't parse it
 	}
 
-	post, err := h.svc.Publish(c.Request.Context(), authorID, draftID, input.ScriptureRefs)
+	post, err := h.svc.Publish(c.Request.Context(), authorID, draftID, input.Tags, input.ScriptureRefs)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			respond.Error(c, http.StatusNotFound, "draft not found")

@@ -45,4 +45,13 @@ class PostApi {
     if (response.data == null) return [];
     return response.data as List<dynamic>;
   }
+
+  Future<void> deletePost(String id) async {
+    await _dio.delete('${Endpoints.posts}/$id');
+  }
+
+  Future<Map<String, dynamic>> revisePost(String id, Map<String, dynamic> data) async {
+    final response = await _dio.patch('${Endpoints.posts}/$id/revise', data: data);
+    return response.data as Map<String, dynamic>;
+  }
 }

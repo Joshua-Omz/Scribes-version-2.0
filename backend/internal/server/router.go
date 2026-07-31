@@ -14,12 +14,13 @@ import (
 	"scribes-api/internal/post"
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
+	"scribes-api/internal/tag"
 	"scribes-api/pkg/respond"
 
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, jwtSecret string) *gin.Engine {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -51,7 +52,9 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 	// Feed & Explore
 	r.GET("/explore", feedHandler.GetExplore)
-	r.GET("/categories", feedHandler.GetCategories)
+	r.GET("/tags/suggest", tagHandler.SuggestTags)
+	r.GET("/tags/trending", tagHandler.GetTrendingTags)
+	r.GET("/tags/:name/posts", feedHandler.GetExploreByTag)
 
 	// Protected routes
 	protected := r.Group("/")

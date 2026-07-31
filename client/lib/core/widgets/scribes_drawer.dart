@@ -8,7 +8,6 @@ import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 import '../../features/auth/application/auth_notifier.dart';
 import 'scribes_author_header.dart';
-import 'scribes_toast.dart';
 
 class ScribesDrawer extends ConsumerWidget {
   const ScribesDrawer({super.key});
@@ -86,11 +85,11 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: HugeIcons.strokeRoundedFileEdit,
-                title: 'Notes Workspace',
+                icon: HugeIcons.strokeRoundedBook03,
+                title: 'Bible',
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/notes');
+                  context.push('/bible');
                 },
               ),
               _buildMenuItem(
@@ -160,21 +159,6 @@ class ScribesDrawer extends ConsumerWidget {
       ),
     );
   }
-
-  void _cycleTheme(WidgetRef ref, ScribesColors currentTheme) {
-    if (currentTheme == ScribesColors.light) {
-      ref.read(themeProvider.notifier).setTheme(ScribesColors.dark);
-    } else if (currentTheme == ScribesColors.dark) {
-      ref.read(themeProvider.notifier).setTheme(ScribesColors.night);
-    } else if (currentTheme == ScribesColors.night) {
-      ref.read(themeProvider.notifier).setTheme(ScribesColors.parchment);
-    } else if (currentTheme == ScribesColors.parchment) {
-      ref.read(themeProvider.notifier).setTheme(ScribesColors.silver);
-    } else {
-      ref.read(themeProvider.notifier).setTheme(ScribesColors.light);
-    }
-  }
-
   Widget _buildMenuItem({
     required BuildContext context,
     required ScribesColors colors,

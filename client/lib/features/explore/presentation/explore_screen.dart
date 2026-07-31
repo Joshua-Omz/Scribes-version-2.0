@@ -22,9 +22,7 @@ class ExploreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
-    final categoriesState = ref.watch(categoriesProvider);
     final postsState = ref.watch(explorePostsProvider);
-    final selectedCategory = ref.watch(exploreSelectedCategoryProvider);
     final searchMode = ref.watch(exploreSearchModeProvider);
     final isSearchActive = ref.watch(exploreSearchActiveProvider);
 
@@ -96,49 +94,11 @@ class ExploreScreen extends ConsumerWidget {
                 ),
               ),
               if (searchMode == ExploreSearchMode.posts)
-                _buildPostsFeed(postsState, selectedCategory, colors, ref)
+                _buildPostsFeed(postsState, colors, ref)
               else
                 _buildUsersFeed(ref, colors),
             ] else ...[
-              // Categories Sticky Header
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _CategoryHeaderDelegate(
-                  height: 56.0,
-                  backgroundColor: colors.background,
-                  child: categoriesState.when(
-                    data: (categories) {
-                      return ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        itemCount: categories.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            // "All" chip
-                            return _buildCategoryChip(
-                              context: context,
-                              label: 'All',
-                              isSelected: selectedCategory == null,
-                              colors: colors,
-                              onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(null),
-                            );
-                          }
-                          final cat = categories[index - 1];
-                          return _buildCategoryChip(
-                            context: context,
-                            label: cat.name,
-                            isSelected: selectedCategory == cat.id,
-                            colors: colors,
-                            onSelected: () => ref.read(exploreSelectedCategoryProvider.notifier).select(cat.id),
-                          );
-                        },
-                      );
-                    },
-                    loading: () => const Center(child: ScribesLoadingIndicator()),
-                    error: (e, st) => const Center(child: HugeIcon(icon: HugeIcons.strokeRoundedAlert01, color: Colors.orange, size: 24)),
-                  ),
-                ),
-              ),
+
 
               // Divider below sticky header
               SliverToBoxAdapter(
@@ -150,7 +110,7 @@ class ExploreScreen extends ConsumerWidget {
               ),
 
               // Posts Feed
-              _buildPostsFeed(postsState, selectedCategory, colors, ref),
+              _buildPostsFeed(postsState, colors, ref),
             ],
           ],
         ),
@@ -158,7 +118,7 @@ class ExploreScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPostsFeed(AsyncValue<List<Post>> postsState, String? selectedCategory, dynamic colors, WidgetRef ref) {
+  Widget _buildPostsFeed(AsyncValue<List<Post>> postsState, dynamic colors, WidgetRef ref) {
     return postsState.when(
                 data: (posts) {
                   if (posts.isEmpty) {
@@ -167,7 +127,7 @@ class ExploreScreen extends ConsumerWidget {
                         child: ScribesEmptyState(
                           icon: HugeIcons.strokeRoundedSearch01,
                           title: 'No posts found',
-                          subtitle: 'Try a different category or search term.',
+                          subtitle: 'Try a different search term.',
                         ),
                       ),
                     );
@@ -187,7 +147,7 @@ class ExploreScreen extends ConsumerWidget {
                           }
 
                           final post = posts[index];
-                          final isFeatured = index == 0 && selectedCategory == null;
+                          final isFeatured = index == 0;
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

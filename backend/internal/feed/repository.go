@@ -129,7 +129,7 @@ func mapExplorePost(row generated.GetExplorePostsRow) FeedPost {
 	}
 }
 
-func mapExploreCategoryPost(row generated.GetExplorePostsByCategoryRow) FeedPost {
+func mapExploreTagPost(row generated.GetExplorePostsByTagRow) FeedPost {
 	var caption *string
 	if row.Caption.Valid {
 		caption = &row.Caption.String
@@ -286,9 +286,9 @@ func (r *Repository) GetExplorePosts(ctx context.Context, cursorTime time.Time, 
 	return posts, nil
 }
 
-func (r *Repository) GetExplorePostsByCategory(ctx context.Context, categoryID uuid.UUID, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
-	rows, err := r.q.GetExplorePostsByCategory(ctx, generated.GetExplorePostsByCategoryParams{
-		CategoryID:  categoryID,
+func (r *Repository) GetExplorePostsByTag(ctx context.Context, tag string, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
+	rows, err := r.q.GetExplorePostsByTag(ctx, generated.GetExplorePostsByTagParams{
+		Name:        tag,
 		PublishedAt: cursorTime,
 		ID:          cursorID,
 		Limit:       limit,
@@ -298,7 +298,7 @@ func (r *Repository) GetExplorePostsByCategory(ctx context.Context, categoryID u
 	}
 	posts := make([]FeedPost, len(rows))
 	for i, row := range rows {
-		post := mapExploreCategoryPost(row)
+		post := mapExploreTagPost(row)
 		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
 		if err == nil {
 			post.ScriptureRefs = refs
@@ -353,6 +353,3 @@ func (r *Repository) SearchExplorePosts(ctx context.Context, query string, curso
 	return posts, nil
 }
 
-func (r *Repository) ListCategories(ctx context.Context) ([]generated.Category, error) {
-	return r.q.ListCategories(ctx)
-}

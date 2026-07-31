@@ -28,13 +28,12 @@ class DraftRepository {
   DraftRepository(this._db, this._api, this._currentUserId);
 
   /// Auto-saves the draft locally to Drift.
-  Future<void> saveDraftLocally(String id, String content, {String? caption, String? sermonSource, List<String>? scriptureTags, List<String>? categoryIds}) async {
+  Future<void> saveDraftLocally(String id, String content, {String? caption, String? sermonSource, List<String>? scriptureTags}) async {
     final userId = _currentUserId;
     if (userId == null) return;
 
     final now = DateTime.now();
     final tagsJson = scriptureTags != null ? jsonEncode(scriptureTags) : null;
-    final categoryIdsJson = categoryIds != null ? jsonEncode(categoryIds) : null;
 
     await _db.into(_db.drafts).insertOnConflictUpdate(
       DraftsCompanion(
@@ -44,7 +43,6 @@ class DraftRepository {
         caption: Value(caption),
         sermonSource: Value(sermonSource),
         scriptureTags: Value(tagsJson),
-        categoryIds: Value(categoryIdsJson),
         isSynced: const Value(false),
         createdAt: Value(now), // Ideally we only set this on insert, but update works for now
         updatedAt: Value(now),
@@ -84,12 +82,7 @@ class DraftRepository {
       } catch (_) {}
     }
 
-    List<String> catIds = [];
-    if (record.categoryIds != null) {
-      try {
-        catIds = List<String>.from(jsonDecode(record.categoryIds!));
-      } catch (_) {}
-    }
+
 
     return domain.Draft(
       id: record.id,
@@ -105,7 +98,6 @@ class DraftRepository {
         }
       }(),
       scriptureTags: tags,
-      categoryIds: catIds,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     );
@@ -155,12 +147,7 @@ class DraftRepository {
         } catch (_) {}
       }
 
-      List<String> catIds = [];
-      if (record.categoryIds != null) {
-        try {
-          catIds = List<String>.from(jsonDecode(record.categoryIds!));
-        } catch (_) {}
-      }
+
 
       return domain.Draft(
         id: record.id,
@@ -176,7 +163,6 @@ class DraftRepository {
           }
         }(),
         scriptureTags: tags,
-        categoryIds: catIds,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
       );
@@ -193,7 +179,6 @@ class DraftRepository {
       'caption': local.caption,
       'sermon_source': local.sermonSource != null ? jsonEncode(local.sermonSource!.toJson()) : null,
       'scripture_tags': local.scriptureTags,
-      'category_ids': local.categoryIds,
     };
 
     domain.Draft cloudDraft;
@@ -216,12 +201,13 @@ class DraftRepository {
     return cloudDraft;
   }
 
-  Future<Map<String, dynamic>> publishDraft(String id, {List<ScriptureRef>? scriptureRefs}) async {
+  Future<Map<String, dynamic>> publishDraft(String id, {List<String>? tags, List<ScriptureRef>? scriptureRefs}) async {
     // 1. Ensure it's pushed to the cloud first
     final cloudDraft = await pushToCloud(id);
     
     // 2. Call the publish endpoint with the cloud ID and scripture refs
     final payload = {
+      if (tags != null) 'tags': tags,
       if (scriptureRefs != null) 'scripture_refs': scriptureRefs.map((r) => r.toJson()).toList(),
     };
     final postData = await _api.publishDraft(cloudDraft.id, data: payload);

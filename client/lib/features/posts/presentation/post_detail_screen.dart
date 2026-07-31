@@ -18,6 +18,8 @@ import 'package:scribes/core/widgets/scribes_error_state.dart';
 import 'package:scribes/features/social/application/post_social_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:go_router/go_router.dart';
+import 'package:scribes/features/posts/domain/post.dart';
+import 'package:scribes/core/widgets/scribes_toast.dart';
 
 class PostDetailScreen extends ConsumerWidget {
   final String postId;
@@ -41,6 +43,20 @@ class PostDetailScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         actions: [
+          state.whenOrNull(
+            data: (data) {
+              final isAuthor = isAuthenticated && authState.value?.id == data.post.authorId;
+              if (isAuthor) {
+                return IconButton(
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedMoreVertical, color: colors.primaryText),
+                  onPressed: () {
+                    _showPostOptions(context, ref, data.post, colors);
+                  },
+                );
+              }
+              return null;
+            },
+          ) ?? const SizedBox.shrink(),
           IconButton(
             icon: HugeIcon(icon: HugeIcons.strokeRoundedClock01, color: colors.primaryText),
             onPressed: () {
@@ -198,6 +214,21 @@ class PostDetailScreen extends ConsumerWidget {
                           ),
                         ),
 
+                      if (post.tags.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 4.0,
+                          children: post.tags.map((tag) => Text(
+                            '#$tag',
+                            style: ScribesTextStyles.labelLg.copyWith(
+                              color: colors.goldMuted,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          )).toList(),
+                        ),
+                      ],
+
                       const SizedBox(height: 48),
                       // Reaction Bar
                       Consumer(
@@ -255,6 +286,77 @@ class PostDetailScreen extends ConsumerWidget {
               onJoinTap: () => context.push('/auth'),
               onLoginTap: () => context.push('/auth'),
             ),
+    );
+  }
+
+  void _showPostOptions(BuildContext context, WidgetRef ref, Post post, dynamic colors) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: HugeIcon(icon: HugeIcons.strokeRoundedPencilEdit01, color: colors.primaryText),
+                title: Text('Edit Post', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText)),
+                onTap: () {
+                  context.pop();
+                  context.push('/posts/${post.id}/edit', extra: post);
+                },
+              ),
+              ListTile(
+                leading: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: colors.orange),
+                title: Text('Delete Post', style: ScribesTextStyles.bodyLg.copyWith(color: colors.orange)),
+                onTap: () {
+                  context.pop();
+                  _showDeleteConfirmation(context, ref, post.id, colors);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, String postId, dynamic colors) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: colors.surface,
+          title: Text('Delete Post?', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+          content: Text('This action cannot be undone. Are you sure you want to delete this post?', style: ScribesTextStyles.bodyLg.copyWith(color: colors.secondaryText)),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: Text('Cancel', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
+            ),
+            TextButton(
+              onPressed: () async {
+                context.pop(); // close dialog
+                try {
+                  await ref.read(postDetailProvider(postId).notifier).deletePost();
+                  if (context.mounted) {
+                    ScribesToast.show(context, 'Post deleted', colors, icon: HugeIcons.strokeRoundedDelete01);
+                    context.pop(); // pop screen
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScribesToast.show(context, 'Failed to delete post: $e', colors, isError: true);
+                  }
+                }
+              },
+              child: Text('Delete', style: ScribesTextStyles.labelLg.copyWith(color: colors.orange)),
+            ),
+          ],
+        );
+      },
     );
   }
 }
