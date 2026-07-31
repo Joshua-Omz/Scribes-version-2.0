@@ -176,6 +176,7 @@ type UpdateProfileInput struct {
 	Handle      string  `json:"handle"`
 	DisplayName string  `json:"display_name"`
 	Bio         *string `json:"bio"`
+	IsChurch    bool    `json:"is_church"`
 }
 
 func (s *Service) UpdateProfile(ctx context.Context, id uuid.UUID, input UpdateProfileInput) (User, error) {
@@ -184,7 +185,7 @@ func (s *Service) UpdateProfile(ctx context.Context, id uuid.UUID, input UpdateP
 		return User{}, errors.New("handle must be alphanumeric and underscores only")
 	}
 
-	user, err := s.repo.UpdateUserProfile(ctx, id, input.Handle, input.DisplayName, input.Bio)
+	user, err := s.repo.UpdateUserProfile(ctx, id, input.Handle, input.DisplayName, input.Bio, input.IsChurch)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			if strings.Contains(pqErr.Message, "users_handle_key") {
@@ -246,6 +247,17 @@ func (s *Service) UpdatePassword(ctx context.Context, id uuid.UUID, input Update
 	return s.repo.UpdateUserPassword(ctx, id, hash)
 }
 
+
+type UpdateTagsInput struct {
+	Tags []uuid.UUID `json:"tags"`
+}
+
+func (s *Service) UpdateTags(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (User, error) {
+	if len(tags) > 7 {
+		return User{}, errors.New("maximum 7 tags allowed")
+	}
+	return s.repo.UpdateUserTags(ctx, id, tags)
+}
 
 func (s *Service) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (generated.NotificationPreference, error) {
 	prefs, err := s.repo.GetNotificationPreferences(ctx, userID)

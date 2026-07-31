@@ -18,6 +18,8 @@ type User struct {
 	Email          string    `json:"email"`
 	Bio            *string   `json:"bio,omitempty"`
 	Role           string    `json:"role"`
+	IsChurch       bool      `json:"is_church"`
+	SelectedTags   []string  `json:"selected_tags"`
 	CreatedAt      time.Time `json:"created_at"`
 	FollowersCount int       `json:"followers_count"`
 	FollowingCount int       `json:"following_count"`
@@ -37,6 +39,8 @@ func mapCreatedUser(dbUser generated.User) User {
 		Email:       dbUser.Email,
 		Bio:         bio,
 		Role:        string(dbUser.Role),
+		IsChurch:    dbUser.IsChurch,
+		SelectedTags: []string{}, // Fresh user has no tags
 		CreatedAt:   dbUser.CreatedAt,
 		// newly created users have 0 followers/following
 		FollowersCount: 0,
@@ -84,6 +88,8 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (User, st
 		Email:          dbUser.Email,
 		Bio:            bio,
 		Role:           string(dbUser.Role),
+		IsChurch:       dbUser.IsChurch,
+		SelectedTags:   dbUser.SelectedTags,
 		CreatedAt:      dbUser.CreatedAt,
 		FollowersCount: int(dbUser.FollowersCount),
 		FollowingCount: int(dbUser.FollowingCount),
@@ -130,6 +136,8 @@ func (r *Repository) GetUserByHandle(ctx context.Context, handle string) (User, 
 		Email:          dbUser.Email,
 		Bio:            bio,
 		Role:           string(dbUser.Role),
+		IsChurch:       dbUser.IsChurch,
+		SelectedTags:   dbUser.SelectedTags,
 		CreatedAt:      dbUser.CreatedAt,
 		FollowersCount: int(dbUser.FollowersCount),
 		FollowingCount: int(dbUser.FollowingCount),
@@ -198,22 +206,23 @@ func (r *Repository) SearchUsers(ctx context.Context, query string) ([]UserSearc
 	return results, nil
 }
 
-func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle, displayName string, bio *string) (User, error) {
+func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle, displayName string, bio *string, isChurch bool) (User, error) {
 	b := sql.NullString{}
 	if bio != nil {
 		b.String = *bio
 		b.Valid = true
 	}
-	dbUser, err := r.q.UpdateUserProfile(ctx, generated.UpdateUserProfileParams{
+	_, err := r.q.UpdateUserProfile(ctx, generated.UpdateUserProfileParams{
 		ID:          id,
 		Handle:      handle,
 		DisplayName: displayName,
 		Bio:         b,
+		IsChurch:    isChurch,
 	})
 	if err != nil {
 		return User{}, err
 	}
-	return mapCreatedUser(dbUser), nil
+	return r.GetUserByID(ctx, id)
 }
 
 func (r *Repository) UpdateUserEmail(ctx context.Context, id uuid.UUID, email string) error {
@@ -228,6 +237,24 @@ func (r *Repository) UpdateUserPassword(ctx context.Context, id uuid.UUID, passw
 		ID:           id,
 		PasswordHash: passwordHash,
 	})
+}
+
+func (r *Repository) UpdateUserTags(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (User, error) {
+	err := r.q.ClearUserTags(ctx, id)
+	if err != nil {
+		return User{}, err
+	}
+	
+	for _, tagID := range tags {
+		err = r.q.AddUserTag(ctx, generated.AddUserTagParams{
+			UserID: id,
+			TagID: tagID,
+		})
+		if err != nil {
+			return User{}, err
+		}
+	}
+	return r.GetUserByID(ctx, id)
 }
 
 func (r *Repository) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (generated.NotificationPreference, error) {

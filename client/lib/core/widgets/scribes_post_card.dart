@@ -235,20 +235,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               ),
             ],
 
-            if (widget.tags.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: widget.tags.map((tag) => Text(
-                  '#$tag',
-                  style: ScribesTextStyles.caption.copyWith(
-                    color: colors.goldMuted,
-                    fontWeight: FontWeight.w500,
-                  ),
-                )).toList(),
-              ),
-            ],
+          
             
             const SizedBox(height: 16),
             const ScribesOrnamentDivider(),

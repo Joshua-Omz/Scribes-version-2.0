@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS user_tags;
+ALTER TABLE users DROP COLUMN IF EXISTS is_church;

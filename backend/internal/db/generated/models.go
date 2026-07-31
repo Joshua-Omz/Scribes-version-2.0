@@ -547,4 +547,10 @@ type User struct {
 	Role         UserRole       `json:"role"`
 	IsDeleted    bool           `json:"is_deleted"`
 	CreatedAt    time.Time      `json:"created_at"`
+	IsChurch     bool           `json:"is_church"`
+}
+
+type UserTag struct {
+	UserID uuid.UUID `json:"user_id"`
+	TagID  uuid.UUID `json:"tag_id"`
 }

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -23,7 +24,7 @@ INSERT INTO users (
     role
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at
+) RETURNING id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at, is_church
 `
 
 type CreateUserParams struct {
@@ -55,17 +56,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.IsChurch,
 	)
 	return i, err
 }
 
 const getPublicProfile = `-- name: GetPublicProfile :one
 SELECT 
-    id, handle, display_name, bio,
-    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
-    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+    users.id, users.handle, users.display_name, users.bio,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = users.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id)::int AS following_count,
+    COALESCE((SELECT array_agg(t.name)::text[] FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = users.id), '{}')::text[] AS selected_tags
 FROM users
-WHERE id = $1 AND is_deleted = false LIMIT 1
+WHERE users.id = $1 AND users.is_deleted = false LIMIT 1
 `
 
 type GetPublicProfileRow struct {
@@ -75,6 +78,7 @@ type GetPublicProfileRow struct {
 	Bio            sql.NullString `json:"bio"`
 	FollowersCount int32          `json:"followers_count"`
 	FollowingCount int32          `json:"following_count"`
+	SelectedTags   []string       `json:"selected_tags"`
 }
 
 func (q *Queries) GetPublicProfile(ctx context.Context, id uuid.UUID) (GetPublicProfileRow, error) {
@@ -87,17 +91,19 @@ func (q *Queries) GetPublicProfile(ctx context.Context, id uuid.UUID) (GetPublic
 		&i.Bio,
 		&i.FollowersCount,
 		&i.FollowingCount,
+		pq.Array(&i.SelectedTags),
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT 
-    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
-    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
-    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+    users.id, users.handle, users.display_name, users.email, users.password_hash, users.bio, users.role, users.is_deleted, users.created_at, users.is_church,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = users.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id)::int AS following_count,
+    COALESCE((SELECT array_agg(t.name)::text[] FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = users.id), '{}')::text[] AS selected_tags
 FROM users
-WHERE email = $1 AND is_deleted = false LIMIT 1
+WHERE users.email = $1 AND users.is_deleted = false LIMIT 1
 `
 
 type GetUserByEmailRow struct {
@@ -110,8 +116,10 @@ type GetUserByEmailRow struct {
 	Role           UserRole       `json:"role"`
 	IsDeleted      bool           `json:"is_deleted"`
 	CreatedAt      time.Time      `json:"created_at"`
+	IsChurch       bool           `json:"is_church"`
 	FollowersCount int32          `json:"followers_count"`
 	FollowingCount int32          `json:"following_count"`
+	SelectedTags   []string       `json:"selected_tags"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
@@ -127,19 +135,22 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.IsChurch,
 		&i.FollowersCount,
 		&i.FollowingCount,
+		pq.Array(&i.SelectedTags),
 	)
 	return i, err
 }
 
 const getUserByHandle = `-- name: GetUserByHandle :one
 SELECT 
-    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
-    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
-    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+    users.id, users.handle, users.display_name, users.email, users.password_hash, users.bio, users.role, users.is_deleted, users.created_at, users.is_church,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = users.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id)::int AS following_count,
+    COALESCE((SELECT array_agg(t.name)::text[] FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = users.id), '{}')::text[] AS selected_tags
 FROM users
-WHERE handle = $1 AND is_deleted = false LIMIT 1
+WHERE users.handle = $1 AND users.is_deleted = false LIMIT 1
 `
 
 type GetUserByHandleRow struct {
@@ -152,8 +163,10 @@ type GetUserByHandleRow struct {
 	Role           UserRole       `json:"role"`
 	IsDeleted      bool           `json:"is_deleted"`
 	CreatedAt      time.Time      `json:"created_at"`
+	IsChurch       bool           `json:"is_church"`
 	FollowersCount int32          `json:"followers_count"`
 	FollowingCount int32          `json:"following_count"`
+	SelectedTags   []string       `json:"selected_tags"`
 }
 
 func (q *Queries) GetUserByHandle(ctx context.Context, handle string) (GetUserByHandleRow, error) {
@@ -169,19 +182,22 @@ func (q *Queries) GetUserByHandle(ctx context.Context, handle string) (GetUserBy
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.IsChurch,
 		&i.FollowersCount,
 		&i.FollowingCount,
+		pq.Array(&i.SelectedTags),
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT 
-    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
-    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
-    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+    users.id, users.handle, users.display_name, users.email, users.password_hash, users.bio, users.role, users.is_deleted, users.created_at, users.is_church,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = users.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id)::int AS following_count,
+    COALESCE((SELECT array_agg(t.name)::text[] FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = users.id), '{}')::text[] AS selected_tags
 FROM users
-WHERE id = $1 AND is_deleted = false LIMIT 1
+WHERE users.id = $1 AND users.is_deleted = false LIMIT 1
 `
 
 type GetUserByIDRow struct {
@@ -194,8 +210,10 @@ type GetUserByIDRow struct {
 	Role           UserRole       `json:"role"`
 	IsDeleted      bool           `json:"is_deleted"`
 	CreatedAt      time.Time      `json:"created_at"`
+	IsChurch       bool           `json:"is_church"`
 	FollowersCount int32          `json:"followers_count"`
 	FollowingCount int32          `json:"following_count"`
+	SelectedTags   []string       `json:"selected_tags"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
@@ -211,8 +229,10 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.IsChurch,
 		&i.FollowersCount,
 		&i.FollowingCount,
+		pq.Array(&i.SelectedTags),
 	)
 	return i, err
 }
@@ -230,11 +250,12 @@ func (q *Queries) GetUserPasswordHash(ctx context.Context, id uuid.UUID) (string
 
 const searchUsers = `-- name: SearchUsers :many
 SELECT 
-    id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at,
-    (SELECT COUNT(*) FROM follows WHERE followee_id = id)::int AS followers_count,
-    (SELECT COUNT(*) FROM follows WHERE follower_id = id)::int AS following_count
+    users.id, users.handle, users.display_name, users.email, users.password_hash, users.bio, users.role, users.is_deleted, users.created_at, users.is_church,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = users.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = users.id)::int AS following_count,
+    COALESCE((SELECT array_agg(t.name)::text[] FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = users.id), '{}')::text[] AS selected_tags
 FROM users
-WHERE (handle ILIKE $1 || '%' OR display_name ILIKE '%' || $1 || '%') AND is_deleted = false
+WHERE (users.handle ILIKE $1 || '%' OR users.display_name ILIKE '%' || $1 || '%') AND users.is_deleted = false
 ORDER BY handle ASC
 LIMIT 10
 `
@@ -249,8 +270,10 @@ type SearchUsersRow struct {
 	Role           UserRole       `json:"role"`
 	IsDeleted      bool           `json:"is_deleted"`
 	CreatedAt      time.Time      `json:"created_at"`
+	IsChurch       bool           `json:"is_church"`
 	FollowersCount int32          `json:"followers_count"`
 	FollowingCount int32          `json:"following_count"`
+	SelectedTags   []string       `json:"selected_tags"`
 }
 
 func (q *Queries) SearchUsers(ctx context.Context, dollar_1 sql.NullString) ([]SearchUsersRow, error) {
@@ -272,8 +295,10 @@ func (q *Queries) SearchUsers(ctx context.Context, dollar_1 sql.NullString) ([]S
 			&i.Role,
 			&i.IsDeleted,
 			&i.CreatedAt,
+			&i.IsChurch,
 			&i.FollowersCount,
 			&i.FollowingCount,
+			pq.Array(&i.SelectedTags),
 		); err != nil {
 			return nil, err
 		}
@@ -322,9 +347,9 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 
 const updateUserProfile = `-- name: UpdateUserProfile :one
 UPDATE users
-SET handle = $2, display_name = $3, bio = $4
+SET handle = $2, display_name = $3, bio = $4, is_church = $5
 WHERE id = $1 AND is_deleted = false
-RETURNING id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at
+RETURNING id, handle, display_name, email, password_hash, bio, role, is_deleted, created_at, is_church
 `
 
 type UpdateUserProfileParams struct {
@@ -332,6 +357,7 @@ type UpdateUserProfileParams struct {
 	Handle      string         `json:"handle"`
 	DisplayName string         `json:"display_name"`
 	Bio         sql.NullString `json:"bio"`
+	IsChurch    bool           `json:"is_church"`
 }
 
 func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error) {
@@ -340,6 +366,7 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		arg.Handle,
 		arg.DisplayName,
 		arg.Bio,
+		arg.IsChurch,
 	)
 	var i User
 	err := row.Scan(
@@ -352,6 +379,7 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 		&i.Role,
 		&i.IsDeleted,
 		&i.CreatedAt,
+		&i.IsChurch,
 	)
 	return i, err
 }

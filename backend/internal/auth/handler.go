@@ -175,6 +175,32 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, user)
 }
 
+func (h *Handler) UpdateTags(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	var input UpdateTagsInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		return
+	}
+
+	user, err := h.svc.UpdateTags(c.Request.Context(), userID, input.Tags)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	respond.JSON(c, http.StatusOK, user)
+}
+
 func (h *Handler) UpdateEmail(c *gin.Context) {
 	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
 	if !ok {

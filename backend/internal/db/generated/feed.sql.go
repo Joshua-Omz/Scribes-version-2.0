@@ -14,6 +14,80 @@ import (
 	"github.com/google/uuid"
 )
 
+const getChurchPosts = `-- name: GetChurchPosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND u.is_church = true
+  AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $3
+`
+
+type GetChurchPostsParams struct {
+	PublishedAt time.Time `json:"published_at"`
+	ID          uuid.UUID `json:"id"`
+	Limit       int32     `json:"limit"`
+}
+
+type GetChurchPostsRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) ([]GetChurchPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getChurchPosts, arg.PublishedAt, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetChurchPostsRow
+	for rows.Next() {
+		var i GetChurchPostsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthorID,
+			&i.Content,
+			&i.Caption,
+			&i.Visibility,
+			&i.CurrentVersion,
+			&i.IsCorrection,
+			&i.CorrectsPostID,
+			&i.SermonSource,
+			&i.IsDeleted,
+			&i.PublishedAt,
+			&i.AuthorHandle,
+			&i.AuthorName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getExplorePosts = `-- name: GetExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
@@ -393,6 +467,67 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 			&i.PublishedAt,
 			&i.AuthorHandle,
 			&i.AuthorName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSuggestedUsers = `-- name: GetSuggestedUsers :many
+SELECT 
+    u.id, u.handle, u.display_name, u.bio, u.is_church,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = u.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = u.id)::int AS following_count
+FROM users u
+WHERE u.is_deleted = false
+  AND u.id != $1
+  AND NOT EXISTS (
+      SELECT 1 FROM follows f WHERE f.follower_id = $1 AND f.followee_id = u.id
+  )
+ORDER BY RANDOM()
+LIMIT $2
+`
+
+type GetSuggestedUsersParams struct {
+	ID    uuid.UUID `json:"id"`
+	Limit int32     `json:"limit"`
+}
+
+type GetSuggestedUsersRow struct {
+	ID             uuid.UUID      `json:"id"`
+	Handle         string         `json:"handle"`
+	DisplayName    string         `json:"display_name"`
+	Bio            sql.NullString `json:"bio"`
+	IsChurch       bool           `json:"is_church"`
+	FollowersCount int32          `json:"followers_count"`
+	FollowingCount int32          `json:"following_count"`
+}
+
+func (q *Queries) GetSuggestedUsers(ctx context.Context, arg GetSuggestedUsersParams) ([]GetSuggestedUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSuggestedUsers, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSuggestedUsersRow
+	for rows.Next() {
+		var i GetSuggestedUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Handle,
+			&i.DisplayName,
+			&i.Bio,
+			&i.IsChurch,
+			&i.FollowersCount,
+			&i.FollowingCount,
 		); err != nil {
 			return nil, err
 		}

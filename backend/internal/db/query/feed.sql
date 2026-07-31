@@ -84,3 +84,31 @@ WHERE p.is_deleted = false
   AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
 ORDER BY p.published_at DESC, p.id DESC
 LIMIT $3;
+
+-- name: GetChurchPosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND u.is_church = true
+  AND (p.published_at < $1 OR (p.published_at = $1 AND p.id < $2))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $3;
+
+-- name: GetSuggestedUsers :many
+SELECT 
+    u.id, u.handle, u.display_name, u.bio, u.is_church,
+    (SELECT COUNT(*) FROM follows WHERE followee_id = u.id)::int AS followers_count,
+    (SELECT COUNT(*) FROM follows WHERE follower_id = u.id)::int AS following_count
+FROM users u
+WHERE u.is_deleted = false
+  AND u.id != $1
+  AND NOT EXISTS (
+      SELECT 1 FROM follows f WHERE f.follower_id = $1 AND f.followee_id = u.id
+  )
+ORDER BY RANDOM()
+LIMIT $2;

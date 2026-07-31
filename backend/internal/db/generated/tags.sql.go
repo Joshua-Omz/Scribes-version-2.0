@@ -27,6 +27,29 @@ func (q *Queries) AddPostTag(ctx context.Context, arg AddPostTagParams) error {
 	return err
 }
 
+const addUserTag = `-- name: AddUserTag :exec
+INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
+`
+
+type AddUserTagParams struct {
+	UserID uuid.UUID `json:"user_id"`
+	TagID  uuid.UUID `json:"tag_id"`
+}
+
+func (q *Queries) AddUserTag(ctx context.Context, arg AddUserTagParams) error {
+	_, err := q.db.ExecContext(ctx, addUserTag, arg.UserID, arg.TagID)
+	return err
+}
+
+const clearUserTags = `-- name: ClearUserTags :exec
+DELETE FROM user_tags WHERE user_id = $1
+`
+
+func (q *Queries) ClearUserTags(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, clearUserTags, userID)
+	return err
+}
+
 const getPostTags = `-- name: GetPostTags :many
 SELECT t.display_name FROM tags t
 JOIN post_tags pt ON pt.tag_id = t.id

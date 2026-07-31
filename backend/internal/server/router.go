@@ -62,6 +62,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	{
 		protected.GET("/me", authHandler.GetMe)
 		protected.PATCH("/me", authHandler.UpdateProfile)
+		protected.PUT("/me/tags", authHandler.UpdateTags)
 		protected.PATCH("/me/email", authHandler.UpdateEmail)
 		protected.PATCH("/me/password", authHandler.UpdatePassword)
 		protected.GET("/me/notifications", authHandler.GetNotificationPreferences)

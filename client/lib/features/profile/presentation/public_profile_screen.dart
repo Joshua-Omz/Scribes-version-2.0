@@ -245,9 +245,8 @@ class PublicProfileScreen extends ConsumerWidget {
             child: Text('Follow', style: ScribesTextStyles.labelLg),
           );
         }
-
         if (currentUser?.id == userId) {
-          return followBtn;
+          return const SizedBox.shrink();
         }
 
         return Row(

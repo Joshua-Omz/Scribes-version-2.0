@@ -49,6 +49,11 @@ func (h *Handler) SendRequest(c *gin.Context) {
 		return
 	}
 
+	if fromUserID == toUserID {
+		respond.Error(c, http.StatusBadRequest, "cannot send message request to yourself")
+		return
+	}
+
 	res, err := h.svc.SendRequest(c.Request.Context(), fromUserID, toUserID, req.FirstMessage)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, err.Error())

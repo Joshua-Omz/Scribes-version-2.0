@@ -80,6 +80,18 @@ func (h *Handler) IsFollowing(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, gin.H{"is_following": isFollowing})
 }
 
+type UserResponse struct {
+	ID             uuid.UUID `json:"id"`
+	Handle         string    `json:"handle"`
+	DisplayName    string    `json:"display_name"`
+	Email          string    `json:"email"`
+	Bio            *string   `json:"bio,omitempty"`
+	Role           string    `json:"role"`
+	CreatedAt      time.Time `json:"created_at"`
+	FollowersCount int32     `json:"followers_count"`
+	FollowingCount int32     `json:"following_count"`
+}
+
 func (h *Handler) GetFollowers(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -93,10 +105,29 @@ func (h *Handler) GetFollowers(c *gin.Context) {
 		return
 	}
 	
-	if followers == nil {
-		followers = []generated.GetFollowersRow{}
+	var res []UserResponse
+	for _, f := range followers {
+		var bio *string
+		if f.Bio.Valid {
+			b := f.Bio.String
+			bio = &b
+		}
+		res = append(res, UserResponse{
+			ID:             f.ID,
+			Handle:         f.Handle,
+			DisplayName:    f.DisplayName,
+			Email:          f.Email,
+			Bio:            bio,
+			Role:           string(f.Role),
+			CreatedAt:      f.CreatedAt,
+			FollowersCount: f.FollowersCount,
+			FollowingCount: f.FollowingCount,
+		})
 	}
-	respond.JSON(c, http.StatusOK, followers)
+	if res == nil {
+		res = []UserResponse{}
+	}
+	respond.JSON(c, http.StatusOK, res)
 }
 
 func (h *Handler) GetFollowing(c *gin.Context) {
@@ -112,10 +143,29 @@ func (h *Handler) GetFollowing(c *gin.Context) {
 		return
 	}
 	
-	if following == nil {
-		following = []generated.GetFollowingRow{}
+	var res []UserResponse
+	for _, f := range following {
+		var bio *string
+		if f.Bio.Valid {
+			b := f.Bio.String
+			bio = &b
+		}
+		res = append(res, UserResponse{
+			ID:             f.ID,
+			Handle:         f.Handle,
+			DisplayName:    f.DisplayName,
+			Email:          f.Email,
+			Bio:            bio,
+			Role:           string(f.Role),
+			CreatedAt:      f.CreatedAt,
+			FollowersCount: f.FollowersCount,
+			FollowingCount: f.FollowingCount,
+		})
 	}
-	respond.JSON(c, http.StatusOK, following)
+	if res == nil {
+		res = []UserResponse{}
+	}
+	respond.JSON(c, http.StatusOK, res)
 }
 
 type ReactRequest struct {
