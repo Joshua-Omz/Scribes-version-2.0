@@ -2,8 +2,8 @@ package social
 
 import (
 	"net/http"
+	"time"
 
-	"scribes-api/internal/db/generated"
 	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
 

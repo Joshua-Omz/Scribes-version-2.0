@@ -44,8 +44,19 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: CustomScrollView(
-        slivers: [
+      body: RefreshIndicator(
+        color: colors.gold,
+        backgroundColor: colors.surfaceRaised,
+        onRefresh: () async {
+          if (_selectedTabIndex == 0) {
+            await ref.read(myPostsProvider.notifier).refresh();
+          } else {
+            ref.invalidate(savedPostsProvider);
+          }
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
           SliverAppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -280,30 +291,6 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                                   ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
                                 }
                               },
-                              onDelete: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    backgroundColor: colors.surface,
-                                    title: Text('Delete Post?', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-                                    content: Text('Are you sure you want to delete this post? This cannot be undone.', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(ctx),
-                                        child: Text('Cancel', style: TextStyle(color: colors.primaryText)),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(ctx);
-                                          ref.read(myPostsProvider.notifier).deletePost(post.id);
-                                          ScribesToast.show(context, 'Post deleted', colors, icon: HugeIcons.strokeRoundedDelete02);
-                                        },
-                                        child: Text('Delete', style: TextStyle(color: Colors.red.shade400)),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
                               onTap: () {
                                 if (!post.isDeleted) {
                                   context.push('/posts/${post.id}');
@@ -429,6 +416,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
               },
             ),
         ],
+        ),
       ),
     );
   }

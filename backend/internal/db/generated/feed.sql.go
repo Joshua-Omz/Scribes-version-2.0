@@ -481,6 +481,88 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 	return items, nil
 }
 
+const getForYouPosts = `-- name: GetForYouPosts :many
+SELECT 
+    p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
+    u.handle AS author_handle, u.display_name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+JOIN post_tags pt ON p.id = pt.post_id
+JOIN user_tags ut ON pt.tag_id = ut.tag_id
+WHERE p.is_deleted = false 
+  AND p.visibility = 'public'
+  AND ut.user_id = $1
+  AND (p.published_at < $2 OR (p.published_at = $2 AND p.id < $3))
+ORDER BY p.published_at DESC, p.id DESC
+LIMIT $4
+`
+
+type GetForYouPostsParams struct {
+	UserID      uuid.UUID `json:"user_id"`
+	PublishedAt time.Time `json:"published_at"`
+	ID          uuid.UUID `json:"id"`
+	Limit       int32     `json:"limit"`
+}
+
+type GetForYouPostsRow struct {
+	ID             uuid.UUID       `json:"id"`
+	AuthorID       uuid.UUID       `json:"author_id"`
+	Content        json.RawMessage `json:"content"`
+	Caption        sql.NullString  `json:"caption"`
+	Visibility     PostVisibility  `json:"visibility"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
+	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource   sql.NullString  `json:"sermon_source"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
+	AuthorHandle   string          `json:"author_handle"`
+	AuthorName     string          `json:"author_name"`
+}
+
+func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) ([]GetForYouPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getForYouPosts,
+		arg.UserID,
+		arg.PublishedAt,
+		arg.ID,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetForYouPostsRow
+	for rows.Next() {
+		var i GetForYouPostsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthorID,
+			&i.Content,
+			&i.Caption,
+			&i.Visibility,
+			&i.CurrentVersion,
+			&i.IsCorrection,
+			&i.CorrectsPostID,
+			&i.SermonSource,
+			&i.IsDeleted,
+			&i.PublishedAt,
+			&i.AuthorHandle,
+			&i.AuthorName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSuggestedUsers = `-- name: GetSuggestedUsers :many
 SELECT 
     u.id, u.handle, u.display_name, u.bio, u.is_church,

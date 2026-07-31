@@ -178,3 +178,59 @@ func (s *Service) GetExplore(ctx context.Context, params ExploreParams) (interfa
 		NextCursor: nextCursor,
 	}, nil
 }
+
+func (s *Service) GetChurchPosts(ctx context.Context, cursor string, limit int32) (PaginatedExploreResponse, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+
+	t, id, err := decodeCursor(cursor)
+	if err != nil {
+		return PaginatedExploreResponse{}, err
+	}
+
+	posts, err := s.repo.GetChurchPosts(ctx, t, id, limit+1)
+	if err != nil {
+		return PaginatedExploreResponse{}, err
+	}
+
+	var nextCursor string
+	if len(posts) > int(limit) {
+		last := posts[limit-1]
+		nextCursor = encodeCursor(last.PublishedAt, last.ID)
+		posts = posts[:limit]
+	}
+
+	return PaginatedExploreResponse{
+		Posts:      posts,
+		NextCursor: nextCursor,
+	}, nil
+}
+
+func (s *Service) GetForYouPosts(ctx context.Context, cursor string, limit int32, userID uuid.UUID) (PaginatedExploreResponse, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+
+	t, id, err := decodeCursor(cursor)
+	if err != nil {
+		return PaginatedExploreResponse{}, err
+	}
+
+	posts, err := s.repo.GetForYouPosts(ctx, userID, t, id, limit+1)
+	if err != nil {
+		return PaginatedExploreResponse{}, err
+	}
+
+	var nextCursor string
+	if len(posts) > int(limit) {
+		last := posts[limit-1]
+		nextCursor = encodeCursor(last.PublishedAt, last.ID)
+		posts = posts[:limit]
+	}
+
+	return PaginatedExploreResponse{
+		Posts:      posts,
+		NextCursor: nextCursor,
+	}, nil
+}

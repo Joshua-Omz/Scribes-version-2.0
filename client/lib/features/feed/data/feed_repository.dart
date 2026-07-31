@@ -52,6 +52,30 @@ class FeedRepository {
     }
   }
 
+  Future<PaginatedFeed> getChurchPosts({String? cursor}) async {
+    try {
+      final rawData = await _api.getChurchPosts(cursor: cursor);
+      return _mapPaginatedFeed(rawData);
+    } catch (e) {
+      return PaginatedFeed.fromJson({
+        'posts': [],
+        'next_cursor': null,
+      });
+    }
+  }
+
+  Future<PaginatedFeed> getForYouPosts({String? cursor}) async {
+    try {
+      final rawData = await _api.getForYouPosts(cursor: cursor);
+      return _mapPaginatedFeed(rawData);
+    } catch (e) {
+      return PaginatedFeed.fromJson({
+        'posts': [],
+        'next_cursor': null,
+      });
+    }
+  }
+
   Map<String, dynamic> _mapRecordToMap(Post record) {
     dynamic contentDecoded;
     try {

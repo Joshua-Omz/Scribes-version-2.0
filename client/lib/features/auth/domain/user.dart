@@ -15,6 +15,8 @@ abstract class User with _$User {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'followers_count') @Default(0) int followersCount,
     @JsonKey(name: 'following_count') @Default(0) int followingCount,
+    @JsonKey(name: 'is_church') @Default(false) bool isChurch,
+    @JsonKey(name: 'selected_tags') @Default([]) List<String> selectedTags,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

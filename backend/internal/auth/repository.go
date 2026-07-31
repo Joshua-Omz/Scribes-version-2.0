@@ -206,6 +206,33 @@ func (r *Repository) SearchUsers(ctx context.Context, query string) ([]UserSearc
 	return results, nil
 }
 
+func (r *Repository) GetSuggestedUsers(ctx context.Context, userID uuid.UUID, limit int32) ([]UserSearchResult, error) {
+	rows, err := r.q.GetSuggestedUsers(ctx, generated.GetSuggestedUsersParams{
+		ID:    userID,
+		Limit: limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	results := make([]UserSearchResult, len(rows))
+	for i, row := range rows {
+		var bio *string
+		if row.Bio.Valid {
+			b := row.Bio.String
+			bio = &b
+		}
+		results[i] = UserSearchResult{
+			ID:             row.ID,
+			Handle:         row.Handle,
+			DisplayName:    row.DisplayName,
+			Bio:            bio,
+			FollowersCount: int(row.FollowersCount),
+			FollowingCount: int(row.FollowingCount),
+		}
+	}
+	return results, nil
+}
+
 func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle, displayName string, bio *string, isChurch bool) (User, error) {
 	b := sql.NullString{}
 	if bio != nil {

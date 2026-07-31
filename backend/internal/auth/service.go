@@ -163,6 +163,8 @@ func (s *Service) LoginWithGoogle(ctx context.Context, idTokenStr string) (User,
 	return user, tok, nil
 }
 
+
+
 func (s *Service) GetPublicProfile(ctx context.Context, id uuid.UUID) (PublicProfile, error) {
 	return s.repo.GetPublicProfile(ctx, id)
 }
@@ -171,6 +173,12 @@ func (s *Service) SearchUsers(ctx context.Context, query string) ([]UserSearchRe
 	return s.repo.SearchUsers(ctx, query)
 }
 
+func (s *Service) GetSuggestedUsers(ctx context.Context, userID uuid.UUID, limit int32) ([]UserSearchResult, error) {
+	if limit <= 0 || limit > 50 {
+		limit = 10
+	}
+	return s.repo.GetSuggestedUsers(ctx, userID, limit)
+}
 
 type UpdateProfileInput struct {
 	Handle      string  `json:"handle"`

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"strconv"
 
 	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
@@ -139,6 +140,35 @@ func (h *Handler) SearchUsers(c *gin.Context) {
 	results, err := h.svc.SearchUsers(c.Request.Context(), query)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, "search failed")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, results)
+}
+
+func (h *Handler) GetSuggestedUsers(c *gin.Context) {
+	claims, ok := middleware.ClaimsFromCtx(c.Request.Context())
+	if !ok {
+		respond.Error(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		respond.Error(c, http.StatusUnauthorized, "invalid user id")
+		return
+	}
+
+	limitStr := c.Query("limit")
+	var limit int32 = 10
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
+		}
+	}
+
+	results, err := h.svc.GetSuggestedUsers(c.Request.Context(), userID, limit)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "fetch failed")
 		return
 	}
 

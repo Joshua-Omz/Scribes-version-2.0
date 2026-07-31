@@ -52,6 +52,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 	// Feed & Explore
 	r.GET("/explore", feedHandler.GetExplore)
+	r.GET("/explore/churches", feedHandler.GetExploreChurches)
 	r.GET("/tags/suggest", tagHandler.SuggestTags)
 	r.GET("/tags/trending", tagHandler.GetTrendingTags)
 	r.GET("/tags/:name/posts", feedHandler.GetExploreByTag)
@@ -70,6 +71,8 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		// Authenticated feed
 		protected.GET("/feed", feedHandler.GetFeed)
 		protected.GET("/feed/following", feedHandler.GetFollowingFeed)
+		protected.GET("/explore/for-you", feedHandler.GetForYou)
+		protected.GET("/users/suggested", authHandler.GetSuggestedUsers)
 
 		// Note endpoints
 		protected.GET("/notes", noteHandler.List)

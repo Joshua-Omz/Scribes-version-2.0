@@ -223,6 +223,68 @@ func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
 	}
 }
 
+func mapChurchPost(row generated.GetChurchPostsRow) FeedPost {
+	var caption *string
+	if row.Caption.Valid {
+		caption = &row.Caption.String
+	}
+	var correctsPostID *uuid.UUID
+	if row.CorrectsPostID.Valid {
+		correctsPostID = &row.CorrectsPostID.UUID
+	}
+	var sermonSource *string
+	if row.SermonSource.Valid {
+		sermonSource = &row.SermonSource.String
+	}
+
+	return FeedPost{
+		ID:             row.ID,
+		AuthorID:       row.AuthorID,
+		Content:        row.Content,
+		Caption:        caption,
+		Visibility:     row.Visibility,
+		CurrentVersion: row.CurrentVersion,
+		IsCorrection:   row.IsCorrection,
+		CorrectsPostID: correctsPostID,
+		SermonSource:   sermonSource,
+		IsDeleted:      row.IsDeleted,
+		PublishedAt:    row.PublishedAt,
+		AuthorHandle:   row.AuthorHandle,
+		AuthorName:     row.AuthorName,
+	}
+}
+
+func mapForYouPost(row generated.GetForYouPostsRow) FeedPost {
+	var caption *string
+	if row.Caption.Valid {
+		caption = &row.Caption.String
+	}
+	var correctsPostID *uuid.UUID
+	if row.CorrectsPostID.Valid {
+		correctsPostID = &row.CorrectsPostID.UUID
+	}
+	var sermonSource *string
+	if row.SermonSource.Valid {
+		sermonSource = &row.SermonSource.String
+	}
+
+	return FeedPost{
+		ID:             row.ID,
+		AuthorID:       row.AuthorID,
+		Content:        row.Content,
+		Caption:        caption,
+		Visibility:     row.Visibility,
+		CurrentVersion: row.CurrentVersion,
+		IsCorrection:   row.IsCorrection,
+		CorrectsPostID: correctsPostID,
+		SermonSource:   sermonSource,
+		IsDeleted:      row.IsDeleted,
+		PublishedAt:    row.PublishedAt,
+		AuthorHandle:   row.AuthorHandle,
+		AuthorName:     row.AuthorName,
+	}
+}
+
 func (r *Repository) GetFeedPosts(ctx context.Context, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
 	rows, err := r.q.GetFeedPosts(ctx, generated.GetFeedPostsParams{
 		PublishedAt: cursorTime,
@@ -375,6 +437,61 @@ func (r *Repository) SearchExplorePosts(ctx context.Context, query string, curso
 	posts := make([]FeedPost, len(rows))
 	for i, row := range rows {
 		post := mapSearchExplorePost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
+		}
+		posts[i] = post
+	}
+	return posts, nil
+}
+
+func (r *Repository) GetChurchPosts(ctx context.Context, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
+	rows, err := r.q.GetChurchPosts(ctx, generated.GetChurchPostsParams{
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]FeedPost, len(rows))
+	for i, row := range rows {
+		post := mapChurchPost(row)
+		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
+		if err == nil {
+			post.ScriptureRefs = refs
+		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
+		}
+		posts[i] = post
+	}
+	return posts, nil
+}
+
+func (r *Repository) GetForYouPosts(ctx context.Context, userID uuid.UUID, cursorTime time.Time, cursorID uuid.UUID, limit int32) ([]FeedPost, error) {
+	rows, err := r.q.GetForYouPosts(ctx, generated.GetForYouPostsParams{
+		UserID:      userID,
+		PublishedAt: cursorTime,
+		ID:          cursorID,
+		Limit:       limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+	posts := make([]FeedPost, len(rows))
+	for i, row := range rows {
+		post := mapForYouPost(row)
 		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
 		if err == nil {
 			post.ScriptureRefs = refs

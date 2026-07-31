@@ -4,12 +4,15 @@ class Endpoints {
   static const String login = '/auth/login';
   static const String googleLogin = '/auth/google';
   static const String me = '/me';
+  static const String meTags = '/me/tags';
   static const String updateEmail = '/me/email';
   static const String updatePassword = '/me/password';
   static const String notificationPreferences = '/me/notifications';
   // Feed
   static const String feed = '/feed';
   static const String explore = '/explore';
+  static const String exploreChurches = '/explore/churches';
+  static const String exploreForYou = '/explore/for-you';
 
   // Posts
   static const String posts = '/posts';
@@ -21,6 +24,7 @@ class Endpoints {
 
   // Users
   static const String users = '/users';
+  static const String suggestedUsers = '/users/suggested';
 
   // Drafts
   static const String drafts = '/drafts';

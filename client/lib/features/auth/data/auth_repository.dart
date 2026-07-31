@@ -81,12 +81,19 @@ class AuthRepository {
     required String handle,
     required String displayName,
     String? bio,
+    bool isChurch = false,
   }) async {
     final response = await _api.updateProfile(
       handle: handle,
       displayName: displayName,
       bio: bio,
+      isChurch: isChurch,
     );
+    return User.fromJson(response);
+  }
+
+  Future<User> updateTags(List<String> tags) async {
+    final response = await _api.updateTags(tags);
     return User.fromJson(response);
   }
 
@@ -124,5 +131,10 @@ class AuthRepository {
       newFollowerAlerts: preferences.newFollowerAlerts,
     );
     return NotificationPreferences.fromJson(response);
+  }
+
+  Future<List<User>> getSuggestedUsers({int limit = 10}) async {
+    final response = await _api.getSuggestedUsers(limit: limit);
+    return response.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
   }
 }

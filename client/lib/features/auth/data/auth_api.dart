@@ -59,11 +59,20 @@ class AuthApi {
     required String handle,
     required String displayName,
     String? bio,
+    bool isChurch = false,
   }) async {
     final response = await _dio.patch(Endpoints.me, data: {
       'handle': handle,
       'display_name': displayName,
       'bio': bio,
+      'is_church': isChurch,
+    });
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateTags(List<String> tags) async {
+    final response = await _dio.put(Endpoints.meTags, data: {
+      'tags': tags,
     });
     return response.data as Map<String, dynamic>;
   }
@@ -106,5 +115,12 @@ class AuthApi {
       'new_follower_alerts': newFollowerAlerts,
     });
     return response.data as Map<String, dynamic>;
+  }
+
+  Future<List<dynamic>> getSuggestedUsers({int limit = 10}) async {
+    final response = await _dio.get(Endpoints.suggestedUsers, queryParameters: {
+      'limit': limit,
+    });
+    return response.data as List<dynamic>;
   }
 }

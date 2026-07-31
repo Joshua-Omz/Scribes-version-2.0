@@ -158,3 +158,46 @@ func (h *Handler) GetExploreByTag(c *gin.Context) {
 
 	respond.JSON(c, http.StatusOK, res)
 }
+
+func (h *Handler) GetExploreChurches(c *gin.Context) {
+	cursor := c.Query("cursor")
+	limitStr := c.Query("limit")
+	var limit int32 = 20
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
+		}
+	}
+
+	res, err := h.svc.GetChurchPosts(c.Request.Context(), cursor, limit)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, res)
+}
+
+func (h *Handler) GetForYou(c *gin.Context) {
+	authorID, ok := getAuthorID(c)
+	if !ok {
+		return
+	}
+
+	cursor := c.Query("cursor")
+	limitStr := c.Query("limit")
+	var limit int32 = 20
+	if limitStr != "" {
+		if l, err := strconv.ParseInt(limitStr, 10, 32); err == nil {
+			limit = int32(l)
+		}
+	}
+
+	res, err := h.svc.GetForYouPosts(c.Request.Context(), cursor, limit, authorID)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, res)
+}
