@@ -2,6 +2,7 @@ package message
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"sync"
 	"time"
@@ -143,6 +144,38 @@ func (s *Service) RejectRequest(ctx context.Context, requestID, userID uuid.UUID
 
 func (s *Service) GetConversations(ctx context.Context, userID uuid.UUID) ([]generated.Conversation, error) {
 	return s.repo.GetConversationsForUser(ctx, userID)
+}
+
+func (s *Service) SearchContacts(ctx context.Context, userID uuid.UUID, query string) ([]generated.SearchContactsRow, error) {
+	return s.repo.SearchContacts(ctx, generated.SearchContactsParams{
+		UserAID: userID,
+		Column2: sql.NullString{String: query, Valid: query != ""},
+	})
+}
+
+func (s *Service) GetOrCreateDirectConversation(ctx context.Context, userA, userB uuid.UUID) (generated.Conversation, error) {
+	// First check if a conversation already exists
+	conv, err := s.repo.GetConversationByUsers(ctx, generated.GetConversationByUsersParams{
+		UserAID: userA,
+		UserBID: userB,
+	})
+	if err == nil {
+		return conv, nil
+	}
+
+	// Check if they are mutual followers
+	f1, err1 := s.repo.CheckIsFollowing(ctx, userA, userB)
+	f2, err2 := s.repo.CheckIsFollowing(ctx, userB, userA)
+	if err1 != nil || err2 != nil || !f1 || !f2 {
+		return generated.Conversation{}, errors.New("cannot direct message non-mutual follower")
+	}
+
+	// Ensure A < B to prevent duplicates
+	if userA.String() > userB.String() {
+		userA, userB = userB, userA
+	}
+
+	return s.repo.CreateConversation(ctx, userA, userB)
 }
 
 func (s *Service) BlockConversation(ctx context.Context, conversationID, userID uuid.UUID) error {

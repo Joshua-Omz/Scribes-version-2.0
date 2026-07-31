@@ -62,6 +62,21 @@ func (r *Repository) GetConversationByID(ctx context.Context, conversationID uui
 	return r.q.GetConversationByID(ctx, conversationID)
 }
 
+func (r *Repository) GetConversationByUsers(ctx context.Context, arg generated.GetConversationByUsersParams) (generated.Conversation, error) {
+	return r.q.GetConversationByUsers(ctx, arg)
+}
+
+func (r *Repository) SearchContacts(ctx context.Context, arg generated.SearchContactsParams) ([]generated.SearchContactsRow, error) {
+	return r.q.SearchContacts(ctx, arg)
+}
+
+func (r *Repository) CheckIsFollowing(ctx context.Context, followerID, followeeID uuid.UUID) (bool, error) {
+	return r.q.CheckIsFollowing(ctx, generated.CheckIsFollowingParams{
+		FollowerID: followerID,
+		FolloweeID: followeeID,
+	})
+}
+
 func (r *Repository) BlockConversation(ctx context.Context, conversationID uuid.UUID) error {
 	return r.q.BlockConversation(ctx, conversationID)
 }

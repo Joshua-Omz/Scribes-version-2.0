@@ -688,7 +688,16 @@ class _CommentTile extends ConsumerWidget {
                               Navigator.of(context).pop();
                               context.push('/conversation/${existing.id}');
                             } else {
-                              DmRequestModal.show(context, comment.authorId);
+                              try {
+                                final repo = ref.read(messageRepositoryProvider);
+                                final conv = await repo.getOrCreateDirectConversation(comment.authorId);
+                                if (!context.mounted) return;
+                                Navigator.of(context).pop();
+                                context.push('/conversation/${conv.id}');
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                DmRequestModal.show(context, comment.authorId);
+                              }
                             }
                           },
                           child: Padding(

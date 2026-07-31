@@ -120,7 +120,7 @@ class ScribesBottomNav extends ConsumerWidget {
             children: [
               _buildNavItem(context, colors, HugeIcons.strokeRoundedNote01, 'Scroll', 0),
               _buildNavItem(context, colors, HugeIcons.strokeRoundedSearch01, 'Search', 1),
-              _buildNavItem(context, colors, HugeIcons.strokeRoundedFile01, 'Drafts', 3),
+              _buildNavItem(context, colors, HugeIcons.strokeRoundedChatAdd, 'Messages', 3),
               _buildNavItem(context, colors, HugeIcons.strokeRoundedFileEdit, 'Notes', 4),
             ],
           ),

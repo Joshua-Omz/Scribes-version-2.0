@@ -360,3 +360,132 @@ abstract class _$ExplorePostsNotifier extends $AsyncNotifier<List<Post>> {
     return element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(ExploreForYouNotifier)
+final exploreForYouProvider = ExploreForYouNotifierProvider._();
+
+final class ExploreForYouNotifierProvider
+    extends $AsyncNotifierProvider<ExploreForYouNotifier, List<Post>> {
+  ExploreForYouNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreForYouProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreForYouNotifierHash();
+
+  @$internal
+  @override
+  ExploreForYouNotifier create() => ExploreForYouNotifier();
+}
+
+String _$exploreForYouNotifierHash() =>
+    r'6ecc3deb61f991435b8a9bb49d28720c899868f1';
+
+abstract class _$ExploreForYouNotifier extends $AsyncNotifier<List<Post>> {
+  FutureOr<List<Post>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
+              AsyncValue<List<Post>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ExploreChurchesNotifier)
+final exploreChurchesProvider = ExploreChurchesNotifierProvider._();
+
+final class ExploreChurchesNotifierProvider
+    extends $AsyncNotifierProvider<ExploreChurchesNotifier, List<Post>> {
+  ExploreChurchesNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreChurchesProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreChurchesNotifierHash();
+
+  @$internal
+  @override
+  ExploreChurchesNotifier create() => ExploreChurchesNotifier();
+}
+
+String _$exploreChurchesNotifierHash() =>
+    r'2e562f25a0edc0830fa3aed244ebeb938e58dd58';
+
+abstract class _$ExploreChurchesNotifier extends $AsyncNotifier<List<Post>> {
+  FutureOr<List<Post>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
+              AsyncValue<List<Post>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(exploreSuggestedUsers)
+final exploreSuggestedUsersProvider = ExploreSuggestedUsersProvider._();
+
+final class ExploreSuggestedUsersProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<User>>,
+          List<User>,
+          FutureOr<List<User>>
+        >
+    with $FutureModifier<List<User>>, $FutureProvider<List<User>> {
+  ExploreSuggestedUsersProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreSuggestedUsersProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreSuggestedUsersHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<User>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<User>> create(Ref ref) {
+    return exploreSuggestedUsers(ref);
+  }
+}
+
+String _$exploreSuggestedUsersHash() =>
+    r'c769f29d15fee52176545c9f24f554f5de24b874';

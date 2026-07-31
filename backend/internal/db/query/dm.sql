@@ -64,3 +64,22 @@ UPDATE messages
 SET body = $3, edited_at = now()
 WHERE id = $1 AND sender_id = $2 AND is_deleted = false
 RETURNING *;
+
+-- name: SearchContacts :many
+SELECT DISTINCT u.id, u.handle, u.display_name
+FROM users u
+LEFT JOIN conversations c ON (c.user_a_id = $1 AND c.user_b_id = u.id) OR (c.user_b_id = $1 AND c.user_a_id = u.id)
+LEFT JOIN follows f1 ON f1.follower_id = $1 AND f1.followee_id = u.id
+LEFT JOIN follows f2 ON f2.follower_id = u.id AND f2.followee_id = $1
+WHERE u.id != $1
+  AND (
+    c.id IS NOT NULL 
+    OR (f1.created_at IS NOT NULL AND f2.created_at IS NOT NULL)
+  )
+  AND (u.handle ILIKE '%' || $2 || '%' OR u.display_name ILIKE '%' || $2 || '%')
+LIMIT 20;
+
+-- name: GetConversationByUsers :one
+SELECT * FROM conversations
+WHERE (user_a_id = $1 AND user_b_id = $2)
+   OR (user_a_id = $2 AND user_b_id = $1);

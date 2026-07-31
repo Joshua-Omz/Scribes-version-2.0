@@ -61,9 +61,13 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     if (newSelected.contains(topic)) {
       newSelected.remove(topic);
     } else {
+      if (newSelected.length >= 7) {
+        state = state.copyWith(error: 'You can select up to 7 topics.');
+        return;
+      }
       newSelected.add(topic);
     }
-    state = state.copyWith(selectedTopics: newSelected);
+    state = state.copyWith(selectedTopics: newSelected, error: null);
   }
 
   Future<bool> saveTopics() async {

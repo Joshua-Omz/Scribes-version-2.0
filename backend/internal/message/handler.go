@@ -140,6 +140,54 @@ func (h *Handler) BlockConversation(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, gin.H{"status": "blocked"})
 }
 
+func (h *Handler) SearchContacts(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	query := c.Query("q")
+	
+	contacts, err := h.svc.SearchContacts(c.Request.Context(), userID, query)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to search contacts")
+		return
+	}
+	respond.JSON(c, http.StatusOK, contacts)
+}
+
+type DirectConversationPayload struct {
+	ToUserID string `json:"to_user_id" binding:"required"`
+}
+
+func (h *Handler) DirectConversation(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	var payload DirectConversationPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		respond.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	toUserID, err := uuid.Parse(payload.ToUserID)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid to_user_id")
+		return
+	}
+
+	if userID == toUserID {
+		respond.Error(c, http.StatusBadRequest, "cannot message yourself")
+		return
+	}
+
+	conv, err := h.svc.GetOrCreateDirectConversation(c.Request.Context(), userID, toUserID)
+	if err != nil {
+		respond.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, conv)
+}
+
 // ── Messages ───────────────────────────────────
 
 type MessageDTO struct {

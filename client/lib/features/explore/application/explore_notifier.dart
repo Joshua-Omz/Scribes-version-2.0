@@ -3,6 +3,9 @@ import '../../posts/domain/post.dart';
 import '../../social/domain/comment_author.dart';
 import '../data/explore_user_repository.dart';
 import '../data/explore_repository.dart';
+import '../../feed/data/feed_repository.dart';
+import '../../auth/data/auth_repository.dart';
+import '../../auth/domain/user.dart';
 
 
 part 'explore_notifier.g.dart';
@@ -155,4 +158,96 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
       state = AsyncData(currentList.where((p) => p.id != postId).toList());
     }
   }
+}
+
+@riverpod
+class ExploreForYouNotifier extends _$ExploreForYouNotifier {
+  String? _nextCursor;
+
+  bool get hasMore => _nextCursor != null;
+
+  @override
+  FutureOr<List<Post>> build() async {
+    return _fetch(null);
+  }
+
+  Future<List<Post>> _fetch(String? cursor) async {
+    final repo = ref.read(feedRepositoryProvider);
+    final response = await repo.getForYouPosts(cursor: cursor);
+    _nextCursor = response.nextCursor;
+    return response.posts;
+  }
+
+  Future<void> loadMore() async {
+    if (_nextCursor == null) return;
+    if (state.isLoading || state.isRefreshing) return;
+
+    try {
+      final newPosts = await _fetch(_nextCursor);
+      final currentPosts = state.value ?? [];
+      state = AsyncData([...currentPosts, ...newPosts]);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _nextCursor = null;
+    try {
+      final posts = await _fetch(null);
+      state = AsyncData(posts);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+}
+
+@riverpod
+class ExploreChurchesNotifier extends _$ExploreChurchesNotifier {
+  String? _nextCursor;
+
+  bool get hasMore => _nextCursor != null;
+
+  @override
+  FutureOr<List<Post>> build() async {
+    return _fetch(null);
+  }
+
+  Future<List<Post>> _fetch(String? cursor) async {
+    final repo = ref.read(feedRepositoryProvider);
+    final response = await repo.getChurchPosts(cursor: cursor);
+    _nextCursor = response.nextCursor;
+    return response.posts;
+  }
+
+  Future<void> loadMore() async {
+    if (_nextCursor == null) return;
+    if (state.isLoading || state.isRefreshing) return;
+
+    try {
+      final newPosts = await _fetch(_nextCursor);
+      final currentPosts = state.value ?? [];
+      state = AsyncData([...currentPosts, ...newPosts]);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _nextCursor = null;
+    try {
+      final posts = await _fetch(null);
+      state = AsyncData(posts);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+}
+
+@riverpod
+Future<List<User>> exploreSuggestedUsers(Ref ref) async {
+  final repo = ref.read(authRepositoryProvider);
+  return repo.getSuggestedUsers(limit: 10);
 }

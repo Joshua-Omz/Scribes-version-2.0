@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
 import '../../sync/application/sync_service.dart';
+import '../../../core/storage/database_provider.dart';
 
 part 'auth_notifier.g.dart';
 
@@ -89,7 +90,9 @@ class AuthNotifier extends _$AuthNotifier {
 
   Future<void> logout() async {
     final repo = ref.read(authRepositoryProvider);
+    final db = ref.read(databaseProvider);
     await repo.logout();
+    await db.clearAllData();
     state = const AsyncData(null);
   }
 

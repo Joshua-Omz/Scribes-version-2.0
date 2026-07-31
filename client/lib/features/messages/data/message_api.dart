@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/network/api_client.dart';
 import '../domain/message.dart';
+import '../domain/contact.dart';
 
 final messageApiProvider = Provider((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -43,6 +44,22 @@ class MessageApi {
     if (response.data == null) return [];
     final List<dynamic> data = response.data is List ? response.data as List<dynamic> : [];
     return data.map((json) => Conversation.fromJson(json)).toList();
+  }
+
+  Future<Conversation> getOrCreateDirectConversation(String toUserId) async {
+    final response = await _dio.post('/conversations/direct', data: {
+      'to_user_id': toUserId,
+    });
+    return Conversation.fromJson(response.data);
+  }
+
+  Future<List<Contact>> searchContacts(String query) async {
+    final response = await _dio.get('/contacts/search', queryParameters: {
+      'q': query,
+    });
+    if (response.data == null) return [];
+    final List<dynamic> data = response.data is List ? response.data as List<dynamic> : [];
+    return data.map((json) => Contact.fromJson(json)).toList();
   }
 
   Future<List<Message>> getMessages(String conversationId, {DateTime? cursorTs, int limit = 50}) async {

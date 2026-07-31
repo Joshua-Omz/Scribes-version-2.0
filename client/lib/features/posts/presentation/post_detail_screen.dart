@@ -20,7 +20,8 @@ import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scribes/features/posts/domain/post.dart';
 import 'package:scribes/core/widgets/scribes_toast.dart';
-
+import 'package:scribes/core/network/api_exception.dart';
+import 'package:scribes/core/widgets/scribes_empty_state.dart';
 class PostDetailScreen extends ConsumerWidget {
   final String postId;
 
@@ -318,11 +319,22 @@ class PostDetailScreen extends ConsumerWidget {
           );
         },
         loading: () => Center(child: ScribesLoadingIndicator()),
-        error: (err, stack) => ScribesErrorState(
-          title: 'Error loading post',
-          subtitle: err.toString(),
-          onRetry: () => ref.refresh(postDetailProvider(postId)),
-        ),
+        error: (err, stack) {
+          if (err is ApiException && err.statusCode == 404) {
+            return const Center(
+              child: ScribesEmptyState(
+                icon: HugeIcons.strokeRoundedDelete01,
+                title: 'Post Deleted',
+                subtitle: 'This post is no longer available.',
+              ),
+            );
+          }
+          return ScribesErrorState(
+            title: 'Error loading post',
+            subtitle: err.toString(),
+            onRetry: () => ref.refresh(postDetailProvider(postId)),
+          );
+        },
       ),
       bottomNavigationBar: isAuthenticated
           ? null

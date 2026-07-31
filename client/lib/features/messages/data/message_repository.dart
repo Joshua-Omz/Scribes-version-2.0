@@ -4,6 +4,7 @@ import 'package:scribes/core/storage/database_provider.dart';
 import 'package:scribes/core/storage/drift_database.dart' as db;
 import 'package:scribes/features/messages/data/message_api.dart';
 import 'package:scribes/features/messages/domain/message.dart';
+import 'package:scribes/features/messages/domain/contact.dart';
 import 'package:uuid/uuid.dart';
 
 final messageRepositoryProvider = Provider((ref) {
@@ -24,6 +25,16 @@ class MessageRepository {
 
   Future<List<MessageRequest>> getPendingRequests() async {
     return _api.getPendingRequests();
+  }
+
+  Future<Conversation> getOrCreateDirectConversation(String toUserId) async {
+    final conv = await _api.getOrCreateDirectConversation(toUserId);
+    await _saveConversationToDb(conv);
+    return conv;
+  }
+
+  Future<List<Contact>> searchContacts(String query) async {
+    return _api.searchContacts(query);
   }
 
   Future<Conversation> approveRequest(String requestId) async {

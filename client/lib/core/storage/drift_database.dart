@@ -149,6 +149,18 @@ class ScribesDatabase extends _$ScribesDatabase {
       },
     );
   }
+
+  Future<void> clearAllData() async {
+    await transaction(() async {
+      await delete(conversations).go();
+      await delete(messages).go();
+      await delete(drafts).go();
+      await delete(posts).go();
+      await delete(notebooks).go();
+      await delete(notes).go();
+      await delete(syncMetadata).go();
+    });
+  }
 }
 
 LazyDatabase _openConnection() {

@@ -62,7 +62,7 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
       debugPrint("Error fetching my posts from API: $e");
     }
 
-    final localPosts = await (db.select(db.posts)..where((t) => t.authorId.equals(user.id))).get();
+    final localPosts = await (db.select(db.posts)..where((t) => t.authorId.equals(user.id) & t.isDeleted.equals(false))).get();
     
     return localPosts.map((row) {
       Map<String, dynamic> decodedContent = {'title': 'Untitled', 'body': '', 'excerpt': ''};

@@ -122,7 +122,9 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/message-requests/:id/approve", messageHandler.ApproveRequest)
 		protected.POST("/message-requests/:id/reject", messageHandler.RejectRequest)
 
+		protected.GET("/contacts/search", messageHandler.SearchContacts)
 		protected.GET("/conversations", messageHandler.GetConversations)
+		protected.POST("/conversations/direct", messageHandler.DirectConversation)
 		protected.GET("/conversations/:id/messages", messageHandler.GetMessages)
 		protected.GET("/conversations/:id/stream", messageHandler.StreamMessages)
 		protected.POST("/conversations/:id/messages", messageHandler.SendMessage)

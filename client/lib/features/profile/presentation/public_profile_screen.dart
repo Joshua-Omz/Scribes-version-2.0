@@ -19,6 +19,7 @@ import '../../../core/widgets/scribes_empty_state.dart';
 import '../../messages/presentation/widgets/dm_request_modal.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../messages/application/inbox_providers.dart';
+import '../../messages/data/message_repository.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -283,7 +284,17 @@ class PublicProfileScreen extends ConsumerWidget {
                 if (existingConversation != null) {
                   context.push('/conversation/${existingConversation.id}');
                 } else {
-                  DmRequestModal.show(context, userId);
+                  try {
+                    final repo = ref.read(messageRepositoryProvider);
+                    final conv = await repo.getOrCreateDirectConversation(userId);
+                    if (!context.mounted) return;
+                    context.push('/conversation/${conv.id}');
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    // If it throws, it means we are not mutuals or offline.
+                    // To be safe, just show the request modal.
+                    DmRequestModal.show(context, userId);
+                  }
                 }
               },
               icon: HugeIcon(
