@@ -25,6 +25,8 @@ class InboxScreen extends ConsumerStatefulWidget {
 
 class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isMultiSelectMode = false;
+  final Set<String> _selectedIds = {};
 
   @override
   void initState() {
@@ -52,10 +54,39 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
               elevation: 0,
               pinned: true,
               leading: IconButton(
-                icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
-                onPressed: () => context.pop(),
+                icon: HugeIcon(
+                    icon: _isMultiSelectMode ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedArrowLeft01, 
+                    color: colors.primaryText),
+                onPressed: () {
+                  if (_isMultiSelectMode) {
+                    setState(() {
+                      _isMultiSelectMode = false;
+                      _selectedIds.clear();
+                    });
+                  } else {
+                    context.pop();
+                  }
+                },
               ),
-              title: Text('Direct Messages', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+              title: Text(
+                _isMultiSelectMode ? '${_selectedIds.length} Selected' : 'Direct Messages', 
+                style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)
+              ),
+              actions: [
+                if (_isMultiSelectMode)
+                  IconButton(
+                    icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: colors.orange),
+                    onPressed: () async {
+                      if (_selectedIds.isNotEmpty) {
+                        await ref.read(conversationsProvider.notifier).hideConversations(_selectedIds.toList());
+                        setState(() {
+                          _isMultiSelectMode = false;
+                          _selectedIds.clear();
+                        });
+                      }
+                    },
+                  ),
+              ],
             ),
             SliverPersistentHeader(
               pinned: true,
@@ -115,6 +146,30 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
                 conversation: conversation,
                 otherUserId: otherUserId,
                 colors: colors,
+                isMultiSelectMode: _isMultiSelectMode,
+                isSelected: _selectedIds.contains(conversation.id),
+                onLongPress: () {
+                  if (!_isMultiSelectMode) {
+                    setState(() {
+                      _isMultiSelectMode = true;
+                      _selectedIds.add(conversation.id);
+                    });
+                  }
+                },
+                onTap: () {
+                  if (_isMultiSelectMode) {
+                    setState(() {
+                      if (_selectedIds.contains(conversation.id)) {
+                        _selectedIds.remove(conversation.id);
+                        if (_selectedIds.isEmpty) _isMultiSelectMode = false;
+                      } else {
+                        _selectedIds.add(conversation.id);
+                      }
+                    });
+                  } else {
+                    context.push('/conversation/${conversation.id}');
+                  }
+                },
               );
             },
           ),
@@ -165,11 +220,19 @@ class _ConversationTile extends ConsumerStatefulWidget {
   final dynamic conversation;
   final String otherUserId;
   final dynamic colors;
+  final bool isMultiSelectMode;
+  final bool isSelected;
+  final VoidCallback onLongPress;
+  final VoidCallback onTap;
 
   const _ConversationTile({
     required this.conversation,
     required this.otherUserId,
     required this.colors,
+    this.isMultiSelectMode = false,
+    this.isSelected = false,
+    required this.onLongPress,
+    required this.onTap,
   });
 
   @override
@@ -194,16 +257,23 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Material(
-        color: Colors.transparent,
+        color: widget.isSelected ? widget.colors.surfaceRaised : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            context.push('/conversation/${widget.conversation.id}');
-          },
+          onTap: widget.onTap,
+          onLongPress: widget.onLongPress,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
+                if (widget.isMultiSelectMode) ...[
+                  Icon(
+                    widget.isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: widget.isSelected ? widget.colors.orange : widget.colors.secondaryText,
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 authorState.when(
                   data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 26),
                   loading: () => const CircleAvatar(radius: 26, backgroundColor: Colors.grey),

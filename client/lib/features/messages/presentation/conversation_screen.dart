@@ -76,11 +76,57 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         ),
         title: _buildAppBarTitle(colors, currentUser?.id),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: HugeIcon(icon: HugeIcons.strokeRoundedMoreVerticalCircle01, color: colors.primaryText),
-            onPressed: () {
-              // Show options (Block, report, etc)
+            color: colors.surface,
+            onSelected: (value) async {
+              if (value == 'clear') {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: colors.surfaceRaised,
+                    title: Text('Clear Conversation?', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
+                    content: Text('This will delete all messages locally on this device.', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text('Cancel', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text('Clear', style: ScribesTextStyles.bodyMd.copyWith(color: colors.orange)),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  ref.read(conversationMessagesProvider(widget.conversationId).notifier).clearConversation();
+                }
+              }
             },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'clear',
+                child: Row(
+                  children: [
+                    HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: colors.orange, size: 20),
+                    const SizedBox(width: 12),
+                    Text('Clear Conversation', style: ScribesTextStyles.bodyMd.copyWith(color: colors.orange)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'block',
+                child: Row(
+                  children: [
+                    HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.primaryText, size: 20),
+                    const SizedBox(width: 12),
+                    Text('Block User', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

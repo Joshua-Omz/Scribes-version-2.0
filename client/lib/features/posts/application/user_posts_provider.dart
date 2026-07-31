@@ -11,4 +11,11 @@ class UserPosts extends _$UserPosts {
     final repo = ref.watch(postRepositoryProvider);
     return repo.listByAuthor(userId);
   }
+
+  void optimisticRemove(String postId) {
+    if (state.value != null) {
+      final currentList = state.value!;
+      state = AsyncData(currentList.where((p) => p.id != postId).toList());
+    }
+  }
 }

@@ -45,4 +45,9 @@ class ConversationMessages extends _$ConversationMessages {
     if (user == null) return;
     await repo.sendMessage(conversationId, body, user.id, replyToId: replyToId);
   }
+
+  Future<void> clearConversation() async {
+    final repo = ref.read(messageRepositoryProvider);
+    await repo.clearConversation(conversationId);
+  }
 }

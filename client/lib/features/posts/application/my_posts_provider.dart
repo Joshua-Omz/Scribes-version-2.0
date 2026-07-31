@@ -117,6 +117,13 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     state = await AsyncValue.guard(() => _fetchMyPosts());
   }
 
+  void optimisticRemove(String postId) {
+    if (state.value != null) {
+      final currentList = state.value!;
+      state = AsyncData(currentList.where((p) => p.id != postId).toList());
+    }
+  }
+
   Future<void> deletePost(String id) async {
     final db = ref.read(databaseProvider);
     try {

@@ -62,14 +62,14 @@ abstract class _$PendingRequests extends $AsyncNotifier<List<MessageRequest>> {
 final conversationsProvider = ConversationsNotifierProvider._();
 
 final class ConversationsNotifierProvider
-    extends $AsyncNotifierProvider<ConversationsNotifier, List<Conversation>> {
+    extends $StreamNotifierProvider<ConversationsNotifier, List<Conversation>> {
   ConversationsNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'conversationsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -83,11 +83,11 @@ final class ConversationsNotifierProvider
 }
 
 String _$conversationsNotifierHash() =>
-    r'd5111dcac855edff01835e509dfb966ec2a82e81';
+    r'd8028e6b36ae9f024ad0a1b2b27da91b34107cf1';
 
 abstract class _$ConversationsNotifier
-    extends $AsyncNotifier<List<Conversation>> {
-  FutureOr<List<Conversation>> build();
+    extends $StreamNotifier<List<Conversation>> {
+  Stream<List<Conversation>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {

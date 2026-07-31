@@ -36,7 +36,26 @@ class MessageRepository {
     await _api.rejectRequest(requestId);
   }
 
-  Future<List<Conversation>> getConversations() async {
+  Stream<List<Conversation>> watchConversations() {
+    return (_db.select(_db.conversations)
+          ..where((c) => c.isHidden.equals(false))
+          ..orderBy([(c) => drift.OrderingTerm.desc(c.lastActive)]))
+        .watch()
+        .map((list) {
+      return list
+          .map((c) => Conversation(
+                id: c.id,
+                userAId: c.userAId,
+                userBId: c.userBId,
+                blocked: c.blocked,
+                createdAt: c.createdAt,
+                lastActive: c.lastActive,
+              ))
+          .toList();
+    });
+  }
+
+  Future<void> refreshConversations() async {
     try {
       final conversations = await _api.getConversations();
       await _db.batch((batch) {
@@ -49,23 +68,57 @@ class MessageRepository {
                 blocked: c.blocked,
                 createdAt: c.createdAt,
                 lastActive: c.lastActive,
+                isHidden: false,
+                // We do NOT overwrite isHidden here so that locally hidden chats stay hidden until a new message arrives.
+                // drift.InsertMode.insertOrReplace would overwrite it. 
+                // So we'll update selectively or just rely on a custom query.
               )),
-          mode: drift.InsertMode.insertOrReplace,
+          mode: drift.InsertMode.insertOrIgnore, // Only insert if missing. (Wait, lastActive updates won't be applied).
         );
       });
-      return conversations;
+      
+      // Update lastActive for existing conversations without affecting isHidden
+      for (var c in conversations) {
+        await (_db.update(_db.conversations)..where((tbl) => tbl.id.equals(c.id))).write(
+          db.ConversationsCompanion(
+            lastActive: drift.Value(c.lastActive),
+            blocked: drift.Value(c.blocked),
+          ),
+        );
+      }
     } catch (e) {
-      // Fallback to offline
-      final offline = await _db.select(_db.conversations).get();
-      return offline.map((c) => Conversation(
-            id: c.id,
-            userAId: c.userAId,
-            userBId: c.userBId,
-            blocked: c.blocked,
-            createdAt: c.createdAt,
-            lastActive: c.lastActive,
-          )).toList();
+      // Ignore network errors on background refresh
     }
+  }
+
+  Future<List<Conversation>> getConversations() async {
+    // Kept for backward compatibility if needed, but mostly UI will use watchConversations.
+    final offline = await (_db.select(_db.conversations)..where((c) => c.isHidden.equals(false))).get();
+    return offline
+        .map((c) => Conversation(
+              id: c.id,
+              userAId: c.userAId,
+              userBId: c.userBId,
+              blocked: c.blocked,
+              createdAt: c.createdAt,
+              lastActive: c.lastActive,
+            ))
+        .toList();
+  }
+
+  Future<void> hideConversations(List<String> ids) async {
+    await _db.transaction(() async {
+      for (var id in ids) {
+        await (_db.update(_db.conversations)..where((c) => c.id.equals(id))).write(
+          const db.ConversationsCompanion(isHidden: drift.Value(true)),
+        );
+      }
+    });
+  }
+
+  Future<void> clearConversation(String conversationId) async {
+    // Delete all messages in the conversation locally
+    await (_db.delete(_db.messages)..where((m) => m.conversationId.equals(conversationId))).go();
   }
 
   Stream<List<Message>> watchMessages(String conversationId) {
@@ -146,6 +199,10 @@ class MessageRepository {
           ),
           mode: drift.InsertMode.insertOrReplace,
         );
+        // Unhide conversation if it was hidden
+        await (_db.update(_db.conversations)..where((c) => c.id.equals(msg.conversationId))).write(
+          const db.ConversationsCompanion(isHidden: drift.Value(false)),
+        );
       });
     } catch (e) {
       // 4. On error, mark pending as error
@@ -171,6 +228,10 @@ class MessageRepository {
         ),
         mode: drift.InsertMode.insertOrReplace,
       );
+      // Unhide conversation if it was hidden
+      await (_db.update(_db.conversations)..where((c) => c.id.equals(msg.conversationId))).write(
+        const db.ConversationsCompanion(isHidden: drift.Value(false)),
+      );
       yield msg;
     }
   }
@@ -184,6 +245,7 @@ class MessageRepository {
         blocked: c.blocked,
         createdAt: c.createdAt,
         lastActive: c.lastActive,
+        isHidden: false,
       ),
       mode: drift.InsertMode.insertOrReplace,
     );

@@ -31,78 +31,68 @@ class PendingRequests extends _$PendingRequests {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ConversationsNotifier extends _$ConversationsNotifier {
   Timer? _pollingTimer;
   int _lastTotalMessages = 0; // simplistic way to detect new messages across conversations
 
   @override
-  Future<List<Conversation>> build() async {
+  Stream<List<Conversation>> build() async* {
     final repo = ref.watch(messageRepositoryProvider);
     
     ref.onDispose(() {
       _pollingTimer?.cancel();
     });
 
+    // Start background sync polling
     _startPolling();
 
-    final convos = await repo.getConversations();
-    _updateTotalMessages(convos);
-    return convos;
+    // Trigger initial background refresh immediately
+    repo.refreshConversations();
+
+    // Yield the local DB stream for instant cached UI
+    await for (final convos in repo.watchConversations()) {
+      _checkNewMessages(convos);
+      yield convos;
+    }
   }
 
-  void _startPolling() {
-    _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) async {
-      try {
-        final repo = ref.read(messageRepositoryProvider);
-        final convos = await repo.getConversations();
-        
-        // Detect if there are new unread messages
-        int currentTotal = 0;
-        bool hasNew = false;
-        
-        for (var c in convos) {
-          currentTotal += c.lastActive.millisecondsSinceEpoch;
-        }
-        
-        if (_lastTotalMessages != 0 && currentTotal != _lastTotalMessages) {
-          hasNew = true;
-        }
-        
-        _lastTotalMessages = currentTotal;
-
-        if (hasNew) {
-          try {
-            final themeColors = ref.read(themeProvider);
-            ScribesToast.show(
-              null, // uses global key
-              'New message received',
-              themeColors,
-              icon: HugeIcons.strokeRoundedMail01,
-            );
-          } catch (_) {}
-        }
-        
-        state = AsyncData(convos);
-      } catch (_) {}
-    });
-  }
-
-  void _updateTotalMessages(List<Conversation> convos) {
+  void _checkNewMessages(List<Conversation> convos) {
     int currentTotal = 0;
     for (var c in convos) {
       currentTotal += c.lastActive.millisecondsSinceEpoch;
     }
+    
+    if (_lastTotalMessages != 0 && currentTotal > _lastTotalMessages) {
+      try {
+        final themeColors = ref.read(themeProvider);
+        ScribesToast.show(
+          null, // uses global key
+          'New message received',
+          themeColors,
+          icon: HugeIcons.strokeRoundedMail01,
+        );
+      } catch (_) {}
+    }
     _lastTotalMessages = currentTotal;
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      final repo = ref.read(messageRepositoryProvider);
+      repo.refreshConversations(); // Automatically updates DB, which updates the Stream
+    });
+  }
+
+  Future<void> hideConversations(List<String> ids) async {
+    final repo = ref.read(messageRepositoryProvider);
+    await repo.hideConversations(ids);
   }
 
   Future<void> refresh() async {
     final repo = ref.read(messageRepositoryProvider);
-    state = const AsyncLoading();
-    final convos = await repo.getConversations();
-    _updateTotalMessages(convos);
-    state = AsyncData(convos);
+    await repo.refreshConversations();
   }
 }
 

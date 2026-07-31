@@ -141,6 +141,29 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                   }).toList(),
                 ),
               ),
+            if (widget.tags.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: widget.scriptureRefs.isNotEmpty ? 8.0 : 12.0),
+                child: Wrap(
+                  spacing: 6.0,
+                  runSpacing: 6.0,
+                  children: widget.tags.map((tag) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: colors.goldMuted.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(ScribesRadius.chip),
+                      border: Border.all(color: colors.goldMuted.withValues(alpha: 0.2)),
+                    ),
+                    child: Text(
+                      '#$tag',
+                      style: ScribesTextStyles.labelSm.copyWith(
+                        color: colors.goldMuted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )).toList(),
+                ),
+              ),
             const SizedBox(height: 16),
             Text(
               widget.title,

@@ -25,15 +25,35 @@ class PostDetailNotifier extends _$PostDetailNotifier {
     state = AsyncData(state.value!.copyWith(versions: versions));
   }
 
-  Future<void> deletePost() async {
-    final postRepo = ref.read(postRepositoryProvider);
-    await postRepo.deletePost(postId);
-    
-    // Invalidate the post lists to remove the deleted post
-    ref.invalidate(myPostsProvider);
-    ref.invalidate(explorePostsProvider);
+  void optimisticDeletePost() {
+    // 1. Optimistic removal from feeds
+    ref.read(myPostsProvider.notifier).optimisticRemove(postId);
+    ref.read(explorePostsProvider.notifier).optimisticRemove(postId);
     if (state.value?.post != null) {
-      ref.invalidate(userPostsProvider(state.value!.post.authorId));
+      ref.read(userPostsProvider(state.value!.post.authorId).notifier).optimisticRemove(postId);
+    }
+
+    // 2. Fire background network call with silent retry
+    _deleteInBackground();
+  }
+
+  Future<void> _deleteInBackground() async {
+    final postRepo = ref.read(postRepositoryProvider);
+    int attempts = 0;
+    while (attempts < 3) {
+      try {
+        await postRepo.deletePost(postId);
+        return; // Success
+      } catch (e) {
+        attempts++;
+        if (attempts >= 3) {
+          print('[PostDetailNotifier] Failed to delete post in background after 3 attempts: $e');
+          // In a full production app, we would revert the optimistic state here,
+          // but per user request, we silently retry and then stop on ultimate failure.
+          return;
+        }
+        await Future.delayed(Duration(seconds: 2 * attempts)); // Backoff
+      }
     }
   }
 }

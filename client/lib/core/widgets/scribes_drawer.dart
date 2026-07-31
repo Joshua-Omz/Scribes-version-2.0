@@ -95,11 +95,11 @@ class ScribesDrawer extends ConsumerWidget {
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: HugeIcons.strokeRoundedFile01,
-                title: 'Drafts Workspace',
+                icon: HugeIcons.strokeRoundedChat,
+                title: 'Messages',
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/drafts');
+                  context.push('/inbox');
                 },
               ),
               _buildMenuItem(

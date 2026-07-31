@@ -148,4 +148,11 @@ class ExplorePostsNotifier extends _$ExplorePostsNotifier {
       state = AsyncError(e, stack);
     }
   }
+
+  void optimisticRemove(String postId) {
+    if (state.value != null) {
+      final currentList = state.value!;
+      state = AsyncData(currentList.where((p) => p.id != postId).toList());
+    }
+  }
 }

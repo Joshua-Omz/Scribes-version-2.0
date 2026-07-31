@@ -50,7 +50,7 @@ final class UserPostsProvider
   }
 }
 
-String _$userPostsHash() => r'20b8b024f616d87e6e8807c146590a9409b4f4f2';
+String _$userPostsHash() => r'0d06965bd666067f6c1fed7071c5f5ca793cafbb';
 
 final class UserPostsFamily extends $Family
     with

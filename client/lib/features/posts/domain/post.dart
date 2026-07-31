@@ -12,6 +12,12 @@ Map<String, dynamic> _contentFromJson(dynamic value) {
     try {
       final decoded = jsonDecode(value);
       if (decoded is Map<String, dynamic>) return decoded;
+      if (decoded is String) {
+        try {
+          final doubleDecoded = jsonDecode(decoded);
+          if (doubleDecoded is Map<String, dynamic>) return doubleDecoded;
+        } catch (_) {}
+      }
     } catch (_) {}
   }
   return {'title': 'Untitled', 'body': value, 'excerpt': ''};
@@ -25,6 +31,12 @@ SermonSource? _sermonSourceFromJson(dynamic value) {
     try {
       final decoded = jsonDecode(value);
       if (decoded is Map<String, dynamic>) return SermonSource.fromJson(decoded);
+      if (decoded is String) {
+        try {
+          final doubleDecoded = jsonDecode(decoded);
+          if (doubleDecoded is Map<String, dynamic>) return SermonSource.fromJson(doubleDecoded);
+        } catch (_) {}
+      }
     } catch (_) {}
     return SermonSource(preacher: value);
   }

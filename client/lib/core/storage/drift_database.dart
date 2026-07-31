@@ -82,6 +82,7 @@ class Conversations extends Table {
   BoolColumn get blocked => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get lastActive => dateTime()();
+  BoolColumn get isHidden => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -107,7 +108,7 @@ class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration {
@@ -141,6 +142,9 @@ class ScribesDatabase extends _$ScribesDatabase {
         }
         if (from < 8) {
           await m.addColumn(messages, messages.status);
+        }
+        if (from < 9) {
+          await m.addColumn(conversations, conversations.isHidden);
         }
       },
     );

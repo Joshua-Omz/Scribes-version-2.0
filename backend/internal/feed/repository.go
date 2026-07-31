@@ -35,6 +35,7 @@ type FeedPost struct {
 	AuthorHandle   string                   `json:"author_handle"`
 	AuthorName     string                   `json:"author_name"`
 	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
+	Tags           []string                        `json:"tags,omitempty"`
 }
 
 func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
@@ -238,6 +239,12 @@ func (r *Repository) GetFeedPosts(ctx context.Context, cursorTime time.Time, cur
 		if err == nil {
 			post.ScriptureRefs = refs
 		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
+		}
 		posts[i] = post
 	}
 	return posts, nil
@@ -260,6 +267,12 @@ func (r *Repository) GetFollowingFeedPosts(ctx context.Context, userID uuid.UUID
 		if err == nil {
 			post.ScriptureRefs = refs
 		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
+		}
 		posts[i] = post
 	}
 	return posts, nil
@@ -280,6 +293,12 @@ func (r *Repository) GetExplorePosts(ctx context.Context, cursorTime time.Time, 
 		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
 		if err == nil {
 			post.ScriptureRefs = refs
+		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
 		}
 		posts[i] = post
 	}
@@ -302,6 +321,12 @@ func (r *Repository) GetExplorePostsByTag(ctx context.Context, tag string, curso
 		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
 		if err == nil {
 			post.ScriptureRefs = refs
+		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
 		}
 		posts[i] = post
 	}
@@ -326,6 +351,12 @@ func (r *Repository) GetExplorePostsByScripture(ctx context.Context, book string
 		if err == nil {
 			post.ScriptureRefs = refs
 		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
+		}
 		posts[i] = post
 	}
 	return posts, nil
@@ -347,6 +378,12 @@ func (r *Repository) SearchExplorePosts(ctx context.Context, query string, curso
 		refs, err := r.q.GetScriptureRefs(ctx, post.ID)
 		if err == nil {
 			post.ScriptureRefs = refs
+		}
+		tags, err := r.q.GetPostTags(ctx, post.ID)
+		if err == nil {
+			post.Tags = tags
+		} else {
+			post.Tags = []string{}
 		}
 		posts[i] = post
 	}

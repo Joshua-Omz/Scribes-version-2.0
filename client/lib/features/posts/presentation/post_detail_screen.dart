@@ -195,19 +195,63 @@ class PostDetailScreen extends ConsumerWidget {
                                     fontStyle: FontStyle.italic,
                                   ),
                                 ),
-                              if (post.caption != null && post.caption!.isNotEmpty && post.sermonSource != null && post.sermonSource!.isNotEmpty)
-                                const SizedBox(height: 12),
                               if (post.sermonSource != null && post.sermonSource!.isNotEmpty)
-                                Row(
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    HugeIcon(icon: HugeIcons.strokeRoundedChurch, size: 14, color: colors.gold),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      post.sermonSource!.displayTitle,
-                                      style: ScribesTextStyles.caption.copyWith(
-                                        color: colors.goldMuted,
+                                    if (post.sermonSource!.preacher != null && post.sermonSource!.preacher!.isNotEmpty)
+                                      Row(
+                                        children: [
+                                          HugeIcon(icon: HugeIcons.strokeRoundedUserGroup, size: 14, color: colors.gold),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'Preacher: ${post.sermonSource!.preacher!}',
+                                            style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                          ),
+                                        ],
                                       ),
-                                    ),
+                                    if (post.sermonSource!.church != null && post.sermonSource!.church!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4.0),
+                                        child: Row(
+                                          children: [
+                                            HugeIcon(icon: HugeIcons.strokeRoundedChurch, size: 14, color: colors.gold),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              'Church: ${post.sermonSource!.church!}',
+                                              style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    if (post.sermonSource!.series != null && post.sermonSource!.series!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4.0),
+                                        child: Row(
+                                          children: [
+                                            HugeIcon(icon: HugeIcons.strokeRoundedBookOpen01, size: 14, color: colors.gold),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              'Series: ${post.sermonSource!.series!}',
+                                              style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    if (post.sermonSource!.date != null && post.sermonSource!.date!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4.0),
+                                        child: Row(
+                                          children: [
+                                            HugeIcon(icon: HugeIcons.strokeRoundedCalendar01, size: 14, color: colors.gold),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              'Date: ${post.sermonSource!.date!}',
+                                              style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                   ],
                                 ),
                             ],
@@ -338,18 +382,16 @@ class PostDetailScreen extends ConsumerWidget {
               child: Text('Cancel', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
             ),
             TextButton(
-              onPressed: () async {
+              onPressed: () {
                 context.pop(); // close dialog
-                try {
-                  await ref.read(postDetailProvider(postId).notifier).deletePost();
-                  if (context.mounted) {
-                    ScribesToast.show(context, 'Post deleted', colors, icon: HugeIcons.strokeRoundedDelete01);
-                    context.pop(); // pop screen
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScribesToast.show(context, 'Failed to delete post: $e', colors, isError: true);
-                  }
+                
+                // 1. Fire optimistic background delete
+                ref.read(postDetailProvider(postId).notifier).optimisticDeletePost();
+                
+                // 2. Immediately pop the post detail screen back to feed
+                if (context.mounted) {
+                  ScribesToast.show(context, 'Post deleted', colors, icon: HugeIcons.strokeRoundedDelete01);
+                  context.pop();
                 }
               },
               child: Text('Delete', style: ScribesTextStyles.labelLg.copyWith(color: colors.orange)),

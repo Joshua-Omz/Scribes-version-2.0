@@ -341,7 +341,7 @@ final class ExplorePostsNotifierProvider
 }
 
 String _$explorePostsNotifierHash() =>
-    r'c678730502349a4c0aeeb6bea63269aef6f98b0b';
+    r'c0bc902079850ab6c3e9374bb5bbee65c655466d';
 
 abstract class _$ExplorePostsNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();
