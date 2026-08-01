@@ -291,9 +291,12 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                                   ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
                                 }
                               },
-                              onTap: () {
+                              onTap: () async {
                                 if (!post.isDeleted) {
-                                  context.push('/posts/${post.id}');
+                                  await context.push('/posts/${post.id}');
+                                  if (context.mounted) {
+                                    ref.read(myPostsProvider.notifier).refresh();
+                                  }
                                 }
                               },
                             );

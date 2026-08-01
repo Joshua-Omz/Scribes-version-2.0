@@ -12,7 +12,7 @@ class OnboardingScreen extends ConsumerWidget {
       isModal: false,
       onContinue: () {
         // Upon completing onboarding, navigate to the main feed/explore
-        context.go('/feed');
+        context.go('/');
       },
     );
   }

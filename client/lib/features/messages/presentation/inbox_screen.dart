@@ -54,21 +54,17 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
               backgroundColor: colors.background,
               elevation: 0,
               pinned: true,
-              leading: IconButton(
+              leading: _isMultiSelectMode ? IconButton(
                 icon: HugeIcon(
-                    icon: _isMultiSelectMode ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedArrowLeft01, 
+                    icon: HugeIcons.strokeRoundedCancel01, 
                     color: colors.primaryText),
                 onPressed: () {
-                  if (_isMultiSelectMode) {
-                    setState(() {
-                      _isMultiSelectMode = false;
-                      _selectedIds.clear();
-                    });
-                  } else {
-                    context.pop();
-                  }
+                  setState(() {
+                    _isMultiSelectMode = false;
+                    _selectedIds.clear();
+                  });
                 },
-              ),
+              ) : null,
               title: Text(
                 _isMultiSelectMode ? '${_selectedIds.length} Selected' : 'Direct Messages', 
                 style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)

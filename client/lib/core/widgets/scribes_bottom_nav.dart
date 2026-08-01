@@ -6,6 +6,10 @@ import 'package:hugeicons/hugeicons.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'scribes_bounce_button.dart';
+import '../../features/notifications/application/notification_provider.dart';
+import '../../features/messages/application/conversation_providers.dart';
+import '../../features/messages/application/inbox_providers.dart';
+import 'scribes_message_banner.dart';
 
 class ScaffoldWithNavBar extends ConsumerWidget {
   const ScaffoldWithNavBar({
@@ -41,6 +45,27 @@ class ScaffoldWithNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Listen to global notifications
+    ref.listen(notificationStreamProvider, (prev, next) {
+      if (next != null) {
+        final notif = (next as dynamic).value;
+        if (notif != null && notif.type == 'direct_message') {
+          ScribesMessageBanner.show(
+            context,
+            title: 'New Message',
+            message: notif.body,
+            onTap: () {
+              // Navigate to inbox or directly to conversation
+              // For now, just go to inbox (tab 3, branch 2)
+              _onTap(context, 3);
+            },
+          );
+          // Invalidate inbox
+          ref.read(conversationsProvider.notifier).refresh();
+        }
+      }
+    });
+
     // Map branch index back to UI index
     int uiIndex = 0;
     if (navigationShell.currentIndex == 0) { uiIndex = 0; }
@@ -120,7 +145,14 @@ class ScribesBottomNav extends ConsumerWidget {
             children: [
               _buildNavItem(context, colors, HugeIcons.strokeRoundedNote01, 'Scroll', 0),
               _buildNavItem(context, colors, HugeIcons.strokeRoundedSearch01, 'Search', 1),
-              _buildNavItem(context, colors, HugeIcons.strokeRoundedChatAdd, 'Messages', 3),
+              _buildNavItem(
+                context, 
+                colors, 
+                HugeIcons.strokeRoundedChatAdd, 
+                'Messages', 
+                3,
+                showDot: ref.watch(unreadMessagesCountProvider) > 0,
+              ),
               _buildNavItem(context, colors, HugeIcons.strokeRoundedFileEdit, 'Notes', 4),
             ],
           ),
@@ -132,7 +164,7 @@ class ScribesBottomNav extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, colors, dynamic icon, String label, int index) {
+  Widget _buildNavItem(BuildContext context, colors, dynamic icon, String label, int index, {bool showDot = false}) {
     final isSelected = currentIndex == index;
     final color = isSelected ? colors.gold : colors.secondaryText;
 
@@ -152,7 +184,25 @@ class ScribesBottomNav extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              HugeIcon(icon: icon, color: color, size: 24),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  HugeIcon(icon: icon, color: color, size: 24),
+                  if (showDot)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD4520A), // orange
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               if (isSelected) ...[
                 const SizedBox(height: 2),
                 Text(

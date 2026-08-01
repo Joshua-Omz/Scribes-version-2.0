@@ -13,6 +13,10 @@ class NotificationRepository {
     return _api.getNotifications();
   }
 
+  Stream<NotificationItem> streamNotifications() {
+    return _api.streamNotifications();
+  }
+
   Future<void> markAllRead() async {
     await _api.markAllRead();
   }

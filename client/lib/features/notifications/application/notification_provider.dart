@@ -63,3 +63,9 @@ Future<bool> hasUnreadNotifications(Ref ref) async {
   final response = await repo.getNotifications();
   return response.hasUnread;
 }
+
+@riverpod
+Stream<NotificationItem> notificationStream(Ref ref) {
+  final repo = ref.read(notificationRepositoryProvider);
+  return repo.streamNotifications();
+}

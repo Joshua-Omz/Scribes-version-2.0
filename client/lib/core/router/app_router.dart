@@ -63,9 +63,23 @@ GoRouter appRouter(Ref ref) {
         return '/auth'; 
       }
 
-      // If authenticated and on auth or splash, go to feed 
-      if (isAuth && (isGoingToAuth || isGoingToSplash)) {
-        return '/'; 
+      if (isAuth) {
+        final user = authState.value!;
+        final needsOnboarding = user.selectedTags.isEmpty;
+        final isGoingToOnboarding = state.matchedLocation == '/onboarding';
+
+        if (needsOnboarding && !isGoingToOnboarding) {
+          return '/onboarding';
+        }
+
+        if (!needsOnboarding && isGoingToOnboarding) {
+          return '/';
+        }
+
+        // If authenticated and on auth or splash, go to feed 
+        if (isGoingToAuth || isGoingToSplash) {
+          return '/'; 
+        }
       }
 
       return null;
@@ -95,8 +109,8 @@ GoRouter appRouter(Ref ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/drafts',
-                builder: (context, state) => const DraftsListScreen(),
+                path: '/inbox',
+                builder: (context, state) => const InboxScreen(),
               ),
             ],
           ),
@@ -204,8 +218,8 @@ GoRouter appRouter(Ref ref) {
         pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const NotificationScreen()),
       ),
       GoRoute(
-        path: '/inbox',
-        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const InboxScreen()),
+        path: '/drafts',
+        pageBuilder: (context, state) => buildPageWithSlideRightTransition(context: context, state: state, child: const DraftsListScreen()),
       ),
       GoRoute(
         path: '/conversation/:id',

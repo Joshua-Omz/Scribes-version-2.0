@@ -25,12 +25,14 @@ class AuthRepository {
     required String handle,
     required String displayName,
     required String password,
+    required bool isChurch,
   }) async {
     final response = await _api.register(
       email: email,
       handle: handle,
       displayName: displayName,
       password: password,
+      isChurch: isChurch,
     );
 
     final token = response['token'] as String;

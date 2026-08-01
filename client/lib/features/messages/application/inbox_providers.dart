@@ -1,11 +1,8 @@
 import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
-import 'package:scribes/core/theme/theme_provider.dart';
-import 'package:scribes/core/widgets/scribes_toast.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 part 'inbox_providers.g.dart';
 
@@ -41,6 +38,7 @@ class ConversationsNotifier extends _$ConversationsNotifier {
     final repo = ref.watch(messageRepositoryProvider);
     
     ref.onDispose(() {
+      _isDisposed = true;
       _pollingTimer?.cancel();
     });
 
@@ -58,31 +56,51 @@ class ConversationsNotifier extends _$ConversationsNotifier {
   }
 
   void _checkNewMessages(List<Conversation> convos) {
-    int currentTotal = 0;
-    for (var c in convos) {
-      currentTotal += c.lastActive.millisecondsSinceEpoch;
-    }
-    
-    if (_lastTotalMessages != 0 && currentTotal > _lastTotalMessages) {
-      try {
-        final themeColors = ref.read(themeProvider);
-        ScribesToast.show(
-          null, // uses global key
-          'New message received',
-          themeColors,
-          icon: HugeIcons.strokeRoundedMail01,
-        );
-      } catch (_) {}
-    }
-    _lastTotalMessages = currentTotal;
+    // Relying on global SSE notification for banners instead of naive checks.
   }
 
+  bool _isDisposed = false;
+  int _currentBackoff = 0;
+  final int _maxBackoff = 300; // 5 mins max
+
   void _startPolling() {
+    _isDisposed = false;
+    _scheduleNextPoll();
+  }
+
+  void _scheduleNextPoll() {
+    if (_isDisposed) return;
+    
+    int baseInterval = 60;
+    try {
+      final envVal = dotenv.env['INBOX_REFRESH_INTERVAL_SEC'];
+      if (envVal != null) {
+        baseInterval = int.parse(envVal);
+      }
+    } catch (_) {}
+    
+    final int secondsToWait = baseInterval + _currentBackoff;
+    
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _pollingTimer = Timer(Duration(seconds: secondsToWait), _poll);
+  }
+
+  Future<void> _poll() async {
+    if (_isDisposed) return;
+    
+    try {
       final repo = ref.read(messageRepositoryProvider);
-      repo.refreshConversations(); // Automatically updates DB, which updates the Stream
-    });
+      await repo.refreshConversations();
+      _currentBackoff = 0; // Success: reset backoff
+    } catch (e) {
+      if (_currentBackoff == 0) {
+        _currentBackoff = 15;
+      } else {
+        _currentBackoff = (_currentBackoff * 2).clamp(0, _maxBackoff);
+      }
+    }
+    
+    _scheduleNextPoll();
   }
 
   Future<void> hideConversations(List<String> ids) async {

@@ -16,9 +16,9 @@ services:
       - BCRYPT_COST=${BCRYPT_COST}
 
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: scribes
       POSTGRES_PASSWORD: password

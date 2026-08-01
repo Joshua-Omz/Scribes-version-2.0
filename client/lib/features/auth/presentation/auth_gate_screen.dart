@@ -33,6 +33,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
 
   bool _obscurePassword = true;
   bool _obscurePassword2 = true;
+  bool _isChurch = false;
 
   void _submit() {
     final notifier = ref.read(authProvider.notifier);
@@ -54,6 +55,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
         handle: _handleCtrl.text,
         displayName: _nameCtrl.text,
         password: _passwordCtrl.text,
+        isChurch: _isChurch,
       );
     }
   }
@@ -269,6 +271,34 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                         });
                       },
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: Checkbox(
+                          value: _isChurch,
+                          onChanged: (value) {
+                            setState(() {
+                              _isChurch = value ?? false;
+                            });
+                          },
+                          activeColor: colors.gold,
+                          checkColor: colors.surfaceRaised,
+                          side: BorderSide(color: colors.border),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'This is a Church account',
+                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
                 

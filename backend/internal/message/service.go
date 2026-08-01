@@ -9,19 +9,23 @@ import (
 
 	"scribes-api/internal/db/generated"
 
+	"scribes-api/internal/notification"
+
 	"github.com/google/uuid"
 )
 
 type Service struct {
 	repo       *Repository
+	notifSvc   *notification.Service
 	clients    map[uuid.UUID]map[chan *generated.Message]bool
 	clientsMux sync.RWMutex
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, notifSvc *notification.Service) *Service {
 	return &Service{
-		repo:    repo,
-		clients: make(map[uuid.UUID]map[chan *generated.Message]bool),
+		repo:     repo,
+		notifSvc: notifSvc,
+		clients:  make(map[uuid.UUID]map[chan *generated.Message]bool),
 	}
 }
 
@@ -223,6 +227,19 @@ func (s *Service) SendMessage(ctx context.Context, conversationID, senderID uuid
 
 	// Broadcast to active SSE streams
 	s.broadcast(&msg)
+
+	recipientID := conv.UserAID
+	if senderID == conv.UserAID {
+		recipientID = conv.UserBID
+	}
+
+	s.notifSvc.Enqueue(notification.Event{
+		Type:        notification.NotifTypeDirectMessage,
+		RecipientID: recipientID,
+		RefID:       msg.ID,
+		IsRealtime:  true,
+		ActorID:     senderID,
+	})
 
 	return msg, nil
 }

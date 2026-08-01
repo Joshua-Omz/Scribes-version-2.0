@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"io"
 	"net/http"
 
 	"scribes-api/internal/middleware"
@@ -98,4 +99,31 @@ func (h *Handler) BulkRead(c *gin.Context) {
 		return
 	}
 	respond.JSON(c, http.StatusOK, gin.H{"message": "ok"})
+}
+
+func (h *Handler) StreamNotifications(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Header().Set("Transfer-Encoding", "chunked")
+
+	ch := h.svc.Subscribe(userID)
+	defer h.svc.Unsubscribe(userID, ch)
+
+	clientGone := c.Request.Context().Done()
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case <-clientGone:
+			return false
+		case msg, ok := <-ch:
+			if !ok {
+				return false
+			}
+			c.SSEvent("message", msg)
+			return true
+		}
+	})
 }

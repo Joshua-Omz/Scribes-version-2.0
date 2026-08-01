@@ -51,6 +51,7 @@ type RegisterInput struct {
 	Handle      string `json:"handle"`
 	DisplayName string `json:"display_name"`
 	Password    string `json:"password"`
+	IsChurch    bool   `json:"is_church"`
 }
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (User, string, error) {
@@ -72,7 +73,7 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (User, stri
 		return User{}, "", err
 	}
 
-	user, err := s.repo.CreateUser(ctx, input.Handle, input.DisplayName, input.Email, hash)
+	user, err := s.repo.CreateUser(ctx, input.Handle, input.DisplayName, input.Email, hash, input.IsChurch)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			if strings.Contains(pqErr.Message, "users_email_key") {
@@ -149,7 +150,7 @@ func (s *Service) LoginWithGoogle(ctx context.Context, idTokenStr string) (User,
 		// Generate a random dummy password hash for oauth users
 		dummyHash, _ := password.Hash(uuid.NewString(), s.cfg.BcryptCost)
 
-		user, err = s.repo.CreateUser(ctx, handle, name, email, dummyHash)
+		user, err = s.repo.CreateUser(ctx, handle, name, email, dummyHash, false)
 		if err != nil {
 			return User{}, "", err
 		}

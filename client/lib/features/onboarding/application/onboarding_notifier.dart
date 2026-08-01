@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/onboarding_repository.dart';
+import '../../auth/application/auth_notifier.dart';
 
 part 'onboarding_notifier.g.dart';
 
@@ -9,6 +10,7 @@ class OnboardingState {
   final bool isLoading;
   final bool isSaving;
   final String? error;
+  final bool isChurch;
 
   const OnboardingState({
     this.availableTopics = const [],
@@ -16,6 +18,7 @@ class OnboardingState {
     this.isLoading = false,
     this.isSaving = false,
     this.error,
+    this.isChurch = false,
   });
 
   bool get canSubmit => selectedTopics.length >= 3;
@@ -26,6 +29,7 @@ class OnboardingState {
     bool? isLoading,
     bool? isSaving,
     String? error,
+    bool? isChurch,
   }) {
     return OnboardingState(
       availableTopics: availableTopics ?? this.availableTopics,
@@ -33,6 +37,7 @@ class OnboardingState {
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
       error: error,
+      isChurch: isChurch ?? this.isChurch,
     );
   }
 }
@@ -41,12 +46,11 @@ class OnboardingState {
 class OnboardingNotifier extends _$OnboardingNotifier {
   @override
   OnboardingState build() {
-    _loadTopics();
-    return const OnboardingState();
+    Future.microtask(_loadTopics);
+    return const OnboardingState(isLoading: true);
   }
 
   Future<void> _loadTopics() async {
-    state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(onboardingRepositoryProvider);
       final topics = await repo.getAvailableTopics();
@@ -70,6 +74,10 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     state = state.copyWith(selectedTopics: newSelected, error: null);
   }
 
+  void setChurch(bool isChurch) {
+    state = state.copyWith(isChurch: isChurch);
+  }
+
   Future<bool> saveTopics() async {
     if (!state.canSubmit) return false;
 
@@ -77,6 +85,19 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     try {
       final repo = ref.read(onboardingRepositoryProvider);
       await repo.saveTopics(state.selectedTopics.toList());
+      
+      // Also update the isChurch flag
+      final authNotif = ref.read(authProvider.notifier);
+      final user = ref.read(authProvider).value;
+      if (user != null && user.isChurch != state.isChurch) {
+        await authNotif.updateProfile(
+          handle: user.handle,
+          displayName: user.displayName,
+          bio: user.bio,
+          isChurch: state.isChurch,
+        );
+      }
+
       state = state.copyWith(isSaving: false);
       return true;
     } catch (e) {

@@ -4,12 +4,15 @@ import (
 	"context"
 	"log/slog"
 	"time"
+
+	"scribes-api/internal/db/generated"
 )
 
 type Worker struct {
-	channel chan Event
-	repo    *Repository
-	ticker  *time.Ticker
+	channel    chan Event
+	repo       *Repository
+	ticker     *time.Ticker
+	OnRealtime func(generated.Notification)
 }
 
 func NewWorker(repo *Repository) *Worker {
@@ -54,9 +57,13 @@ func (w *Worker) Enqueue(event Event) {
 }
 
 func (w *Worker) sendRealtime(ctx context.Context, event Event) {
-	_, err := w.repo.Insert(ctx, event)
+	n, err := w.repo.Insert(ctx, event)
 	if err != nil {
 		slog.Error("Failed to insert realtime notification", "error", err, "event", event)
+		return
+	}
+	if w.OnRealtime != nil {
+		w.OnRealtime(n)
 	}
 }
 

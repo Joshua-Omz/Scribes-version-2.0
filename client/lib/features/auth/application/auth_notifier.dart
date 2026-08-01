@@ -50,6 +50,7 @@ class AuthNotifier extends _$AuthNotifier {
     required String handle,
     required String displayName,
     required String password,
+    required bool isChurch,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
@@ -59,6 +60,7 @@ class AuthNotifier extends _$AuthNotifier {
         handle: handle,
         displayName: displayName,
         password: password,
+        isChurch: isChurch,
       );
       _triggerSync(user.id);
       return user;
@@ -100,12 +102,14 @@ class AuthNotifier extends _$AuthNotifier {
     required String handle,
     required String displayName,
     String? bio,
+    bool isChurch = false,
   }) async {
     final repo = ref.read(authRepositoryProvider);
     final updatedUser = await repo.updateProfile(
       handle: handle,
       displayName: displayName,
       bio: bio,
+      isChurch: isChurch,
     );
     state = AsyncData(updatedUser);
   }

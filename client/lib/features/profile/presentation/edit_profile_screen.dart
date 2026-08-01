@@ -20,6 +20,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _nameCtrl;
   late TextEditingController _handleCtrl;
   late TextEditingController _bioCtrl;
+  bool _isChurch = false;
   bool _isLoading = false;
 
   @override
@@ -29,6 +30,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _nameCtrl = TextEditingController(text: user?.displayName ?? '');
     _handleCtrl = TextEditingController(text: user?.handle ?? '');
     _bioCtrl = TextEditingController(text: user?.bio ?? ''); 
+    _isChurch = user?.isChurch ?? false;
   }
 
   @override
@@ -56,6 +58,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             handle: handle,
             displayName: displayName,
             bio: bio.isEmpty ? null : bio,
+            isChurch: _isChurch,
           );
       if (mounted) {
         ScribesToast.show(context, 'Profile updated successfully!', colors);
@@ -137,6 +140,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               labelText: 'Bio',
               controller: _bioCtrl,
               maxLines: 4,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.border),
+              ),
+              child: SwitchListTile(
+                title: Text('This is a Church account', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                subtitle: Text('Church accounts get special features', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
+                value: _isChurch,
+                onChanged: (val) => setState(() => _isChurch = val),
+                activeColor: colors.gold,
+              ),
             ),
           ],
         ),

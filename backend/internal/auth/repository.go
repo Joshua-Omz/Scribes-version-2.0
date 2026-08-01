@@ -56,7 +56,7 @@ func NewRepository(q *generated.Queries) *Repository {
 	return &Repository{q: q}
 }
 
-func (r *Repository) CreateUser(ctx context.Context, handle, displayName, email, passwordHash string) (User, error) {
+func (r *Repository) CreateUser(ctx context.Context, handle, displayName, email, passwordHash string, isChurch bool) (User, error) {
 	dbUser, err := r.q.CreateUser(ctx, generated.CreateUserParams{
 		Handle:       handle,
 		DisplayName:  displayName,
@@ -64,6 +64,7 @@ func (r *Repository) CreateUser(ctx context.Context, handle, displayName, email,
 		PasswordHash: passwordHash,
 		Role:         generated.UserRoleStandard,
 		Bio:          sql.NullString{},
+		IsChurch:     isChurch,
 	})
 	if err != nil {
 		return User{}, err

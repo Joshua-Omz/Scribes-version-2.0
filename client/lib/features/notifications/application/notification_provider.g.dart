@@ -94,3 +94,43 @@ final class HasUnreadNotificationsProvider
 
 String _$hasUnreadNotificationsHash() =>
     r'cd36eca536779357bc83f279bdf1683758823973';
+
+@ProviderFor(notificationStream)
+final notificationStreamProvider = NotificationStreamProvider._();
+
+final class NotificationStreamProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<NotificationItem>,
+          NotificationItem,
+          Stream<NotificationItem>
+        >
+    with $FutureModifier<NotificationItem>, $StreamProvider<NotificationItem> {
+  NotificationStreamProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'notificationStreamProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$notificationStreamHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<NotificationItem> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<NotificationItem> create(Ref ref) {
+    return notificationStream(ref);
+  }
+}
+
+String _$notificationStreamHash() =>
+    r'e814a5de15aa6c3eff79c9a00495828635178de8';

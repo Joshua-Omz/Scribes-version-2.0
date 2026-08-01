@@ -22,12 +22,14 @@ class AuthApi {
     required String handle,
     required String displayName,
     required String password,
+    required bool isChurch,
   }) async {
     final response = await _dio.post(Endpoints.register, data: {
       'email': email,
       'handle': handle,
       'display_name': displayName,
       'password': password,
+      'is_church': isChurch,
     });
     return response.data as Map<String, dynamic>;
   }

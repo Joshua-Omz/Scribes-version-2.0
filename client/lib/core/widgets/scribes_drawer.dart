@@ -89,17 +89,19 @@ class ScribesDrawer extends ConsumerWidget {
                 title: 'Bible',
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/bible');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Bible navigation is coming soon!')),
+                  );
                 },
               ),
               _buildMenuItem(
                 context: context,
                 colors: colors,
-                icon: HugeIcons.strokeRoundedChat,
-                title: 'Messages',
+                icon: HugeIcons.strokeRoundedFolder01,
+                title: 'Workspace',
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/inbox');
+                  context.push('/drafts');
                 },
               ),
               _buildMenuItem(

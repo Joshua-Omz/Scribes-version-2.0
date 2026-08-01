@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -30,6 +31,33 @@ class NotificationApi {
 
   Future<void> bulkRead(List<String> ids) async {
     await _dio.post(Endpoints.notificationsBulkRead, data: {'ids': ids});
+  }
+
+  Stream<NotificationItem> streamNotifications() async* {
+    final response = await _dio.get<ResponseBody>(
+      '/notifications/stream',
+      options: Options(responseType: ResponseType.stream),
+    );
+
+    final stream = response.data!.stream;
+    
+    await for (final chunk in stream) {
+      final text = utf8.decode(chunk);
+      final lines = text.split('\n');
+      for (final line in lines) {
+        if (line.startsWith('data:')) {
+          final dataStr = line.substring(5).trim();
+          if (dataStr.isNotEmpty) {
+            try {
+              final json = jsonDecode(dataStr);
+              yield NotificationItem.fromJson(json);
+            } catch (e) {
+              // ignore malformed chunks
+            }
+          }
+        }
+      }
+    }
   }
 }
 

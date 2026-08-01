@@ -3,6 +3,7 @@ package notification
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"scribes-api/internal/db/generated"
@@ -11,14 +12,77 @@ import (
 )
 
 type Service struct {
-	repo   *Repository
-	worker *Worker
+	repo       *Repository
+	worker     *Worker
+	clients    map[uuid.UUID]map[chan Notification]bool
+	clientsMux sync.RWMutex
 }
 
 func NewService(repo *Repository, worker *Worker) *Service {
-	return &Service{
-		repo:   repo,
-		worker: worker,
+	s := &Service{
+		repo:    repo,
+		worker:  worker,
+		clients: make(map[uuid.UUID]map[chan Notification]bool),
+	}
+	s.worker.OnRealtime = func(n generated.Notification) {
+		// Map generated.Notification to domain Notification
+		domainNotif := Notification{
+			ID:         n.ID,
+			Type:       FromDBNotifType(n.Type),
+			IsRealtime: n.IsRealtime,
+			IsRead:     n.IsRead,
+			RefID:      n.RefID,
+			CreatedAt:  n.CreatedAt,
+			// Body, ActorHandle, ActorAvatar would need to be enriched if needed, 
+			// but for realtime direct_message we might just need the basic info or generate it.
+		}
+		
+		// In a real app we would call generateBody(ctx, &domainNotif, event.ActorID).
+		// For now we just broadcast what we have.
+		s.Broadcast(n.RecipientID, domainNotif)
+	}
+	return s
+}
+
+// ── Real-time Pub/Sub (SSE) ────────────────────
+
+func (s *Service) Subscribe(userID uuid.UUID) chan Notification {
+	s.clientsMux.Lock()
+	defer s.clientsMux.Unlock()
+
+	ch := make(chan Notification, 20)
+	if s.clients[userID] == nil {
+		s.clients[userID] = make(map[chan Notification]bool)
+	}
+	s.clients[userID][ch] = true
+	return ch
+}
+
+func (s *Service) Unsubscribe(userID uuid.UUID, ch chan Notification) {
+	s.clientsMux.Lock()
+	defer s.clientsMux.Unlock()
+
+	if subs, ok := s.clients[userID]; ok {
+		delete(subs, ch)
+		close(ch)
+		if len(subs) == 0 {
+			delete(s.clients, userID)
+		}
+	}
+}
+
+func (s *Service) Broadcast(userID uuid.UUID, notif Notification) {
+	s.clientsMux.RLock()
+	defer s.clientsMux.RUnlock()
+
+	if subs, ok := s.clients[userID]; ok {
+		for ch := range subs {
+			select {
+			case ch <- notif:
+			default:
+				// Client cannot keep up, drop. They can fetch via REST.
+			}
+		}
 	}
 }
 
@@ -145,6 +209,8 @@ func (s *Service) generateBody(ntype NotifType, actor string, count int) string 
 		return fmt.Sprintf("%s commented on your post", actor)
 	case NotifTypeFollow:
 		return fmt.Sprintf("%s started following you", actor)
+	case NotifTypeDirectMessage:
+		return fmt.Sprintf("%s sent you a message", actor)
 	case NotifTypeAdminAlert:
 		return "An admin has reviewed content you reported"
 	default:

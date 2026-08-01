@@ -13,8 +13,9 @@ type Config struct {
 	JWTSecret      string
 	JWTExpiryHours int
 	Port           string
-	BcryptCost     int
-	DummyHash      string
+	BcryptCost                int
+	DummyHash                 string
+	EngagementRefreshInterval string
 }
 
 func Load() Config {
@@ -51,12 +52,18 @@ func Load() Config {
 
 	dummyHash, _ := password.Hash("dummy_password_for_timing_mitigation", cost)
 
+	refreshStr := os.Getenv("ENGAGEMENT_REFRESH_INTERVAL")
+	if refreshStr == "" {
+		refreshStr = "1h" // Default to 1 hour
+	}
+
 	return Config{
-		DatabaseURL:    dbURL,
-		JWTSecret:      jwtSecret,
-		JWTExpiryHours: expiry,
-		Port:           port,
-		BcryptCost:     cost,
-		DummyHash:      dummyHash,
+		DatabaseURL:               dbURL,
+		JWTSecret:                 jwtSecret,
+		JWTExpiryHours:            expiry,
+		Port:                      port,
+		BcryptCost:                cost,
+		DummyHash:                 dummyHash,
+		EngagementRefreshInterval: refreshStr,
 	}
 }

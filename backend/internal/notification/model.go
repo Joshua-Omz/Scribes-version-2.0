@@ -10,11 +10,12 @@ import (
 type NotifType string
 
 const (
-	NotifTypeMention    NotifType = "mention"
-	NotifTypeReaction   NotifType = "reaction"
-	NotifTypeComment    NotifType = "comment"
-	NotifTypeFollow     NotifType = "follow"
-	NotifTypeAdminAlert NotifType = "admin_alert"
+	NotifTypeMention       NotifType = "mention"
+	NotifTypeReaction      NotifType = "reaction"
+	NotifTypeComment       NotifType = "comment"
+	NotifTypeFollow        NotifType = "follow"
+	NotifTypeAdminAlert    NotifType = "admin_alert"
+	NotifTypeDirectMessage NotifType = "direct_message"
 )
 
 // Map from our domain type to DB generated type

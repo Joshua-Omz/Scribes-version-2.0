@@ -12,6 +12,8 @@ import (
 	"scribes-api/internal/note"
 	"scribes-api/internal/notification"
 	"scribes-api/internal/post"
+	"scribes-api/internal/recommendation"
+	"scribes-api/internal/search"
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
 	"scribes-api/internal/tag"
@@ -20,8 +22,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, jwtSecret string) *gin.Engine {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
+
 
 	r.GET("/health", func(c *gin.Context) {
 		respond.JSON(c, http.StatusOK, gin.H{"status": "ok"})
@@ -56,6 +59,14 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/tags/suggest", tagHandler.SuggestTags)
 	r.GET("/tags/trending", tagHandler.GetTrendingTags)
 	r.GET("/tags/:name/posts", feedHandler.GetExploreByTag)
+	
+	// Search
+	r.GET("/search/posts", searchHandler.SearchPosts)
+	r.GET("/search/users", searchHandler.SearchAuthors)
+	
+	// Recommendations
+	r.GET("/posts/recommendations", recommendationHandler.GetRecommendations)
+	r.GET("/posts/:id/similar", recommendationHandler.GetSimilarPosts)
 
 	// Protected routes
 	protected := r.Group("/")
@@ -134,6 +145,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 		// Notification endpoints
 		protected.GET("/notifications", notificationHandler.GetNotifications)
+		protected.GET("/notifications/stream", notificationHandler.StreamNotifications)
 		protected.POST("/notifications/read-all", notificationHandler.MarkAllRead)
 		protected.DELETE("/notifications/clear-all", notificationHandler.ClearAll)
 		protected.POST("/notifications/bulk-delete", notificationHandler.BulkDelete)

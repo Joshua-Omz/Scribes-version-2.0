@@ -24,6 +24,8 @@ import (
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
 	"scribes-api/internal/tag"
+	"scribes-api/internal/search"
+	"scribes-api/internal/recommendation"
 
 	_ "github.com/lib/pq"
 )
@@ -85,25 +87,39 @@ func main() {
 	feedHandler := feed.NewHandler(feedSvc)
 
 	messageRepo := message.NewRepository(queries, db)
-	messageSvc := message.NewService(messageRepo)
+	messageSvc := message.NewService(messageRepo, notificationSvc)
 	messageHandler := message.NewHandler(messageSvc)
 
 	adminRepo := admin.NewRepository(queries, db)
 	adminSvc := admin.NewService(adminRepo)
 	adminHandler := admin.NewHandler(adminSvc)
+
 	tagRepo := tag.NewRepository(queries)
 	tagSvc := tag.NewService(tagRepo)
 	tagHandler := tag.NewHandler(tagSvc)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, cfg.JWTSecret)
+	searchRepo := search.NewRepository(queries, db)
+	embeddingProvider := search.NewEmbeddingProvider()
+	searchWorker := search.NewEmbeddingWorker(embeddingProvider, searchRepo)
+	searchSvc := search.NewService(searchRepo, embeddingProvider)
+	searchHandler := search.NewHandler(searchSvc)
+
+	recommendationRepo := recommendation.NewRepository(queries, db)
+	recommendationSvc := recommendation.NewService(recommendationRepo)
+	recommendationHandler := recommendation.NewHandler(recommendationSvc)
+	recommendationWorker := recommendation.NewEngagementWorker(recommendationRepo, cfg.EngagementRefreshInterval)
+
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
 		Handler: router,
 	}
 
-	// Start Notification Worker
+	// Start Background Workers
 	go notificationWorker.Start(context.Background())
+	go searchWorker.Start(context.Background())
+	go recommendationWorker.Start(context.Background())
 
 	go func() {
 		log.Printf("starting server on port %s", cfg.Port)

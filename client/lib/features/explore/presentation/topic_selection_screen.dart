@@ -93,8 +93,27 @@ class TopicSelectionScreen extends ConsumerWidget {
                         .copyWith(color: colors.orange),
                   ),
                 ),
+              if (!isModal) ...[
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: colors.border),
+                  ),
+                  child: SwitchListTile(
+                    title: Text('This is a Church account', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                    subtitle: Text('Church accounts get special features', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
+                    value: state.isChurch,
+                    onChanged: (val) {
+                      ref.read(onboardingProvider.notifier).setChurch(val);
+                    },
+                    activeColor: colors.gold,
+                  ),
+                ),
+              ],
               Padding(
-                padding: const EdgeInsets.only(bottom: 32.0, top: 16.0),
+                padding: const EdgeInsets.only(bottom: 32.0, top: 24.0),
                 child: SizedBox(
                   width: double.infinity,
                   height: 56,
