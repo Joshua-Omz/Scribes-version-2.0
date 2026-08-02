@@ -1,10 +1,5 @@
-import 'dart:io';
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-
-import 'package:sqlite3/sqlite3.dart';
+import 'connection/connection.dart' as connection;
 
 part 'drift_database.g.dart';
 
@@ -105,7 +100,7 @@ class Messages extends Table {
 
 @DriftDatabase(tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages])
 class ScribesDatabase extends _$ScribesDatabase {
-  ScribesDatabase() : super(_openConnection());
+  ScribesDatabase() : super(connection.openConnection());
 
   @override
   int get schemaVersion => 9;
@@ -163,15 +158,3 @@ class ScribesDatabase extends _$ScribesDatabase {
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'scribes.sqlite'));
-
-    // Make sqlite3 pick up the proper library
-    final cachebase = (await getTemporaryDirectory()).path;
-    sqlite3.tempDirectory = cachebase;
-
-    return NativeDatabase.createInBackground(file);
-  });
-}
