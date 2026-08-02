@@ -54,4 +54,11 @@ class PostApi {
     final response = await _dio.patch('${Endpoints.posts}/$id/revise', data: data);
     return response.data as Map<String, dynamic>;
   }
+
+  Future<List<dynamic>> getSimilarPosts(String id) async {
+    final response = await _dio.get('${Endpoints.posts}/$id/similar');
+    final data = response.data['posts'];
+    if (data == null) return [];
+    return data as List<dynamic>;
+  }
 }

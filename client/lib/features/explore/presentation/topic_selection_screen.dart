@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:scribes/main.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
 import 'package:scribes/core/theme/theme_provider.dart';
+import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:scribes/features/onboarding/application/onboarding_notifier.dart';
 import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 
@@ -109,6 +111,24 @@ class TopicSelectionScreen extends ConsumerWidget {
                       ref.read(onboardingProvider.notifier).setChurch(val);
                     },
                     activeColor: colors.gold,
+                  ),
+                ),
+              ],
+              if (!isModal) ...[
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    onPressed: () async {
+                      final user = ref.read(authProvider).value;
+                      if (user != null) {
+                        await sharedPrefs.setBool('has_seen_onboarding_${user.id}', true);
+                      }
+                      onContinue();
+                    },
+                    child: Text(
+                      'Skip for now',
+                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                    ),
                   ),
                 ),
               ],

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:scribes/core/widgets/scribes_connected_post_card.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
@@ -308,6 +309,35 @@ class PostDetailScreen extends ConsumerWidget {
                               }
                               ScribesCommentSheet.show(context, postId: postId, postAuthorId: post.authorId);
                             },
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 48),
+                      // Similar Posts
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final similarState = ref.watch(similarPostsProvider(postId));
+                          return similarState.when(
+                            data: (posts) {
+                              if (posts.isEmpty) return const SizedBox.shrink();
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'More on this theme',
+                                    style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ...posts.map((p) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    child: ScribesConnectedPostCard(post: p, isFeatured: false),
+                                  )),
+                                ],
+                              );
+                            },
+                            loading: () => Center(child: ScribesLoadingIndicator()),
+                            error: (e, st) => const SizedBox.shrink(),
                           );
                         },
                       ),

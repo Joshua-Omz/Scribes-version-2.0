@@ -7,7 +7,6 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'scribes_bounce_button.dart';
 import '../../features/notifications/application/notification_provider.dart';
-import '../../features/messages/application/conversation_providers.dart';
 import '../../features/messages/application/inbox_providers.dart';
 import 'scribes_message_banner.dart';
 

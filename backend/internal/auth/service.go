@@ -164,8 +164,6 @@ func (s *Service) LoginWithGoogle(ctx context.Context, idTokenStr string) (User,
 	return user, tok, nil
 }
 
-
-
 func (s *Service) GetPublicProfile(ctx context.Context, id uuid.UUID) (PublicProfile, error) {
 	return s.repo.GetPublicProfile(ctx, id)
 }
@@ -256,16 +254,22 @@ func (s *Service) UpdatePassword(ctx context.Context, id uuid.UUID, input Update
 	return s.repo.UpdateUserPassword(ctx, id, hash)
 }
 
-
 type UpdateTagsInput struct {
-	Tags []uuid.UUID `json:"tags"`
+	Tags []string `json:"tags"`
 }
 
-func (s *Service) UpdateTags(ctx context.Context, id uuid.UUID, tags []uuid.UUID) (User, error) {
+func (s *Service) UpdateTags(ctx context.Context, id uuid.UUID, tags []string) (User, error) {
 	if len(tags) > 7 {
 		return User{}, errors.New("maximum 7 tags allowed")
 	}
-	return s.repo.UpdateUserTags(ctx, id, tags)
+
+	// Create or get tags by name and get their UUIDs
+	tagUUIDs, err := s.repo.CreateOrGetTagIDs(ctx, tags)
+	if err != nil {
+		return User{}, err
+	}
+
+	return s.repo.UpdateUserTags(ctx, id, tagUUIDs)
 }
 
 func (s *Service) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (generated.NotificationPreference, error) {
@@ -302,4 +306,3 @@ func (s *Service) UpdateNotificationPreferences(ctx context.Context, userID uuid
 		NewFollowerAlerts: input.NewFollowerAlerts,
 	})
 }
-

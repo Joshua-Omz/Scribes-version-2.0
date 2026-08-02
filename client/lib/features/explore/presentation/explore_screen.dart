@@ -45,8 +45,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
-    final searchMode = ref.watch(exploreSearchModeProvider);
-    final isSearchActive = ref.watch(exploreSearchActiveProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -57,107 +55,57 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               backgroundColor: colors.background,
               surfaceTintColor: Colors.transparent,
               floating: true,
-              pinned: !isSearchActive,
+              pinned: true,
               elevation: 0,
-              centerTitle: !isSearchActive,
-              leading: isSearchActive
-                  ? IconButton(
-                      icon: HugeIcon(
-                          icon: HugeIcons.strokeRoundedArrowLeft01,
-                          color: colors.primaryText),
-                      onPressed: () => ref
-                          .read(exploreSearchActiveProvider.notifier)
-                          .toggle(),
-                    )
-                  : null,
-              title: isSearchActive
-                  ? ScribesTextField(
-                      hintText: 'Search...',
-                      autofocus: true,
-                      isSearchPill: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 16),
-                      onChanged: (query) {
-                        ref
-                            .read(exploreSearchQueryProvider.notifier)
-                            .setQuery(query.isEmpty ? null : query);
-                      },
-                      onSubmitted: (query) {
-                        ref
-                            .read(exploreSearchQueryProvider.notifier)
-                            .setQuery(query.isEmpty ? null : query);
-                      },
-                    )
-                  : Text(
-                      'Explore',
-                      style: ScribesTextStyles.displayMd
-                          .copyWith(color: colors.primaryText),
-                    ),
-              actions: [
-                if (!isSearchActive) ...[
-                  ScribesIconButton(
-                    icon: HugeIcons.strokeRoundedSearch01,
-                    color: colors.secondaryText,
-                    onPressed: () => ref
-                        .read(exploreSearchActiveProvider.notifier)
-                        .toggle(),
-                  ),
-                  const SizedBox(width: 8),
-                  ScribesIconButton(
-                    icon: HugeIcons.strokeRoundedBookOpen01,
-                    color: colors.secondaryText,
-                    onPressed: () =>
-                        _showScriptureFilterSheet(context, ref, colors),
-                  ),
-                  const SizedBox(width: 8),
-                ]
-              ],
-              bottom: isSearchActive
-                  ? null
-                  : TabBar(
-                      controller: _tabController,
-                      indicatorColor: colors.primaryText,
-                      indicatorWeight: 2,
-                      labelColor: colors.primaryText,
-                      unselectedLabelColor: colors.secondaryText,
-                      labelStyle: ScribesTextStyles.labelLg
-                          .copyWith(fontWeight: FontWeight.w600),
-                      unselectedLabelStyle: ScribesTextStyles.labelLg
-                          .copyWith(fontWeight: FontWeight.w400),
-                      tabs: const [
-                        Tab(text: 'For You'),
-                        Tab(text: 'Season'),
-                        Tab(text: 'Churches'),
-                      ],
-                    ),
-            ),
-            if (isSearchActive)
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _CategoryHeaderDelegate(
-                  height: 60.0,
-                  backgroundColor: colors.background,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 8.0),
-                    child: _buildSearchModeToggle(searchMode, ref, colors),
-                  ),
-                ),
+              centerTitle: true,
+              leading: null,
+              title: Text(
+                'Explore',
+                style: ScribesTextStyles.displayMd
+                    .copyWith(color: colors.primaryText),
               ),
-          ];
-        },
-        body: isSearchActive
-            ? (searchMode == ExploreSearchMode.posts
-                ? _buildSearchPostsFeed(ref, colors)
-                : _buildUsersFeed(ref, colors))
-            : TabBarView(
+              actions: [
+                ScribesIconButton(
+                  icon: HugeIcons.strokeRoundedSearch01,
+                  color: colors.secondaryText,
+                  onPressed: () => context.push('/search'),
+                ),
+                const SizedBox(width: 8),
+                ScribesIconButton(
+                  icon: HugeIcons.strokeRoundedBookOpen01,
+                  color: colors.secondaryText,
+                  onPressed: () =>
+                      _showScriptureFilterSheet(context, ref, colors),
+                ),
+                const SizedBox(width: 8),
+              ],
+              bottom: TabBar(
                 controller: _tabController,
-                children: [
-                  _buildForYouTab(ref, colors),
-                  _buildSeasonTab(ref, colors),
-                  _buildChurchesTab(ref, colors),
+                indicatorColor: colors.primaryText,
+                indicatorWeight: 2,
+                labelColor: colors.primaryText,
+                unselectedLabelColor: colors.secondaryText,
+                labelStyle: ScribesTextStyles.labelLg
+                    .copyWith(fontWeight: FontWeight.w600),
+                unselectedLabelStyle: ScribesTextStyles.labelLg
+                    .copyWith(fontWeight: FontWeight.w400),
+                tabs: const [
+                  Tab(text: 'For You'),
+                  Tab(text: 'Discover'),
+                  Tab(text: 'Churches'),
                 ],
               ),
+            ),
+          ];
+        },
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildForYouTab(ref, colors),
+            _buildDiscoverTab(ref, colors),
+            _buildChurchesTab(ref, colors),
+          ],
+        ),
       ),
     );
   }
@@ -355,20 +303,128 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  Widget _buildSeasonTab(WidgetRef ref, dynamic colors) {
-    final seasonState = ref.watch(explorePostsProvider);
+  Widget _buildDiscoverTab(WidgetRef ref, dynamic colors) {
+    final trendingState = ref.watch(exploreTrendingProvider);
+    
     return RefreshIndicator(
-      onRefresh: () => ref.read(explorePostsProvider.notifier).refresh(),
+      onRefresh: () async {
+        ref.invalidate(exploreInsightfulProvider);
+        ref.invalidate(explorePropheticProvider);
+        ref.invalidate(exploreAffirmedProvider);
+        await ref.read(exploreTrendingProvider.notifier).refresh();
+      },
       child: CustomScrollView(
         slivers: [
+          SliverToBoxAdapter(
+            child: _buildRecommendationRow(
+              title: 'Most Insightful',
+              provider: exploreInsightfulProvider,
+              colors: colors,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _buildRecommendationRow(
+              title: 'Prophetic of the Times',
+              provider: explorePropheticProvider,
+              colors: colors,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _buildRecommendationRow(
+              title: 'Most Affirmed',
+              provider: exploreAffirmedProvider,
+              colors: colors,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 24.0, bottom: 8.0),
+              child: Text(
+                'Trending This Week',
+                style: ScribesTextStyles.labelLg
+                    .copyWith(color: colors.secondaryText, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
           _buildPostsFeedSliver(
-            seasonState,
+            trendingState,
             colors,
-            onLoadMore: () => ref.read(explorePostsProvider.notifier).loadMore(),
-            hasMore: ref.read(explorePostsProvider.notifier).hasMore,
+            onLoadMore: () => ref.read(exploreTrendingProvider.notifier).loadMore(),
+            hasMore: ref.read(exploreTrendingProvider.notifier).hasMore,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRecommendationRow({
+    required String title,
+    required dynamic provider,
+    required dynamic colors,
+  }) {
+    final state = ref.watch(provider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 24.0, bottom: 12.0),
+          child: Text(
+            title,
+            style: ScribesTextStyles.labelLg
+                .copyWith(color: colors.secondaryText, fontWeight: FontWeight.w600),
+          ),
+        ),
+        SizedBox(
+          height: 280,
+          child: state.when(
+            data: (posts) {
+              if (posts.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No posts available.',
+                    style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  ),
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                scrollDirection: Axis.horizontal,
+                itemCount: posts.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 16),
+                itemBuilder: (context, index) {
+                  return SizedBox(
+                    width: 300,
+                    child: ScribesConnectedPostCard(post: posts[index], isFeatured: false),
+                  );
+                },
+              );
+            },
+            loading: () => ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              scrollDirection: Axis.horizontal,
+              itemCount: 3,
+              separatorBuilder: (context, index) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                return ScribesShimmer(
+                  child: Container(
+                    width: 300,
+                    decoration: BoxDecoration(
+                      color: colors.surfaceRaised,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                );
+              },
+            ),
+            error: (e, st) => Center(
+              child: Text(
+                'Could not load.',
+                style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -383,23 +439,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             colors,
             onLoadMore: () => ref.read(exploreChurchesProvider.notifier).loadMore(),
             hasMore: ref.read(exploreChurchesProvider.notifier).hasMore,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchPostsFeed(WidgetRef ref, dynamic colors) {
-    final postsState = ref.watch(explorePostsProvider);
-    return RefreshIndicator(
-      onRefresh: () => ref.read(explorePostsProvider.notifier).refresh(),
-      child: CustomScrollView(
-        slivers: [
-          _buildPostsFeedSliver(
-            postsState,
-            colors,
-            onLoadMore: () => ref.read(explorePostsProvider.notifier).loadMore(),
-            hasMore: ref.read(explorePostsProvider.notifier).hasMore,
           ),
         ],
       ),
@@ -486,6 +525,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
+
+
   void _showScriptureFilterSheet(
       BuildContext context, WidgetRef ref, dynamic colors) {
     ScribesScriptureSelector.show(
@@ -500,156 +541,4 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  Widget _buildUsersFeed(WidgetRef ref, dynamic colors) {
-    final userSearchState = ref.watch(exploreUserSearchProvider);
-    final query = ref.watch(exploreSearchQueryProvider);
-
-    if (query == null || query.trim().isEmpty) {
-      return const Center(
-        child: ScribesEmptyState(
-          icon: HugeIcons.strokeRoundedUserMultiple,
-          title: 'Find People',
-          subtitle: 'Search for other scribes by name or handle.',
-        ),
-      );
-    }
-
-    return userSearchState.when(
-      data: (users) {
-        if (users.isEmpty) {
-          return const Center(
-            child: ScribesEmptyState(
-              icon: HugeIcons.strokeRoundedUserRemove01,
-              title: 'No users found',
-              subtitle: 'We couldn\'t find anyone matching your search.',
-            ),
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            final user = users[index];
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: colors.surfaceRaised,
-                child: Text(
-                  user.displayName.isNotEmpty
-                      ? user.displayName[0].toUpperCase()
-                      : '?',
-                  style: ScribesTextStyles.labelLg
-                      .copyWith(color: colors.primaryText),
-                ),
-              ),
-              title: Text(user.displayName,
-                  style: ScribesTextStyles.labelLg
-                      .copyWith(color: colors.primaryText)),
-              subtitle: Text('@${user.handle}',
-                  style: ScribesTextStyles.bodyMd
-                      .copyWith(color: colors.secondaryText)),
-              onTap: () => context.push('/users/${user.id}'),
-            );
-          },
-        );
-      },
-      loading: () => const Center(child: ScribesLoadingIndicator()),
-      error: (err, st) => Center(
-        child: ScribesErrorState(
-          title: 'Could not load users',
-          subtitle: err.toString(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchModeToggle(
-      ExploreSearchMode mode, WidgetRef ref, dynamic colors) {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colors.surfaceRaised,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-              child: _buildToggleItem(
-                  'Posts', ExploreSearchMode.posts, mode, ref, colors)),
-          Expanded(
-              child: _buildToggleItem(
-                  'People', ExploreSearchMode.users, mode, ref, colors)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleItem(String label, ExploreSearchMode value,
-      ExploreSearchMode current, WidgetRef ref, dynamic colors) {
-    final isSelected = current == value;
-    return GestureDetector(
-      onTap: () =>
-          ref.read(exploreSearchModeProvider.notifier).toggleMode(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primaryText : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: ScribesTextStyles.labelLg.copyWith(
-            color: isSelected ? colors.background : colors.secondaryText,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double height;
-  final Color backgroundColor;
-
-  _CategoryHeaderDelegate({
-    required this.child,
-    required this.height,
-    required this.backgroundColor,
-  });
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: backgroundColor,
-      child: child,
-    );
-  }
-
-  @override
-  bool shouldRebuild(covariant _CategoryHeaderDelegate oldDelegate) {
-    return oldDelegate.child != child ||
-        oldDelegate.height != height ||
-        oldDelegate.backgroundColor != backgroundColor;
-  }
 }

@@ -11,6 +11,7 @@ import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
+import '../../search/data/search_repository.dart';
 
 class PublishMetadataScreen extends ConsumerStatefulWidget {
   const PublishMetadataScreen({super.key});
@@ -21,10 +22,12 @@ class PublishMetadataScreen extends ConsumerStatefulWidget {
 
 class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
   final TextEditingController _tagController = TextEditingController();
+  final FocusNode _tagFocusNode = FocusNode();
 
   @override
   void dispose() {
     _tagController.dispose();
+    _tagFocusNode.dispose();
     super.dispose();
   }
 
@@ -294,23 +297,72 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                       ),
                     if (composeState.tags.isNotEmpty) const SizedBox(height: 12),
                     if (composeState.tags.length < 8)
-                      ScribesTextField(
-                        controller: _tagController,
-                        hintText: 'Add a tag (press Enter or comma)',
-                        onSubmitted: (value) {
-                          if (value.trim().isNotEmpty) {
-                            ref.read(composeProvider.notifier).addTag(value);
-                            _tagController.clear();
+                      RawAutocomplete<String>(
+                        focusNode: _tagFocusNode,
+                        textEditingController: _tagController,
+                        optionsBuilder: (TextEditingValue textEditingValue) async {
+                          final query = textEditingValue.text.replaceAll(',', '').trim();
+                          if (query.isEmpty) return const Iterable<String>.empty();
+                          try {
+                            final repo = ref.read(searchRepositoryProvider);
+                            return await repo.suggestTags(query);
+                          } catch (_) {
+                            return const Iterable<String>.empty();
                           }
                         },
-                        onChanged: (value) {
-                          if (value.endsWith(',') || value.endsWith(' ')) {
-                            final tag = value.substring(0, value.length - 1);
-                            if (tag.trim().isNotEmpty) {
-                              ref.read(composeProvider.notifier).addTag(tag);
-                              _tagController.clear();
-                            }
-                          }
+                        onSelected: (String selection) {
+                          ref.read(composeProvider.notifier).addTag(selection);
+                          _tagController.clear();
+                        },
+                        fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                          return ScribesTextField(
+                            controller: textEditingController,
+                            focusNode: focusNode,
+                            hintText: 'Add a tag (press Enter or comma)',
+                            onSubmitted: (value) {
+                              if (value.trim().isNotEmpty) {
+                                ref.read(composeProvider.notifier).addTag(value);
+                                textEditingController.clear();
+                              }
+                            },
+                            onChanged: (value) {
+                              if (value.endsWith(',') || value.endsWith(' ')) {
+                                final tag = value.substring(0, value.length - 1);
+                                if (tag.trim().isNotEmpty) {
+                                  ref.read(composeProvider.notifier).addTag(tag);
+                                  textEditingController.clear();
+                                }
+                              }
+                            },
+                          );
+                        },
+                        optionsViewBuilder: (context, onSelected, options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4,
+                              borderRadius: BorderRadius.circular(8),
+                              color: colors.surface,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(maxHeight: 200, maxWidth: MediaQuery.of(context).size.width - 48),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder: (context, index) {
+                                    final String option = options.elementAt(index);
+                                    return InkWell(
+                                      onTap: () => onSelected(option),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Text('#$option', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
                         },
                       ),
                     const SizedBox(height: 40),

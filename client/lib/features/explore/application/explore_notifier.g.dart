@@ -62,207 +62,6 @@ abstract class _$ExploreSelectedTag extends $Notifier<String?> {
   }
 }
 
-@ProviderFor(ExploreSearchQuery)
-final exploreSearchQueryProvider = ExploreSearchQueryProvider._();
-
-final class ExploreSearchQueryProvider
-    extends $NotifierProvider<ExploreSearchQuery, String?> {
-  ExploreSearchQueryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'exploreSearchQueryProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$exploreSearchQueryHash();
-
-  @$internal
-  @override
-  ExploreSearchQuery create() => ExploreSearchQuery();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String?>(value),
-    );
-  }
-}
-
-String _$exploreSearchQueryHash() =>
-    r'd0d7eb45eb5816588190278fa35d74524381fba8';
-
-abstract class _$ExploreSearchQuery extends $Notifier<String?> {
-  String? build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<String?, String?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<String?, String?>,
-              String?,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(ExploreSearchActive)
-final exploreSearchActiveProvider = ExploreSearchActiveProvider._();
-
-final class ExploreSearchActiveProvider
-    extends $NotifierProvider<ExploreSearchActive, bool> {
-  ExploreSearchActiveProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'exploreSearchActiveProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$exploreSearchActiveHash();
-
-  @$internal
-  @override
-  ExploreSearchActive create() => ExploreSearchActive();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
-  }
-}
-
-String _$exploreSearchActiveHash() =>
-    r'ca8057e9e6fc5786e66ca5093f1fff66735814ed';
-
-abstract class _$ExploreSearchActive extends $Notifier<bool> {
-  bool build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(ExploreSearchModeNotifier)
-final exploreSearchModeProvider = ExploreSearchModeNotifierProvider._();
-
-final class ExploreSearchModeNotifierProvider
-    extends $NotifierProvider<ExploreSearchModeNotifier, ExploreSearchMode> {
-  ExploreSearchModeNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'exploreSearchModeProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$exploreSearchModeNotifierHash();
-
-  @$internal
-  @override
-  ExploreSearchModeNotifier create() => ExploreSearchModeNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ExploreSearchMode value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ExploreSearchMode>(value),
-    );
-  }
-}
-
-String _$exploreSearchModeNotifierHash() =>
-    r'f2a5aebf7016dd5836041f7bcb8af2506a961c4e';
-
-abstract class _$ExploreSearchModeNotifier
-    extends $Notifier<ExploreSearchMode> {
-  ExploreSearchMode build();
-  @$mustCallSuper
-  @override
-  WhenComplete runBuild() {
-    final ref = this.ref as $Ref<ExploreSearchMode, ExploreSearchMode>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<ExploreSearchMode, ExploreSearchMode>,
-              ExploreSearchMode,
-              Object?,
-              Object?
-            >;
-    return element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(exploreUserSearch)
-final exploreUserSearchProvider = ExploreUserSearchProvider._();
-
-final class ExploreUserSearchProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<CommentAuthor>>,
-          List<CommentAuthor>,
-          FutureOr<List<CommentAuthor>>
-        >
-    with
-        $FutureModifier<List<CommentAuthor>>,
-        $FutureProvider<List<CommentAuthor>> {
-  ExploreUserSearchProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'exploreUserSearchProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$exploreUserSearchHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<CommentAuthor>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<CommentAuthor>> create(Ref ref) {
-    return exploreUserSearch(ref);
-  }
-}
-
-String _$exploreUserSearchHash() => r'4ac5badfe83836f9af0df1341fa387dc64d19f81';
-
 @ProviderFor(ExploreScriptureFilter)
 final exploreScriptureFilterProvider = ExploreScriptureFilterProvider._();
 
@@ -316,34 +115,34 @@ abstract class _$ExploreScriptureFilter extends $Notifier<ScriptureFilter?> {
   }
 }
 
-@ProviderFor(ExplorePostsNotifier)
-final explorePostsProvider = ExplorePostsNotifierProvider._();
+@ProviderFor(ExploreTrendingNotifier)
+final exploreTrendingProvider = ExploreTrendingNotifierProvider._();
 
-final class ExplorePostsNotifierProvider
-    extends $AsyncNotifierProvider<ExplorePostsNotifier, List<Post>> {
-  ExplorePostsNotifierProvider._()
+final class ExploreTrendingNotifierProvider
+    extends $AsyncNotifierProvider<ExploreTrendingNotifier, List<Post>> {
+  ExploreTrendingNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'explorePostsProvider',
+        name: r'exploreTrendingProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$explorePostsNotifierHash();
+  String debugGetCreateSourceHash() => _$exploreTrendingNotifierHash();
 
   @$internal
   @override
-  ExplorePostsNotifier create() => ExplorePostsNotifier();
+  ExploreTrendingNotifier create() => ExploreTrendingNotifier();
 }
 
-String _$explorePostsNotifierHash() =>
-    r'c0bc902079850ab6c3e9374bb5bbee65c655466d';
+String _$exploreTrendingNotifierHash() =>
+    r'b11cafea3fdd8728f57c47bfd5c88adcd5c282e0';
 
-abstract class _$ExplorePostsNotifier extends $AsyncNotifier<List<Post>> {
+abstract class _$ExploreTrendingNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();
   @$mustCallSuper
   @override
@@ -360,6 +159,120 @@ abstract class _$ExplorePostsNotifier extends $AsyncNotifier<List<Post>> {
     return element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(exploreInsightful)
+final exploreInsightfulProvider = ExploreInsightfulProvider._();
+
+final class ExploreInsightfulProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Post>>,
+          List<Post>,
+          FutureOr<List<Post>>
+        >
+    with $FutureModifier<List<Post>>, $FutureProvider<List<Post>> {
+  ExploreInsightfulProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreInsightfulProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreInsightfulHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Post>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Post>> create(Ref ref) {
+    return exploreInsightful(ref);
+  }
+}
+
+String _$exploreInsightfulHash() => r'2e588d119c5e4aa282c8571a183ba1e7459aaf83';
+
+@ProviderFor(exploreProphetic)
+final explorePropheticProvider = ExplorePropheticProvider._();
+
+final class ExplorePropheticProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Post>>,
+          List<Post>,
+          FutureOr<List<Post>>
+        >
+    with $FutureModifier<List<Post>>, $FutureProvider<List<Post>> {
+  ExplorePropheticProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'explorePropheticProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$explorePropheticHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Post>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Post>> create(Ref ref) {
+    return exploreProphetic(ref);
+  }
+}
+
+String _$explorePropheticHash() => r'feefe4a90744192d589529bf0c6381c214757168';
+
+@ProviderFor(exploreAffirmed)
+final exploreAffirmedProvider = ExploreAffirmedProvider._();
+
+final class ExploreAffirmedProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Post>>,
+          List<Post>,
+          FutureOr<List<Post>>
+        >
+    with $FutureModifier<List<Post>>, $FutureProvider<List<Post>> {
+  ExploreAffirmedProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreAffirmedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreAffirmedHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Post>> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Post>> create(Ref ref) {
+    return exploreAffirmed(ref);
+  }
+}
+
+String _$exploreAffirmedHash() => r'e1493d3b3a94445e3cb98c8cbc0f6a89f0818506';
 
 @ProviderFor(ExploreForYouNotifier)
 final exploreForYouProvider = ExploreForYouNotifierProvider._();

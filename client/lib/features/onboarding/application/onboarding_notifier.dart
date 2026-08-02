@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/onboarding_repository.dart';
 import '../../auth/application/auth_notifier.dart';
+import 'package:scribes/main.dart';
 
 part 'onboarding_notifier.g.dart';
 
@@ -89,6 +90,9 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       // Also update the isChurch flag
       final authNotif = ref.read(authProvider.notifier);
       final user = ref.read(authProvider).value;
+      // Update tags in auth provider to pass the router gate
+      await authNotif.updateTags(state.selectedTopics.toList());
+
       if (user != null && user.isChurch != state.isChurch) {
         await authNotif.updateProfile(
           handle: user.handle,
@@ -96,6 +100,10 @@ class OnboardingNotifier extends _$OnboardingNotifier {
           bio: user.bio,
           isChurch: state.isChurch,
         );
+      }
+
+      if (user != null) {
+        await sharedPrefs.setBool('has_seen_onboarding_${user.id}', true);
       }
 
       state = state.copyWith(isSaving: false);

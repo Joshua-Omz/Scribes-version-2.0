@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:scribes/features/messages/application/last_read_provider.dart';
 
 part 'inbox_providers.g.dart';
 
@@ -31,7 +32,6 @@ class PendingRequests extends _$PendingRequests {
 @Riverpod(keepAlive: true)
 class ConversationsNotifier extends _$ConversationsNotifier {
   Timer? _pollingTimer;
-  int _lastTotalMessages = 0; // simplistic way to detect new messages across conversations
 
   @override
   Stream<List<Conversation>> build() async* {
@@ -71,7 +71,7 @@ class ConversationsNotifier extends _$ConversationsNotifier {
   void _scheduleNextPoll() {
     if (_isDisposed) return;
     
-    int baseInterval = 60;
+    int baseInterval = 10;
     try {
       final envVal = dotenv.env['INBOX_REFRESH_INTERVAL_SEC'];
       if (envVal != null) {
@@ -118,14 +118,31 @@ class ConversationsNotifier extends _$ConversationsNotifier {
 class UnreadMessagesCount extends _$UnreadMessagesCount {
   @override
   int build() {
-    // In a real app, this would be computed by comparing the conversation's last_active
-    // timestamp against a local last_read timestamp. For V1 we just return a static
-    // or computed value. E.g. check pending requests length as well.
+    int count = 0;
+    
+    // Count pending requests
     final pending = ref.watch(pendingRequestsProvider);
-    return pending.when(
+    count += pending.when(
       data: (reqs) => reqs.length,
       loading: () => 0,
       error: (err, stack) => 0,
     );
+
+    // Count unread conversations
+    final convosAsync = ref.watch(conversationsProvider);
+    final lastReadMap = ref.watch(lastReadProvider);
+    
+    if (convosAsync is AsyncData) {
+      final convos = convosAsync.value ?? [];
+      for (final c in convos) {
+        final lastRead = lastReadMap[c.id];
+        // If never read, or lastActive is newer than lastRead
+        if (lastRead == null || c.lastActive.isAfter(lastRead)) {
+          count++;
+        }
+      }
+    }
+    
+    return count;
   }
 }

@@ -114,6 +114,16 @@ class AuthNotifier extends _$AuthNotifier {
     state = AsyncData(updatedUser);
   }
 
+  Future<void> updateTags(List<String> tags) async {
+    // For now, since tags are mostly mocked strings instead of UUIDs in the frontend,
+    // we just update the local state so the router lets the user pass the onboarding gate.
+    final currentUser = state.value;
+    if (currentUser != null) {
+      final updatedUser = currentUser.copyWith(selectedTags: tags);
+      state = AsyncData(updatedUser);
+    }
+  }
+
   Future<void> updateEmail({
     required String newEmail,
     required String currentPassword,

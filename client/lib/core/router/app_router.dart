@@ -7,6 +7,7 @@ import '../../features/auth/domain/user.dart';
 import '../../features/auth/presentation/auth_gate_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import 'package:scribes/main.dart';
 
 import '../../features/feed/presentation/feed_screen.dart';
 import '../../features/explore/presentation/explore_screen.dart';
@@ -23,6 +24,8 @@ import '../../features/profile/presentation/edit_profile_screen.dart';
 import '../../features/social/presentation/follow_list_screen.dart';
 import '../../features/notes/presentation/notes_list_screen.dart';
 import '../../features/notes/presentation/note_editor_screen.dart';
+import '../../features/search/presentation/search_screen.dart';
+
 import '../../features/notifications/presentation/notification_screen.dart';
 import '../../features/messages/presentation/inbox_screen.dart';
 import '../../features/messages/presentation/conversation_screen.dart';
@@ -65,7 +68,8 @@ GoRouter appRouter(Ref ref) {
 
       if (isAuth) {
         final user = authState.value!;
-        final needsOnboarding = user.selectedTags.isEmpty;
+        final hasSeenOnboarding = sharedPrefs.getBool('has_seen_onboarding_${user.id}') ?? false;
+        final needsOnboarding = user.selectedTags.isEmpty && !hasSeenOnboarding;
         final isGoingToOnboarding = state.matchedLocation == '/onboarding';
 
         if (needsOnboarding && !isGoingToOnboarding) {
@@ -127,6 +131,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/splash',
         pageBuilder: (context, state) => buildPageWithFadeTransition(context: context, state: state, child: const SplashScreen()),
+      ),
+      GoRoute(
+        path: '/search',
+        pageBuilder: (context, state) => buildPageWithFadeTransition(context: context, state: state, child: const SearchScreen()),
       ),
       GoRoute(
         path: '/auth',

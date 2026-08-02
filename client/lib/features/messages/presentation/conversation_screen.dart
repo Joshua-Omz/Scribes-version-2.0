@@ -65,6 +65,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final messagesStream = ref.watch(conversationMessagesProvider(widget.conversationId));
     final currentUser = ref.watch(authProvider).value;
 
+    ref.listen(conversationMessagesProvider(widget.conversationId), (prev, next) {
+      if (next.hasValue) {
+        ref.read(lastReadProvider.notifier).markAsRead(widget.conversationId);
+      }
+    });
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(

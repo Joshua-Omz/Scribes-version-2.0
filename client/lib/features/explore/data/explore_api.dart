@@ -34,4 +34,23 @@ class ExploreApi {
   }
 
 
+  Future<Map<String, dynamic>> getRecommendations({
+    required String sortType,
+    String? cursor, 
+    int limit = 20,
+  }) async {
+    final queryParams = <String, dynamic>{
+      'sort': sortType,
+      'limit': limit,
+    };
+    if (cursor != null) queryParams['offset'] = cursor; // Using offset as cursor for simplicity if that's how the backend is doing it
+
+    final response = await _dio.get(
+      '/posts/recommendations',
+      queryParameters: queryParams,
+    );
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return {'posts': []};
+    return data as Map<String, dynamic>;
+  }
 }

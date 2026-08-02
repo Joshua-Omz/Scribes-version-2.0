@@ -3,7 +3,8 @@ import 'package:scribes/features/posts/data/post_repository.dart';
 import 'package:scribes/features/posts/application/post_detail_state.dart';
 import 'package:scribes/features/posts/application/my_posts_provider.dart';
 import 'package:scribes/features/posts/application/user_posts_provider.dart';
-import 'package:scribes/features/explore/application/explore_notifier.dart';
+
+import 'package:scribes/features/posts/domain/post.dart';
 part 'post_detail_provider.g.dart';
 
 @riverpod
@@ -28,7 +29,7 @@ class PostDetailNotifier extends _$PostDetailNotifier {
   void optimisticDeletePost() {
     // 1. Optimistic removal from feeds
     ref.read(myPostsProvider.notifier).optimisticRemove(postId);
-    ref.read(explorePostsProvider.notifier).optimisticRemove(postId);
+
     if (state.value?.post != null) {
       ref.read(userPostsProvider(state.value!.post.authorId).notifier).optimisticRemove(postId);
     }
@@ -56,4 +57,10 @@ class PostDetailNotifier extends _$PostDetailNotifier {
       }
     }
   }
+}
+
+@riverpod
+Future<List<Post>> similarPosts(Ref ref, String postId) async {
+  final repo = ref.watch(postRepositoryProvider);
+  return repo.getSimilarPosts(postId);
 }

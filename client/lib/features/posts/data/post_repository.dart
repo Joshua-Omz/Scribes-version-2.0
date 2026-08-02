@@ -46,4 +46,9 @@ class PostRepository {
     final data = await _api.revisePost(id, payload);
     return Post.fromJson(data);
   }
+
+  Future<List<Post>> getSimilarPosts(String id) async {
+    final data = await _api.getSimilarPosts(id);
+    return data.map((e) => Post.fromJson(e as Map<String, dynamic>)).toList();
+  }
 }

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,16 +26,33 @@ class ScribesIconButton extends ConsumerWidget {
     final colors = ref.watch(themeProvider);
     final iconColor = color ?? (isSelected ? colors.primaryText : colors.secondaryText);
 
-    return InkWell(
-      onTap: onPressed,
+    return ClipRRect(
       borderRadius: BorderRadius.circular(size),
-      splashColor: colors.gold.withValues(alpha: 0.1),
-      highlightColor: colors.gold.withValues(alpha: 0.05),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0), // 24 + 20 = 44px min touch target
-        child: HugeIcon(icon: icon,
-          size: size,
-          color: iconColor,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
+        child: Material(
+          color: colors.surfaceRaised.withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(size),
+            side: BorderSide(
+              color: colors.border.withValues(alpha: 0.5),
+              width: 0.5,
+            ),
+          ),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(size),
+            splashColor: colors.gold.withValues(alpha: 0.2),
+            highlightColor: colors.gold.withValues(alpha: 0.1),
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: HugeIcon(
+                icon: icon,
+                size: size,
+                color: iconColor,
+              ),
+            ),
+          ),
         ),
       ),
     );

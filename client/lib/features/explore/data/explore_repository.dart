@@ -31,6 +31,15 @@ class ExploreRepository {
     return _mapPaginatedFeed(rawData);
   }
 
+  Future<PaginatedFeed> getRecommendations({
+    required String sortType,
+    String? cursor,
+    int limit = 20,
+  }) async {
+    final rawData = await _api.getRecommendations(sortType: sortType, cursor: cursor, limit: limit);
+    return _mapPaginatedFeed(rawData);
+  }
+
   PaginatedFeed _mapPaginatedFeed(Map<String, dynamic> data) {
     final posts = (data['posts'] as List<dynamic>?)?.map((p) => _mapPostData(p as Map<String, dynamic>)).toList() ?? [];
     return PaginatedFeed.fromJson({

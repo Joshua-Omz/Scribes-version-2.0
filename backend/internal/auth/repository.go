@@ -285,6 +285,21 @@ func (r *Repository) UpdateUserTags(ctx context.Context, id uuid.UUID, tags []uu
 	return r.GetUserByID(ctx, id)
 }
 
+func (r *Repository) CreateOrGetTagIDs(ctx context.Context, tags []string) ([]uuid.UUID, error) {
+	var tagUUIDs []uuid.UUID
+	for _, t := range tags {
+		tagID, err := r.q.UpsertTag(ctx, generated.UpsertTagParams{
+			PName:        t, // simplistic for now, should normalize
+			PDisplayName: t,
+		})
+		if err != nil {
+			return nil, err
+		}
+		tagUUIDs = append(tagUUIDs, tagID)
+	}
+	return tagUUIDs, nil
+}
+
 func (r *Repository) GetNotificationPreferences(ctx context.Context, userID uuid.UUID) (generated.NotificationPreference, error) {
 	return r.q.GetNotificationPreferences(ctx, userID)
 }
