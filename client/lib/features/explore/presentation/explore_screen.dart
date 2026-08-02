@@ -362,7 +362,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     required dynamic provider,
     required dynamic colors,
   }) {
-    final state = ref.watch(provider);
+    final AsyncValue<List<Post>> state = ref.watch(provider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

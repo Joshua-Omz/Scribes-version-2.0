@@ -14,6 +14,7 @@ import '../../../core/widgets/scribes_error_state.dart';
 import '../../social/application/user_lookup_provider.dart';
 import '../../social/application/is_following_user_provider.dart';
 import '../../posts/application/user_posts_provider.dart';
+import '../../posts/domain/post.dart';
 import '../../social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../messages/presentation/widgets/dm_request_modal.dart';
@@ -99,46 +100,40 @@ class PublicProfileScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 24),
                           Expanded(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Consumer(
-                                  builder: (context, ref, child) {
-                                    final postsState = ref.watch(userPostsProvider(userId));
-                                    final postsCount = postsState.value?.length ?? 0;
-                                    return _buildStatItem(
-                                      'Posts',
-                                      postsCount.toString(),
-                                      colors,
-                                    );
-                                  },
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Consumer(
+                                      builder: (context, ref, child) {
+                                        final postsState = ref.watch(userPostsProvider(userId));
+                                        final postsCount = postsState.value?.length ?? 0;
+                                        return _buildStatItem(
+                                          'Posts',
+                                          postsCount.toString(),
+                                          colors,
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
-                                _buildStatItem(
-                                  'Followers',
-                                  user.followersCount.toString(),
-                                  colors,
-                                  onTap: () {
-                                    context.push(
-                                      '/users/${user.id}/connections?tab=0',
-                                    );
-                                  },
-                                ),
-                                _buildStatItem(
-                                  'Following',
-                                  user.followingCount.toString(),
-                                  colors,
-                                  onTap: () {
-                                    context.push(
-                                      '/users/${user.id}/connections?tab=1',
-                                    );
-                                  },
-                                ),
+                                if (user.bio != null && user.bio!.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    user.bio!,
+                                    style: ScribesTextStyles.bodyMd.copyWith(
+                                      color: colors.primaryText,
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
                         user.displayName,
                         style: ScribesTextStyles.bodyLg.copyWith(
@@ -152,18 +147,7 @@ class PublicProfileScreen extends ConsumerWidget {
                           color: colors.secondaryText,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      if (user.bio != null && user.bio!.isNotEmpty) ...[
-                        Text(
-                          user.bio!,
-                          style: ScribesTextStyles.bodyMd.copyWith(
-                            color: colors.primaryText,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (user.bio == null || user.bio!.isEmpty)
-                        const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       _buildActionButtons(context, ref, colors),
                     ],
                   ),
