@@ -112,7 +112,7 @@ func (s *Service) HasUnread(ctx context.Context, userID uuid.UUID) (bool, error)
 // by different actors are collapsed into a single NotificationGroup. 
 // The most recent actor is named, the count includes all actors in the window.
 func (s *Service) groupNotifications(rows []generated.ListAllByUserRow) []NotificationGroup {
-	var groups []NotificationGroup
+	groups := []NotificationGroup{}
 	
 	// Fast path for empty rows
 	if len(rows) == 0 {

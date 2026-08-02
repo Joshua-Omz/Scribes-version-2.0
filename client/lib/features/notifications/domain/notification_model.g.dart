@@ -51,9 +51,11 @@ const _$NotifTypeEnumMap = {
 _NotificationResponse _$NotificationResponseFromJson(
   Map<String, dynamic> json,
 ) => _NotificationResponse(
-  notifications: (json['notifications'] as List<dynamic>)
-      .map((e) => NotificationItem.fromJson(e as Map<String, dynamic>))
-      .toList(),
+  notifications:
+      (json['notifications'] as List<dynamic>?)
+          ?.map((e) => NotificationItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
   hasUnread: json['has_unread'] as bool,
 );
 

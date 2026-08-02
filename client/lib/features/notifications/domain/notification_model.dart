@@ -49,7 +49,7 @@ abstract class NotificationItem with _$NotificationItem {
 @freezed
 abstract class NotificationResponse with _$NotificationResponse {
   const factory NotificationResponse({
-    required List<NotificationItem> notifications,
+    @Default([]) List<NotificationItem> notifications,
     @JsonKey(name: 'has_unread') required bool hasUnread,
   }) = _NotificationResponse;
 

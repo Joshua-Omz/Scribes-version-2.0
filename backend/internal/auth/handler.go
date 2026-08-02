@@ -189,7 +189,7 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 
 	var input UpdateProfileInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		respond.Error(c, http.StatusBadRequest, "invalid payload: " + err.Error())
 		return
 	}
 
@@ -219,7 +219,7 @@ func (h *Handler) UpdateTags(c *gin.Context) {
 
 	var input UpdateTagsInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		respond.Error(c, http.StatusBadRequest, "invalid payload")
+		respond.Error(c, http.StatusBadRequest, "invalid payload: " + err.Error())
 		return
 	}
 

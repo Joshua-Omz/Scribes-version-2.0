@@ -8,8 +8,7 @@ part 'auth_api.g.dart';
 
 @riverpod
 AuthApi authApi(Ref ref) {
-  final dio = ref.watch(apiClientProvider);
-  return AuthApi(dio);
+  return AuthApi(ref.watch(apiClientProvider));
 }
 
 class AuthApi {
@@ -63,12 +62,16 @@ class AuthApi {
     String? bio,
     bool isChurch = false,
   }) async {
-    final response = await _dio.patch(Endpoints.me, data: {
+    final data = <String, dynamic>{
       'handle': handle,
       'display_name': displayName,
-      'bio': bio,
       'is_church': isChurch,
-    });
+    };
+    if (bio != null) {
+      data['bio'] = bio;
+    }
+
+    final response = await _dio.patch(Endpoints.me, data: data);
     return response.data as Map<String, dynamic>;
   }
 

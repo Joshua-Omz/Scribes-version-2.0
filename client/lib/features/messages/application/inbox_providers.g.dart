@@ -83,7 +83,7 @@ final class ConversationsNotifierProvider
 }
 
 String _$conversationsNotifierHash() =>
-    r'2418f6b66f095f73a0ba6544e1c4950e9b7fd903';
+    r'7ca3b4d924c65c81d14c0b4456c4e748548255ff';
 
 abstract class _$ConversationsNotifier
     extends $StreamNotifier<List<Conversation>> {

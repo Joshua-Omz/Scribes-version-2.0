@@ -508,11 +508,11 @@ return $default(_that.notifications,_that.hasUnread);case _:
 @JsonSerializable()
 
 class _NotificationResponse implements NotificationResponse {
-  const _NotificationResponse({required final  List<NotificationItem> notifications, @JsonKey(name: 'has_unread') required this.hasUnread}): _notifications = notifications;
+  const _NotificationResponse({final  List<NotificationItem> notifications = const [], @JsonKey(name: 'has_unread') required this.hasUnread}): _notifications = notifications;
   factory _NotificationResponse.fromJson(Map<String, dynamic> json) => _$NotificationResponseFromJson(json);
 
  final  List<NotificationItem> _notifications;
-@override List<NotificationItem> get notifications {
+@override@JsonKey() List<NotificationItem> get notifications {
   if (_notifications is EqualUnmodifiableListView) return _notifications;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_notifications);

@@ -84,12 +84,16 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
     state = state.copyWith(isSaving: true, error: null);
     try {
+      final user = ref.read(authProvider).value;
+      if (user != null) {
+        await sharedPrefs.setBool('has_seen_onboarding_${user.id}', true);
+      }
+
       final repo = ref.read(onboardingRepositoryProvider);
       await repo.saveTopics(state.selectedTopics.toList());
       
       // Also update the isChurch flag
       final authNotif = ref.read(authProvider.notifier);
-      final user = ref.read(authProvider).value;
       // Update tags in auth provider to pass the router gate
       await authNotif.updateTags(state.selectedTopics.toList());
 
@@ -100,10 +104,6 @@ class OnboardingNotifier extends _$OnboardingNotifier {
           bio: user.bio,
           isChurch: state.isChurch,
         );
-      }
-
-      if (user != null) {
-        await sharedPrefs.setBool('has_seen_onboarding_${user.id}', true);
       }
 
       state = state.copyWith(isSaving: false);

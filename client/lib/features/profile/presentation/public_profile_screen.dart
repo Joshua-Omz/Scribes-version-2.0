@@ -64,53 +64,86 @@ class PublicProfileScreen extends ConsumerWidget {
               ),
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 32.0,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: Alignment.topCenter,
-                      radius: 1.5,
-                      colors: [
-                        colors.goldMuted.withValues(alpha: 0.05),
-                        colors.background,
-                      ],
-                    ),
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeOutBack,
-                        tween: Tween<double>(begin: 0, end: 1),
-                        builder: (context, value, child) {
-                          return Transform.scale(
-                            scale: value,
-                            child: Opacity(
-                              opacity: value.clamp(0.0, 1.0),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          radius: 40,
-                          backgroundColor: colors.surfaceRaised,
-                          child: Text(
-                            user.displayName.isNotEmpty
-                                ? user.displayName[0].toUpperCase()
-                                : '?',
-                            style: ScribesTextStyles.displayMd.copyWith(
-                              color: colors.primaryText,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 600),
+                            curve: Curves.easeOutBack,
+                            tween: Tween<double>(begin: 0, end: 1),
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: value,
+                                child: Opacity(
+                                  opacity: value.clamp(0.0, 1.0),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: CircleAvatar(
+                              radius: 40,
+                              backgroundColor: colors.surfaceRaised,
+                              child: Text(
+                                user.displayName.isNotEmpty
+                                    ? user.displayName[0].toUpperCase()
+                                    : '?',
+                                style: ScribesTextStyles.displayMd.copyWith(
+                                  color: colors.primaryText,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Consumer(
+                                  builder: (context, ref, child) {
+                                    final postsState = ref.watch(userPostsProvider(userId));
+                                    final postsCount = postsState.value?.length ?? 0;
+                                    return _buildStatItem(
+                                      'Posts',
+                                      postsCount.toString(),
+                                      colors,
+                                    );
+                                  },
+                                ),
+                                _buildStatItem(
+                                  'Followers',
+                                  user.followersCount.toString(),
+                                  colors,
+                                  onTap: () {
+                                    context.push(
+                                      '/users/${user.id}/connections?tab=0',
+                                    );
+                                  },
+                                ),
+                                _buildStatItem(
+                                  'Following',
+                                  user.followingCount.toString(),
+                                  colors,
+                                  onTap: () {
+                                    context.push(
+                                      '/users/${user.id}/connections?tab=1',
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Text(
                         user.displayName,
-                        style: ScribesTextStyles.displayMd.copyWith(
+                        style: ScribesTextStyles.bodyLg.copyWith(
                           color: colors.primaryText,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
@@ -119,43 +152,18 @@ class PublicProfileScreen extends ConsumerWidget {
                           color: colors.secondaryText,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      if (user.bio != null && user.bio!.isNotEmpty)
+                      const SizedBox(height: 4),
+                      if (user.bio != null && user.bio!.isNotEmpty) ...[
                         Text(
                           user.bio!,
-                          textAlign: TextAlign.center,
                           style: ScribesTextStyles.bodyMd.copyWith(
                             color: colors.primaryText,
                           ),
                         ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildStatItem(
-                            'Followers',
-                            user.followersCount.toString(),
-                            colors,
-                            onTap: () {
-                              context.push(
-                                '/users/${user.id}/connections?tab=0',
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 40),
-                          _buildStatItem(
-                            'Following',
-                            user.followingCount.toString(),
-                            colors,
-                            onTap: () {
-                              context.push(
-                                '/users/${user.id}/connections?tab=1',
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 12),
+                      ],
+                      if (user.bio == null || user.bio!.isEmpty)
+                        const SizedBox(height: 12),
                       _buildActionButtons(context, ref, colors),
                     ],
                   ),
@@ -179,8 +187,9 @@ class PublicProfileScreen extends ConsumerWidget {
       children: [
         Text(
           count,
-          style: ScribesTextStyles.displayMd.copyWith(
+          style: ScribesTextStyles.bodyLg.copyWith(
             color: colors.primaryText,
+            fontWeight: FontWeight.bold,
           ),
         ),
         Text(

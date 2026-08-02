@@ -31,12 +31,12 @@ class ScribesIconButton extends ConsumerWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
         child: Material(
-          color: colors.surfaceRaised.withValues(alpha: 0.15),
+          color: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(size),
             side: BorderSide(
-              color: colors.border.withValues(alpha: 0.5),
-              width: 0.5,
+              color: colors.primaryText.withValues(alpha: 0.15),
+              width: 1.0,
             ),
           ),
           child: InkWell(
