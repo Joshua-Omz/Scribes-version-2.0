@@ -22,6 +22,24 @@ class LastReadNotifier extends _$LastReadNotifier {
     }
   }
 
+  Future<void> loadAll(List<String> conversationIds) async {
+    final storage = ref.read(secureStorageProvider);
+    final updates = <String, DateTime>{};
+    for (final id in conversationIds) {
+      if (state.containsKey(id)) continue;
+      final value = await storage.getLastRead(id);
+      if (value != null) {
+        updates[id] = DateTime.parse(value);
+      }
+    }
+    if (updates.isNotEmpty) {
+      state = {
+        ...state,
+        ...updates,
+      };
+    }
+  }
+
   Future<void> markAsRead(String conversationId) async {
     final now = DateTime.now();
     final storage = ref.read(secureStorageProvider);

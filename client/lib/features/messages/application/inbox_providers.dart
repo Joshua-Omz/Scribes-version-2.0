@@ -51,6 +51,8 @@ class ConversationsNotifier extends _$ConversationsNotifier {
     // Yield the local DB stream for instant cached UI
     await for (final convos in repo.watchConversations()) {
       _checkNewMessages(convos);
+      // Eagerly load the last read states so the global unread badge doesn't assume all are unread.
+      ref.read(lastReadProvider.notifier).loadAll(convos.map((c) => c.id).toList());
       yield convos;
     }
   }
