@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:scribes/core/utils/share/share_service.dart';
 import 'package:scribes/core/theme/theme_provider.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
 import 'package:scribes/features/posts/data/post_repository.dart';
@@ -33,7 +31,7 @@ class _ScribesShareSheetState extends ConsumerState<ScribesShareSheet> {
   void _shareLink() {
     // We assume a generic web domain for Scribes
     final url = 'https://scribes.com/posts/${widget.postId}';
-    Share.share('Check out this post: $url');
+    shareService.shareText('Check out this post: $url');
     Navigator.of(context).pop();
   }
 
@@ -43,22 +41,15 @@ class _ScribesShareSheetState extends ConsumerState<ScribesShareSheet> {
       final repo = ref.read(postRepositoryProvider);
       final content = await repo.exportPost(widget.postId, format);
 
-      if (kIsWeb) {
-        // On web we cannot save to local file system easily without a package like `file_saver`.
-        // We'll fall back to opening a share intent with the text.
-        await Share.share(content);
-      } else {
-        // On mobile/desktop
-        final tempDir = await getTemporaryDirectory();
-        final file = File('${tempDir.path}/scribes_post_${widget.postId}.$format');
-        await file.writeAsString(content);
+      final mimeType = format == 'md' ? 'text/markdown' : 'text/plain';
+      final filename = 'scribes_post_${widget.postId}.$format';
 
-        // Share the file
-        await Share.shareXFiles(
-          [XFile(file.path)],
-          subject: 'Scribes Post Export',
-        );
-      }
+      await shareService.exportAndShareFile(
+        content: content,
+        filename: filename,
+        mimeType: mimeType,
+        subject: 'Scribes Post Export',
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

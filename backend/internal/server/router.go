@@ -22,10 +22,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	}
+}
+
 func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
-
-
+	r.Use(corsMiddleware())
 	r.GET("/health", func(c *gin.Context) {
 		respond.JSON(c, http.StatusOK, gin.H{"status": "ok"})
 	})
@@ -111,6 +123,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 		// Sync endpoint
 		protected.GET("/sync", syncHandler.Pull)
+		protected.POST("/sync/push", syncHandler.Push)
 
 		// Social endpoints
 		protected.POST("/users/:id/follow", socialHandler.Follow)

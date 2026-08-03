@@ -23,6 +23,7 @@ import 'package:scribes/features/posts/domain/post.dart';
 import 'package:scribes/core/widgets/scribes_toast.dart';
 import 'package:scribes/core/network/api_exception.dart';
 import 'package:scribes/core/widgets/scribes_empty_state.dart';
+import 'package:scribes/core/widgets/scribes_share_sheet.dart';
 class PostDetailScreen extends ConsumerWidget {
   final String postId;
 
@@ -309,6 +310,7 @@ class PostDetailScreen extends ConsumerWidget {
                               }
                               ScribesCommentSheet.show(context, postId: postId, postAuthorId: post.authorId);
                             },
+                            onShare: () => ScribesShareSheet.show(context, postId),
                           );
                         },
                       ),

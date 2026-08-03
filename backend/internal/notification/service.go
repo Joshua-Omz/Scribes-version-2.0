@@ -64,7 +64,9 @@ func (s *Service) Unsubscribe(userID uuid.UUID, ch chan Notification) {
 
 	if subs, ok := s.clients[userID]; ok {
 		delete(subs, ch)
-		close(ch)
+		// Do NOT close(ch) here. Closing a channel that a concurrent Broadcast
+		// might still reference causes a "send on closed channel" panic. The GC
+		// will reclaim the channel once no goroutine holds a reference to it.
 		if len(subs) == 0 {
 			delete(s.clients, userID)
 		}
@@ -112,80 +114,73 @@ func (s *Service) HasUnread(ctx context.Context, userID uuid.UUID) (bool, error)
 // by different actors are collapsed into a single NotificationGroup. 
 // The most recent actor is named, the count includes all actors in the window.
 func (s *Service) groupNotifications(rows []generated.ListAllByUserRow) []NotificationGroup {
-	groups := []NotificationGroup{}
-	
 	// Fast path for empty rows
 	if len(rows) == 0 {
-		return groups
+		return []NotificationGroup{}
+	}
+
+	// Internal helper struct that carries the actor handle separately
+	// so we never hijack the Body field of the final domain model.
+	type notificationGroupTemp struct {
+		group       NotificationGroup
+		actorHandle string
 	}
 
 	// We process rows which are ordered by created_at DESC from the DB.
-	// For each row, check if it fits into the last created group.
-	// A simple approach: track groups by a key (type + ref_id + 24h window).
-	
-	type groupKey struct {
-		Type  NotifType
-		RefID uuid.UUID
-		// To bucket by 24h, we could use the day the notification was created, 
-		// but since they are ordered DESC, we can just collapse adjacent ones 
-		// or maintain a list of active groups and check if it's within 24h of the group's CreatedAt.
-	}
-	
-	// A more robust way to group that handles non-adjacent items is a map, 
-	// but order must be preserved.
-	// Let's use a slice and just scan the recent groups.
-	
+	// For each row, check if it fits into an existing group of the same
+	// type+ref_id within a 24h window.
+	var temps []notificationGroupTemp
+
 	for _, row := range rows {
 		ntype := FromDBNotifType(row.Type)
-		
+
 		// Find if there's a matching group within 24h
 		foundGroup := false
-		for i := range groups {
-			g := &groups[i]
-			if g.Type == ntype && g.RefID == row.RefID {
+		for i := range temps {
+			t := &temps[i]
+			if t.group.Type == ntype && t.group.RefID == row.RefID {
 				// Check 24h window
-				diff := g.CreatedAt.Sub(row.CreatedAt)
+				diff := t.group.CreatedAt.Sub(row.CreatedAt)
 				if diff < 0 {
 					diff = -diff
 				}
 				if diff <= 24*time.Hour {
-					// Add to this group
-					g.Count++
-					g.IDs = append(g.IDs, row.ID)
-					// Don't change body/actor since the group has the most recent one (DESC order)
+					t.group.Count++
+					t.group.IDs = append(t.group.IDs, row.ID)
+					// Don't change actor since the group has the most recent one (DESC order)
 					foundGroup = true
 					break
 				}
 			}
 		}
-		
+
 		if !foundGroup {
-			// Create a new group
-			// We compute the body AFTER counting, so we just store the most recent actor handle for now.
-			
-			groups = append(groups, NotificationGroup{
-				ID:         row.ID,
-				IDs:        []uuid.UUID{row.ID},
-				Type:       ntype,
-				IsRealtime: row.IsRealtime,
-				IsRead:     row.IsRead,
-				RefID:      row.RefID,
-				Count:      1,
-				CreatedAt:  row.CreatedAt,
-				// Storing ActorHandle temporarily in Body to generate later
-				Body:       row.ActorHandle.String, 
+			handle := row.ActorHandle.String
+			if handle == "" {
+				handle = "Someone"
+			}
+			temps = append(temps, notificationGroupTemp{
+				actorHandle: handle,
+				group: NotificationGroup{
+					ID:         row.ID,
+					IDs:        []uuid.UUID{row.ID},
+					Type:       ntype,
+					IsRealtime: row.IsRealtime,
+					IsRead:     row.IsRead,
+					RefID:      row.RefID,
+					Count:      1,
+					CreatedAt:  row.CreatedAt,
+				},
 			})
 		}
 	}
-	
-	// Generate final bodies
-	for i := range groups {
-		g := &groups[i]
-		actorHandle := g.Body // We stored it here temporarily
-		if actorHandle == "" {
-			actorHandle = "Someone"
-		}
-		g.Body = s.generateBody(g.Type, actorHandle, g.Count)
+
+	// Generate final bodies from the temp struct, keeping the domain model clean
+	groups := make([]NotificationGroup, len(temps))
+	for i, t := range temps {
+		g := t.group
+		g.Body = s.generateBody(g.Type, t.actorHandle, g.Count)
+		groups[i] = g
 	}
 
 	return groups

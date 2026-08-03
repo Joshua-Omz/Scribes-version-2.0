@@ -165,3 +165,45 @@ func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) (Draft
 	)
 	return i, err
 }
+
+const upsertDraft = `-- name: UpsertDraft :one
+INSERT INTO drafts (id, author_id, content, caption, sermon_source)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (id) DO UPDATE
+SET content = EXCLUDED.content,
+    caption = EXCLUDED.caption,
+    sermon_source = EXCLUDED.sermon_source,
+    updated_at = now()
+WHERE drafts.author_id = $2
+RETURNING id, author_id, content, caption, sermon_source, created_at, updated_at, server_sequence
+`
+
+type UpsertDraftParams struct {
+	ID           uuid.UUID       `json:"id"`
+	AuthorID     uuid.UUID       `json:"author_id"`
+	Content      json.RawMessage `json:"content"`
+	Caption      sql.NullString  `json:"caption"`
+	SermonSource sql.NullString  `json:"sermon_source"`
+}
+
+func (q *Queries) UpsertDraft(ctx context.Context, arg UpsertDraftParams) (Draft, error) {
+	row := q.db.QueryRowContext(ctx, upsertDraft,
+		arg.ID,
+		arg.AuthorID,
+		arg.Content,
+		arg.Caption,
+		arg.SermonSource,
+	)
+	var i Draft
+	err := row.Scan(
+		&i.ID,
+		&i.AuthorID,
+		&i.Content,
+		&i.Caption,
+		&i.SermonSource,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ServerSequence,
+	)
+	return i, err
+}

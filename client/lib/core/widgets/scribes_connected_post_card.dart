@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'scribes_post_card.dart';
 import 'scribes_comment_sheet.dart';
+import 'scribes_share_sheet.dart';
 import 'scribes_toast.dart';
 import '../theme/theme_provider.dart';
 
@@ -108,6 +109,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
                 ScribesToast.show(context, 'Post saved', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
               }
             },
+            onShare: () => ScribesShareSheet.show(context, post.id),
             onTap: () => context.push('/posts/${post.id}'),
             onAuthorTap: () => context.push('/users/${post.authorId}'),
             onComment: () {

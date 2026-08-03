@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const addPostTag = `-- name: AddPostTag :exec
@@ -69,6 +70,43 @@ func (q *Queries) GetPostTags(ctx context.Context, postID uuid.UUID) ([]string, 
 			return nil, err
 		}
 		items = append(items, display_name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostTagsForPosts = `-- name: GetPostTagsForPosts :many
+SELECT pt.post_id, t.display_name FROM tags t
+JOIN post_tags pt ON pt.tag_id = t.id
+WHERE pt.post_id = ANY($1::uuid[])
+`
+
+type GetPostTagsForPostsRow struct {
+	PostID      uuid.UUID `json:"post_id"`
+	DisplayName string    `json:"display_name"`
+}
+
+func (q *Queries) GetPostTagsForPosts(ctx context.Context, postIDs []uuid.UUID) ([]GetPostTagsForPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPostTagsForPosts, pq.Array(postIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPostTagsForPostsRow
+	for rows.Next() {
+		var i GetPostTagsForPostsRow
+		if err := rows.Scan(
+			&i.PostID,
+			&i.DisplayName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

@@ -19,6 +19,7 @@ semantic_search AS (
     FROM posts p
     WHERE p.is_deleted = false AND p.visibility = 'public'
       AND p.embedding IS NOT NULL
+      AND $2::text IS NOT NULL
     ORDER BY p.embedding <=> $2::vector
     LIMIT 100
 )

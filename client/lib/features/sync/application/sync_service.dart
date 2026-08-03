@@ -5,57 +5,75 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart';
-import '../../draft/data/draft_repository.dart';
-import '../../notes/data/note_repository.dart';
 import '../data/sync_api.dart';
 import '../domain/sync_event.dart';
 
 final syncServiceProvider = Provider((ref) {
   final db = ref.watch(databaseProvider);
   final api = ref.watch(syncApiProvider);
-  final draftRepo = ref.watch(draftRepositoryProvider);
-  final noteRepo = ref.watch(noteRepositoryProvider);
-  return SyncService(db, api, draftRepo, noteRepo);
+  return SyncService(db, api);
 });
 
 class SyncService {
   final ScribesDatabase _db;
   final SyncApi _api;
-  final DraftRepository _draftRepo;
-  final NoteRepository _noteRepo;
 
-  SyncService(this._db, this._api, this._draftRepo, this._noteRepo);
+  SyncService(this._db, this._api);
 
   /// Synchronize the local database with the server.
   Future<void> sync({String? authorId}) async {
-    await pushNotes();
-    await pushDrafts();
+    await pushAll();
     await pullEvents(authorId: authorId);
   }
 
-  /// Push unsynced notes to the server.
-  Future<void> pushNotes() async {
-    final unsynced = await (_db.select(_db.notes)..where((t) => t.isSynced.equals(false))).get();
-    for (final note in unsynced) {
-      try {
-        await _noteRepo.pushToCloud(note.id);
-      } catch (e) {
-        // Log error and continue to the next note
-        debugPrint('Failed to push note ${note.id}: $e');
-      }
-    }
-  }
+  /// Push all unsynced notes and drafts to the server in a single batch request.
+  /// This replaces the old per-item pushToCloud pattern which caused N individual
+  /// REST requests. Now it's exactly 1 POST /sync/push regardless of how many
+  /// items are pending.
+  Future<void> pushAll() async {
+    final unsyncedNotes = await (_db.select(_db.notes)..where((t) => t.isSynced.equals(false))).get();
+    final unsyncedDrafts = await (_db.select(_db.drafts)..where((t) => t.isSynced.equals(false))).get();
 
-  /// Push unsynced drafts to the server.
-  Future<void> pushDrafts() async {
-    final unsynced = await (_db.select(_db.drafts)..where((t) => t.isSynced.equals(false))).get();
-    for (final draft in unsynced) {
-      try {
-        await _draftRepo.pushToCloud(draft.id);
-      } catch (e) {
-        // Log error and continue to the next draft
-        debugPrint('Failed to push draft ${draft.id}: $e');
-      }
+    if (unsyncedNotes.isEmpty && unsyncedDrafts.isEmpty) return;
+
+    final List<Map<String, dynamic>> events = [];
+
+    for (final note in unsyncedNotes) {
+      events.add({
+        'type': 'note',
+        'id': note.id,
+        'content': jsonDecode(note.content),
+        'title_or_caption': note.title,
+        'parent_id': note.notebookId,
+      });
+    }
+
+    for (final draft in unsyncedDrafts) {
+      events.add({
+        'type': 'draft',
+        'id': draft.id,
+        'content': jsonDecode(draft.content),
+        'title_or_caption': draft.caption,
+        'sermon_source': draft.sermonSource,
+      });
+    }
+
+    try {
+      await _api.pushBatch(events);
+
+      // Mark all pushed items as synced locally
+      await _db.transaction(() async {
+        for (final note in unsyncedNotes) {
+          await (_db.update(_db.notes)..where((t) => t.id.equals(note.id)))
+              .write(const NotesCompanion(isSynced: Value(true)));
+        }
+        for (final draft in unsyncedDrafts) {
+          await (_db.update(_db.drafts)..where((t) => t.id.equals(draft.id)))
+              .write(const DraftsCompanion(isSynced: Value(true)));
+        }
+      });
+    } catch (e) {
+      debugPrint('Failed to push sync batch: $e');
     }
   }
 

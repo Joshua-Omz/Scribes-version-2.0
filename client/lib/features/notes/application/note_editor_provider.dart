@@ -123,15 +123,10 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
       notebookId: state.notebookId,
     );
 
-    // Trigger cloud sync in background
-    () async {
-      try {
-        final cloudNote = await repo.pushToCloud(state.noteId);
-        if (cloudNote.id != state.noteId) {
-          state = state.copyWith(noteId: cloudNote.id);
-        }
-      } catch (_) {}
-    }();
+    // Cloud sync is handled by the batch sync service (SyncService.pushAll),
+    // NOT per-keystroke. The local save marks the Drift record as
+    // isSynced = false, and the sync service will pick it up on its next
+    // batch push cycle (app backgrounding, manual refresh, or periodic timer).
 
     ref.read(notesListProvider.notifier).refresh();
 

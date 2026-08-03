@@ -31,12 +31,7 @@ func (s *service) SearchPosts(ctx context.Context, query string, limit, offset i
 		vec, err := s.provider.GenerateEmbedding(ctx, query)
 		if err == nil && len(vec) > 0 {
 			vecString = formatVectorString(vec)
-		} else {
-			// fallback to zero vector or handle error
-			vecString = formatVectorString(make([]float32, 768))
 		}
-	} else {
-		vecString = formatVectorString(make([]float32, 768))
 	}
 
 	return s.repo.SearchPostsHybrid(ctx, query, vecString, limit, offset)

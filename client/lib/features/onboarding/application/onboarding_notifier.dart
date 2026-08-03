@@ -48,7 +48,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
   @override
   OnboardingState build() {
     Future.microtask(_loadTopics);
-    final user = ref.read(authNotifierProvider).value;
+    final user = ref.read(authProvider).value;
     return OnboardingState(
       isLoading: true,
       selectedTopics: user?.selectedTags.toSet() ?? const {},
@@ -89,7 +89,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
     state = state.copyWith(isSaving: true, error: null);
     try {
-      final user = ref.read(authNotifierProvider).value;
+      final user = ref.read(authProvider).value;
       if (user != null) {
         await sharedPrefs.setBool('has_seen_onboarding_${user.id}', true);
       }
@@ -98,7 +98,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       await repo.saveTopics(state.selectedTopics.toList());
       
       // Also update the isChurch flag
-      final authNotif = ref.read(authNotifierProvider.notifier);
+      final authNotif = ref.read(authProvider.notifier);
       // Update tags in auth provider to pass the router gate
       await authNotif.updateTags(state.selectedTopics.toList());
 

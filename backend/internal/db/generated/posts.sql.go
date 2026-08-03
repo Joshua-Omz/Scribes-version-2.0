@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const addScriptureRef = `-- name: AddScriptureRef :exec
@@ -248,6 +249,50 @@ func (q *Queries) GetScriptureRefs(ctx context.Context, postID uuid.UUID) ([]Get
 	for rows.Next() {
 		var i GetScriptureRefsRow
 		if err := rows.Scan(
+			&i.Book,
+			&i.Chapter,
+			&i.VerseStart,
+			&i.VerseEnd,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getScriptureRefsForPosts = `-- name: GetScriptureRefsForPosts :many
+SELECT post_id, book, chapter, verse_start, verse_end 
+FROM scripture_refs 
+WHERE post_id = ANY($1::uuid[])
+ORDER BY post_id ASC, id ASC
+`
+
+type GetScriptureRefsForPostsRow struct {
+	PostID     uuid.UUID     `json:"post_id"`
+	Book       string        `json:"book"`
+	Chapter    int32         `json:"chapter"`
+	VerseStart int32         `json:"verse_start"`
+	VerseEnd   sql.NullInt32 `json:"verse_end"`
+}
+
+func (q *Queries) GetScriptureRefsForPosts(ctx context.Context, postIDs []uuid.UUID) ([]GetScriptureRefsForPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getScriptureRefsForPosts, pq.Array(postIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetScriptureRefsForPostsRow
+	for rows.Next() {
+		var i GetScriptureRefsForPostsRow
+		if err := rows.Scan(
+			&i.PostID,
 			&i.Book,
 			&i.Chapter,
 			&i.VerseStart,

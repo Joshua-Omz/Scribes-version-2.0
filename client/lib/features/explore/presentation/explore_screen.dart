@@ -156,7 +156,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildTagsSection(WidgetRef ref, dynamic colors) {
-    final user = ref.watch(authNotifierProvider).value;
+    final user = ref.watch(authProvider).value;
     final selectedTags = user?.selectedTags ?? [];
 
     return Padding(

@@ -69,7 +69,7 @@ func main() {
 	noteSvc := note.NewService(noteRepo, draftSvc)
 	noteHandler := note.NewHandler(noteSvc)
 
-	syncRepo := sync.NewRepository(queries)
+	syncRepo := sync.NewRepository(queries, db)
 	syncSvc := sync.NewService(syncRepo)
 	syncHandler := sync.NewHandler(syncSvc)
 

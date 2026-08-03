@@ -75,3 +75,10 @@ SELECT book, chapter, verse_start, verse_end
 FROM scripture_refs 
 WHERE post_id = $1
 ORDER BY id ASC;
+
+-- name: GetScriptureRefsForPosts :many
+SELECT post_id, book, chapter, verse_start, verse_end 
+FROM scripture_refs 
+WHERE post_id = ANY($1::uuid[])
+ORDER BY post_id ASC, id ASC;
+

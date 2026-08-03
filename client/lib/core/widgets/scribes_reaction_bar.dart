@@ -14,6 +14,7 @@ class ScribesReactionBar extends ConsumerWidget {
   final Function(String) onReact;
   final VoidCallback onComment;
   final List<String> userReactions;
+  final VoidCallback? onShare;
 
   const ScribesReactionBar({
     super.key,
@@ -24,6 +25,7 @@ class ScribesReactionBar extends ConsumerWidget {
     required this.onReact,
     required this.onComment,
     this.userReactions = const [],
+    this.onShare,
   });
 
   @override
@@ -72,6 +74,17 @@ class ScribesReactionBar extends ConsumerWidget {
             color: colors.primaryText,
             colors: colors,
           ),
+          if (onShare != null) ...[
+            const SizedBox(width: 12),
+            _ReactionChip(
+              icon: HugeIcons.strokeRoundedShare01,
+              label: 'Share',
+              count: '',
+              onTap: onShare!,
+              color: colors.primaryText,
+              colors: colors,
+            ),
+          ],
         ],
       ),
     );
@@ -131,16 +144,18 @@ class _ReactionChip extends StatelessWidget {
                 color: isSelected ? displayColor.withValues(alpha: 0.15) : displayColor.withValues(alpha: 0.05),
               ),
               child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HugeIcon(icon: icon, size: 18, color: displayColor),
-            const SizedBox(width: 6),
-            Text(
-              '$label $count',
-              style: ScribesTextStyles.labelLg.copyWith(color: displayColor),
-            ),
-          ],
-        ),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HugeIcon(icon: icon, size: 18, color: displayColor),
+                  if (count.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      '$label $count',
+                      style: ScribesTextStyles.labelLg.copyWith(color: displayColor),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),

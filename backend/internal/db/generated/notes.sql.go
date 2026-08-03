@@ -188,3 +188,53 @@ func (q *Queries) UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, e
 	)
 	return i, err
 }
+
+const upsertNote = `-- name: UpsertNote :one
+INSERT INTO notes (id, author_id, content, title, notebook_id, source_type, source_label)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+ON CONFLICT (id) DO UPDATE
+SET content = EXCLUDED.content,
+    title = EXCLUDED.title,
+    notebook_id = EXCLUDED.notebook_id,
+    source_type = EXCLUDED.source_type,
+    source_label = EXCLUDED.source_label,
+    updated_at = now()
+WHERE notes.author_id = $2
+RETURNING id, author_id, content, title, notebook_id, source_type, source_label, updated_at, created_at, server_sequence
+`
+
+type UpsertNoteParams struct {
+	ID          uuid.UUID          `json:"id"`
+	AuthorID    uuid.UUID          `json:"author_id"`
+	Content     json.RawMessage    `json:"content"`
+	Title       sql.NullString     `json:"title"`
+	NotebookID  uuid.NullUUID      `json:"notebook_id"`
+	SourceType  NullNoteSourceType `json:"source_type"`
+	SourceLabel sql.NullString     `json:"source_label"`
+}
+
+func (q *Queries) UpsertNote(ctx context.Context, arg UpsertNoteParams) (Note, error) {
+	row := q.db.QueryRowContext(ctx, upsertNote,
+		arg.ID,
+		arg.AuthorID,
+		arg.Content,
+		arg.Title,
+		arg.NotebookID,
+		arg.SourceType,
+		arg.SourceLabel,
+	)
+	var i Note
+	err := row.Scan(
+		&i.ID,
+		&i.AuthorID,
+		&i.Content,
+		&i.Title,
+		&i.NotebookID,
+		&i.SourceType,
+		&i.SourceLabel,
+		&i.UpdatedAt,
+		&i.CreatedAt,
+		&i.ServerSequence,
+	)
+	return i, err
+}

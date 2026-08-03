@@ -28,3 +28,8 @@ DELETE FROM user_tags WHERE user_id = $1;
 
 -- name: AddUserTag :exec
 INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING;
+
+-- name: GetPostTagsForPosts :many
+SELECT pt.post_id, t.display_name FROM tags t
+JOIN post_tags pt ON pt.tag_id = t.id
+WHERE pt.post_id = ANY($1::uuid[]);

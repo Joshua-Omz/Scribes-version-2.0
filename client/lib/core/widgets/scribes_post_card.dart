@@ -287,6 +287,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 onReact: widget.onReact ?? (type) {},
                 onComment: widget.onComment ?? () {},
                 userReactions: widget.userReactionType != null ? [widget.userReactionType!] : [],
+                onShare: widget.onShare,
               ),
             ]
           ],

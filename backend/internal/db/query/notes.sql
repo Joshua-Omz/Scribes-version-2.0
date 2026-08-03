@@ -34,3 +34,16 @@ RETURNING *;
 -- name: DeleteNote :exec
 DELETE FROM notes
 WHERE id = $1 AND author_id = $2;
+
+-- name: UpsertNote :one
+INSERT INTO notes (id, author_id, content, title, notebook_id, source_type, source_label)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+ON CONFLICT (id) DO UPDATE
+SET content = EXCLUDED.content,
+    title = EXCLUDED.title,
+    notebook_id = EXCLUDED.notebook_id,
+    source_type = EXCLUDED.source_type,
+    source_label = EXCLUDED.source_label,
+    updated_at = now()
+WHERE notes.author_id = $2
+RETURNING *;

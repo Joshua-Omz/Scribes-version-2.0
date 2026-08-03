@@ -1,0 +1,5 @@
+### Architecture & Performance Invariants
+* **N+1 Query Prevention (Feed/Data):** Never execute database queries in a loop over returned rows. Always extract IDs and use bulk `IN` queries (e.g., `GetTagsForPosts(ctx, postIDs)`), then map the results in-memory.
+* **Vector Search (Search):** Never pass a zero-vector (`[]float32{0, ...}`) to `pgvector` during hybrid search if embeddings fail, as this distorts lexical fallback scoring. Pass `nil` and handle NULL vectors in the underlying SQL query.
+* **Go Channel Safety (Notifications):** When broadcasting to a map of channels (e.g., under an `RLock`), do not `close()` a subscriber's channel when they unsubscribe. Simply delete the channel from the map (`delete(subs, ch)`) to avoid panics on concurrent sends.
+* **Offline Syncing (Sync/Client):** Do not fire individual REST requests (e.g., per-keystroke) to sync offline-first data. Batch offline mutations locally and send them via a dedicated bulk `/sync/push` endpoint.
