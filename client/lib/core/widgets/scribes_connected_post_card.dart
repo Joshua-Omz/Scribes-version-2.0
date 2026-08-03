@@ -15,11 +15,13 @@ import '../../features/auth/application/auth_notifier.dart';
 class ScribesConnectedPostCard extends ConsumerWidget {
   final Post post;
   final bool isFeatured;
+  final bool isExploreScreen;
 
   const ScribesConnectedPostCard({
     super.key,
     required this.post,
     this.isFeatured = false,
+    this.isExploreScreen = false,
   });
 
   @override
@@ -86,6 +88,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
             scriptureRefs: post.scriptureRefs,
             tags: post.tags,
             isFeatured: isFeatured,
+            isExploreScreen: isExploreScreen,
             amenCount: amenCount,
             insightCount: insightCount,
             thoughtProvokingCount: thoughtProvokingCount,
@@ -122,7 +125,8 @@ class ScribesConnectedPostCard extends ConsumerWidget {
               ref.read(postReactionsProvider(post.id).notifier).react(type, knownUserReaction: null);
             },
           ),
-        Divider(height: 1, thickness: 1, color: colors.border),
+        if (!isExploreScreen)
+          Divider(height: 1, thickness: 1, color: colors.border),
       ],
     );
   }

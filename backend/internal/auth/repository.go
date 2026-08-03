@@ -114,6 +114,8 @@ func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (User, error
 		Email:          dbUser.Email,
 		Bio:            bio,
 		Role:           string(dbUser.Role),
+		IsChurch:       dbUser.IsChurch,
+		SelectedTags:   dbUser.SelectedTags,
 		CreatedAt:      dbUser.CreatedAt,
 		FollowersCount: int(dbUser.FollowersCount),
 		FollowingCount: int(dbUser.FollowingCount),

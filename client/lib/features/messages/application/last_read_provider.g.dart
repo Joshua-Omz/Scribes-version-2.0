@@ -41,7 +41,7 @@ final class LastReadNotifierProvider
   }
 }
 
-String _$lastReadNotifierHash() => r'b743023da2c023d10cb73b1ef98c15f621b2f714';
+String _$lastReadNotifierHash() => r'8a8223894d45c8cb8ab1ab9af57807ade43e190e';
 
 abstract class _$LastReadNotifier extends $Notifier<Map<String, DateTime>> {
   Map<String, DateTime> build();

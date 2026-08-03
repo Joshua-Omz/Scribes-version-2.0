@@ -41,6 +41,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/posts/:id", postHandler.GetByID)
 	r.GET("/posts/:id/versions", postHandler.ListVersions)
 	r.GET("/posts/:id/versions/:version", postHandler.GetVersion)
+	r.GET("/posts/:id/export", postHandler.Export)
 	
 	// Public social endpoints for posts
 	r.GET("/posts/:id/reactions", socialHandler.GetReactions)

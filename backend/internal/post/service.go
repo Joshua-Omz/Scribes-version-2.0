@@ -5,8 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
+
+	"fmt"
 
 	"scribes-api/internal/db/generated"
+	"scribes-api/pkg/quill"
 
 	"github.com/google/uuid"
 )
@@ -307,4 +311,54 @@ func (s *Service) GetVersion(ctx context.Context, id uuid.UUID, version int32) (
 		return PostVersion{}, err
 	}
 	return versionInfo, nil
+}
+
+func (s *Service) Export(ctx context.Context, id uuid.UUID, format string) ([]byte, error) {
+	post, err := s.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var contentStr string
+	if format == "md" {
+		contentStr, err = quill.ToMarkdown(post.Content)
+	} else {
+		contentStr, err = quill.ToPlainText(post.Content)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	var sb strings.Builder
+	
+	// Add Caption if present
+	if post.Caption != nil {
+		if format == "md" {
+			sb.WriteString(fmt.Sprintf("# %s\n\n", *post.Caption))
+		} else {
+			sb.WriteString(fmt.Sprintf("%s\n\n", *post.Caption))
+		}
+	}
+
+	// Add Author
+	sb.WriteString(fmt.Sprintf("By: %s (@%s)\n", post.AuthorName, post.AuthorHandle))
+	sb.WriteString(fmt.Sprintf("Published: %s\n\n", post.PublishedAt.Format("Jan 02, 2006")))
+
+	// Add Scripture Refs
+	if len(post.ScriptureRefs) > 0 {
+		sb.WriteString("Scripture References:\n")
+		for _, ref := range post.ScriptureRefs {
+			if ref.VerseEnd.Valid {
+				sb.WriteString(fmt.Sprintf("- %s %d:%d-%d\n", ref.Book, ref.Chapter, ref.VerseStart, ref.VerseEnd.Int32))
+			} else {
+				sb.WriteString(fmt.Sprintf("- %s %d:%d\n", ref.Book, ref.Chapter, ref.VerseStart))
+			}
+		}
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString("---\n\n")
+	sb.WriteString(contentStr)
+
+	return []byte(sb.String()), nil
 }

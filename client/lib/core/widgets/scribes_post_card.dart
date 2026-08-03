@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:scribes/core/theme/scribes_radius.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -35,6 +36,9 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final String? userReactionType;
   final bool isSaved;
   final VoidCallback? onSaveToggle;
+  final VoidCallback? onShare;
+
+  final bool isExploreScreen;
 
   const ScribesPostCard({
     super.key,
@@ -60,6 +64,8 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     this.userReactionType,
     this.isSaved = false,
     this.onSaveToggle,
+    this.onShare,
+    this.isExploreScreen = false,
   });
 
   @override
@@ -78,15 +84,35 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
     return ScribesBounceButton(
       onTap: widget.onTap ?? () {},
       scaleFactor: 0.98,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-          color: colors.background, // Match screen background for flat look
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: ClipRRect(
+        borderRadius: widget.isExploreScreen 
+            ? BorderRadius.circular(20) 
+            : BorderRadius.zero,
+        child: BackdropFilter(
+          filter: widget.isExploreScreen
+              ? ImageFilter.blur(sigmaX: 12, sigmaY: 12)
+              : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: widget.isExploreScreen ? 16 : 10,
+              vertical: widget.isExploreScreen ? 16 : 10,
+            ),
+            decoration: widget.isExploreScreen
+                ? BoxDecoration(
+                    color: colors.surfaceRaised.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: colors.border.withValues(alpha: 0.5),
+                    ),
+                  )
+                : BoxDecoration(
+                    color: colors.background, // Match screen background for flat look
+                  ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
             if (widget.isFeatured)
               Align(
                 alignment: Alignment.topLeft,
@@ -107,21 +133,33 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                     onTap: widget.onAuthorTap ?? () {},
                   ),
                 ),
-                if (widget.onSaveToggle != null)
-                  IconButton(
-                    onPressed: widget.onSaveToggle,
-                    icon: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: widget.isSaved ? colors.gold : Colors.transparent,
-                        borderRadius: BorderRadius.circular(ScribesRadius.button),
-                      ),
-                      child: HugeIcon(icon: HugeIcons.strokeRoundedBookmark01,
-                        color: widget.isSaved ? colors.surface : colors.secondaryText,
-                        size: 20,
+                  if (widget.onShare != null)
+                    IconButton(
+                      onPressed: widget.onShare,
+                      icon: Container(
+                        padding: const EdgeInsets.all(6),
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedShare01,
+                          color: colors.secondaryText,
+                          size: 20,
+                        ),
                       ),
                     ),
-                  ),
+                  if (widget.onSaveToggle != null)
+                    IconButton(
+                      onPressed: widget.onSaveToggle,
+                      icon: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: widget.isSaved ? colors.gold : Colors.transparent,
+                          borderRadius: BorderRadius.circular(ScribesRadius.button),
+                        ),
+                        child: HugeIcon(icon: HugeIcons.strokeRoundedBookmark01,
+                          color: widget.isSaved ? colors.surface : colors.secondaryText,
+                          size: 20,
+                        ),
+                      ),
+                    ),
               ],
             ),
             if (widget.scriptureRefs.isNotEmpty)
@@ -237,20 +275,24 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
 
           
             
-            const SizedBox(height: 16),
-            const ScribesOrnamentDivider(),
-            const SizedBox(height: 20),
-            ScribesReactionBar(
-              amenCount: widget.amenCount,
-              insightCount: widget.insightCount,
-              thoughtProvokingCount: widget.thoughtProvokingCount,
-              commentCount: widget.commentCount,
-              onReact: widget.onReact ?? (type) {},
-              onComment: widget.onComment ?? () {},
-              userReactions: widget.userReactionType != null ? [widget.userReactionType!] : [],
-            )
+            if (!widget.isExploreScreen) ...[
+              const SizedBox(height: 16),
+              const ScribesOrnamentDivider(),
+              const SizedBox(height: 16),
+              ScribesReactionBar(
+                amenCount: widget.amenCount,
+                insightCount: widget.insightCount,
+                thoughtProvokingCount: widget.thoughtProvokingCount,
+                commentCount: widget.commentCount,
+                onReact: widget.onReact ?? (type) {},
+                onComment: widget.onComment ?? () {},
+                userReactions: widget.userReactionType != null ? [widget.userReactionType!] : [],
+              ),
+            ]
           ],
         ),
+      ),
+      ),
       ),
     );
   }

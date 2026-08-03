@@ -70,7 +70,7 @@ class PublicProfileScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           TweenAnimationBuilder<double>(
                             duration: const Duration(milliseconds: 600),
@@ -98,39 +98,19 @@ class PublicProfileScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Consumer(
-                                      builder: (context, ref, child) {
-                                        final postsState = ref.watch(userPostsProvider(userId));
-                                        final postsCount = postsState.value?.length ?? 0;
-                                        return _buildStatItem(
-                                          'Posts',
-                                          postsCount.toString(),
-                                          colors,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                if (user.bio != null && user.bio!.isNotEmpty) ...[
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    user.bio!,
-                                    style: ScribesTextStyles.bodyMd.copyWith(
-                                      color: colors.primaryText,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
+                          const Spacer(),
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final postsState = ref.watch(userPostsProvider(userId));
+                              final postsCount = postsState.value?.length ?? 0;
+                              return _buildStatItem(
+                                'Posts',
+                                postsCount.toString(),
+                                colors,
+                              );
+                            },
                           ),
+                          const SizedBox(width: 32),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -147,7 +127,16 @@ class PublicProfileScreen extends ConsumerWidget {
                           color: colors.secondaryText,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      if (user.bio != null && user.bio!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          user.bio!,
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.primaryText,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
                       _buildActionButtons(context, ref, colors),
                     ],
                   ),
@@ -207,36 +196,39 @@ class PublicProfileScreen extends ConsumerWidget {
 
     return followState.when(
       loading: () => const SizedBox(
-        width: 120,
         height: 40,
         child: Center(child: ScribesLoadingIndicator()),
       ),
-      error: (error, stack) => const SizedBox(width: 120, height: 40),
+      error: (error, stack) => const SizedBox(height: 40),
       data: (isFollowing) {
         Widget followBtn;
         if (isFollowing) {
-          followBtn = OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: colors.primaryText,
-              side: BorderSide(color: colors.border),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+          followBtn = Expanded(
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.primaryText,
+                side: BorderSide(color: colors.border),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () {
+                ref.read(isFollowingUserProvider(userId).notifier).toggleFollow();
+              },
+              child: Text('Unfollow', style: ScribesTextStyles.labelLg),
             ),
-            onPressed: () {
-              ref.read(isFollowingUserProvider(userId).notifier).toggleFollow();
-            },
-            child: Text('Unfollow', style: ScribesTextStyles.labelLg),
           );
         } else {
-          followBtn = FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: colors.primaryText,
-              foregroundColor: colors.background,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+          followBtn = Expanded(
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.primaryText,
+                foregroundColor: colors.background,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              onPressed: () {
+                ref.read(isFollowingUserProvider(userId).notifier).toggleFollow();
+              },
+              child: Text('Follow', style: ScribesTextStyles.labelLg),
             ),
-            onPressed: () {
-              ref.read(isFollowingUserProvider(userId).notifier).toggleFollow();
-            },
-            child: Text('Follow', style: ScribesTextStyles.labelLg),
           );
         }
         if (currentUser?.id == userId) {
@@ -244,58 +236,52 @@ class PublicProfileScreen extends ConsumerWidget {
         }
 
         return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             followBtn,
-            const SizedBox(width: 12),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.surfaceRaised,
-                foregroundColor: colors.primaryText,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+            const SizedBox(width: 8),
+            Expanded(
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.surfaceRaised,
+                  foregroundColor: colors.primaryText,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(color: colors.border),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: colors.border),
-                ),
-              ),
-              onPressed: () async {
-                final conversations = await ref.read(conversationsProvider.future);
-                // 2. Check if a conversation with this specific user already exists
-                final existingConversation = conversations
-                    .where(
-                      (conv) =>
-                          conv.userAId == userId || conv.userBId == userId,
-                    )
-                    .firstOrNull;
+                onPressed: () async {
+                  final conversations = await ref.read(conversationsProvider.future);
+                  final existingConversation = conversations
+                      .where(
+                        (conv) =>
+                            conv.userAId == userId || conv.userBId == userId,
+                      )
+                      .firstOrNull;
 
-                if (!context.mounted) return;
+                  if (!context.mounted) return;
 
-                // 3. If a conversation exists, push straight to the conversation screen!
-                if (existingConversation != null) {
-                  context.push('/conversation/${existingConversation.id}');
-                } else {
-                  try {
-                    final repo = ref.read(messageRepositoryProvider);
-                    final conv = await repo.getOrCreateDirectConversation(userId);
-                    if (!context.mounted) return;
-                    context.push('/conversation/${conv.id}');
-                  } catch (e) {
-                    if (!context.mounted) return;
-                    // If it throws, it means we are not mutuals or offline.
-                    // To be safe, just show the request modal.
-                    DmRequestModal.show(context, userId);
+                  if (existingConversation != null) {
+                    context.push('/conversation/${existingConversation.id}');
+                  } else {
+                    try {
+                      final repo = ref.read(messageRepositoryProvider);
+                      final conv = await repo.getOrCreateDirectConversation(userId);
+                      if (!context.mounted) return;
+                      context.push('/conversation/${conv.id}');
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      DmRequestModal.show(context, userId);
+                    }
                   }
-                }
-              },
-              icon: HugeIcon(
-                icon: HugeIcons.strokeRoundedMail01,
-                size: 18,
-                color: colors.primaryText,
+                },
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedMail01,
+                  size: 18,
+                  color: colors.primaryText,
+                ),
+                label: Text('Message', style: ScribesTextStyles.labelLg),
               ),
-              label: Text('Message', style: ScribesTextStyles.labelLg),
             ),
           ],
         );

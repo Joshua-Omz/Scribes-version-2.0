@@ -17,6 +17,7 @@ import '../../../core/widgets/scribes_error_state.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_user_card.dart';
 import '../../onboarding/application/onboarding_notifier.dart';
+import '../../auth/application/auth_notifier.dart';
 import 'topic_selection_screen.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -155,7 +156,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildTagsSection(WidgetRef ref, dynamic colors) {
-    final onboardingState = ref.watch(onboardingProvider);
+    final user = ref.watch(authNotifierProvider).value;
+    final selectedTags = user?.selectedTags ?? [];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
@@ -185,7 +187,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       ),
                       child: TopicSelectionScreen(
                         isModal: true,
-                        onContinue: () => Navigator.of(ctx).pop(),
+                        onContinue: () {
+                          Navigator.of(ctx).pop();
+                          ref.invalidate(exploreForYouProvider);
+                        },
                       ),
                     ),
                   );
@@ -194,7 +199,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ],
           ),
           const SizedBox(height: 8),
-          if (onboardingState.selectedTopics.isEmpty)
+          if (selectedTags.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -223,7 +228,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                             ),
                             child: TopicSelectionScreen(
                               isModal: true,
-                              onContinue: () => Navigator.of(ctx).pop(),
+                              onContinue: () {
+                                Navigator.of(ctx).pop();
+                                ref.invalidate(exploreForYouProvider);
+                              },
                             ),
                           ),
                         );
@@ -238,7 +246,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
-              children: onboardingState.selectedTopics.map((tag) {
+              children: selectedTags.map((tag) {
                 return Chip(
                   label: Text(tag),
                   labelStyle: ScribesTextStyles.labelSm.copyWith(color: colors.primaryText),
@@ -375,7 +383,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
         ),
         SizedBox(
-          height: 280,
+          height: 340,
           child: state.when(
             data: (posts) {
               if (posts.isEmpty) {
@@ -393,8 +401,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 separatorBuilder: (context, index) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    width: 300,
-                    child: ScribesConnectedPostCard(post: posts[index], isFeatured: false),
+                    width: 320,
+                    child: ScribesConnectedPostCard(post: posts[index], isFeatured: false, isExploreScreen: true),
                   );
                 },
               );
@@ -485,6 +493,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   child: ScribesConnectedPostCard(
                     post: post,
                     isFeatured: false,
+                    isExploreScreen: true,
                   ),
                 );
               },

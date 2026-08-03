@@ -289,3 +289,34 @@ func (h *Handler) GetVersion(c *gin.Context) {
 
 	respond.JSON(c, http.StatusOK, versionInfo)
 }
+
+func (h *Handler) Export(c *gin.Context) {
+	idParam := c.Param("id")
+	postID, err := uuid.Parse(idParam)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid post id")
+		return
+	}
+
+	format := c.Query("format")
+	if format != "md" && format != "txt" {
+		format = "txt"
+	}
+
+	exported, err := h.svc.Export(c.Request.Context(), postID, format)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			respond.Error(c, http.StatusNotFound, "post not found")
+			return
+		}
+		respond.Error(c, http.StatusInternalServerError, "failed to export post")
+		return
+	}
+
+	c.Header("Content-Disposition", "attachment; filename=scribes_post_"+idParam+"."+format)
+	if format == "md" {
+		c.Data(http.StatusOK, "text/markdown", exported)
+	} else {
+		c.Data(http.StatusOK, "text/plain", exported)
+	}
+}

@@ -61,4 +61,13 @@ class PostApi {
     if (data == null) return [];
     return data as List<dynamic>;
   }
+
+  Future<String> exportPost(String id, String format) async {
+    final response = await _dio.get(
+      '${Endpoints.posts}/$id/export',
+      queryParameters: {'format': format},
+      options: Options(responseType: ResponseType.plain),
+    );
+    return response.data as String;
+  }
 }

@@ -51,4 +51,8 @@ class PostRepository {
     final data = await _api.getSimilarPosts(id);
     return data.map((e) => Post.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<String> exportPost(String id, String format) async {
+    return _api.exportPost(id, format);
+  }
 }
