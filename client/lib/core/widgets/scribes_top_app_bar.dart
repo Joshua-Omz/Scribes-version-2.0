@@ -78,7 +78,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                       ScribesIconButton(
                         icon: HugeIcons.strokeRoundedMail01,
                         onPressed: () {
-                          context.push('/inbox');
+                          context.go('/inbox');
                         },
                         color: colors.secondaryText,
                       ),

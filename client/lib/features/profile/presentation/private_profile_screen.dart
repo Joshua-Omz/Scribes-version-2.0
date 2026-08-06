@@ -83,7 +83,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                   IconButton(
                     icon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, color: colors.primaryText),
                     onPressed: () {
-                      context.push('/inbox');
+                      context.go('/inbox');
                     },
                   ),
                   Consumer(

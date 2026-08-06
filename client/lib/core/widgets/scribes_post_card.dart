@@ -84,23 +84,15 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
     return ScribesBounceButton(
       onTap: widget.onTap ?? () {},
       scaleFactor: 0.98,
-      child: ClipRRect(
-        borderRadius: widget.isExploreScreen 
-            ? BorderRadius.circular(20) 
-            : BorderRadius.zero,
-        child: BackdropFilter(
-          filter: widget.isExploreScreen
-              ? ImageFilter.blur(sigmaX: 12, sigmaY: 12)
-              : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.isExploreScreen ? 16 : 10,
-              vertical: widget.isExploreScreen ? 16 : 10,
-            ),
-            decoration: widget.isExploreScreen
-                ? BoxDecoration(
-                    color: colors.surfaceRaised.withValues(alpha: 0.4),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: EdgeInsets.symmetric(
+          horizontal: widget.isExploreScreen ? 16 : 10,
+          vertical: widget.isExploreScreen ? 16 : 10,
+        ),
+        decoration: widget.isExploreScreen
+            ? BoxDecoration(
+                color: colors.surfaceRaised.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: colors.border.withValues(alpha: 0.5),
@@ -212,22 +204,11 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            ShaderMask(
-              shaderCallback: (Rect bounds) {
-                return LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [colors.secondaryText, colors.secondaryText.withValues(alpha: 0.2)],
-                  stops: const [0.7, 1.0],
-                ).createShader(bounds);
-              },
-              blendMode: BlendMode.srcIn,
-              child: Text(
-                widget.bodyExcerpt,
-                style: ScribesTextStyles.bodyLg,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
+            Text(
+              widget.bodyExcerpt,
+              style: ScribesTextStyles.bodyLg.copyWith(color: colors.secondaryText),
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
             ),
             
             if (hasEmbeddedContent) ...[
@@ -292,8 +273,6 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
             ]
           ],
         ),
-      ),
-      ),
       ),
     );
   }

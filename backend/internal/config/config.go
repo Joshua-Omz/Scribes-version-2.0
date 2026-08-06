@@ -16,6 +16,11 @@ type Config struct {
 	BcryptCost                int
 	DummyHash                 string
 	EngagementRefreshInterval string
+	R2AccountID               string
+	R2AccessKeyID             string
+	R2SecretAccessKey         string
+	R2BucketName              string
+	CDNDomain                 string
 }
 
 func Load() Config {
@@ -57,6 +62,12 @@ func Load() Config {
 		refreshStr = "1h" // Default to 1 hour
 	}
 
+	r2AccountID := os.Getenv("R2_ACCOUNT_ID")
+	r2AccessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
+	r2SecretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	r2BucketName := os.Getenv("R2_BUCKET_NAME")
+	cdnDomain := os.Getenv("CDN_DOMAIN")
+
 	return Config{
 		DatabaseURL:               dbURL,
 		JWTSecret:                 jwtSecret,
@@ -65,5 +76,10 @@ func Load() Config {
 		BcryptCost:                cost,
 		DummyHash:                 dummyHash,
 		EngagementRefreshInterval: refreshStr,
+		R2AccountID:               r2AccountID,
+		R2AccessKeyID:             r2AccessKeyID,
+		R2SecretAccessKey:         r2SecretAccessKey,
+		R2BucketName:              r2BucketName,
+		CDNDomain:                 cdnDomain,
 	}
 }

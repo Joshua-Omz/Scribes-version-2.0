@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/scribes_connected_post_card.dart';
+import '../../../core/widgets/scribes_explore_card.dart';
 import '../../../core/widgets/scribes_icon_button.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
@@ -402,7 +403,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 itemBuilder: (context, index) {
                   return SizedBox(
                     width: 320,
-                    child: ScribesConnectedPostCard(post: posts[index], isFeatured: false, isExploreScreen: true),
+                    child: ScribesExploreCard(
+                      post: posts[index],
+                      categoryLabel: title == 'Most Insightful' ? 'Insightful' 
+                                   : title == 'Prophetic of the Times' ? 'Prophetic' 
+                                   : 'Affirmed',
+                      onTap: () => context.push('/post/${posts[index].id}'),
+                    ),
                   );
                 },
               );
