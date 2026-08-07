@@ -162,41 +162,72 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
               ),
               child: Column(
                 children: [
-                  TweenAnimationBuilder<double>(
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeOutBack,
-                    tween: Tween<double>(begin: 0, end: 1),
-                    builder: (context, value, child) {
-                      return Transform.scale(
-                        scale: value,
-                        child: Opacity(
-                          opacity: value.clamp(0.0, 1.0),
-                          child: child,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.easeOutBack,
+                        tween: Tween<double>(begin: 0, end: 1),
+                        builder: (context, value, child) {
+                          return Transform.scale(
+                            scale: value,
+                            child: Opacity(
+                              opacity: value.clamp(0.0, 1.0),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: ScribesAvatar(
+                          authorName: user.displayName,
+                          radius: 40,
                         ),
-                      );
-                    },
-                    child: ScribesAvatar(
-                      authorName: user.displayName,
-                      radius: 40,
-                    ),
+                      ),
+                      const Spacer(),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final postsState = ref.watch(myPostsProvider);
+                          final postsCount = postsState.value?.length ?? 0;
+                          return Row(
+                            children: [
+                              _buildStatItem('Posts', postsCount.toString(), colors),
+                              const SizedBox(width: 24),
+                              _buildStatItem('Followers', user.followersCount.toString(), colors, onTap: () {
+                                context.push('/users/${user.id}/connections?tab=0');
+                              }),
+                              const SizedBox(width: 24),
+                              _buildStatItem('Following', user.followingCount.toString(), colors, onTap: () {
+                                context.push('/users/${user.id}/connections?tab=1');
+                              }),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    user.displayName,
-                    style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      user.displayName,
+                      style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '@${user.handle}',
-                    style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '@${user.handle}',
+                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    Align(
+                      alignment: Alignment.centerLeft,
                       child: Text(
                         user.bio!,
-                        textAlign: TextAlign.center,
                         style: ScribesTextStyles.bodyMd.copyWith(
                           color: colors.primaryText,
                         ),
@@ -204,29 +235,19 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen> {
                     ),
                   ],
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildStatItem('Followers', user.followersCount.toString(), colors, onTap: () {
-                        context.push('/users/${user.id}/connections?tab=0');
-                      }),
-                      const SizedBox(width: 40),
-                      _buildStatItem('Following', user.followingCount.toString(), colors, onTap: () {
-                        context.push('/users/${user.id}/connections?tab=1');
-                      }),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.primaryText,
-                      side: BorderSide(color: colors.border),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.primaryText,
+                        side: BorderSide(color: colors.border),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      ),
+                      onPressed: () {
+                        context.push('/profile/edit');
+                      },
+                      child: Text('Edit Profile', style: ScribesTextStyles.labelLg),
                     ),
-                    onPressed: () {
-                      context.push('/profile/edit');
-                    },
-                    child: Text('Edit Profile', style: ScribesTextStyles.labelLg),
                   ),
                 ],
               ),

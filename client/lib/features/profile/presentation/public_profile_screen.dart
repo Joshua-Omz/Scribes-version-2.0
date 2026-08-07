@@ -103,14 +103,30 @@ class PublicProfileScreen extends ConsumerWidget {
                             builder: (context, ref, child) {
                               final postsState = ref.watch(userPostsProvider(userId));
                               final postsCount = postsState.value?.length ?? 0;
-                              return _buildStatItem(
-                                'Posts',
-                                postsCount.toString(),
-                                colors,
+                              return Row(
+                                children: [
+                                  _buildStatItem(
+                                    'Posts',
+                                    postsCount.toString(),
+                                    colors,
+                                  ),
+                                  const SizedBox(width: 24),
+                                  _buildStatItem(
+                                    'Followers',
+                                    user.followersCount.toString(),
+                                    colors,
+                                  ),
+                                  const SizedBox(width: 24),
+                                  _buildStatItem(
+                                    'Following',
+                                    user.followingCount.toString(),
+                                    colors,
+                                  ),
+                                ],
                               );
                             },
                           ),
-                          const SizedBox(width: 32),
+                          const SizedBox(width: 16),
                         ],
                       ),
                       const SizedBox(height: 16),

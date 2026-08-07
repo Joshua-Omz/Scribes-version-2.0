@@ -167,9 +167,17 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 		// Admin & Reporting endpoints
 		protected.POST("/reports", adminHandler.SubmitReport)
-		// For a full implementation, these next two would be wrapped in a super_admin check middleware
-		protected.GET("/admin/reports", adminHandler.GetPendingReports)
-		protected.POST("/admin/reports/:id/status", adminHandler.UpdateReportStatus)
+	}
+
+	// Admin routes
+	admin := r.Group("/admin")
+	admin.Use(middleware.ValidateJWT(jwtSecret))
+	admin.Use(middleware.RequireRole("super_admin"))
+	{
+		admin.GET("/reports", adminHandler.GetPendingReports)
+		admin.POST("/reports/:id/status", adminHandler.UpdateReportStatus)
+		admin.POST("/categories", adminHandler.CreateCategory)
+		admin.PATCH("/categories/:id/deprecate", adminHandler.DeprecateCategory)
 	}
 
 	return r

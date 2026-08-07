@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
 import '../../features/posts/domain/post.dart';
@@ -28,7 +29,7 @@ class ScribesExploreCard extends ConsumerWidget {
     final colors = ref.watch(themeProvider);
 
     return ScribesBounceButton(
-      onTap: onTap ?? () {},
+      onTap: onTap ?? () => context.push('/posts/${post.id}'),
       scaleFactor: 0.98,
       child: Container(
         width: 320,

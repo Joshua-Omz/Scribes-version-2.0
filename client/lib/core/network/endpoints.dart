@@ -19,7 +19,7 @@ class Endpoints {
 
   // Social
   static const String comments = '/comments';
-  static const String follow = '/dm';
+  static String follow(String userId) => '/users/$userId/follow';
   static const String saved = '/saved';
 
   // Users
@@ -39,4 +39,8 @@ class Endpoints {
   static const String notificationsClearAll = '/notifications/clear-all';
   static const String notificationsBulkDelete = '/notifications/bulk-delete';
   static const String notificationsBulkRead = '/notifications/bulk-read';
+
+  // Sync
+  static const String syncPull = '/sync';
+  static const String syncPush = '/sync/push';
 }

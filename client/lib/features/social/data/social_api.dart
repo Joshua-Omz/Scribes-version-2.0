@@ -71,11 +71,11 @@ class SocialApi {
   // ── Follows ────────────────────────────────────
 
   Future<void> followUser(String userId) async {
-    await _dio.post('${Endpoints.users}/$userId/follow');
+    await _dio.post(Endpoints.follow(userId));
   }
 
   Future<void> unfollowUser(String userId) async {
-    await _dio.delete('${Endpoints.users}/$userId/follow');
+    await _dio.delete(Endpoints.follow(userId));
   }
 
   Future<bool> isFollowing(String userId) async {

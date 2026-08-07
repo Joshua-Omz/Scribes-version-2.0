@@ -279,4 +279,9 @@ Build these once in `core/widgets/` before any screen — every screen in the de
 | Widget | Used by | Key behaviour |
 |---|---|---|
 | `ScribesOrnamentDivider` | Post Detail, Compose, Profile, Explore | 0.5px rule + centred gold medallion SVG, 12–20% opacity |
-| `ScribesPostCa
+| `ScribesPostCard` | Feed, Profile, Explore | Post rendering |
+
+---
+
+## 8. Invariants
+- **API Contract Verification**: When defining frontend endpoints (e.g. in `endpoints.dart`), rigorously verify the path string matches the backend API contract. Do not rely on copy-pasting from neighboring constants.

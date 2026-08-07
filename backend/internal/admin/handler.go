@@ -87,3 +87,11 @@ func (h *Handler) UpdateReportStatus(c *gin.Context) {
 	}
 	respond.JSON(c, http.StatusOK, gin.H{"status": "updated"})
 }
+
+func (h *Handler) CreateCategory(c *gin.Context) {
+	respond.Error(c, http.StatusNotImplemented, "not implemented")
+}
+
+func (h *Handler) DeprecateCategory(c *gin.Context) {
+	respond.Error(c, http.StatusNotImplemented, "not implemented")
+}

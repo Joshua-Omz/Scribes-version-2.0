@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'connection/connection.dart' as connection;
-
+import 'daos/notes_dao.dart';
+import 'daos/drafts_dao.dart';
+import 'daos/posts_dao.dart';
 part 'drift_database.g.dart';
 
 class Drafts extends Table {
@@ -11,6 +13,8 @@ class Drafts extends Table {
   TextColumn get sermonSource => text().nullable()();
   TextColumn get scriptureTags => text().nullable()();
   BoolColumn get isSynced => boolean().withDefault(const Constant(true))();
+  IntColumn get serverSequence => integer().nullable()();
+  BoolColumn get localOnly => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -32,6 +36,7 @@ class Posts extends Table {
   TextColumn get sermonSource => text().nullable()(); // JSON string
   TextColumn get scriptureTags => text().nullable()(); // JSON list
   BoolColumn get isDeleted => boolean()();
+  IntColumn get serverSequence => integer().nullable()();
   DateTimeColumn get publishedAt => dateTime()();
   
   @override
@@ -55,6 +60,8 @@ class Notes extends Table {
   TextColumn get title => text().nullable()();
   TextColumn get notebookId => text().nullable()();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+  IntColumn get serverSequence => integer().nullable()();
+  BoolColumn get localOnly => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -98,12 +105,15 @@ class Messages extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages])
+@DriftDatabase(
+  tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages],
+  daos: [NotesDao, DraftsDao, PostsDao],
+)
 class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(connection.openConnection());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration {
@@ -140,6 +150,13 @@ class ScribesDatabase extends _$ScribesDatabase {
         }
         if (from < 9) {
           await m.addColumn(conversations, conversations.isHidden);
+        }
+        if (from < 10) {
+          await m.addColumn(drafts, drafts.serverSequence);
+          await m.addColumn(drafts, drafts.localOnly);
+          await m.addColumn(posts, posts.serverSequence);
+          await m.addColumn(notes, notes.serverSequence);
+          await m.addColumn(notes, notes.localOnly);
         }
       },
     );

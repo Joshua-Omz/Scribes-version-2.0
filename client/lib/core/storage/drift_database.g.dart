@@ -87,6 +87,32 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _serverSequenceMeta = const VerificationMeta(
+    'serverSequence',
+  );
+  @override
+  late final GeneratedColumn<int> serverSequence = GeneratedColumn<int>(
+    'server_sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localOnlyMeta = const VerificationMeta(
+    'localOnly',
+  );
+  @override
+  late final GeneratedColumn<bool> localOnly = GeneratedColumn<bool>(
+    'local_only',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("local_only" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -118,6 +144,8 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
     sermonSource,
     scriptureTags,
     isSynced,
+    serverSequence,
+    localOnly,
     createdAt,
     updatedAt,
   ];
@@ -184,6 +212,21 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
         isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
       );
     }
+    if (data.containsKey('server_sequence')) {
+      context.handle(
+        _serverSequenceMeta,
+        serverSequence.isAcceptableOrUnknown(
+          data['server_sequence']!,
+          _serverSequenceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_only')) {
+      context.handle(
+        _localOnlyMeta,
+        localOnly.isAcceptableOrUnknown(data['local_only']!, _localOnlyMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -237,6 +280,14 @@ class $DraftsTable extends Drafts with TableInfo<$DraftsTable, Draft> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
       )!,
+      serverSequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_sequence'],
+      ),
+      localOnly: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}local_only'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -262,6 +313,8 @@ class Draft extends DataClass implements Insertable<Draft> {
   final String? sermonSource;
   final String? scriptureTags;
   final bool isSynced;
+  final int? serverSequence;
+  final bool localOnly;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Draft({
@@ -272,6 +325,8 @@ class Draft extends DataClass implements Insertable<Draft> {
     this.sermonSource,
     this.scriptureTags,
     required this.isSynced,
+    this.serverSequence,
+    required this.localOnly,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -291,6 +346,10 @@ class Draft extends DataClass implements Insertable<Draft> {
       map['scripture_tags'] = Variable<String>(scriptureTags);
     }
     map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || serverSequence != null) {
+      map['server_sequence'] = Variable<int>(serverSequence);
+    }
+    map['local_only'] = Variable<bool>(localOnly);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -311,6 +370,10 @@ class Draft extends DataClass implements Insertable<Draft> {
           ? const Value.absent()
           : Value(scriptureTags),
       isSynced: Value(isSynced),
+      serverSequence: serverSequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverSequence),
+      localOnly: Value(localOnly),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -329,6 +392,8 @@ class Draft extends DataClass implements Insertable<Draft> {
       sermonSource: serializer.fromJson<String?>(json['sermonSource']),
       scriptureTags: serializer.fromJson<String?>(json['scriptureTags']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
+      serverSequence: serializer.fromJson<int?>(json['serverSequence']),
+      localOnly: serializer.fromJson<bool>(json['localOnly']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -344,6 +409,8 @@ class Draft extends DataClass implements Insertable<Draft> {
       'sermonSource': serializer.toJson<String?>(sermonSource),
       'scriptureTags': serializer.toJson<String?>(scriptureTags),
       'isSynced': serializer.toJson<bool>(isSynced),
+      'serverSequence': serializer.toJson<int?>(serverSequence),
+      'localOnly': serializer.toJson<bool>(localOnly),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -357,6 +424,8 @@ class Draft extends DataClass implements Insertable<Draft> {
     Value<String?> sermonSource = const Value.absent(),
     Value<String?> scriptureTags = const Value.absent(),
     bool? isSynced,
+    Value<int?> serverSequence = const Value.absent(),
+    bool? localOnly,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Draft(
@@ -369,6 +438,10 @@ class Draft extends DataClass implements Insertable<Draft> {
         ? scriptureTags.value
         : this.scriptureTags,
     isSynced: isSynced ?? this.isSynced,
+    serverSequence: serverSequence.present
+        ? serverSequence.value
+        : this.serverSequence,
+    localOnly: localOnly ?? this.localOnly,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -385,6 +458,10 @@ class Draft extends DataClass implements Insertable<Draft> {
           ? data.scriptureTags.value
           : this.scriptureTags,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      serverSequence: data.serverSequence.present
+          ? data.serverSequence.value
+          : this.serverSequence,
+      localOnly: data.localOnly.present ? data.localOnly.value : this.localOnly,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -400,6 +477,8 @@ class Draft extends DataClass implements Insertable<Draft> {
           ..write('sermonSource: $sermonSource, ')
           ..write('scriptureTags: $scriptureTags, ')
           ..write('isSynced: $isSynced, ')
+          ..write('serverSequence: $serverSequence, ')
+          ..write('localOnly: $localOnly, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -415,6 +494,8 @@ class Draft extends DataClass implements Insertable<Draft> {
     sermonSource,
     scriptureTags,
     isSynced,
+    serverSequence,
+    localOnly,
     createdAt,
     updatedAt,
   );
@@ -429,6 +510,8 @@ class Draft extends DataClass implements Insertable<Draft> {
           other.sermonSource == this.sermonSource &&
           other.scriptureTags == this.scriptureTags &&
           other.isSynced == this.isSynced &&
+          other.serverSequence == this.serverSequence &&
+          other.localOnly == this.localOnly &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -441,6 +524,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
   final Value<String?> sermonSource;
   final Value<String?> scriptureTags;
   final Value<bool> isSynced;
+  final Value<int?> serverSequence;
+  final Value<bool> localOnly;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -452,6 +537,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     this.sermonSource = const Value.absent(),
     this.scriptureTags = const Value.absent(),
     this.isSynced = const Value.absent(),
+    this.serverSequence = const Value.absent(),
+    this.localOnly = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -464,6 +551,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     this.sermonSource = const Value.absent(),
     this.scriptureTags = const Value.absent(),
     this.isSynced = const Value.absent(),
+    this.serverSequence = const Value.absent(),
+    this.localOnly = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -480,6 +569,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     Expression<String>? sermonSource,
     Expression<String>? scriptureTags,
     Expression<bool>? isSynced,
+    Expression<int>? serverSequence,
+    Expression<bool>? localOnly,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -492,6 +583,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
       if (sermonSource != null) 'sermon_source': sermonSource,
       if (scriptureTags != null) 'scripture_tags': scriptureTags,
       if (isSynced != null) 'is_synced': isSynced,
+      if (serverSequence != null) 'server_sequence': serverSequence,
+      if (localOnly != null) 'local_only': localOnly,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -506,6 +599,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     Value<String?>? sermonSource,
     Value<String?>? scriptureTags,
     Value<bool>? isSynced,
+    Value<int?>? serverSequence,
+    Value<bool>? localOnly,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -518,6 +613,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
       sermonSource: sermonSource ?? this.sermonSource,
       scriptureTags: scriptureTags ?? this.scriptureTags,
       isSynced: isSynced ?? this.isSynced,
+      serverSequence: serverSequence ?? this.serverSequence,
+      localOnly: localOnly ?? this.localOnly,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -548,6 +645,12 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
+    if (serverSequence.present) {
+      map['server_sequence'] = Variable<int>(serverSequence.value);
+    }
+    if (localOnly.present) {
+      map['local_only'] = Variable<bool>(localOnly.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -570,6 +673,8 @@ class DraftsCompanion extends UpdateCompanion<Draft> {
           ..write('sermonSource: $sermonSource, ')
           ..write('scriptureTags: $scriptureTags, ')
           ..write('isSynced: $isSynced, ')
+          ..write('serverSequence: $serverSequence, ')
+          ..write('localOnly: $localOnly, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -730,6 +835,17 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
       'CHECK ("is_deleted" IN (0, 1))',
     ),
   );
+  static const VerificationMeta _serverSequenceMeta = const VerificationMeta(
+    'serverSequence',
+  );
+  @override
+  late final GeneratedColumn<int> serverSequence = GeneratedColumn<int>(
+    'server_sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _publishedAtMeta = const VerificationMeta(
     'publishedAt',
   );
@@ -756,6 +872,7 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
     sermonSource,
     scriptureTags,
     isDeleted,
+    serverSequence,
     publishedAt,
   ];
   @override
@@ -881,6 +998,15 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
     } else if (isInserting) {
       context.missing(_isDeletedMeta);
     }
+    if (data.containsKey('server_sequence')) {
+      context.handle(
+        _serverSequenceMeta,
+        serverSequence.isAcceptableOrUnknown(
+          data['server_sequence']!,
+          _serverSequenceMeta,
+        ),
+      );
+    }
     if (data.containsKey('published_at')) {
       context.handle(
         _publishedAtMeta,
@@ -953,6 +1079,10 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_deleted'],
       )!,
+      serverSequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_sequence'],
+      ),
       publishedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}published_at'],
@@ -980,6 +1110,7 @@ class Post extends DataClass implements Insertable<Post> {
   final String? sermonSource;
   final String? scriptureTags;
   final bool isDeleted;
+  final int? serverSequence;
   final DateTime publishedAt;
   const Post({
     required this.id,
@@ -995,6 +1126,7 @@ class Post extends DataClass implements Insertable<Post> {
     this.sermonSource,
     this.scriptureTags,
     required this.isDeleted,
+    this.serverSequence,
     required this.publishedAt,
   });
   @override
@@ -1021,6 +1153,9 @@ class Post extends DataClass implements Insertable<Post> {
       map['scripture_tags'] = Variable<String>(scriptureTags);
     }
     map['is_deleted'] = Variable<bool>(isDeleted);
+    if (!nullToAbsent || serverSequence != null) {
+      map['server_sequence'] = Variable<int>(serverSequence);
+    }
     map['published_at'] = Variable<DateTime>(publishedAt);
     return map;
   }
@@ -1048,6 +1183,9 @@ class Post extends DataClass implements Insertable<Post> {
           ? const Value.absent()
           : Value(scriptureTags),
       isDeleted: Value(isDeleted),
+      serverSequence: serverSequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverSequence),
       publishedAt: Value(publishedAt),
     );
   }
@@ -1071,6 +1209,7 @@ class Post extends DataClass implements Insertable<Post> {
       sermonSource: serializer.fromJson<String?>(json['sermonSource']),
       scriptureTags: serializer.fromJson<String?>(json['scriptureTags']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      serverSequence: serializer.fromJson<int?>(json['serverSequence']),
       publishedAt: serializer.fromJson<DateTime>(json['publishedAt']),
     );
   }
@@ -1091,6 +1230,7 @@ class Post extends DataClass implements Insertable<Post> {
       'sermonSource': serializer.toJson<String?>(sermonSource),
       'scriptureTags': serializer.toJson<String?>(scriptureTags),
       'isDeleted': serializer.toJson<bool>(isDeleted),
+      'serverSequence': serializer.toJson<int?>(serverSequence),
       'publishedAt': serializer.toJson<DateTime>(publishedAt),
     };
   }
@@ -1109,6 +1249,7 @@ class Post extends DataClass implements Insertable<Post> {
     Value<String?> sermonSource = const Value.absent(),
     Value<String?> scriptureTags = const Value.absent(),
     bool? isDeleted,
+    Value<int?> serverSequence = const Value.absent(),
     DateTime? publishedAt,
   }) => Post(
     id: id ?? this.id,
@@ -1128,6 +1269,9 @@ class Post extends DataClass implements Insertable<Post> {
         ? scriptureTags.value
         : this.scriptureTags,
     isDeleted: isDeleted ?? this.isDeleted,
+    serverSequence: serverSequence.present
+        ? serverSequence.value
+        : this.serverSequence,
     publishedAt: publishedAt ?? this.publishedAt,
   );
   Post copyWithCompanion(PostsCompanion data) {
@@ -1161,6 +1305,9 @@ class Post extends DataClass implements Insertable<Post> {
           ? data.scriptureTags.value
           : this.scriptureTags,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      serverSequence: data.serverSequence.present
+          ? data.serverSequence.value
+          : this.serverSequence,
       publishedAt: data.publishedAt.present
           ? data.publishedAt.value
           : this.publishedAt,
@@ -1183,6 +1330,7 @@ class Post extends DataClass implements Insertable<Post> {
           ..write('sermonSource: $sermonSource, ')
           ..write('scriptureTags: $scriptureTags, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('serverSequence: $serverSequence, ')
           ..write('publishedAt: $publishedAt')
           ..write(')'))
         .toString();
@@ -1203,6 +1351,7 @@ class Post extends DataClass implements Insertable<Post> {
     sermonSource,
     scriptureTags,
     isDeleted,
+    serverSequence,
     publishedAt,
   );
   @override
@@ -1222,6 +1371,7 @@ class Post extends DataClass implements Insertable<Post> {
           other.sermonSource == this.sermonSource &&
           other.scriptureTags == this.scriptureTags &&
           other.isDeleted == this.isDeleted &&
+          other.serverSequence == this.serverSequence &&
           other.publishedAt == this.publishedAt);
 }
 
@@ -1239,6 +1389,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
   final Value<String?> sermonSource;
   final Value<String?> scriptureTags;
   final Value<bool> isDeleted;
+  final Value<int?> serverSequence;
   final Value<DateTime> publishedAt;
   final Value<int> rowid;
   const PostsCompanion({
@@ -1255,6 +1406,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
     this.sermonSource = const Value.absent(),
     this.scriptureTags = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.serverSequence = const Value.absent(),
     this.publishedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1272,6 +1424,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
     this.sermonSource = const Value.absent(),
     this.scriptureTags = const Value.absent(),
     required bool isDeleted,
+    this.serverSequence = const Value.absent(),
     required DateTime publishedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1298,6 +1451,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
     Expression<String>? sermonSource,
     Expression<String>? scriptureTags,
     Expression<bool>? isDeleted,
+    Expression<int>? serverSequence,
     Expression<DateTime>? publishedAt,
     Expression<int>? rowid,
   }) {
@@ -1315,6 +1469,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
       if (sermonSource != null) 'sermon_source': sermonSource,
       if (scriptureTags != null) 'scripture_tags': scriptureTags,
       if (isDeleted != null) 'is_deleted': isDeleted,
+      if (serverSequence != null) 'server_sequence': serverSequence,
       if (publishedAt != null) 'published_at': publishedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1334,6 +1489,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
     Value<String?>? sermonSource,
     Value<String?>? scriptureTags,
     Value<bool>? isDeleted,
+    Value<int?>? serverSequence,
     Value<DateTime>? publishedAt,
     Value<int>? rowid,
   }) {
@@ -1351,6 +1507,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
       sermonSource: sermonSource ?? this.sermonSource,
       scriptureTags: scriptureTags ?? this.scriptureTags,
       isDeleted: isDeleted ?? this.isDeleted,
+      serverSequence: serverSequence ?? this.serverSequence,
       publishedAt: publishedAt ?? this.publishedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1398,6 +1555,9 @@ class PostsCompanion extends UpdateCompanion<Post> {
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
     }
+    if (serverSequence.present) {
+      map['server_sequence'] = Variable<int>(serverSequence.value);
+    }
     if (publishedAt.present) {
       map['published_at'] = Variable<DateTime>(publishedAt.value);
     }
@@ -1423,6 +1583,7 @@ class PostsCompanion extends UpdateCompanion<Post> {
           ..write('sermonSource: $sermonSource, ')
           ..write('scriptureTags: $scriptureTags, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('serverSequence: $serverSequence, ')
           ..write('publishedAt: $publishedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2018,6 +2179,32 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _serverSequenceMeta = const VerificationMeta(
+    'serverSequence',
+  );
+  @override
+  late final GeneratedColumn<int> serverSequence = GeneratedColumn<int>(
+    'server_sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localOnlyMeta = const VerificationMeta(
+    'localOnly',
+  );
+  @override
+  late final GeneratedColumn<bool> localOnly = GeneratedColumn<bool>(
+    'local_only',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("local_only" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2048,6 +2235,8 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     title,
     notebookId,
     isSynced,
+    serverSequence,
+    localOnly,
     createdAt,
     updatedAt,
   ];
@@ -2102,6 +2291,21 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
         isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
       );
     }
+    if (data.containsKey('server_sequence')) {
+      context.handle(
+        _serverSequenceMeta,
+        serverSequence.isAcceptableOrUnknown(
+          data['server_sequence']!,
+          _serverSequenceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_only')) {
+      context.handle(
+        _localOnlyMeta,
+        localOnly.isAcceptableOrUnknown(data['local_only']!, _localOnlyMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2151,6 +2355,14 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
       )!,
+      serverSequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_sequence'],
+      ),
+      localOnly: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}local_only'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2175,6 +2387,8 @@ class Note extends DataClass implements Insertable<Note> {
   final String? title;
   final String? notebookId;
   final bool isSynced;
+  final int? serverSequence;
+  final bool localOnly;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Note({
@@ -2184,6 +2398,8 @@ class Note extends DataClass implements Insertable<Note> {
     this.title,
     this.notebookId,
     required this.isSynced,
+    this.serverSequence,
+    required this.localOnly,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2200,6 +2416,10 @@ class Note extends DataClass implements Insertable<Note> {
       map['notebook_id'] = Variable<String>(notebookId);
     }
     map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || serverSequence != null) {
+      map['server_sequence'] = Variable<int>(serverSequence);
+    }
+    map['local_only'] = Variable<bool>(localOnly);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -2217,6 +2437,10 @@ class Note extends DataClass implements Insertable<Note> {
           ? const Value.absent()
           : Value(notebookId),
       isSynced: Value(isSynced),
+      serverSequence: serverSequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverSequence),
+      localOnly: Value(localOnly),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2234,6 +2458,8 @@ class Note extends DataClass implements Insertable<Note> {
       title: serializer.fromJson<String?>(json['title']),
       notebookId: serializer.fromJson<String?>(json['notebookId']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
+      serverSequence: serializer.fromJson<int?>(json['serverSequence']),
+      localOnly: serializer.fromJson<bool>(json['localOnly']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2248,6 +2474,8 @@ class Note extends DataClass implements Insertable<Note> {
       'title': serializer.toJson<String?>(title),
       'notebookId': serializer.toJson<String?>(notebookId),
       'isSynced': serializer.toJson<bool>(isSynced),
+      'serverSequence': serializer.toJson<int?>(serverSequence),
+      'localOnly': serializer.toJson<bool>(localOnly),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2260,6 +2488,8 @@ class Note extends DataClass implements Insertable<Note> {
     Value<String?> title = const Value.absent(),
     Value<String?> notebookId = const Value.absent(),
     bool? isSynced,
+    Value<int?> serverSequence = const Value.absent(),
+    bool? localOnly,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Note(
@@ -2269,6 +2499,10 @@ class Note extends DataClass implements Insertable<Note> {
     title: title.present ? title.value : this.title,
     notebookId: notebookId.present ? notebookId.value : this.notebookId,
     isSynced: isSynced ?? this.isSynced,
+    serverSequence: serverSequence.present
+        ? serverSequence.value
+        : this.serverSequence,
+    localOnly: localOnly ?? this.localOnly,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2282,6 +2516,10 @@ class Note extends DataClass implements Insertable<Note> {
           ? data.notebookId.value
           : this.notebookId,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      serverSequence: data.serverSequence.present
+          ? data.serverSequence.value
+          : this.serverSequence,
+      localOnly: data.localOnly.present ? data.localOnly.value : this.localOnly,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2296,6 +2534,8 @@ class Note extends DataClass implements Insertable<Note> {
           ..write('title: $title, ')
           ..write('notebookId: $notebookId, ')
           ..write('isSynced: $isSynced, ')
+          ..write('serverSequence: $serverSequence, ')
+          ..write('localOnly: $localOnly, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2310,6 +2550,8 @@ class Note extends DataClass implements Insertable<Note> {
     title,
     notebookId,
     isSynced,
+    serverSequence,
+    localOnly,
     createdAt,
     updatedAt,
   );
@@ -2323,6 +2565,8 @@ class Note extends DataClass implements Insertable<Note> {
           other.title == this.title &&
           other.notebookId == this.notebookId &&
           other.isSynced == this.isSynced &&
+          other.serverSequence == this.serverSequence &&
+          other.localOnly == this.localOnly &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2334,6 +2578,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
   final Value<String?> title;
   final Value<String?> notebookId;
   final Value<bool> isSynced;
+  final Value<int?> serverSequence;
+  final Value<bool> localOnly;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2344,6 +2590,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
     this.title = const Value.absent(),
     this.notebookId = const Value.absent(),
     this.isSynced = const Value.absent(),
+    this.serverSequence = const Value.absent(),
+    this.localOnly = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2355,6 +2603,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
     this.title = const Value.absent(),
     this.notebookId = const Value.absent(),
     this.isSynced = const Value.absent(),
+    this.serverSequence = const Value.absent(),
+    this.localOnly = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2370,6 +2620,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
     Expression<String>? title,
     Expression<String>? notebookId,
     Expression<bool>? isSynced,
+    Expression<int>? serverSequence,
+    Expression<bool>? localOnly,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2381,6 +2633,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
       if (title != null) 'title': title,
       if (notebookId != null) 'notebook_id': notebookId,
       if (isSynced != null) 'is_synced': isSynced,
+      if (serverSequence != null) 'server_sequence': serverSequence,
+      if (localOnly != null) 'local_only': localOnly,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2394,6 +2648,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
     Value<String?>? title,
     Value<String?>? notebookId,
     Value<bool>? isSynced,
+    Value<int?>? serverSequence,
+    Value<bool>? localOnly,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -2405,6 +2661,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
       title: title ?? this.title,
       notebookId: notebookId ?? this.notebookId,
       isSynced: isSynced ?? this.isSynced,
+      serverSequence: serverSequence ?? this.serverSequence,
+      localOnly: localOnly ?? this.localOnly,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2432,6 +2690,12 @@ class NotesCompanion extends UpdateCompanion<Note> {
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
+    if (serverSequence.present) {
+      map['server_sequence'] = Variable<int>(serverSequence.value);
+    }
+    if (localOnly.present) {
+      map['local_only'] = Variable<bool>(localOnly.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2453,6 +2717,8 @@ class NotesCompanion extends UpdateCompanion<Note> {
           ..write('title: $title, ')
           ..write('notebookId: $notebookId, ')
           ..write('isSynced: $isSynced, ')
+          ..write('serverSequence: $serverSequence, ')
+          ..write('localOnly: $localOnly, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -3498,6 +3764,9 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
   late final $NotesTable notes = $NotesTable(this);
   late final $ConversationsTable conversations = $ConversationsTable(this);
   late final $MessagesTable messages = $MessagesTable(this);
+  late final NotesDao notesDao = NotesDao(this as ScribesDatabase);
+  late final DraftsDao draftsDao = DraftsDao(this as ScribesDatabase);
+  late final PostsDao postsDao = PostsDao(this as ScribesDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3522,6 +3791,8 @@ typedef $$DraftsTableCreateCompanionBuilder =
       Value<String?> sermonSource,
       Value<String?> scriptureTags,
       Value<bool> isSynced,
+      Value<int?> serverSequence,
+      Value<bool> localOnly,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -3535,6 +3806,8 @@ typedef $$DraftsTableUpdateCompanionBuilder =
       Value<String?> sermonSource,
       Value<String?> scriptureTags,
       Value<bool> isSynced,
+      Value<int?> serverSequence,
+      Value<bool> localOnly,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -3581,6 +3854,16 @@ class $$DraftsTableFilterComposer
 
   ColumnFilters<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get localOnly => $composableBuilder(
+    column: $table.localOnly,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3639,6 +3922,16 @@ class $$DraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get localOnly => $composableBuilder(
+    column: $table.localOnly,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3684,6 +3977,14 @@ class $$DraftsTableAnnotationComposer
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
+  GeneratedColumn<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get localOnly =>
+      $composableBuilder(column: $table.localOnly, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -3726,6 +4027,8 @@ class $$DraftsTableTableManager
                 Value<String?> sermonSource = const Value.absent(),
                 Value<String?> scriptureTags = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
+                Value<bool> localOnly = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3737,6 +4040,8 @@ class $$DraftsTableTableManager
                 sermonSource: sermonSource,
                 scriptureTags: scriptureTags,
                 isSynced: isSynced,
+                serverSequence: serverSequence,
+                localOnly: localOnly,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3750,6 +4055,8 @@ class $$DraftsTableTableManager
                 Value<String?> sermonSource = const Value.absent(),
                 Value<String?> scriptureTags = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
+                Value<bool> localOnly = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -3761,6 +4068,8 @@ class $$DraftsTableTableManager
                 sermonSource: sermonSource,
                 scriptureTags: scriptureTags,
                 isSynced: isSynced,
+                serverSequence: serverSequence,
+                localOnly: localOnly,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3802,6 +4111,7 @@ typedef $$PostsTableCreateCompanionBuilder =
       Value<String?> sermonSource,
       Value<String?> scriptureTags,
       required bool isDeleted,
+      Value<int?> serverSequence,
       required DateTime publishedAt,
       Value<int> rowid,
     });
@@ -3820,6 +4130,7 @@ typedef $$PostsTableUpdateCompanionBuilder =
       Value<String?> sermonSource,
       Value<String?> scriptureTags,
       Value<bool> isDeleted,
+      Value<int?> serverSequence,
       Value<DateTime> publishedAt,
       Value<int> rowid,
     });
@@ -3895,6 +4206,11 @@ class $$PostsTableFilterComposer
 
   ColumnFilters<bool> get isDeleted => $composableBuilder(
     column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3978,6 +4294,11 @@ class $$PostsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get publishedAt => $composableBuilder(
     column: $table.publishedAt,
     builder: (column) => ColumnOrderings(column),
@@ -4048,6 +4369,11 @@ class $$PostsTableAnnotationComposer
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
+  GeneratedColumn<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get publishedAt => $composableBuilder(
     column: $table.publishedAt,
     builder: (column) => column,
@@ -4095,6 +4421,7 @@ class $$PostsTableTableManager
                 Value<String?> sermonSource = const Value.absent(),
                 Value<String?> scriptureTags = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
                 Value<DateTime> publishedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PostsCompanion(
@@ -4111,6 +4438,7 @@ class $$PostsTableTableManager
                 sermonSource: sermonSource,
                 scriptureTags: scriptureTags,
                 isDeleted: isDeleted,
+                serverSequence: serverSequence,
                 publishedAt: publishedAt,
                 rowid: rowid,
               ),
@@ -4129,6 +4457,7 @@ class $$PostsTableTableManager
                 Value<String?> sermonSource = const Value.absent(),
                 Value<String?> scriptureTags = const Value.absent(),
                 required bool isDeleted,
+                Value<int?> serverSequence = const Value.absent(),
                 required DateTime publishedAt,
                 Value<int> rowid = const Value.absent(),
               }) => PostsCompanion.insert(
@@ -4145,6 +4474,7 @@ class $$PostsTableTableManager
                 sermonSource: sermonSource,
                 scriptureTags: scriptureTags,
                 isDeleted: isDeleted,
+                serverSequence: serverSequence,
                 publishedAt: publishedAt,
                 rowid: rowid,
               ),
@@ -4501,6 +4831,8 @@ typedef $$NotesTableCreateCompanionBuilder =
       Value<String?> title,
       Value<String?> notebookId,
       Value<bool> isSynced,
+      Value<int?> serverSequence,
+      Value<bool> localOnly,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -4513,6 +4845,8 @@ typedef $$NotesTableUpdateCompanionBuilder =
       Value<String?> title,
       Value<String?> notebookId,
       Value<bool> isSynced,
+      Value<int?> serverSequence,
+      Value<bool> localOnly,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -4554,6 +4888,16 @@ class $$NotesTableFilterComposer
 
   ColumnFilters<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get localOnly => $composableBuilder(
+    column: $table.localOnly,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4607,6 +4951,16 @@ class $$NotesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get localOnly => $composableBuilder(
+    column: $table.localOnly,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4646,6 +5000,14 @@ class $$NotesTableAnnotationComposer
 
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get localOnly =>
+      $composableBuilder(column: $table.localOnly, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4688,6 +5050,8 @@ class $$NotesTableTableManager
                 Value<String?> title = const Value.absent(),
                 Value<String?> notebookId = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
+                Value<bool> localOnly = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4698,6 +5062,8 @@ class $$NotesTableTableManager
                 title: title,
                 notebookId: notebookId,
                 isSynced: isSynced,
+                serverSequence: serverSequence,
+                localOnly: localOnly,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -4710,6 +5076,8 @@ class $$NotesTableTableManager
                 Value<String?> title = const Value.absent(),
                 Value<String?> notebookId = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
+                Value<bool> localOnly = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -4720,6 +5088,8 @@ class $$NotesTableTableManager
                 title: title,
                 notebookId: notebookId,
                 isSynced: isSynced,
+                serverSequence: serverSequence,
+                localOnly: localOnly,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

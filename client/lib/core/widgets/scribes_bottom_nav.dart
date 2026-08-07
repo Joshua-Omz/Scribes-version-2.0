@@ -46,22 +46,20 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Listen to global notifications
     ref.listen(notificationStreamProvider, (prev, next) {
-      if (next != null) {
-        final notif = (next as dynamic).value;
-        if (notif != null && notif.type == 'direct_message') {
-          ScribesMessageBanner.show(
-            context,
-            title: 'New Message',
-            message: notif.body,
-            onTap: () {
-              // Navigate to inbox or directly to conversation
-              // For now, just go to inbox (tab 3, branch 2)
-              _onTap(context, 3);
-            },
-          );
-          // Invalidate inbox
-          ref.read(conversationsProvider.notifier).refresh();
-        }
+      final notif = (next as dynamic).value;
+      if (notif != null && notif.type == 'direct_message') {
+        ScribesMessageBanner.show(
+          context,
+          title: 'New Message',
+          message: notif.body,
+          onTap: () {
+            // Navigate to inbox or directly to conversation
+            // For now, just go to inbox (tab 3, branch 2)
+            _onTap(context, 3);
+          },
+        );
+        // Invalidate inbox
+        ref.read(conversationsProvider.notifier).refresh();
       }
     });
 
