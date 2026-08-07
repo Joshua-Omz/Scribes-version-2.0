@@ -58,6 +58,8 @@ abstract class Post with _$Post {
     @JsonKey(name: 'scripture_refs') @Default([]) List<ScriptureRef> scriptureRefs,
     @Default([]) List<String> tags,
     @JsonKey(name: 'is_deleted') required bool isDeleted,
+    @JsonKey(name: 'cover_image_url') String? coverImageUrl,
+    @JsonKey(name: 'post_type') @Default('standard') String postType,
     @JsonKey(name: 'published_at') required DateTime publishedAt,
     
     // Joined author fields

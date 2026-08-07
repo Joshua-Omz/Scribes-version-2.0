@@ -4,9 +4,11 @@ INSERT INTO posts (
     content,
     caption,
     visibility,
-    sermon_source
+    sermon_source,
+    cover_image_url,
+    post_type
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: GetPostByID :one
@@ -28,7 +30,8 @@ SET content = $2,
     caption = $3,
     visibility = $4,
     sermon_source = $5,
-    current_version = $6
+    current_version = $6,
+    cover_image_url = $8
 WHERE id = $1 AND author_id = $7 AND is_deleted = false
 RETURNING *;
 
@@ -41,7 +44,8 @@ WHERE id = $1 AND author_id = $2;
 UPDATE posts
 SET content = $2,
     caption = $3,
-    current_version = current_version + 1
+    current_version = current_version + 1,
+    cover_image_url = $5
 WHERE id = $1 AND author_id = $4 AND is_deleted = false
 RETURNING *;
 
@@ -53,9 +57,11 @@ INSERT INTO posts (
     visibility,
     sermon_source,
     is_correction,
-    corrects_post_id
+    corrects_post_id,
+    cover_image_url,
+    post_type
 ) VALUES (
-    $1, $2, $3, $4, $5, true, $6
+    $1, $2, $3, $4, $5, true, $6, $7, $8
 ) RETURNING *;
 
 -- name: ClearPostTags :exec

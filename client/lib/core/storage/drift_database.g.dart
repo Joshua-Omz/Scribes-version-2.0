@@ -846,6 +846,29 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _coverImageUrlMeta = const VerificationMeta(
+    'coverImageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> coverImageUrl = GeneratedColumn<String>(
+    'cover_image_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _postTypeMeta = const VerificationMeta(
+    'postType',
+  );
+  @override
+  late final GeneratedColumn<String> postType = GeneratedColumn<String>(
+    'post_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('standard'),
+  );
   static const VerificationMeta _publishedAtMeta = const VerificationMeta(
     'publishedAt',
   );
@@ -873,6 +896,8 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
     scriptureTags,
     isDeleted,
     serverSequence,
+    coverImageUrl,
+    postType,
     publishedAt,
   ];
   @override
@@ -1007,6 +1032,21 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
         ),
       );
     }
+    if (data.containsKey('cover_image_url')) {
+      context.handle(
+        _coverImageUrlMeta,
+        coverImageUrl.isAcceptableOrUnknown(
+          data['cover_image_url']!,
+          _coverImageUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('post_type')) {
+      context.handle(
+        _postTypeMeta,
+        postType.isAcceptableOrUnknown(data['post_type']!, _postTypeMeta),
+      );
+    }
     if (data.containsKey('published_at')) {
       context.handle(
         _publishedAtMeta,
@@ -1083,6 +1123,14 @@ class $PostsTable extends Posts with TableInfo<$PostsTable, Post> {
         DriftSqlType.int,
         data['${effectivePrefix}server_sequence'],
       ),
+      coverImageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover_image_url'],
+      ),
+      postType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}post_type'],
+      )!,
       publishedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}published_at'],
@@ -1111,6 +1159,8 @@ class Post extends DataClass implements Insertable<Post> {
   final String? scriptureTags;
   final bool isDeleted;
   final int? serverSequence;
+  final String? coverImageUrl;
+  final String postType;
   final DateTime publishedAt;
   const Post({
     required this.id,
@@ -1127,6 +1177,8 @@ class Post extends DataClass implements Insertable<Post> {
     this.scriptureTags,
     required this.isDeleted,
     this.serverSequence,
+    this.coverImageUrl,
+    required this.postType,
     required this.publishedAt,
   });
   @override
@@ -1156,6 +1208,10 @@ class Post extends DataClass implements Insertable<Post> {
     if (!nullToAbsent || serverSequence != null) {
       map['server_sequence'] = Variable<int>(serverSequence);
     }
+    if (!nullToAbsent || coverImageUrl != null) {
+      map['cover_image_url'] = Variable<String>(coverImageUrl);
+    }
+    map['post_type'] = Variable<String>(postType);
     map['published_at'] = Variable<DateTime>(publishedAt);
     return map;
   }
@@ -1186,6 +1242,10 @@ class Post extends DataClass implements Insertable<Post> {
       serverSequence: serverSequence == null && nullToAbsent
           ? const Value.absent()
           : Value(serverSequence),
+      coverImageUrl: coverImageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coverImageUrl),
+      postType: Value(postType),
       publishedAt: Value(publishedAt),
     );
   }
@@ -1210,6 +1270,8 @@ class Post extends DataClass implements Insertable<Post> {
       scriptureTags: serializer.fromJson<String?>(json['scriptureTags']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       serverSequence: serializer.fromJson<int?>(json['serverSequence']),
+      coverImageUrl: serializer.fromJson<String?>(json['coverImageUrl']),
+      postType: serializer.fromJson<String>(json['postType']),
       publishedAt: serializer.fromJson<DateTime>(json['publishedAt']),
     );
   }
@@ -1231,6 +1293,8 @@ class Post extends DataClass implements Insertable<Post> {
       'scriptureTags': serializer.toJson<String?>(scriptureTags),
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'serverSequence': serializer.toJson<int?>(serverSequence),
+      'coverImageUrl': serializer.toJson<String?>(coverImageUrl),
+      'postType': serializer.toJson<String>(postType),
       'publishedAt': serializer.toJson<DateTime>(publishedAt),
     };
   }
@@ -1250,6 +1314,8 @@ class Post extends DataClass implements Insertable<Post> {
     Value<String?> scriptureTags = const Value.absent(),
     bool? isDeleted,
     Value<int?> serverSequence = const Value.absent(),
+    Value<String?> coverImageUrl = const Value.absent(),
+    String? postType,
     DateTime? publishedAt,
   }) => Post(
     id: id ?? this.id,
@@ -1272,6 +1338,10 @@ class Post extends DataClass implements Insertable<Post> {
     serverSequence: serverSequence.present
         ? serverSequence.value
         : this.serverSequence,
+    coverImageUrl: coverImageUrl.present
+        ? coverImageUrl.value
+        : this.coverImageUrl,
+    postType: postType ?? this.postType,
     publishedAt: publishedAt ?? this.publishedAt,
   );
   Post copyWithCompanion(PostsCompanion data) {
@@ -1308,6 +1378,10 @@ class Post extends DataClass implements Insertable<Post> {
       serverSequence: data.serverSequence.present
           ? data.serverSequence.value
           : this.serverSequence,
+      coverImageUrl: data.coverImageUrl.present
+          ? data.coverImageUrl.value
+          : this.coverImageUrl,
+      postType: data.postType.present ? data.postType.value : this.postType,
       publishedAt: data.publishedAt.present
           ? data.publishedAt.value
           : this.publishedAt,
@@ -1331,6 +1405,8 @@ class Post extends DataClass implements Insertable<Post> {
           ..write('scriptureTags: $scriptureTags, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('serverSequence: $serverSequence, ')
+          ..write('coverImageUrl: $coverImageUrl, ')
+          ..write('postType: $postType, ')
           ..write('publishedAt: $publishedAt')
           ..write(')'))
         .toString();
@@ -1352,6 +1428,8 @@ class Post extends DataClass implements Insertable<Post> {
     scriptureTags,
     isDeleted,
     serverSequence,
+    coverImageUrl,
+    postType,
     publishedAt,
   );
   @override
@@ -1372,6 +1450,8 @@ class Post extends DataClass implements Insertable<Post> {
           other.scriptureTags == this.scriptureTags &&
           other.isDeleted == this.isDeleted &&
           other.serverSequence == this.serverSequence &&
+          other.coverImageUrl == this.coverImageUrl &&
+          other.postType == this.postType &&
           other.publishedAt == this.publishedAt);
 }
 
@@ -1390,6 +1470,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
   final Value<String?> scriptureTags;
   final Value<bool> isDeleted;
   final Value<int?> serverSequence;
+  final Value<String?> coverImageUrl;
+  final Value<String> postType;
   final Value<DateTime> publishedAt;
   final Value<int> rowid;
   const PostsCompanion({
@@ -1407,6 +1489,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
     this.scriptureTags = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.serverSequence = const Value.absent(),
+    this.coverImageUrl = const Value.absent(),
+    this.postType = const Value.absent(),
     this.publishedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1425,6 +1509,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
     this.scriptureTags = const Value.absent(),
     required bool isDeleted,
     this.serverSequence = const Value.absent(),
+    this.coverImageUrl = const Value.absent(),
+    this.postType = const Value.absent(),
     required DateTime publishedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1452,6 +1538,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
     Expression<String>? scriptureTags,
     Expression<bool>? isDeleted,
     Expression<int>? serverSequence,
+    Expression<String>? coverImageUrl,
+    Expression<String>? postType,
     Expression<DateTime>? publishedAt,
     Expression<int>? rowid,
   }) {
@@ -1470,6 +1558,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
       if (scriptureTags != null) 'scripture_tags': scriptureTags,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (serverSequence != null) 'server_sequence': serverSequence,
+      if (coverImageUrl != null) 'cover_image_url': coverImageUrl,
+      if (postType != null) 'post_type': postType,
       if (publishedAt != null) 'published_at': publishedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1490,6 +1580,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
     Value<String?>? scriptureTags,
     Value<bool>? isDeleted,
     Value<int?>? serverSequence,
+    Value<String?>? coverImageUrl,
+    Value<String>? postType,
     Value<DateTime>? publishedAt,
     Value<int>? rowid,
   }) {
@@ -1508,6 +1600,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
       scriptureTags: scriptureTags ?? this.scriptureTags,
       isDeleted: isDeleted ?? this.isDeleted,
       serverSequence: serverSequence ?? this.serverSequence,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      postType: postType ?? this.postType,
       publishedAt: publishedAt ?? this.publishedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1558,6 +1652,12 @@ class PostsCompanion extends UpdateCompanion<Post> {
     if (serverSequence.present) {
       map['server_sequence'] = Variable<int>(serverSequence.value);
     }
+    if (coverImageUrl.present) {
+      map['cover_image_url'] = Variable<String>(coverImageUrl.value);
+    }
+    if (postType.present) {
+      map['post_type'] = Variable<String>(postType.value);
+    }
     if (publishedAt.present) {
       map['published_at'] = Variable<DateTime>(publishedAt.value);
     }
@@ -1584,6 +1684,8 @@ class PostsCompanion extends UpdateCompanion<Post> {
           ..write('scriptureTags: $scriptureTags, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('serverSequence: $serverSequence, ')
+          ..write('coverImageUrl: $coverImageUrl, ')
+          ..write('postType: $postType, ')
           ..write('publishedAt: $publishedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -3754,6 +3856,374 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   }
 }
 
+class $PendingChatMessagesTable extends PendingChatMessages
+    with TableInfo<$PendingChatMessagesTable, PendingChatMessage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PendingChatMessagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _conversationIdMeta = const VerificationMeta(
+    'conversationId',
+  );
+  @override
+  late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
+    'conversation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _replyToIdMeta = const VerificationMeta(
+    'replyToId',
+  );
+  @override
+  late final GeneratedColumn<String> replyToId = GeneratedColumn<String>(
+    'reply_to_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    conversationId,
+    body,
+    replyToId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pending_chat_messages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PendingChatMessage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('conversation_id')) {
+      context.handle(
+        _conversationIdMeta,
+        conversationId.isAcceptableOrUnknown(
+          data['conversation_id']!,
+          _conversationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_conversationIdMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('reply_to_id')) {
+      context.handle(
+        _replyToIdMeta,
+        replyToId.isAcceptableOrUnknown(data['reply_to_id']!, _replyToIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PendingChatMessage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PendingChatMessage(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      conversationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conversation_id'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      replyToId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reply_to_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PendingChatMessagesTable createAlias(String alias) {
+    return $PendingChatMessagesTable(attachedDatabase, alias);
+  }
+}
+
+class PendingChatMessage extends DataClass
+    implements Insertable<PendingChatMessage> {
+  final String id;
+  final String conversationId;
+  final String body;
+  final String? replyToId;
+  final DateTime createdAt;
+  const PendingChatMessage({
+    required this.id,
+    required this.conversationId,
+    required this.body,
+    this.replyToId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['conversation_id'] = Variable<String>(conversationId);
+    map['body'] = Variable<String>(body);
+    if (!nullToAbsent || replyToId != null) {
+      map['reply_to_id'] = Variable<String>(replyToId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PendingChatMessagesCompanion toCompanion(bool nullToAbsent) {
+    return PendingChatMessagesCompanion(
+      id: Value(id),
+      conversationId: Value(conversationId),
+      body: Value(body),
+      replyToId: replyToId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replyToId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PendingChatMessage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PendingChatMessage(
+      id: serializer.fromJson<String>(json['id']),
+      conversationId: serializer.fromJson<String>(json['conversationId']),
+      body: serializer.fromJson<String>(json['body']),
+      replyToId: serializer.fromJson<String?>(json['replyToId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'conversationId': serializer.toJson<String>(conversationId),
+      'body': serializer.toJson<String>(body),
+      'replyToId': serializer.toJson<String?>(replyToId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PendingChatMessage copyWith({
+    String? id,
+    String? conversationId,
+    String? body,
+    Value<String?> replyToId = const Value.absent(),
+    DateTime? createdAt,
+  }) => PendingChatMessage(
+    id: id ?? this.id,
+    conversationId: conversationId ?? this.conversationId,
+    body: body ?? this.body,
+    replyToId: replyToId.present ? replyToId.value : this.replyToId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PendingChatMessage copyWithCompanion(PendingChatMessagesCompanion data) {
+    return PendingChatMessage(
+      id: data.id.present ? data.id.value : this.id,
+      conversationId: data.conversationId.present
+          ? data.conversationId.value
+          : this.conversationId,
+      body: data.body.present ? data.body.value : this.body,
+      replyToId: data.replyToId.present ? data.replyToId.value : this.replyToId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingChatMessage(')
+          ..write('id: $id, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('body: $body, ')
+          ..write('replyToId: $replyToId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, conversationId, body, replyToId, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PendingChatMessage &&
+          other.id == this.id &&
+          other.conversationId == this.conversationId &&
+          other.body == this.body &&
+          other.replyToId == this.replyToId &&
+          other.createdAt == this.createdAt);
+}
+
+class PendingChatMessagesCompanion extends UpdateCompanion<PendingChatMessage> {
+  final Value<String> id;
+  final Value<String> conversationId;
+  final Value<String> body;
+  final Value<String?> replyToId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PendingChatMessagesCompanion({
+    this.id = const Value.absent(),
+    this.conversationId = const Value.absent(),
+    this.body = const Value.absent(),
+    this.replyToId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PendingChatMessagesCompanion.insert({
+    required String id,
+    required String conversationId,
+    required String body,
+    this.replyToId = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       conversationId = Value(conversationId),
+       body = Value(body),
+       createdAt = Value(createdAt);
+  static Insertable<PendingChatMessage> custom({
+    Expression<String>? id,
+    Expression<String>? conversationId,
+    Expression<String>? body,
+    Expression<String>? replyToId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (conversationId != null) 'conversation_id': conversationId,
+      if (body != null) 'body': body,
+      if (replyToId != null) 'reply_to_id': replyToId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PendingChatMessagesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? conversationId,
+    Value<String>? body,
+    Value<String?>? replyToId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PendingChatMessagesCompanion(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      body: body ?? this.body,
+      replyToId: replyToId ?? this.replyToId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (conversationId.present) {
+      map['conversation_id'] = Variable<String>(conversationId.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (replyToId.present) {
+      map['reply_to_id'] = Variable<String>(replyToId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingChatMessagesCompanion(')
+          ..write('id: $id, ')
+          ..write('conversationId: $conversationId, ')
+          ..write('body: $body, ')
+          ..write('replyToId: $replyToId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScribesDatabase extends GeneratedDatabase {
   _$ScribesDatabase(QueryExecutor e) : super(e);
   $ScribesDatabaseManager get managers => $ScribesDatabaseManager(this);
@@ -3764,6 +4234,8 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
   late final $NotesTable notes = $NotesTable(this);
   late final $ConversationsTable conversations = $ConversationsTable(this);
   late final $MessagesTable messages = $MessagesTable(this);
+  late final $PendingChatMessagesTable pendingChatMessages =
+      $PendingChatMessagesTable(this);
   late final NotesDao notesDao = NotesDao(this as ScribesDatabase);
   late final DraftsDao draftsDao = DraftsDao(this as ScribesDatabase);
   late final PostsDao postsDao = PostsDao(this as ScribesDatabase);
@@ -3779,6 +4251,7 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
     notes,
     conversations,
     messages,
+    pendingChatMessages,
   ];
 }
 
@@ -4112,6 +4585,8 @@ typedef $$PostsTableCreateCompanionBuilder =
       Value<String?> scriptureTags,
       required bool isDeleted,
       Value<int?> serverSequence,
+      Value<String?> coverImageUrl,
+      Value<String> postType,
       required DateTime publishedAt,
       Value<int> rowid,
     });
@@ -4131,6 +4606,8 @@ typedef $$PostsTableUpdateCompanionBuilder =
       Value<String?> scriptureTags,
       Value<bool> isDeleted,
       Value<int?> serverSequence,
+      Value<String?> coverImageUrl,
+      Value<String> postType,
       Value<DateTime> publishedAt,
       Value<int> rowid,
     });
@@ -4211,6 +4688,16 @@ class $$PostsTableFilterComposer
 
   ColumnFilters<int> get serverSequence => $composableBuilder(
     column: $table.serverSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coverImageUrl => $composableBuilder(
+    column: $table.coverImageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get postType => $composableBuilder(
+    column: $table.postType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4299,6 +4786,16 @@ class $$PostsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get coverImageUrl => $composableBuilder(
+    column: $table.coverImageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get postType => $composableBuilder(
+    column: $table.postType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get publishedAt => $composableBuilder(
     column: $table.publishedAt,
     builder: (column) => ColumnOrderings(column),
@@ -4374,6 +4871,14 @@ class $$PostsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get coverImageUrl => $composableBuilder(
+    column: $table.coverImageUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get postType =>
+      $composableBuilder(column: $table.postType, builder: (column) => column);
+
   GeneratedColumn<DateTime> get publishedAt => $composableBuilder(
     column: $table.publishedAt,
     builder: (column) => column,
@@ -4422,6 +4927,8 @@ class $$PostsTableTableManager
                 Value<String?> scriptureTags = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int?> serverSequence = const Value.absent(),
+                Value<String?> coverImageUrl = const Value.absent(),
+                Value<String> postType = const Value.absent(),
                 Value<DateTime> publishedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PostsCompanion(
@@ -4439,6 +4946,8 @@ class $$PostsTableTableManager
                 scriptureTags: scriptureTags,
                 isDeleted: isDeleted,
                 serverSequence: serverSequence,
+                coverImageUrl: coverImageUrl,
+                postType: postType,
                 publishedAt: publishedAt,
                 rowid: rowid,
               ),
@@ -4458,6 +4967,8 @@ class $$PostsTableTableManager
                 Value<String?> scriptureTags = const Value.absent(),
                 required bool isDeleted,
                 Value<int?> serverSequence = const Value.absent(),
+                Value<String?> coverImageUrl = const Value.absent(),
+                Value<String> postType = const Value.absent(),
                 required DateTime publishedAt,
                 Value<int> rowid = const Value.absent(),
               }) => PostsCompanion.insert(
@@ -4475,6 +4986,8 @@ class $$PostsTableTableManager
                 scriptureTags: scriptureTags,
                 isDeleted: isDeleted,
                 serverSequence: serverSequence,
+                coverImageUrl: coverImageUrl,
+                postType: postType,
                 publishedAt: publishedAt,
                 rowid: rowid,
               ),
@@ -5634,6 +6147,224 @@ typedef $$MessagesTableProcessedTableManager =
       Message,
       PrefetchHooks Function()
     >;
+typedef $$PendingChatMessagesTableCreateCompanionBuilder =
+    PendingChatMessagesCompanion Function({
+      required String id,
+      required String conversationId,
+      required String body,
+      Value<String?> replyToId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PendingChatMessagesTableUpdateCompanionBuilder =
+    PendingChatMessagesCompanion Function({
+      Value<String> id,
+      Value<String> conversationId,
+      Value<String> body,
+      Value<String?> replyToId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$PendingChatMessagesTableFilterComposer
+    extends Composer<_$ScribesDatabase, $PendingChatMessagesTable> {
+  $$PendingChatMessagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get replyToId => $composableBuilder(
+    column: $table.replyToId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PendingChatMessagesTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $PendingChatMessagesTable> {
+  $$PendingChatMessagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get replyToId => $composableBuilder(
+    column: $table.replyToId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PendingChatMessagesTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $PendingChatMessagesTable> {
+  $$PendingChatMessagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<String> get replyToId =>
+      $composableBuilder(column: $table.replyToId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$PendingChatMessagesTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $PendingChatMessagesTable,
+          PendingChatMessage,
+          $$PendingChatMessagesTableFilterComposer,
+          $$PendingChatMessagesTableOrderingComposer,
+          $$PendingChatMessagesTableAnnotationComposer,
+          $$PendingChatMessagesTableCreateCompanionBuilder,
+          $$PendingChatMessagesTableUpdateCompanionBuilder,
+          (
+            PendingChatMessage,
+            BaseReferences<
+              _$ScribesDatabase,
+              $PendingChatMessagesTable,
+              PendingChatMessage
+            >,
+          ),
+          PendingChatMessage,
+          PrefetchHooks Function()
+        > {
+  $$PendingChatMessagesTableTableManager(
+    _$ScribesDatabase db,
+    $PendingChatMessagesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PendingChatMessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PendingChatMessagesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PendingChatMessagesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> conversationId = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<String?> replyToId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingChatMessagesCompanion(
+                id: id,
+                conversationId: conversationId,
+                body: body,
+                replyToId: replyToId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String conversationId,
+                required String body,
+                Value<String?> replyToId = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PendingChatMessagesCompanion.insert(
+                id: id,
+                conversationId: conversationId,
+                body: body,
+                replyToId: replyToId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PendingChatMessagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $PendingChatMessagesTable,
+      PendingChatMessage,
+      $$PendingChatMessagesTableFilterComposer,
+      $$PendingChatMessagesTableOrderingComposer,
+      $$PendingChatMessagesTableAnnotationComposer,
+      $$PendingChatMessagesTableCreateCompanionBuilder,
+      $$PendingChatMessagesTableUpdateCompanionBuilder,
+      (
+        PendingChatMessage,
+        BaseReferences<
+          _$ScribesDatabase,
+          $PendingChatMessagesTable,
+          PendingChatMessage
+        >,
+      ),
+      PendingChatMessage,
+      PrefetchHooks Function()
+    >;
 
 class $ScribesDatabaseManager {
   final _$ScribesDatabase _db;
@@ -5652,4 +6383,6 @@ class $ScribesDatabaseManager {
       $$ConversationsTableTableManager(_db, _db.conversations);
   $$MessagesTableTableManager get messages =>
       $$MessagesTableTableManager(_db, _db.messages);
+  $$PendingChatMessagesTableTableManager get pendingChatMessages =>
+      $$PendingChatMessagesTableTableManager(_db, _db.pendingChatMessages);
 }

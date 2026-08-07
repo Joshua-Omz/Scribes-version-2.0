@@ -54,12 +54,26 @@ func (r *Repository) CreateConversation(ctx context.Context, userAID, userBID uu
 	})
 }
 
-func (r *Repository) GetConversationsForUser(ctx context.Context, userID uuid.UUID) ([]generated.Conversation, error) {
+func (r *Repository) GetConversationsForUser(ctx context.Context, userID uuid.UUID) ([]generated.GetConversationsForUserRow, error) {
 	return r.q.GetConversationsForUser(ctx, userID)
 }
 
 func (r *Repository) GetConversationByID(ctx context.Context, conversationID uuid.UUID) (generated.Conversation, error) {
 	return r.q.GetConversationByID(ctx, conversationID)
+}
+
+func (r *Repository) UpdateConversationLastRead(ctx context.Context, conversationID, userID uuid.UUID) (generated.Conversation, error) {
+	return r.q.UpdateConversationLastRead(ctx, generated.UpdateConversationLastReadParams{
+		ID:      conversationID,
+		UserAID: userID,
+	})
+}
+
+func (r *Repository) GetMissedMessages(ctx context.Context, userID uuid.UUID, since time.Time) ([]generated.Message, error) {
+	return r.q.GetMissedMessages(ctx, generated.GetMissedMessagesParams{
+		UserAID: userID,
+		Since:   since,
+	})
 }
 
 func (r *Repository) GetConversationByUsers(ctx context.Context, arg generated.GetConversationByUsersParams) (generated.Conversation, error) {

@@ -37,6 +37,8 @@ class Posts extends Table {
   TextColumn get scriptureTags => text().nullable()(); // JSON list
   BoolColumn get isDeleted => boolean()();
   IntColumn get serverSequence => integer().nullable()();
+  TextColumn get coverImageUrl => text().nullable()();
+  TextColumn get postType => text().withDefault(const Constant('standard'))();
   DateTimeColumn get publishedAt => dateTime()();
   
   @override
@@ -105,15 +107,26 @@ class Messages extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class PendingChatMessages extends Table {
+  TextColumn get id => text()();
+  TextColumn get conversationId => text()();
+  TextColumn get body => text()();
+  TextColumn get replyToId => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DriftDatabase(
-  tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages],
+  tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages, PendingChatMessages],
   daos: [NotesDao, DraftsDao, PostsDao],
 )
 class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(connection.openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration {
@@ -157,6 +170,13 @@ class ScribesDatabase extends _$ScribesDatabase {
           await m.addColumn(posts, posts.serverSequence);
           await m.addColumn(notes, notes.serverSequence);
           await m.addColumn(notes, notes.localOnly);
+        }
+        if (from < 11) {
+          await m.createTable(pendingChatMessages);
+        }
+        if (from < 12) {
+          await m.addColumn(posts, posts.coverImageUrl);
+          await m.addColumn(posts, posts.postType);
         }
       },
     );

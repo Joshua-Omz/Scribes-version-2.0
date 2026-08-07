@@ -91,8 +91,8 @@ type GetPostTagsForPostsRow struct {
 	DisplayName string    `json:"display_name"`
 }
 
-func (q *Queries) GetPostTagsForPosts(ctx context.Context, postIDs []uuid.UUID) ([]GetPostTagsForPostsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getPostTagsForPosts, pq.Array(postIDs))
+func (q *Queries) GetPostTagsForPosts(ctx context.Context, dollar_1 []uuid.UUID) ([]GetPostTagsForPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPostTagsForPosts, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}
@@ -100,10 +100,7 @@ func (q *Queries) GetPostTagsForPosts(ctx context.Context, postIDs []uuid.UUID) 
 	var items []GetPostTagsForPostsRow
 	for rows.Next() {
 		var i GetPostTagsForPostsRow
-		if err := rows.Scan(
-			&i.PostID,
-			&i.DisplayName,
-		); err != nil {
+		if err := rows.Scan(&i.PostID, &i.DisplayName); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

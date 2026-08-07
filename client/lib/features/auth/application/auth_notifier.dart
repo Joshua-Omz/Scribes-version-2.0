@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
 import '../../sync/application/sync_service.dart';
+import '../../messages/data/message_repository.dart';
 import '../../../core/storage/database_provider.dart';
 
 part 'auth_notifier.g.dart';
@@ -39,6 +40,12 @@ class AuthNotifier extends _$AuthNotifier {
       try {
         final syncService = ref.read(syncServiceProvider);
         await syncService.sync(authorId: userId);
+
+        if (userId != null) {
+          final messageRepo = ref.read(messageRepositoryProvider);
+          await messageRepo.flushOfflineQueue(userId);
+          await messageRepo.syncMissedMessages();
+        }
       } catch (e) {
         debugPrint('Background sync failed: $e');
       }

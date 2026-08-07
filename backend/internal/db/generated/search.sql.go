@@ -87,10 +87,11 @@ semantic_search AS (
     FROM posts p
     WHERE p.is_deleted = false AND p.visibility = 'public'
       AND p.embedding IS NOT NULL
+      AND $2::text IS NOT NULL
     ORDER BY p.embedding <=> $2::vector
     LIMIT 100
 )
-SELECT p.id, p.author_id, p.caption, p.content, p.sermon_source, p.visibility, p.is_deleted, p.published_at,
+SELECT p.id, p.author_id, p.caption, p.content, p.sermon_source, p.visibility, p.is_deleted, p.published_at, p.current_version, p.is_correction,
        u.display_name AS author_name, u.handle AS author_handle, u.is_church AS author_is_church,
        COALESCE(k.keyword_score, 0)::float8 AS keyword_score,
        COALESCE(s.semantic_score, 0)::float8 AS semantic_score,
@@ -120,6 +121,8 @@ type SearchPostsHybridRow struct {
 	Visibility     PostVisibility  `json:"visibility"`
 	IsDeleted      bool            `json:"is_deleted"`
 	PublishedAt    time.Time       `json:"published_at"`
+	CurrentVersion int32           `json:"current_version"`
+	IsCorrection   bool            `json:"is_correction"`
 	AuthorName     string          `json:"author_name"`
 	AuthorHandle   string          `json:"author_handle"`
 	AuthorIsChurch bool            `json:"author_is_church"`
@@ -151,6 +154,8 @@ func (q *Queries) SearchPostsHybrid(ctx context.Context, arg SearchPostsHybridPa
 			&i.Visibility,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CurrentVersion,
+			&i.IsCorrection,
 			&i.AuthorName,
 			&i.AuthorHandle,
 			&i.AuthorIsChurch,

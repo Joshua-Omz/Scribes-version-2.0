@@ -12,12 +12,10 @@ import '../../posts/domain/post.dart';
 import '../application/explore_notifier.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_shimmer.dart';
-import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_user_card.dart';
-import '../../onboarding/application/onboarding_notifier.dart';
 import '../../auth/application/auth_notifier.dart';
 import 'topic_selection_screen.dart';
 
@@ -384,7 +382,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
         ),
         SizedBox(
-          height: 340,
+          height: 400,
           child: state.when(
             data: (posts) {
               if (posts.isEmpty) {
@@ -402,13 +400,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 separatorBuilder: (context, index) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    width: 320,
+                    width: 280,
                     child: ScribesExploreCard(
                       post: posts[index],
                       categoryLabel: title == 'Most Insightful' ? 'Insightful' 
                                    : title == 'Prophetic of the Times' ? 'Prophetic' 
                                    : 'Affirmed',
-                      onTap: () => context.push('/post/${posts[index].id}'),
+                      onTap: () => context.push('/posts/${posts[index].id}'),
                     ),
                   );
                 },
@@ -422,7 +420,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               itemBuilder: (context, index) {
                 return ScribesShimmer(
                   child: Container(
-                    width: 300,
+                    width: 280,
                     decoration: BoxDecoration(
                       color: colors.surfaceRaised,
                       borderRadius: BorderRadius.circular(16),

@@ -29,6 +29,8 @@ type SearchPostResponse struct {
 	AuthorName     string      `json:"author_name"`
 	AuthorHandle   string      `json:"author_handle"`
 	AuthorIsChurch bool        `json:"author_is_church"`
+	CurrentVersion int32       `json:"current_version"`
+	IsCorrection   bool        `json:"is_correction"`
 	KeywordScore   float64     `json:"keyword_score"`
 	SemanticScore  float64     `json:"semantic_score"`
 	RrfScore       float64     `json:"rrf_score"`
@@ -83,6 +85,8 @@ func (h *Handler) SearchPosts(c *gin.Context) {
 			AuthorName:     p.AuthorName,
 			AuthorHandle:   p.AuthorHandle,
 			AuthorIsChurch: p.AuthorIsChurch,
+			CurrentVersion: p.CurrentVersion,
+			IsCorrection:   p.IsCorrection,
 			KeywordScore:   p.KeywordScore,
 			SemanticScore:  p.SemanticScore,
 			RrfScore:       p.RrfScore,

@@ -17,6 +17,7 @@ type User struct {
 	DisplayName    string    `json:"display_name"`
 	Email          string    `json:"email"`
 	Bio            *string   `json:"bio,omitempty"`
+	AvatarUrl      *string   `json:"avatar_url,omitempty"`
 	Role           string    `json:"role"`
 	IsChurch       bool      `json:"is_church"`
 	SelectedTags   []string  `json:"selected_tags"`
@@ -32,12 +33,18 @@ func mapCreatedUser(dbUser generated.User) User {
 		b := dbUser.Bio.String
 		bio = &b
 	}
+	var avatar *string
+	if dbUser.AvatarUrl.Valid {
+		a := dbUser.AvatarUrl.String
+		avatar = &a
+	}
 	return User{
 		ID:          dbUser.ID,
 		Handle:      dbUser.Handle,
 		DisplayName: dbUser.DisplayName,
 		Email:       dbUser.Email,
 		Bio:         bio,
+		AvatarUrl:   avatar,
 		Role:        string(dbUser.Role),
 		IsChurch:    dbUser.IsChurch,
 		SelectedTags: []string{}, // Fresh user has no tags
@@ -82,12 +89,18 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (User, st
 		b := dbUser.Bio.String
 		bio = &b
 	}
+	var avatar *string
+	if dbUser.AvatarUrl.Valid {
+		a := dbUser.AvatarUrl.String
+		avatar = &a
+	}
 	return User{
 		ID:             dbUser.ID,
 		Handle:         dbUser.Handle,
 		DisplayName:    dbUser.DisplayName,
 		Email:          dbUser.Email,
 		Bio:            bio,
+		AvatarUrl:      avatar,
 		Role:           string(dbUser.Role),
 		IsChurch:       dbUser.IsChurch,
 		SelectedTags:   dbUser.SelectedTags,
@@ -107,12 +120,18 @@ func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (User, error
 		b := dbUser.Bio.String
 		bio = &b
 	}
+	var avatar *string
+	if dbUser.AvatarUrl.Valid {
+		a := dbUser.AvatarUrl.String
+		avatar = &a
+	}
 	return User{
 		ID:             dbUser.ID,
 		Handle:         dbUser.Handle,
 		DisplayName:    dbUser.DisplayName,
 		Email:          dbUser.Email,
 		Bio:            bio,
+		AvatarUrl:      avatar,
 		Role:           string(dbUser.Role),
 		IsChurch:       dbUser.IsChurch,
 		SelectedTags:   dbUser.SelectedTags,
@@ -132,12 +151,18 @@ func (r *Repository) GetUserByHandle(ctx context.Context, handle string) (User, 
 		b := dbUser.Bio.String
 		bio = &b
 	}
+	var avatar *string
+	if dbUser.AvatarUrl.Valid {
+		a := dbUser.AvatarUrl.String
+		avatar = &a
+	}
 	return User{
 		ID:             dbUser.ID,
 		Handle:         dbUser.Handle,
 		DisplayName:    dbUser.DisplayName,
 		Email:          dbUser.Email,
 		Bio:            bio,
+		AvatarUrl:      avatar,
 		Role:           string(dbUser.Role),
 		IsChurch:       dbUser.IsChurch,
 		SelectedTags:   dbUser.SelectedTags,
@@ -152,6 +177,7 @@ type PublicProfile struct {
 	Handle         string    `json:"handle"`
 	DisplayName    string    `json:"display_name"`
 	Bio            *string   `json:"bio,omitempty"`
+	AvatarUrl      *string   `json:"avatar_url,omitempty"`
 	FollowersCount int       `json:"followers_count"`
 	FollowingCount int       `json:"following_count"`
 }
@@ -166,11 +192,17 @@ func (r *Repository) GetPublicProfile(ctx context.Context, id uuid.UUID) (Public
 		b := row.Bio.String
 		bio = &b
 	}
+	var avatar *string
+	if row.AvatarUrl.Valid {
+		a := row.AvatarUrl.String
+		avatar = &a
+	}
 	return PublicProfile{
 		ID:             row.ID,
 		Handle:         row.Handle,
 		DisplayName:    row.DisplayName,
 		Bio:            bio,
+		AvatarUrl:      avatar,
 		FollowersCount: int(row.FollowersCount),
 		FollowingCount: int(row.FollowingCount),
 	}, nil
@@ -181,6 +213,7 @@ type UserSearchResult struct {
 	Handle         string    `json:"handle"`
 	DisplayName    string    `json:"display_name"`
 	Bio            *string   `json:"bio,omitempty"`
+	AvatarUrl      *string   `json:"avatar_url,omitempty"`
 	FollowersCount int       `json:"followers_count"`
 	FollowingCount int       `json:"following_count"`
 }
@@ -197,11 +230,17 @@ func (r *Repository) SearchUsers(ctx context.Context, query string) ([]UserSearc
 			b := row.Bio.String
 			bio = &b
 		}
+		var avatar *string
+		if row.AvatarUrl.Valid {
+			a := row.AvatarUrl.String
+			avatar = &a
+		}
 		results[i] = UserSearchResult{
 			ID:             row.ID,
 			Handle:         row.Handle,
 			DisplayName:    row.DisplayName,
 			Bio:            bio,
+			AvatarUrl:      avatar,
 			FollowersCount: int(row.FollowersCount),
 			FollowingCount: int(row.FollowingCount),
 		}
@@ -224,11 +263,17 @@ func (r *Repository) GetSuggestedUsers(ctx context.Context, userID uuid.UUID, li
 			b := row.Bio.String
 			bio = &b
 		}
+		var avatar *string
+		if row.AvatarUrl.Valid {
+			a := row.AvatarUrl.String
+			avatar = &a
+		}
 		results[i] = UserSearchResult{
 			ID:             row.ID,
 			Handle:         row.Handle,
 			DisplayName:    row.DisplayName,
 			Bio:            bio,
+			AvatarUrl:      avatar,
 			FollowersCount: int(row.FollowersCount),
 			FollowingCount: int(row.FollowingCount),
 		}
@@ -236,11 +281,16 @@ func (r *Repository) GetSuggestedUsers(ctx context.Context, userID uuid.UUID, li
 	return results, nil
 }
 
-func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle, displayName string, bio *string, isChurch bool) (User, error) {
+func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle, displayName string, bio *string, isChurch bool, avatarUrl *string) (User, error) {
 	b := sql.NullString{}
 	if bio != nil {
 		b.String = *bio
 		b.Valid = true
+	}
+	a := sql.NullString{}
+	if avatarUrl != nil {
+		a.String = *avatarUrl
+		a.Valid = true
 	}
 	_, err := r.q.UpdateUserProfile(ctx, generated.UpdateUserProfileParams{
 		ID:          id,
@@ -248,6 +298,7 @@ func (r *Repository) UpdateUserProfile(ctx context.Context, id uuid.UUID, handle
 		DisplayName: displayName,
 		Bio:         b,
 		IsChurch:    isChurch,
+		AvatarUrl:   a,
 	})
 	if err != nil {
 		return User{}, err

@@ -26,6 +26,8 @@ import (
 	"scribes-api/internal/tag"
 	"scribes-api/internal/search"
 	"scribes-api/internal/recommendation"
+	"scribes-api/internal/media"
+	"scribes-api/internal/storage"
 
 	_ "github.com/lib/pq"
 )
@@ -109,7 +111,14 @@ func main() {
 	recommendationHandler := recommendation.NewHandler(recommendationSvc)
 	recommendationWorker := recommendation.NewEngagementWorker(recommendationRepo, cfg.EngagementRefreshInterval)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, cfg.JWTSecret)
+	storageProvider, err := storage.NewR2Provider(cfg)
+	if err != nil {
+		log.Fatalf("failed to init storage provider: %v", err)
+	}
+	mediaSvc := media.NewService(queries, storageProvider)
+	mediaHandler := media.NewHandler(mediaSvc)
+
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, mediaHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

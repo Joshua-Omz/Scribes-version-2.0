@@ -34,6 +34,8 @@ type CreateInput struct {
 	SermonSource  *string               `json:"sermon_source,omitempty"`
 	Tags          []string              `json:"tags,omitempty"`
 	ScriptureRefs []ScriptureRefPayload `json:"scripture_refs,omitempty"`
+	CoverImageUrl *string               `json:"cover_image_url,omitempty"`
+	PostType      string                `json:"post_type,omitempty"`
 }
 
 type Service struct {
@@ -50,8 +52,13 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 	if input.Visibility != nil {
 		visibility = *input.Visibility
 	}
+	
+	postType := "standard"
+	if input.PostType != "" {
+		postType = input.PostType
+	}
 
-	p, err := s.repo.CreatePost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource)
+	p, err := s.repo.CreatePost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, input.CoverImageUrl, postType)
 	if err != nil {
 		return Post{}, err
 	}
@@ -138,7 +145,7 @@ func (s *Service) Update(ctx context.Context, authorID, id uuid.UUID, input Crea
 		visibility = *input.Visibility
 	}
 
-	updatedPost, err := s.repo.UpdatePost(ctx, id, authorID, input.Content, input.Caption, visibility, input.SermonSource, existing.CurrentVersion)
+	updatedPost, err := s.repo.UpdatePost(ctx, id, authorID, input.Content, input.Caption, visibility, input.SermonSource, existing.CurrentVersion, input.CoverImageUrl)
 	if err != nil {
 		return Post{}, err
 	}
@@ -201,6 +208,7 @@ type ReviseInput struct {
 	Content       json.RawMessage       `json:"content" binding:"required"`
 	Caption       *string               `json:"caption,omitempty"`
 	Tags          []string              `json:"tags,omitempty"`
+	CoverImageUrl *string               `json:"cover_image_url,omitempty"`
 }
 
 func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input ReviseInput) (Post, error) {
@@ -209,7 +217,7 @@ func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input Revi
 		return Post{}, err
 	}
 
-	updatedPost, err := s.repo.RevisePost(ctx, id, authorID, existing.Content, existing.CurrentVersion, input.Content, input.Caption)
+	updatedPost, err := s.repo.RevisePost(ctx, id, authorID, existing.Content, existing.CurrentVersion, input.Content, input.Caption, input.CoverImageUrl)
 	if err != nil {
 		return Post{}, err
 	}
@@ -240,13 +248,18 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 	if err != nil {
 		return Post{}, err
 	}
+	
+	postType := "standard"
+	if input.PostType != "" {
+		postType = input.PostType
+	}
 
 	visibility := "public"
 	if input.Visibility != nil {
 		visibility = *input.Visibility
 	}
 
-	p, err := s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID)
+	p, err := s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID, input.CoverImageUrl, postType)
 	if err != nil {
 		return Post{}, err
 	}

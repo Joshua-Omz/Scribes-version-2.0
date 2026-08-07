@@ -105,6 +105,48 @@ func (ns NullNotifType) Value() (driver.Value, error) {
 	return string(ns.NotifType), nil
 }
 
+type PostType string
+
+const (
+	PostTypeStandard PostType = "standard"
+	PostTypePassage  PostType = "passage"
+)
+
+func (e *PostType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PostType(s)
+	case string:
+		*e = PostType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PostType: %T", src)
+	}
+	return nil
+}
+
+type NullPostType struct {
+	PostType PostType `json:"post_type"`
+	Valid    bool     `json:"valid"` // Valid is true if PostType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPostType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PostType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PostType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPostType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PostType), nil
+}
+
 type PostVisibility string
 
 const (
@@ -373,12 +415,14 @@ type Comment struct {
 }
 
 type Conversation struct {
-	ID         uuid.UUID `json:"id"`
-	UserAID    uuid.UUID `json:"user_a_id"`
-	UserBID    uuid.UUID `json:"user_b_id"`
-	Blocked    bool      `json:"blocked"`
-	CreatedAt  time.Time `json:"created_at"`
-	LastActive time.Time `json:"last_active"`
+	ID              uuid.UUID `json:"id"`
+	UserAID         uuid.UUID `json:"user_a_id"`
+	UserBID         uuid.UUID `json:"user_b_id"`
+	Blocked         bool      `json:"blocked"`
+	CreatedAt       time.Time `json:"created_at"`
+	LastActive      time.Time `json:"last_active"`
+	UserALastReadAt time.Time `json:"user_a_last_read_at"`
+	UserBLastReadAt time.Time `json:"user_b_last_read_at"`
 }
 
 type Draft struct {
@@ -396,6 +440,18 @@ type Follow struct {
 	FollowerID uuid.UUID `json:"follower_id"`
 	FolloweeID uuid.UUID `json:"followee_id"`
 	CreatedAt  time.Time `json:"created_at"`
+}
+
+type MediaUpload struct {
+	ID         uuid.UUID     `json:"id"`
+	UploaderID uuid.UUID     `json:"uploader_id"`
+	Url        string        `json:"url"`
+	MimeType   string        `json:"mime_type"`
+	SizeBytes  int64         `json:"size_bytes"`
+	WidthPx    sql.NullInt32 `json:"width_px"`
+	HeightPx   sql.NullInt32 `json:"height_px"`
+	PostID     uuid.NullUUID `json:"post_id"`
+	CreatedAt  time.Time     `json:"created_at"`
 }
 
 type Message struct {
@@ -475,6 +531,8 @@ type Post struct {
 	ServerSequence int64           `json:"server_sequence"`
 	SearchVector   interface{}     `json:"search_vector"`
 	Embedding      interface{}     `json:"embedding"`
+	PostType       PostType        `json:"post_type"`
+	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
 }
 
 type PostEngagementScore struct {
@@ -562,6 +620,7 @@ type User struct {
 	IsDeleted    bool           `json:"is_deleted"`
 	CreatedAt    time.Time      `json:"created_at"`
 	IsChurch     bool           `json:"is_church"`
+	AvatarUrl    sql.NullString `json:"avatar_url"`
 }
 
 type UserTag struct {

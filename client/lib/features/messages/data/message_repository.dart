@@ -174,20 +174,30 @@ class MessageRepository {
   }
 
   Future<void> sendMessage(String conversationId, String body, String senderId, {String? replyToId}) async {
-    // 1. Optimistic UI: Insert pending message
+    // 1. Optimistic UI: Insert pending message to chat queue
     final pendingId = const Uuid().v4();
-    final tempMsg = db.Message(
+    final now = DateTime.now();
+    final tempMsg = db.PendingChatMessage(
+      id: pendingId,
+      conversationId: conversationId,
+      body: body,
+      replyToId: replyToId,
+      createdAt: now,
+    );
+    await _db.into(_db.pendingChatMessages).insert(tempMsg);
+
+    final uiMsg = db.Message(
       id: pendingId,
       conversationId: conversationId,
       senderId: senderId,
       body: body,
       isDeleted: false,
-      sentAt: DateTime.now(),
+      sentAt: now,
       replyToId: replyToId,
       editedAt: null,
       status: 'pending',
     );
-    await _db.into(_db.messages).insert(tempMsg);
+    await _db.into(_db.messages).insert(uiMsg);
 
     // 2. Perform API call asynchronously
     try {
@@ -195,7 +205,9 @@ class MessageRepository {
       
       // 3. On success, delete pending and insert real message
       await _db.transaction(() async {
+        await (_db.delete(_db.pendingChatMessages)..where((t) => t.id.equals(pendingId))).go();
         await (_db.delete(_db.messages)..where((t) => t.id.equals(pendingId))).go();
+        
         await _db.into(_db.messages).insert(
           db.Message(
             id: msg.id,
@@ -216,10 +228,79 @@ class MessageRepository {
         );
       });
     } catch (e) {
-      // 4. On error, mark pending as error
-      await (_db.update(_db.messages)..where((t) => t.id.equals(pendingId))).write(
-        const db.MessagesCompanion(status: drift.Value('error')),
-      );
+      // 4. On error, leave it in the PendingChatMessages queue.
+      // Status remains 'pending' in Messages table, will be retried later.
+    }
+  }
+
+  Future<void> flushOfflineQueue(String senderId) async {
+    final pending = await _db.select(_db.pendingChatMessages).get();
+    for (final p in pending) {
+      try {
+        final msg = await _api.sendMessage(p.conversationId, p.body, replyToId: p.replyToId);
+        await _db.transaction(() async {
+          await (_db.delete(_db.pendingChatMessages)..where((t) => t.id.equals(p.id))).go();
+          await (_db.delete(_db.messages)..where((t) => t.id.equals(p.id))).go();
+          await _db.into(_db.messages).insert(
+            db.Message(
+              id: msg.id,
+              conversationId: msg.conversationId,
+              senderId: msg.senderId,
+              body: msg.body,
+              isDeleted: msg.isDeleted,
+              sentAt: msg.sentAt,
+              replyToId: msg.replyToId,
+              editedAt: msg.editedAt,
+              status: 'sent',
+            ),
+            mode: drift.InsertMode.insertOrReplace,
+          );
+        });
+      } catch (e) {
+        // Skip on error, retry next time
+      }
+    }
+  }
+
+  Future<void> syncMissedMessages() async {
+    try {
+      final mostRecentMsg = await (_db.select(_db.messages)
+            ..orderBy([(t) => drift.OrderingTerm.desc(t.sentAt)])
+            ..limit(1))
+          .getSingleOrNull();
+
+      final since = mostRecentMsg?.sentAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final messages = await _api.syncMissedMessages(since);
+      
+      if (messages.isNotEmpty) {
+        await _db.batch((batch) {
+          batch.insertAll(
+            _db.messages,
+            messages.map((m) => db.Message(
+                  id: m.id,
+                  conversationId: m.conversationId,
+                  senderId: m.senderId,
+                  body: m.body,
+                  isDeleted: m.isDeleted,
+                  sentAt: m.sentAt,
+                  replyToId: m.replyToId,
+                  editedAt: m.editedAt,
+                  status: 'sent',
+                )),
+            mode: drift.InsertMode.insertOrReplace,
+          );
+        });
+      }
+    } catch (e) {
+      // Ignore network errors
+    }
+  }
+
+  Future<void> readConversation(String conversationId) async {
+    try {
+      await _api.readConversation(conversationId);
+    } catch (e) {
+      // Ignore network errors
     }
   }
   

@@ -184,6 +184,7 @@ type UpdateProfileInput struct {
 	DisplayName string  `json:"display_name"`
 	Bio         *string `json:"bio"`
 	IsChurch    bool    `json:"is_church"`
+	AvatarUrl   *string `json:"avatar_url"`
 }
 
 func (s *Service) UpdateProfile(ctx context.Context, id uuid.UUID, input UpdateProfileInput) (User, error) {
@@ -192,7 +193,7 @@ func (s *Service) UpdateProfile(ctx context.Context, id uuid.UUID, input UpdateP
 		return User{}, errors.New("handle must be alphanumeric and underscores only")
 	}
 
-	user, err := s.repo.UpdateUserProfile(ctx, id, input.Handle, input.DisplayName, input.Bio, input.IsChurch)
+	user, err := s.repo.UpdateUserProfile(ctx, id, input.Handle, input.DisplayName, input.Bio, input.IsChurch, input.AvatarUrl)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			if strings.Contains(pqErr.Message, "users_handle_key") {

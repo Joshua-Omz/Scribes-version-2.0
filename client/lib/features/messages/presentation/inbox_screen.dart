@@ -248,18 +248,8 @@ class _ConversationTile extends ConsumerStatefulWidget {
 
 class _ConversationTileState extends ConsumerState<_ConversationTile> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(lastReadProvider.notifier).loadForConversation(widget.conversation.id);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final authorState = ref.watch(commentAuthorProvider(widget.otherUserId));
-    final lastReadMap = ref.watch(lastReadProvider);
-    final lastReadTime = lastReadMap[widget.conversation.id];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -318,7 +308,8 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
                           }
 
                           final isFromOther = lastMessage.senderId == widget.otherUserId;
-                          final isUnread = isFromOther && (lastReadTime == null || lastMessage.sentAt.isAfter(lastReadTime));
+                          final unreadCount = widget.conversation.unreadCount;
+                          final isUnread = unreadCount > 0;
 
                           return Row(
                             children: [

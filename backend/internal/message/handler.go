@@ -123,6 +123,43 @@ func (h *Handler) GetConversations(c *gin.Context) {
 	respond.JSON(c, http.StatusOK, convs)
 }
 
+func (h *Handler) ReadConversation(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	convID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid conversation id")
+		return
+	}
+
+	conv, err := h.svc.ReadConversation(c.Request.Context(), convID, userID)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to mark as read")
+		return
+	}
+	respond.JSON(c, http.StatusOK, conv)
+}
+
+func (h *Handler) SyncMissedMessages(c *gin.Context) {
+	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
+	userID, _ := uuid.Parse(claims.UserID)
+
+	sinceStr := c.Query("since")
+	since, err := time.Parse(time.RFC3339, sinceStr)
+	if err != nil {
+		respond.Error(c, http.StatusBadRequest, "invalid since timestamp, expected RFC3339")
+		return
+	}
+
+	msgs, err := h.svc.SyncMissedMessages(c.Request.Context(), userID, since)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to sync messages")
+		return
+	}
+	respond.JSON(c, http.StatusOK, msgs)
+}
+
 func (h *Handler) BlockConversation(c *gin.Context) {
 	claims, _ := middleware.ClaimsFromCtx(c.Request.Context())
 	userID, _ := uuid.Parse(claims.UserID)

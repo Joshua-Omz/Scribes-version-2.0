@@ -15,9 +15,9 @@ class SyncService {
     final draftMax = await _storage.draftsDao.getMaxServerSequence();
     final postMax = await _storage.postsDao.getMaxServerSequence();
 
-    return [noteMax, draftMax, postMax]
-        .where((v) => v != null)
-        .fold(0, (max, v) => v! > max ? v : max);
+    final values = [noteMax, draftMax, postMax].whereType<int>();
+    if (values.isEmpty) return 0;
+    return values.reduce((max, v) => v > max ? v : max);
   }
 
   Future<List<PendingRecord>> getLocalOnlyRecords() async {

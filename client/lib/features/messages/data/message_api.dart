@@ -95,6 +95,20 @@ class MessageApi {
     await _dio.delete('/messages/$messageId');
   }
 
+  Future<Conversation> readConversation(String conversationId) async {
+    final response = await _dio.post('/conversations/$conversationId/read');
+    return Conversation.fromJson(response.data);
+  }
+
+  Future<List<Message>> syncMissedMessages(DateTime since) async {
+    final response = await _dio.get('/dm/sync', queryParameters: {
+      'since': since.toUtc().toIso8601String(),
+    });
+    if (response.data == null) return [];
+    final List<dynamic> data = response.data is List ? response.data as List<dynamic> : [];
+    return data.map((json) => Message.fromJson(json)).toList();
+  }
+
   /// Returns a stream of real-time messages for the given conversation.
   Stream<Message> streamMessages(String conversationId) async* {
     final response = await _dio.get<ResponseBody>(

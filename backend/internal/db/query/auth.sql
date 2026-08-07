@@ -40,7 +40,7 @@ WHERE users.handle = $1 AND users.is_deleted = false LIMIT 1;
 
 -- name: GetPublicProfile :one
 SELECT 
-    users.id, users.handle, users.display_name, users.bio,
+    users.id, users.handle, users.display_name, users.bio, users.avatar_url,
     (SELECT COUNT(*) FROM follows WHERE followee_id = users.id)::int AS followers_count,
     (SELECT COUNT(*) FROM follows WHERE follower_id = users.id)::int AS following_count,
     COALESCE((SELECT array_agg(t.name)::text[] FROM tags t JOIN user_tags ut ON t.id = ut.tag_id WHERE ut.user_id = users.id), '{}')::text[] AS selected_tags
@@ -60,7 +60,7 @@ LIMIT 10;
 
 -- name: UpdateUserProfile :one
 UPDATE users
-SET handle = $2, display_name = $3, bio = $4, is_church = $5
+SET handle = $2, display_name = $3, bio = $4, is_church = $5, avatar_url = $6
 WHERE id = $1 AND is_deleted = false
 RETURNING *;
 

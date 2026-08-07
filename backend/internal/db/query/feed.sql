@@ -101,7 +101,7 @@ LIMIT $3;
 
 -- name: GetSuggestedUsers :many
 SELECT 
-    u.id, u.handle, u.display_name, u.bio, u.is_church,
+    u.id, u.handle, u.display_name, u.bio, u.is_church, u.avatar_url,
     (SELECT COUNT(*) FROM follows WHERE followee_id = u.id)::int AS followers_count,
     (SELECT COUNT(*) FROM follows WHERE follower_id = u.id)::int AS following_count
 FROM users u

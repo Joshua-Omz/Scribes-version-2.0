@@ -28,7 +28,7 @@ const createConversation = `-- name: CreateConversation :one
 
 INSERT INTO conversations (user_a_id, user_b_id)
 VALUES ($1, $2)
-RETURNING id, user_a_id, user_b_id, blocked, created_at, last_active
+RETURNING id, user_a_id, user_b_id, blocked, created_at, last_active, user_a_last_read_at, user_b_last_read_at
 `
 
 type CreateConversationParams struct {
@@ -47,6 +47,8 @@ func (q *Queries) CreateConversation(ctx context.Context, arg CreateConversation
 		&i.Blocked,
 		&i.CreatedAt,
 		&i.LastActive,
+		&i.UserALastReadAt,
+		&i.UserBLastReadAt,
 	)
 	return i, err
 }
@@ -116,7 +118,7 @@ func (q *Queries) CreateMessageRequest(ctx context.Context, arg CreateMessageReq
 }
 
 const getConversationByID = `-- name: GetConversationByID :one
-SELECT id, user_a_id, user_b_id, blocked, created_at, last_active FROM conversations
+SELECT id, user_a_id, user_b_id, blocked, created_at, last_active, user_a_last_read_at, user_b_last_read_at FROM conversations
 WHERE id = $1
 `
 
@@ -130,12 +132,14 @@ func (q *Queries) GetConversationByID(ctx context.Context, id uuid.UUID) (Conver
 		&i.Blocked,
 		&i.CreatedAt,
 		&i.LastActive,
+		&i.UserALastReadAt,
+		&i.UserBLastReadAt,
 	)
 	return i, err
 }
 
 const getConversationByUsers = `-- name: GetConversationByUsers :one
-SELECT id, user_a_id, user_b_id, blocked, created_at, last_active FROM conversations
+SELECT id, user_a_id, user_b_id, blocked, created_at, last_active, user_a_last_read_at, user_b_last_read_at FROM conversations
 WHERE (user_a_id = $1 AND user_b_id = $2)
    OR (user_a_id = $2 AND user_b_id = $1)
 `
@@ -155,25 +159,50 @@ func (q *Queries) GetConversationByUsers(ctx context.Context, arg GetConversatio
 		&i.Blocked,
 		&i.CreatedAt,
 		&i.LastActive,
+		&i.UserALastReadAt,
+		&i.UserBLastReadAt,
 	)
 	return i, err
 }
 
 const getConversationsForUser = `-- name: GetConversationsForUser :many
-SELECT id, user_a_id, user_b_id, blocked, created_at, last_active FROM conversations
-WHERE user_a_id = $1 OR user_b_id = $1
-ORDER BY last_active DESC
+SELECT c.id, c.user_a_id, c.user_b_id, c.blocked, c.created_at, c.last_active, c.user_a_last_read_at, c.user_b_last_read_at, 
+       COUNT(m.id)::int AS unread_count
+FROM conversations c
+LEFT JOIN messages m 
+  ON m.conversation_id = c.id
+  AND m.sender_id != $1
+  AND m.is_deleted = false
+  AND m.sent_at > CASE 
+      WHEN c.user_a_id = $1 THEN c.user_a_last_read_at
+      ELSE c.user_b_last_read_at
+  END
+WHERE c.user_a_id = $1 OR c.user_b_id = $1
+GROUP BY c.id
+ORDER BY c.last_active DESC
 `
 
-func (q *Queries) GetConversationsForUser(ctx context.Context, userAID uuid.UUID) ([]Conversation, error) {
-	rows, err := q.db.QueryContext(ctx, getConversationsForUser, userAID)
+type GetConversationsForUserRow struct {
+	ID              uuid.UUID `json:"id"`
+	UserAID         uuid.UUID `json:"user_a_id"`
+	UserBID         uuid.UUID `json:"user_b_id"`
+	Blocked         bool      `json:"blocked"`
+	CreatedAt       time.Time `json:"created_at"`
+	LastActive      time.Time `json:"last_active"`
+	UserALastReadAt time.Time `json:"user_a_last_read_at"`
+	UserBLastReadAt time.Time `json:"user_b_last_read_at"`
+	UnreadCount     int32     `json:"unread_count"`
+}
+
+func (q *Queries) GetConversationsForUser(ctx context.Context, senderID uuid.UUID) ([]GetConversationsForUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, getConversationsForUser, senderID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Conversation
+	var items []GetConversationsForUserRow
 	for rows.Next() {
-		var i Conversation
+		var i GetConversationsForUserRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserAID,
@@ -181,6 +210,9 @@ func (q *Queries) GetConversationsForUser(ctx context.Context, userAID uuid.UUID
 			&i.Blocked,
 			&i.CreatedAt,
 			&i.LastActive,
+			&i.UserALastReadAt,
+			&i.UserBLastReadAt,
+			&i.UnreadCount,
 		); err != nil {
 			return nil, err
 		}
@@ -230,6 +262,52 @@ type GetMessagesForConversationParams struct {
 
 func (q *Queries) GetMessagesForConversation(ctx context.Context, arg GetMessagesForConversationParams) ([]Message, error) {
 	rows, err := q.db.QueryContext(ctx, getMessagesForConversation, arg.ConversationID, arg.CursorTs, arg.LimitCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(
+			&i.ID,
+			&i.ConversationID,
+			&i.SenderID,
+			&i.Body,
+			&i.IsDeleted,
+			&i.SentAt,
+			&i.ReplyToID,
+			&i.EditedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMissedMessages = `-- name: GetMissedMessages :many
+SELECT m.id, m.conversation_id, m.sender_id, m.body, m.is_deleted, m.sent_at, m.reply_to_id, m.edited_at 
+FROM messages m
+JOIN conversations c ON c.id = m.conversation_id
+WHERE (c.user_a_id = $1 OR c.user_b_id = $1)
+  AND m.sent_at > $2::timestamptz
+ORDER BY m.sent_at ASC
+`
+
+type GetMissedMessagesParams struct {
+	UserAID uuid.UUID `json:"user_a_id"`
+	Since   time.Time `json:"since"`
+}
+
+func (q *Queries) GetMissedMessages(ctx context.Context, arg GetMissedMessagesParams) ([]Message, error) {
+	rows, err := q.db.QueryContext(ctx, getMissedMessages, arg.UserAID, arg.Since)
 	if err != nil {
 		return nil, err
 	}
@@ -359,6 +437,35 @@ type SoftDeleteMessageParams struct {
 func (q *Queries) SoftDeleteMessage(ctx context.Context, arg SoftDeleteMessageParams) error {
 	_, err := q.db.ExecContext(ctx, softDeleteMessage, arg.ID, arg.SenderID)
 	return err
+}
+
+const updateConversationLastRead = `-- name: UpdateConversationLastRead :one
+UPDATE conversations
+SET user_a_last_read_at = CASE WHEN user_a_id = $2 THEN now() ELSE user_a_last_read_at END,
+    user_b_last_read_at = CASE WHEN user_b_id = $2 THEN now() ELSE user_b_last_read_at END
+WHERE id = $1 AND (user_a_id = $2 OR user_b_id = $2)
+RETURNING id, user_a_id, user_b_id, blocked, created_at, last_active, user_a_last_read_at, user_b_last_read_at
+`
+
+type UpdateConversationLastReadParams struct {
+	ID      uuid.UUID `json:"id"`
+	UserAID uuid.UUID `json:"user_a_id"`
+}
+
+func (q *Queries) UpdateConversationLastRead(ctx context.Context, arg UpdateConversationLastReadParams) (Conversation, error) {
+	row := q.db.QueryRowContext(ctx, updateConversationLastRead, arg.ID, arg.UserAID)
+	var i Conversation
+	err := row.Scan(
+		&i.ID,
+		&i.UserAID,
+		&i.UserBID,
+		&i.Blocked,
+		&i.CreatedAt,
+		&i.LastActive,
+		&i.UserALastReadAt,
+		&i.UserBLastReadAt,
+	)
+	return i, err
 }
 
 const updateMessage = `-- name: UpdateMessage :one

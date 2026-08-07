@@ -26,11 +26,13 @@ type Post struct {
 	CurrentVersion int32           `json:"current_version"`
 	IsCorrection   bool            `json:"is_correction"`
 	CorrectsPostID *uuid.UUID      `json:"corrects_post_id,omitempty"`
-	SermonSource   *string               `json:"sermon_source,omitempty"`
-	IsDeleted      bool                  `json:"is_deleted"`
-	PublishedAt    time.Time                       `json:"published_at"`
+	SermonSource   *string         `json:"sermon_source,omitempty"`
+	IsDeleted      bool            `json:"is_deleted"`
+	PublishedAt    time.Time       `json:"published_at"`
 	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
-	Tags           []string                        `json:"tags"`
+	Tags           []string        `json:"tags"`
+	CoverImageUrl  *string         `json:"cover_image_url,omitempty"`
+	PostType       string          `json:"post_type"`
 }
 
 func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
@@ -52,6 +54,12 @@ func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
 		correctsPostID = &id
 	}
 
+	var coverImage *string
+	if dbPost.CoverImageUrl.Valid {
+		ci := dbPost.CoverImageUrl.String
+		coverImage = &ci
+	}
+
 	return Post{
 		ID:             dbPost.ID,
 		AuthorID:       dbPost.AuthorID,
@@ -66,6 +74,8 @@ func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
 		SermonSource:   sermonSource,
 		IsDeleted:      dbPost.IsDeleted,
 		PublishedAt:    dbPost.PublishedAt,
+		CoverImageUrl:  coverImage,
+		PostType:       string(dbPost.PostType),
 		// ScriptureRefs are populated separately
 	}
 }
@@ -89,6 +99,12 @@ func mapListPostsByAuthorRow(dbPost generated.ListPostsByAuthorRow) Post {
 		correctsPostID = &id
 	}
 
+	var coverImage *string
+	if dbPost.CoverImageUrl.Valid {
+		ci := dbPost.CoverImageUrl.String
+		coverImage = &ci
+	}
+
 	return Post{
 		ID:             dbPost.ID,
 		AuthorID:       dbPost.AuthorID,
@@ -103,6 +119,8 @@ func mapListPostsByAuthorRow(dbPost generated.ListPostsByAuthorRow) Post {
 		SermonSource:   sermonSource,
 		IsDeleted:      dbPost.IsDeleted,
 		PublishedAt:    dbPost.PublishedAt,
+		CoverImageUrl:  coverImage,
+		PostType:       string(dbPost.PostType),
 		// ScriptureRefs are populated separately
 	}
 }
@@ -138,7 +156,7 @@ func NewRepository(q *generated.Queries, db *sql.DB) *Repository {
 	return &Repository{q: q, db: db}
 }
 
-func (r *Repository) CreatePost(ctx context.Context, authorID uuid.UUID, content json.RawMessage, caption *string, visibility string, sermonSource *string) (Post, error) {
+func (r *Repository) CreatePost(ctx context.Context, authorID uuid.UUID, content json.RawMessage, caption *string, visibility string, sermonSource *string, coverImageUrl *string, postType string) (Post, error) {
 	var dbCaption sql.NullString
 	if caption != nil {
 		dbCaption = sql.NullString{String: *caption, Valid: true}
@@ -149,12 +167,23 @@ func (r *Repository) CreatePost(ctx context.Context, authorID uuid.UUID, content
 		dbSermonSource = sql.NullString{String: *sermonSource, Valid: true}
 	}
 
+	var dbCoverImageUrl sql.NullString
+	if coverImageUrl != nil {
+		dbCoverImageUrl = sql.NullString{String: *coverImageUrl, Valid: true}
+	}
+
+	if postType == "" {
+		postType = "standard"
+	}
+
 	dbPost, err := r.q.CreatePost(ctx, generated.CreatePostParams{
-		AuthorID:     authorID,
-		Content:      content,
-		Caption:      dbCaption,
-		Visibility:   generated.PostVisibility(visibility),
-		SermonSource: dbSermonSource,
+		AuthorID:      authorID,
+		Content:       content,
+		Caption:       dbCaption,
+		Visibility:    generated.PostVisibility(visibility),
+		SermonSource:  dbSermonSource,
+		CoverImageUrl: dbCoverImageUrl,
+		PostType:      generated.PostType(postType),
 	})
 	if err != nil {
 		return Post{}, err
@@ -207,7 +236,7 @@ func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) 
 	return posts, nil
 }
 
-func (r *Repository) UpdatePost(ctx context.Context, id, authorID uuid.UUID, content json.RawMessage, caption *string, visibility string, sermonSource *string, currentVersion int32) (Post, error) {
+func (r *Repository) UpdatePost(ctx context.Context, id, authorID uuid.UUID, content json.RawMessage, caption *string, visibility string, sermonSource *string, currentVersion int32, coverImageUrl *string) (Post, error) {
 	var dbCaption sql.NullString
 	if caption != nil {
 		dbCaption = sql.NullString{String: *caption, Valid: true}
@@ -218,6 +247,11 @@ func (r *Repository) UpdatePost(ctx context.Context, id, authorID uuid.UUID, con
 		dbSermonSource = sql.NullString{String: *sermonSource, Valid: true}
 	}
 
+	var dbCoverImageUrl sql.NullString
+	if coverImageUrl != nil {
+		dbCoverImageUrl = sql.NullString{String: *coverImageUrl, Valid: true}
+	}
+
 	dbPost, err := r.q.UpdatePost(ctx, generated.UpdatePostParams{
 		ID:             id,
 		Content:        content,
@@ -226,6 +260,7 @@ func (r *Repository) UpdatePost(ctx context.Context, id, authorID uuid.UUID, con
 		SermonSource:   dbSermonSource,
 		CurrentVersion: currentVersion,
 		AuthorID:       authorID,
+		CoverImageUrl:  dbCoverImageUrl,
 	})
 	if err != nil {
 		return Post{}, err
@@ -241,7 +276,7 @@ func (r *Repository) DeletePost(ctx context.Context, id, authorID uuid.UUID) err
 }
 
 // CreateCorrectionPost creates a new post that declares it corrects a previous post.
-func (r *Repository) CreateCorrectionPost(ctx context.Context, authorID uuid.UUID, content json.RawMessage, caption *string, visibility string, sermonSource *string, correctsPostID uuid.UUID) (Post, error) {
+func (r *Repository) CreateCorrectionPost(ctx context.Context, authorID uuid.UUID, content json.RawMessage, caption *string, visibility string, sermonSource *string, correctsPostID uuid.UUID, coverImageUrl *string, postType string) (Post, error) {
 	var dbCaption sql.NullString
 	if caption != nil {
 		dbCaption = sql.NullString{String: *caption, Valid: true}
@@ -252,6 +287,15 @@ func (r *Repository) CreateCorrectionPost(ctx context.Context, authorID uuid.UUI
 		dbSermonSource = sql.NullString{String: *sermonSource, Valid: true}
 	}
 
+	var dbCoverImageUrl sql.NullString
+	if coverImageUrl != nil {
+		dbCoverImageUrl = sql.NullString{String: *coverImageUrl, Valid: true}
+	}
+
+	if postType == "" {
+		postType = "standard"
+	}
+
 	dbPost, err := r.q.CreateCorrectionPost(ctx, generated.CreateCorrectionPostParams{
 		AuthorID:       authorID,
 		Content:        content,
@@ -259,6 +303,8 @@ func (r *Repository) CreateCorrectionPost(ctx context.Context, authorID uuid.UUI
 		Visibility:     generated.PostVisibility(visibility),
 		SermonSource:   dbSermonSource,
 		CorrectsPostID: uuid.NullUUID{UUID: correctsPostID, Valid: true},
+		CoverImageUrl:  dbCoverImageUrl,
+		PostType:       generated.PostType(postType),
 	})
 	if err != nil {
 		return Post{}, err
@@ -269,7 +315,7 @@ func (r *Repository) CreateCorrectionPost(ctx context.Context, authorID uuid.UUI
 // RevisePost performs the atomic revision flow:
 // 1. Snapshot the current version into post_versions
 // 2. Update the post with new content and bump current_version
-func (r *Repository) RevisePost(ctx context.Context, id, authorID uuid.UUID, currentContent json.RawMessage, currentVersion int32, newContent json.RawMessage, newCaption *string) (Post, error) {
+func (r *Repository) RevisePost(ctx context.Context, id, authorID uuid.UUID, currentContent json.RawMessage, currentVersion int32, newContent json.RawMessage, newCaption *string, coverImageUrl *string) (Post, error) {
 	// We need a transaction to guarantee the snapshot and update succeed together.
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -290,30 +336,35 @@ func (r *Repository) RevisePost(ctx context.Context, id, authorID uuid.UUID, cur
 		return Post{}, err
 	}
 
-	// 2. Update the post (which bumps current_version via the SQL query)
+	// 2. Update the post
 	var dbCaption sql.NullString
 	if newCaption != nil {
 		dbCaption = sql.NullString{String: *newCaption, Valid: true}
 	}
 
-	updatedPost, err := qTx.RevisePost(ctx, generated.RevisePostParams{
-		ID:       id,
-		Content:  newContent,
-		Caption:  dbCaption,
-		AuthorID: authorID,
+	var dbCoverImageUrl sql.NullString
+	if coverImageUrl != nil {
+		dbCoverImageUrl = sql.NullString{String: *coverImageUrl, Valid: true}
+	}
+
+	dbPost, err := qTx.RevisePost(ctx, generated.RevisePostParams{
+		ID:            id,
+		Content:       newContent,
+		Caption:       dbCaption,
+		AuthorID:      authorID,
+		CoverImageUrl: dbCoverImageUrl,
 	})
 	if err != nil {
 		return Post{}, err
 	}
 
-	// Commit transaction
-	if err := tx.Commit(); err != nil {
+	err = tx.Commit()
+	if err != nil {
 		return Post{}, err
 	}
-
-	// Fetch hydrated post outside the transaction
-	return r.GetPostByID(ctx, updatedPost.ID)
+	return r.GetPostByID(ctx, dbPost.ID)
 }
+
 
 func (r *Repository) ListVersionsByPost(ctx context.Context, postID uuid.UUID) ([]PostVersion, error) {
 	dbVersions, err := r.q.ListVersionsByPost(ctx, postID)

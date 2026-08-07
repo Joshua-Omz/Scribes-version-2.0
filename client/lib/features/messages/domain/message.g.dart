@@ -34,6 +34,7 @@ _Conversation _$ConversationFromJson(Map<String, dynamic> json) =>
       blocked: json['blocked'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       lastActive: DateTime.parse(json['last_active'] as String),
+      unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
@@ -44,6 +45,7 @@ Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
       'blocked': instance.blocked,
       'created_at': instance.createdAt.toIso8601String(),
       'last_active': instance.lastActive.toIso8601String(),
+      'unread_count': instance.unreadCount,
     };
 
 _Message _$MessageFromJson(Map<String, dynamic> json) => _Message(

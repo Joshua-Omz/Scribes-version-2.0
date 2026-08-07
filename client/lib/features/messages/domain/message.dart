@@ -29,6 +29,7 @@ abstract class Conversation with _$Conversation {
     required bool blocked,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'last_active') required DateTime lastActive,
+    @JsonKey(name: 'unread_count') @Default(0) int unreadCount,
   }) = _Conversation;
 
   factory Conversation.fromJson(Map<String, dynamic> json) =>

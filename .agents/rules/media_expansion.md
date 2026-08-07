@@ -105,72 +105,6 @@ No changes to this migration. Sound pool curation, categories, and the `sound_id
 
 ---
 
-## Migration 013 (rewritten) — fair_use_allowance
-
-```sql
--- ═══════════════════════════════════════════════════════
--- MIGRATION 013 (REWRITTEN): Fair-use allowance
--- Replaces the previous billing_plans / user_subscriptions /
--- payment_events design entirely.
---
--- Scribes has no commercial layer. This migration exists
--- solely to prevent storage abuse — every user gets the
--- same generous monthly allowance, enforced identically,
--- with zero payment processing anywhere in the system.
--- ═══════════════════════════════════════════════════════
-
--- ── The single universal allowance ─────────────────────
--- One row. Not per-user. This is the platform-wide policy.
--- Changing these numbers is an admin config change,
--- not a billing plan change.
-CREATE TABLE fair_use_policy (
-    id                   UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
-    image_credits_pm     INT     NOT NULL DEFAULT 30,   -- cover images per month
-    panel_credits_pm     INT     NOT NULL DEFAULT 60,   -- passage panel images per month
-    max_sound_posts_pm   INT     NOT NULL DEFAULT 30,   -- passage posts with sound per month
-    is_active            BOOLEAN NOT NULL DEFAULT true,
-    updated_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_by           UUID    REFERENCES users(id)   -- super admin who last changed it
-);
-
--- Seed the single policy row
-INSERT INTO fair_use_policy (image_credits_pm, panel_credits_pm, max_sound_posts_pm)
-VALUES (30, 60, 30);
-
--- Constraint: only one active policy row ever exists
-CREATE UNIQUE INDEX idx_one_active_policy
-    ON fair_use_policy (is_active) WHERE is_active = true;
-
--- ── Usage ledger — unchanged in structure from v2.0 ────
--- Tracks monthly usage per user against the single policy.
--- Resets at the start of each calendar month for every user
--- simultaneously — there is no per-user billing period anymore,
--- since there is no subscription to anchor a period to.
-CREATE TABLE credit_usage (
-    id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id      UUID        NOT NULL REFERENCES users(id),
-    period_start TIMESTAMPTZ NOT NULL,   -- first of the calendar month
-    period_end   TIMESTAMPTZ NOT NULL,   -- last of the calendar month
-    images_used  INT         NOT NULL DEFAULT 0,
-    panels_used  INT         NOT NULL DEFAULT 0,
-    sounds_used  INT         NOT NULL DEFAULT 0,
-    UNIQUE (user_id, period_start)
-);
-
-CREATE INDEX idx_credit_usage_user ON credit_usage (user_id, period_start DESC);
-```
-
-## 013_fair_use_allowance.down.sql
-
-```sql
-DROP INDEX IF EXISTS idx_credit_usage_user;
-DROP TABLE IF EXISTS credit_usage;
-DROP INDEX IF EXISTS idx_one_active_policy;
-DROP TABLE IF EXISTS fair_use_policy;
-```
-
----
-
 ## Updated table inventory
 
 | Table | Migration | Notes |
@@ -179,15 +113,15 @@ DROP TABLE IF EXISTS fair_use_policy;
 | media_uploads | 010 | Audit trail only, no billing fields |
 | passage_panels | 011 | Unchanged |
 | sound_pool | 012 | Unchanged |
-| **fair_use_policy** | **013** | **New — replaces billing_plans** |
-| credit_usage | 013 | Structure unchanged, meaning changed to rate-limit |
+| ~~fair_use_policy~~ | ~~013~~ | **Removed entirely (no usage tracking)** |
+| ~~credit_usage~~ | ~~013~~ | **Removed entirely (no usage tracking)** |
 | ~~billing_plans~~ | ~~013~~ | **Removed** |
 | ~~user_subscriptions~~ | ~~013~~ | **Removed** |
 | ~~payment_events~~ | ~~013~~ | **Removed** |
 
-**Total: 26 tables** (down from 28 in v2.0 — three billing tables removed, one policy table added)
+**Total: 24 tables** (down from 28 in v2.0 — three billing tables removed, and usage tracking removed)
 
 ---
 
-*Scribes Media Expansion Migration Source of Truth v3.0*
-*No billing. No tiers. No payment processing. One fair-use allowance for every user.*
+*Scribes Media Expansion Migration Source of Truth v3.1*
+*No billing. No tiers. No payment processing. No usage tracking.*

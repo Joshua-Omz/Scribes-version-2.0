@@ -25,6 +25,8 @@ _Post _$PostFromJson(Map<String, dynamic> json) => _Post(
       (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
   isDeleted: json['is_deleted'] as bool,
+  coverImageUrl: json['cover_image_url'] as String?,
+  postType: json['post_type'] as String? ?? 'standard',
   publishedAt: DateTime.parse(json['published_at'] as String),
   authorHandle: json['author_handle'] as String,
   authorName: json['author_name'] as String,
@@ -43,6 +45,8 @@ Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
   'scripture_refs': instance.scriptureRefs,
   'tags': instance.tags,
   'is_deleted': instance.isDeleted,
+  'cover_image_url': instance.coverImageUrl,
+  'post_type': instance.postType,
   'published_at': instance.publishedAt.toIso8601String(),
   'author_handle': instance.authorHandle,
   'author_name': instance.authorName,

@@ -146,8 +146,16 @@ func (s *Service) RejectRequest(ctx context.Context, requestID, userID uuid.UUID
 
 // ── Conversations ──────────────────────────────
 
-func (s *Service) GetConversations(ctx context.Context, userID uuid.UUID) ([]generated.Conversation, error) {
+func (s *Service) GetConversations(ctx context.Context, userID uuid.UUID) ([]generated.GetConversationsForUserRow, error) {
 	return s.repo.GetConversationsForUser(ctx, userID)
+}
+
+func (s *Service) ReadConversation(ctx context.Context, conversationID, userID uuid.UUID) (generated.Conversation, error) {
+	return s.repo.UpdateConversationLastRead(ctx, conversationID, userID)
+}
+
+func (s *Service) SyncMissedMessages(ctx context.Context, userID uuid.UUID, since time.Time) ([]generated.Message, error) {
+	return s.repo.GetMissedMessages(ctx, userID, since)
 }
 
 func (s *Service) SearchContacts(ctx context.Context, userID uuid.UUID, query string) ([]generated.SearchContactsRow, error) {

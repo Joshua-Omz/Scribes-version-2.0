@@ -67,10 +67,12 @@ INSERT INTO posts (
     visibility,
     sermon_source,
     is_correction,
-    corrects_post_id
+    corrects_post_id,
+    cover_image_url,
+    post_type
 ) VALUES (
-    $1, $2, $3, $4, $5, true, $6
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding
+    $1, $2, $3, $4, $5, true, $6, $7, $8
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
 `
 
 type CreateCorrectionPostParams struct {
@@ -80,6 +82,8 @@ type CreateCorrectionPostParams struct {
 	Visibility     PostVisibility  `json:"visibility"`
 	SermonSource   sql.NullString  `json:"sermon_source"`
 	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
+	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
+	PostType       PostType        `json:"post_type"`
 }
 
 func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrectionPostParams) (Post, error) {
@@ -90,6 +94,8 @@ func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrection
 		arg.Visibility,
 		arg.SermonSource,
 		arg.CorrectsPostID,
+		arg.CoverImageUrl,
+		arg.PostType,
 	)
 	var i Post
 	err := row.Scan(
@@ -107,6 +113,8 @@ func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrection
 		&i.ServerSequence,
 		&i.SearchVector,
 		&i.Embedding,
+		&i.PostType,
+		&i.CoverImageUrl,
 	)
 	return i, err
 }
@@ -117,18 +125,22 @@ INSERT INTO posts (
     content,
     caption,
     visibility,
-    sermon_source
+    sermon_source,
+    cover_image_url,
+    post_type
 ) VALUES (
-    $1, $2, $3, $4, $5
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
 `
 
 type CreatePostParams struct {
-	AuthorID     uuid.UUID       `json:"author_id"`
-	Content      json.RawMessage `json:"content"`
-	Caption      sql.NullString  `json:"caption"`
-	Visibility   PostVisibility  `json:"visibility"`
-	SermonSource sql.NullString  `json:"sermon_source"`
+	AuthorID      uuid.UUID       `json:"author_id"`
+	Content       json.RawMessage `json:"content"`
+	Caption       sql.NullString  `json:"caption"`
+	Visibility    PostVisibility  `json:"visibility"`
+	SermonSource  sql.NullString  `json:"sermon_source"`
+	CoverImageUrl sql.NullString  `json:"cover_image_url"`
+	PostType      PostType        `json:"post_type"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
@@ -138,6 +150,8 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		arg.Caption,
 		arg.Visibility,
 		arg.SermonSource,
+		arg.CoverImageUrl,
+		arg.PostType,
 	)
 	var i Post
 	err := row.Scan(
@@ -155,6 +169,8 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.ServerSequence,
 		&i.SearchVector,
 		&i.Embedding,
+		&i.PostType,
+		&i.CoverImageUrl,
 	)
 	return i, err
 }
@@ -176,7 +192,7 @@ func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, u.handle AS author_handle, u.display_name AS author_name 
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, u.handle AS author_handle, u.display_name AS author_name 
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.id = $1 AND p.is_deleted = false LIMIT 1
@@ -197,6 +213,8 @@ type GetPostByIDRow struct {
 	ServerSequence int64           `json:"server_sequence"`
 	SearchVector   interface{}     `json:"search_vector"`
 	Embedding      interface{}     `json:"embedding"`
+	PostType       PostType        `json:"post_type"`
+	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
 	AuthorHandle   string          `json:"author_handle"`
 	AuthorName     string          `json:"author_name"`
 }
@@ -219,6 +237,8 @@ func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (GetPostByIDRow
 		&i.ServerSequence,
 		&i.SearchVector,
 		&i.Embedding,
+		&i.PostType,
+		&i.CoverImageUrl,
 		&i.AuthorHandle,
 		&i.AuthorName,
 	)
@@ -282,8 +302,8 @@ type GetScriptureRefsForPostsRow struct {
 	VerseEnd   sql.NullInt32 `json:"verse_end"`
 }
 
-func (q *Queries) GetScriptureRefsForPosts(ctx context.Context, postIDs []uuid.UUID) ([]GetScriptureRefsForPostsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getScriptureRefsForPosts, pq.Array(postIDs))
+func (q *Queries) GetScriptureRefsForPosts(ctx context.Context, dollar_1 []uuid.UUID) ([]GetScriptureRefsForPostsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getScriptureRefsForPosts, pq.Array(dollar_1))
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +332,7 @@ func (q *Queries) GetScriptureRefsForPosts(ctx context.Context, postIDs []uuid.U
 }
 
 const listPostsByAuthor = `-- name: ListPostsByAuthor :many
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, u.handle AS author_handle, u.display_name AS author_name 
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, u.handle AS author_handle, u.display_name AS author_name 
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.author_id = $1 AND p.is_deleted = false
@@ -334,6 +354,8 @@ type ListPostsByAuthorRow struct {
 	ServerSequence int64           `json:"server_sequence"`
 	SearchVector   interface{}     `json:"search_vector"`
 	Embedding      interface{}     `json:"embedding"`
+	PostType       PostType        `json:"post_type"`
+	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
 	AuthorHandle   string          `json:"author_handle"`
 	AuthorName     string          `json:"author_name"`
 }
@@ -362,6 +384,8 @@ func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]
 			&i.ServerSequence,
 			&i.SearchVector,
 			&i.Embedding,
+			&i.PostType,
+			&i.CoverImageUrl,
 			&i.AuthorHandle,
 			&i.AuthorName,
 		); err != nil {
@@ -382,16 +406,18 @@ const revisePost = `-- name: RevisePost :one
 UPDATE posts
 SET content = $2,
     caption = $3,
-    current_version = current_version + 1
+    current_version = current_version + 1,
+    cover_image_url = $5
 WHERE id = $1 AND author_id = $4 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
 `
 
 type RevisePostParams struct {
-	ID       uuid.UUID       `json:"id"`
-	Content  json.RawMessage `json:"content"`
-	Caption  sql.NullString  `json:"caption"`
-	AuthorID uuid.UUID       `json:"author_id"`
+	ID            uuid.UUID       `json:"id"`
+	Content       json.RawMessage `json:"content"`
+	Caption       sql.NullString  `json:"caption"`
+	AuthorID      uuid.UUID       `json:"author_id"`
+	CoverImageUrl sql.NullString  `json:"cover_image_url"`
 }
 
 func (q *Queries) RevisePost(ctx context.Context, arg RevisePostParams) (Post, error) {
@@ -400,6 +426,7 @@ func (q *Queries) RevisePost(ctx context.Context, arg RevisePostParams) (Post, e
 		arg.Content,
 		arg.Caption,
 		arg.AuthorID,
+		arg.CoverImageUrl,
 	)
 	var i Post
 	err := row.Scan(
@@ -417,6 +444,8 @@ func (q *Queries) RevisePost(ctx context.Context, arg RevisePostParams) (Post, e
 		&i.ServerSequence,
 		&i.SearchVector,
 		&i.Embedding,
+		&i.PostType,
+		&i.CoverImageUrl,
 	)
 	return i, err
 }
@@ -427,9 +456,10 @@ SET content = $2,
     caption = $3,
     visibility = $4,
     sermon_source = $5,
-    current_version = $6
+    current_version = $6,
+    cover_image_url = $8
 WHERE id = $1 AND author_id = $7 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
 `
 
 type UpdatePostParams struct {
@@ -440,6 +470,7 @@ type UpdatePostParams struct {
 	SermonSource   sql.NullString  `json:"sermon_source"`
 	CurrentVersion int32           `json:"current_version"`
 	AuthorID       uuid.UUID       `json:"author_id"`
+	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
@@ -451,6 +482,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		arg.SermonSource,
 		arg.CurrentVersion,
 		arg.AuthorID,
+		arg.CoverImageUrl,
 	)
 	var i Post
 	err := row.Scan(
@@ -468,6 +500,8 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.ServerSequence,
 		&i.SearchVector,
 		&i.Embedding,
+		&i.PostType,
+		&i.CoverImageUrl,
 	)
 	return i, err
 }

@@ -565,7 +565,7 @@ func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) 
 
 const getSuggestedUsers = `-- name: GetSuggestedUsers :many
 SELECT 
-    u.id, u.handle, u.display_name, u.bio, u.is_church,
+    u.id, u.handle, u.display_name, u.bio, u.is_church, u.avatar_url,
     (SELECT COUNT(*) FROM follows WHERE followee_id = u.id)::int AS followers_count,
     (SELECT COUNT(*) FROM follows WHERE follower_id = u.id)::int AS following_count
 FROM users u
@@ -589,6 +589,7 @@ type GetSuggestedUsersRow struct {
 	DisplayName    string         `json:"display_name"`
 	Bio            sql.NullString `json:"bio"`
 	IsChurch       bool           `json:"is_church"`
+	AvatarUrl      sql.NullString `json:"avatar_url"`
 	FollowersCount int32          `json:"followers_count"`
 	FollowingCount int32          `json:"following_count"`
 }
@@ -608,6 +609,7 @@ func (q *Queries) GetSuggestedUsers(ctx context.Context, arg GetSuggestedUsersPa
 			&i.DisplayName,
 			&i.Bio,
 			&i.IsChurch,
+			&i.AvatarUrl,
 			&i.FollowersCount,
 			&i.FollowingCount,
 		); err != nil {

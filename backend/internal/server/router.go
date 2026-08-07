@@ -17,6 +17,7 @@ import (
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
 	"scribes-api/internal/tag"
+	"scribes-api/internal/media"
 	"scribes-api/pkg/respond"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, jwtSecret string) *gin.Engine {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, mediaHandler *media.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 	r.Use(corsMiddleware())
 	r.GET("/health", func(c *gin.Context) {
@@ -154,8 +155,10 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.GET("/conversations/:id/stream", messageHandler.StreamMessages)
 		protected.POST("/conversations/:id/messages", messageHandler.SendMessage)
 		protected.PATCH("/conversations/:id/messages/:msg_id", messageHandler.UpdateMessage)
+		protected.POST("/conversations/:id/read", messageHandler.ReadConversation)
 		protected.POST("/conversations/:id/block", messageHandler.BlockConversation)
 		protected.DELETE("/messages/:id", messageHandler.SoftDeleteMessage)
+		protected.GET("/dm/sync", messageHandler.SyncMissedMessages)
 
 		// Notification endpoints
 		protected.GET("/notifications", notificationHandler.GetNotifications)
@@ -167,6 +170,13 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 
 		// Admin & Reporting endpoints
 		protected.POST("/reports", adminHandler.SubmitReport)
+
+		// Media endpoints
+		mediaGroup := protected.Group("/media")
+		{
+			mediaGroup.POST("/upload/presign", mediaHandler.HandlePresign)
+			mediaGroup.POST("/upload/confirm", mediaHandler.HandleConfirm)
+		}
 	}
 
 	// Admin routes

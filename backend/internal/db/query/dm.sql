@@ -27,9 +27,20 @@ VALUES ($1, $2)
 RETURNING *;
 
 -- name: GetConversationsForUser :many
-SELECT * FROM conversations
-WHERE user_a_id = $1 OR user_b_id = $1
-ORDER BY last_active DESC;
+SELECT c.id, c.user_a_id, c.user_b_id, c.blocked, c.created_at, c.last_active, c.user_a_last_read_at, c.user_b_last_read_at, 
+       COUNT(m.id)::int AS unread_count
+FROM conversations c
+LEFT JOIN messages m 
+  ON m.conversation_id = c.id
+  AND m.sender_id != $1
+  AND m.is_deleted = false
+  AND m.sent_at > CASE 
+      WHEN c.user_a_id = $1 THEN c.user_a_last_read_at
+      ELSE c.user_b_last_read_at
+  END
+WHERE c.user_a_id = $1 OR c.user_b_id = $1
+GROUP BY c.id
+ORDER BY c.last_active DESC;
 
 -- name: GetConversationByID :one
 SELECT * FROM conversations
@@ -39,6 +50,21 @@ WHERE id = $1;
 UPDATE conversations
 SET blocked = true
 WHERE id = $1;
+
+-- name: UpdateConversationLastRead :one
+UPDATE conversations
+SET user_a_last_read_at = CASE WHEN user_a_id = $2 THEN now() ELSE user_a_last_read_at END,
+    user_b_last_read_at = CASE WHEN user_b_id = $2 THEN now() ELSE user_b_last_read_at END
+WHERE id = $1 AND (user_a_id = $2 OR user_b_id = $2)
+RETURNING *;
+
+-- name: GetMissedMessages :many
+SELECT m.* 
+FROM messages m
+JOIN conversations c ON c.id = m.conversation_id
+WHERE (c.user_a_id = $1 OR c.user_b_id = $1)
+  AND m.sent_at > sqlc.arg(since)::timestamptz
+ORDER BY m.sent_at ASC;
 
 -- ── Messages ───────────────────────────────────
 

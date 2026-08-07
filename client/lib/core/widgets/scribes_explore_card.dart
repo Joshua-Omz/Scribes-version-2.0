@@ -27,20 +27,26 @@ class ScribesExploreCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
+    final hasImage = post.coverImageUrl != null && post.coverImageUrl!.isNotEmpty;
 
     return ScribesBounceButton(
       onTap: onTap ?? () => context.push('/posts/${post.id}'),
       scaleFactor: 0.98,
       child: Container(
-        width: 320,
-        height: 340,
+        width: 280,
+        height: 400,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: colors.border.withValues(alpha: 0.5),
           ),
-          // Gradient for the moody ambience (highly performant compared to blur)
-          gradient: LinearGradient(
+          image: hasImage 
+              ? DecorationImage(
+                  image: NetworkImage(post.coverImageUrl!),
+                  fit: BoxFit.cover,
+                )
+              : null,
+          gradient: hasImage ? null : LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
@@ -51,19 +57,36 @@ class ScribesExploreCard extends ConsumerWidget {
         ),
         child: Stack(
           children: [
-            // Ambient watermark icon
-            Positioned(
-              right: -30,
-              bottom: 20,
-              child: Opacity(
-                opacity: 0.04,
-                child: HugeIcon(
-                  icon: HugeIcons.strokeRoundedChurch,
-                  color: colors.primaryText,
-                  size: 200,
+            // Dark gradient overlay for text readability when using image
+            if (hasImage)
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black45,
+                      Colors.black87,
+                    ],
+                  ),
                 ),
               ),
-            ),
+
+            // Ambient watermark icon if no image
+            if (!hasImage)
+              Positioned(
+                right: -30,
+                bottom: 20,
+                child: Opacity(
+                  opacity: 0.04,
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedChurch,
+                    color: colors.primaryText,
+                    size: 200,
+                  ),
+                ),
+              ),
             
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -92,7 +115,7 @@ class ScribesExploreCard extends ConsumerWidget {
                   Text(
                     post.content['title'] ?? 'Untitled',
                     style: ScribesTextStyles.displayLg.copyWith(
-                      color: colors.primaryText,
+                      color: hasImage ? Colors.white : colors.primaryText,
                       height: 1.15,
                     ),
                     maxLines: 4,
@@ -113,7 +136,7 @@ class ScribesExploreCard extends ConsumerWidget {
                         child: Text(
                           '@${post.authorHandle}',
                           style: ScribesTextStyles.labelSm.copyWith(
-                            color: colors.secondaryText,
+                            color: hasImage ? Colors.white70 : colors.secondaryText,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -126,7 +149,7 @@ class ScribesExploreCard extends ConsumerWidget {
                           constraints: const BoxConstraints(),
                           icon: HugeIcon(
                             icon: HugeIcons.strokeRoundedBookmark01,
-                            color: isSaved ? colors.gold : colors.secondaryText,
+                            color: isSaved ? colors.gold : (hasImage ? Colors.white70 : colors.secondaryText),
                             size: 20,
                           ),
                         ),
