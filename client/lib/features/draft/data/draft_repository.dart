@@ -207,8 +207,8 @@ class DraftRepository {
     
     // 2. Call the publish endpoint with the cloud ID and scripture refs
     final payload = {
-      if (tags != null) 'tags': tags,
-      if (scriptureRefs != null) 'scripture_refs': scriptureRefs.map((r) => r.toJson()).toList(),
+      'tags': ?tags,
+      'scripture_refs': ?scriptureRefs?.map((r) => r.toJson()).toList(),
     };
     final postData = await _api.publishDraft(cloudDraft.id, data: payload);
     
