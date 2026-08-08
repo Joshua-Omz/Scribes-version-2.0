@@ -4,6 +4,7 @@ import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:scribes/features/messages/application/last_read_provider.dart';
+import 'package:scribes/features/auth/application/auth_notifier.dart';
 
 part 'inbox_providers.g.dart';
 
@@ -45,11 +46,14 @@ class ConversationsNotifier extends _$ConversationsNotifier {
     // Start background sync polling
     _startPolling();
 
+    final user = ref.read(authProvider).value;
+    if (user == null) return;
+
     // Trigger initial background refresh immediately
     repo.refreshConversations();
 
     // Yield the local DB stream for instant cached UI
-    await for (final convos in repo.watchConversations()) {
+    await for (final convos in repo.watchConversations(user.id)) {
       _checkNewMessages(convos);
       // Eagerly load the last read states so the global unread badge doesn't assume all are unread.
       ref.read(lastReadProvider.notifier).loadAll(convos.map((c) => c.id).toList());

@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_toast.dart';
+import '../../../core/network/media_api.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
@@ -23,6 +27,7 @@ class PublishMetadataScreen extends ConsumerStatefulWidget {
 class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
   final TextEditingController _tagController = TextEditingController();
   final FocusNode _tagFocusNode = FocusNode();
+  bool _isUploadingCover = false;
 
   @override
   void dispose() {
@@ -123,6 +128,66 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
     );
   }
 
+  Future<void> _pickAndUploadCoverImage() async {
+    final colors = ref.read(themeProvider);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
+
+      final cropper = ImageCropper();
+      final croppedFile = await cropper.cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Cover Image',
+            toolbarColor: colors.surface,
+            toolbarWidgetColor: colors.primaryText,
+            activeControlsWidgetColor: colors.gold,
+            initAspectRatio: CropAspectRatioPreset.ratio16x9,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Cover Image',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+
+      if (croppedFile == null) return;
+
+      setState(() => _isUploadingCover = true);
+
+      final mediaApi = ref.read(mediaApiProvider);
+      String mimeType = 'image/jpeg';
+      if (croppedFile.path.toLowerCase().endsWith('.png')) {
+        mimeType = 'image/png';
+      } else if (croppedFile.path.toLowerCase().endsWith('.webp')) {
+        mimeType = 'image/webp';
+      }
+
+      final uploadedUrl = await mediaApi.uploadImage(File(croppedFile.path), mimeType);
+      
+      ref.read(composeProvider.notifier).updateMetadata(coverImageUrl: uploadedUrl);
+
+      if (mounted) {
+        ScribesToast.show(context, 'Cover image added!', colors);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScribesToast.show(context, 'Failed to upload image: $e', colors, isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingCover = false);
+    }
+  }
+
+  void _removeCoverImage() {
+    ref.read(composeProvider.notifier).updateMetadata(coverImageUrl: null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
@@ -212,6 +277,123 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Post Type Selection
+                    Text(
+                      'Post Type',
+                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: colors.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => ref.read(composeProvider.notifier).updateMetadata(postType: 'standard'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: composeState.postType == 'standard' ? colors.gold.withOpacity(0.1) : Colors.transparent,
+                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Standard',
+                                    style: ScribesTextStyles.labelLg.copyWith(
+                                      color: composeState.postType == 'standard' ? colors.gold : colors.secondaryText,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(width: 1, height: 24, color: colors.border),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => ref.read(composeProvider.notifier).updateMetadata(postType: 'passage'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: composeState.postType == 'passage' ? colors.gold.withOpacity(0.1) : Colors.transparent,
+                                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Passage',
+                                    style: ScribesTextStyles.labelLg.copyWith(
+                                      color: composeState.postType == 'passage' ? colors.gold : colors.secondaryText,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Cover Image Selection (Standard posts only)
+                    if (composeState.postType == 'standard') ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Cover Image',
+                            style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                          ),
+                          if (composeState.coverImageUrl != null)
+                            TextButton(
+                              onPressed: _removeCoverImage,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text('Remove', style: ScribesTextStyles.labelSm.copyWith(color: colors.orange)),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: _isUploadingCover ? null : _pickAndUploadCoverImage,
+                        child: Container(
+                          width: double.infinity,
+                          height: 180,
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: colors.border),
+                            image: composeState.coverImageUrl != null
+                                ? DecorationImage(
+                                    image: NetworkImage(composeState.coverImageUrl!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: _isUploadingCover
+                              ? Center(child: CircularProgressIndicator(color: colors.gold))
+                              : composeState.coverImageUrl == null
+                                  ? Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        HugeIcon(icon: HugeIcons.strokeRoundedImage01, color: colors.secondaryText, size: 32),
+                                        const SizedBox(height: 8),
+                                        Text('Add Cover Image (Optional)', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
+                                        const SizedBox(height: 4),
+                                        Text('Recommended aspect ratio: 16:9', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
+                                      ],
+                                    )
+                                  : null,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+
                     // Scripture Tags Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

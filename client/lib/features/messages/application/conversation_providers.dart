@@ -14,9 +14,12 @@ class ConversationMessages extends _$ConversationMessages {
   @override
   Stream<List<Message>> build(String conversationId) {
     final repo = ref.watch(messageRepositoryProvider);
+    final user = ref.read(authProvider).value;
     
     // 0. Mark conversation as read on the server
-    repo.readConversation(conversationId);
+    if (user != null) {
+      repo.readConversation(conversationId, user.id);
+    }
 
     // 1. Kick off a background refresh to fetch from API
     repo.refreshMessages(conversationId);

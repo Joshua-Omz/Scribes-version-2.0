@@ -2918,6 +2918,30 @@ class $ConversationsTable extends Conversations
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _userALastReadAtMeta = const VerificationMeta(
+    'userALastReadAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> userALastReadAt =
+      GeneratedColumn<DateTime>(
+        'user_a_last_read_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _userBLastReadAtMeta = const VerificationMeta(
+    'userBLastReadAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> userBLastReadAt =
+      GeneratedColumn<DateTime>(
+        'user_b_last_read_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2927,6 +2951,8 @@ class $ConversationsTable extends Conversations
     createdAt,
     lastActive,
     isHidden,
+    userALastReadAt,
+    userBLastReadAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2989,6 +3015,24 @@ class $ConversationsTable extends Conversations
         isHidden.isAcceptableOrUnknown(data['is_hidden']!, _isHiddenMeta),
       );
     }
+    if (data.containsKey('user_a_last_read_at')) {
+      context.handle(
+        _userALastReadAtMeta,
+        userALastReadAt.isAcceptableOrUnknown(
+          data['user_a_last_read_at']!,
+          _userALastReadAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_b_last_read_at')) {
+      context.handle(
+        _userBLastReadAtMeta,
+        userBLastReadAt.isAcceptableOrUnknown(
+          data['user_b_last_read_at']!,
+          _userBLastReadAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3026,6 +3070,14 @@ class $ConversationsTable extends Conversations
         DriftSqlType.bool,
         data['${effectivePrefix}is_hidden'],
       )!,
+      userALastReadAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}user_a_last_read_at'],
+      ),
+      userBLastReadAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}user_b_last_read_at'],
+      ),
     );
   }
 
@@ -3043,6 +3095,8 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   final DateTime createdAt;
   final DateTime lastActive;
   final bool isHidden;
+  final DateTime? userALastReadAt;
+  final DateTime? userBLastReadAt;
   const Conversation({
     required this.id,
     required this.userAId,
@@ -3051,6 +3105,8 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     required this.createdAt,
     required this.lastActive,
     required this.isHidden,
+    this.userALastReadAt,
+    this.userBLastReadAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3062,6 +3118,12 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     map['created_at'] = Variable<DateTime>(createdAt);
     map['last_active'] = Variable<DateTime>(lastActive);
     map['is_hidden'] = Variable<bool>(isHidden);
+    if (!nullToAbsent || userALastReadAt != null) {
+      map['user_a_last_read_at'] = Variable<DateTime>(userALastReadAt);
+    }
+    if (!nullToAbsent || userBLastReadAt != null) {
+      map['user_b_last_read_at'] = Variable<DateTime>(userBLastReadAt);
+    }
     return map;
   }
 
@@ -3074,6 +3136,12 @@ class Conversation extends DataClass implements Insertable<Conversation> {
       createdAt: Value(createdAt),
       lastActive: Value(lastActive),
       isHidden: Value(isHidden),
+      userALastReadAt: userALastReadAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userALastReadAt),
+      userBLastReadAt: userBLastReadAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userBLastReadAt),
     );
   }
 
@@ -3090,6 +3158,8 @@ class Conversation extends DataClass implements Insertable<Conversation> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       lastActive: serializer.fromJson<DateTime>(json['lastActive']),
       isHidden: serializer.fromJson<bool>(json['isHidden']),
+      userALastReadAt: serializer.fromJson<DateTime?>(json['userALastReadAt']),
+      userBLastReadAt: serializer.fromJson<DateTime?>(json['userBLastReadAt']),
     );
   }
   @override
@@ -3103,6 +3173,8 @@ class Conversation extends DataClass implements Insertable<Conversation> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'lastActive': serializer.toJson<DateTime>(lastActive),
       'isHidden': serializer.toJson<bool>(isHidden),
+      'userALastReadAt': serializer.toJson<DateTime?>(userALastReadAt),
+      'userBLastReadAt': serializer.toJson<DateTime?>(userBLastReadAt),
     };
   }
 
@@ -3114,6 +3186,8 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     DateTime? createdAt,
     DateTime? lastActive,
     bool? isHidden,
+    Value<DateTime?> userALastReadAt = const Value.absent(),
+    Value<DateTime?> userBLastReadAt = const Value.absent(),
   }) => Conversation(
     id: id ?? this.id,
     userAId: userAId ?? this.userAId,
@@ -3122,6 +3196,12 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     createdAt: createdAt ?? this.createdAt,
     lastActive: lastActive ?? this.lastActive,
     isHidden: isHidden ?? this.isHidden,
+    userALastReadAt: userALastReadAt.present
+        ? userALastReadAt.value
+        : this.userALastReadAt,
+    userBLastReadAt: userBLastReadAt.present
+        ? userBLastReadAt.value
+        : this.userBLastReadAt,
   );
   Conversation copyWithCompanion(ConversationsCompanion data) {
     return Conversation(
@@ -3134,6 +3214,12 @@ class Conversation extends DataClass implements Insertable<Conversation> {
           ? data.lastActive.value
           : this.lastActive,
       isHidden: data.isHidden.present ? data.isHidden.value : this.isHidden,
+      userALastReadAt: data.userALastReadAt.present
+          ? data.userALastReadAt.value
+          : this.userALastReadAt,
+      userBLastReadAt: data.userBLastReadAt.present
+          ? data.userBLastReadAt.value
+          : this.userBLastReadAt,
     );
   }
 
@@ -3146,7 +3232,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
           ..write('blocked: $blocked, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastActive: $lastActive, ')
-          ..write('isHidden: $isHidden')
+          ..write('isHidden: $isHidden, ')
+          ..write('userALastReadAt: $userALastReadAt, ')
+          ..write('userBLastReadAt: $userBLastReadAt')
           ..write(')'))
         .toString();
   }
@@ -3160,6 +3248,8 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     createdAt,
     lastActive,
     isHidden,
+    userALastReadAt,
+    userBLastReadAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -3171,7 +3261,9 @@ class Conversation extends DataClass implements Insertable<Conversation> {
           other.blocked == this.blocked &&
           other.createdAt == this.createdAt &&
           other.lastActive == this.lastActive &&
-          other.isHidden == this.isHidden);
+          other.isHidden == this.isHidden &&
+          other.userALastReadAt == this.userALastReadAt &&
+          other.userBLastReadAt == this.userBLastReadAt);
 }
 
 class ConversationsCompanion extends UpdateCompanion<Conversation> {
@@ -3182,6 +3274,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
   final Value<DateTime> createdAt;
   final Value<DateTime> lastActive;
   final Value<bool> isHidden;
+  final Value<DateTime?> userALastReadAt;
+  final Value<DateTime?> userBLastReadAt;
   final Value<int> rowid;
   const ConversationsCompanion({
     this.id = const Value.absent(),
@@ -3191,6 +3285,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     this.createdAt = const Value.absent(),
     this.lastActive = const Value.absent(),
     this.isHidden = const Value.absent(),
+    this.userALastReadAt = const Value.absent(),
+    this.userBLastReadAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ConversationsCompanion.insert({
@@ -3201,6 +3297,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     required DateTime createdAt,
     required DateTime lastActive,
     this.isHidden = const Value.absent(),
+    this.userALastReadAt = const Value.absent(),
+    this.userBLastReadAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userAId = Value(userAId),
@@ -3215,6 +3313,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastActive,
     Expression<bool>? isHidden,
+    Expression<DateTime>? userALastReadAt,
+    Expression<DateTime>? userBLastReadAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3225,6 +3325,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
       if (createdAt != null) 'created_at': createdAt,
       if (lastActive != null) 'last_active': lastActive,
       if (isHidden != null) 'is_hidden': isHidden,
+      if (userALastReadAt != null) 'user_a_last_read_at': userALastReadAt,
+      if (userBLastReadAt != null) 'user_b_last_read_at': userBLastReadAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3237,6 +3339,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     Value<DateTime>? createdAt,
     Value<DateTime>? lastActive,
     Value<bool>? isHidden,
+    Value<DateTime?>? userALastReadAt,
+    Value<DateTime?>? userBLastReadAt,
     Value<int>? rowid,
   }) {
     return ConversationsCompanion(
@@ -3247,6 +3351,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
       createdAt: createdAt ?? this.createdAt,
       lastActive: lastActive ?? this.lastActive,
       isHidden: isHidden ?? this.isHidden,
+      userALastReadAt: userALastReadAt ?? this.userALastReadAt,
+      userBLastReadAt: userBLastReadAt ?? this.userBLastReadAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3275,6 +3381,12 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
     if (isHidden.present) {
       map['is_hidden'] = Variable<bool>(isHidden.value);
     }
+    if (userALastReadAt.present) {
+      map['user_a_last_read_at'] = Variable<DateTime>(userALastReadAt.value);
+    }
+    if (userBLastReadAt.present) {
+      map['user_b_last_read_at'] = Variable<DateTime>(userBLastReadAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3291,6 +3403,8 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
           ..write('createdAt: $createdAt, ')
           ..write('lastActive: $lastActive, ')
           ..write('isHidden: $isHidden, ')
+          ..write('userALastReadAt: $userALastReadAt, ')
+          ..write('userBLastReadAt: $userBLastReadAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5638,6 +5752,8 @@ typedef $$ConversationsTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime lastActive,
       Value<bool> isHidden,
+      Value<DateTime?> userALastReadAt,
+      Value<DateTime?> userBLastReadAt,
       Value<int> rowid,
     });
 typedef $$ConversationsTableUpdateCompanionBuilder =
@@ -5649,6 +5765,8 @@ typedef $$ConversationsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> lastActive,
       Value<bool> isHidden,
+      Value<DateTime?> userALastReadAt,
+      Value<DateTime?> userBLastReadAt,
       Value<int> rowid,
     });
 
@@ -5693,6 +5811,16 @@ class $$ConversationsTableFilterComposer
 
   ColumnFilters<bool> get isHidden => $composableBuilder(
     column: $table.isHidden,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get userALastReadAt => $composableBuilder(
+    column: $table.userALastReadAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get userBLastReadAt => $composableBuilder(
+    column: $table.userBLastReadAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -5740,6 +5868,16 @@ class $$ConversationsTableOrderingComposer
     column: $table.isHidden,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get userALastReadAt => $composableBuilder(
+    column: $table.userALastReadAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get userBLastReadAt => $composableBuilder(
+    column: $table.userBLastReadAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ConversationsTableAnnotationComposer
@@ -5773,6 +5911,16 @@ class $$ConversationsTableAnnotationComposer
 
   GeneratedColumn<bool> get isHidden =>
       $composableBuilder(column: $table.isHidden, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get userALastReadAt => $composableBuilder(
+    column: $table.userALastReadAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get userBLastReadAt => $composableBuilder(
+    column: $table.userBLastReadAt,
+    builder: (column) => column,
+  );
 }
 
 class $$ConversationsTableTableManager
@@ -5819,6 +5967,8 @@ class $$ConversationsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> lastActive = const Value.absent(),
                 Value<bool> isHidden = const Value.absent(),
+                Value<DateTime?> userALastReadAt = const Value.absent(),
+                Value<DateTime?> userBLastReadAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConversationsCompanion(
                 id: id,
@@ -5828,6 +5978,8 @@ class $$ConversationsTableTableManager
                 createdAt: createdAt,
                 lastActive: lastActive,
                 isHidden: isHidden,
+                userALastReadAt: userALastReadAt,
+                userBLastReadAt: userBLastReadAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5839,6 +5991,8 @@ class $$ConversationsTableTableManager
                 required DateTime createdAt,
                 required DateTime lastActive,
                 Value<bool> isHidden = const Value.absent(),
+                Value<DateTime?> userALastReadAt = const Value.absent(),
+                Value<DateTime?> userBLastReadAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConversationsCompanion.insert(
                 id: id,
@@ -5848,6 +6002,8 @@ class $$ConversationsTableTableManager
                 createdAt: createdAt,
                 lastActive: lastActive,
                 isHidden: isHidden,
+                userALastReadAt: userALastReadAt,
+                userBLastReadAt: userBLastReadAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

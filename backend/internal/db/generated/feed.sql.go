@@ -17,8 +17,8 @@ import (
 const getChurchPosts = `-- name: GetChurchPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -36,19 +36,22 @@ type GetChurchPostsParams struct {
 }
 
 type GetChurchPostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) ([]GetChurchPostsRow, error) {
@@ -72,8 +75,11 @@ func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) 
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -91,8 +97,8 @@ func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) 
 const getExplorePosts = `-- name: GetExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -109,19 +115,22 @@ type GetExplorePostsParams struct {
 }
 
 type GetExplorePostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams) ([]GetExplorePostsRow, error) {
@@ -145,8 +154,11 @@ func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -164,8 +176,8 @@ func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams
 const getExplorePostsByScripture = `-- name: GetExplorePostsByScripture :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN scripture_refs sr ON p.id = sr.post_id
@@ -187,19 +199,22 @@ type GetExplorePostsByScriptureParams struct {
 }
 
 type GetExplorePostsByScriptureRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplorePostsByScriptureParams) ([]GetExplorePostsByScriptureRow, error) {
@@ -229,8 +244,11 @@ func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplore
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -248,8 +266,8 @@ func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplore
 const getExplorePostsByTag = `-- name: GetExplorePostsByTag :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN post_tags pt ON p.id = pt.post_id
@@ -270,19 +288,22 @@ type GetExplorePostsByTagParams struct {
 }
 
 type GetExplorePostsByTagRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsByTagParams) ([]GetExplorePostsByTagRow, error) {
@@ -311,8 +332,11 @@ func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsB
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -330,8 +354,8 @@ func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsB
 const getFeedPosts = `-- name: GetFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -348,19 +372,22 @@ type GetFeedPostsParams struct {
 }
 
 type GetFeedPostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]GetFeedPostsRow, error) {
@@ -384,8 +411,11 @@ func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]G
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -403,8 +433,8 @@ func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]G
 const getFollowingFeedPosts = `-- name: GetFollowingFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN follows f ON p.author_id = f.followee_id
@@ -424,19 +454,22 @@ type GetFollowingFeedPostsParams struct {
 }
 
 type GetFollowingFeedPostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFeedPostsParams) ([]GetFollowingFeedPostsRow, error) {
@@ -465,8 +498,11 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -484,8 +520,8 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 const getForYouPosts = `-- name: GetForYouPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN post_tags pt ON p.id = pt.post_id
@@ -506,19 +542,22 @@ type GetForYouPostsParams struct {
 }
 
 type GetForYouPostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) ([]GetForYouPostsRow, error) {
@@ -547,8 +586,11 @@ func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) 
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -629,8 +671,8 @@ func (q *Queries) GetSuggestedUsers(ctx context.Context, arg GetSuggestedUsersPa
 const searchExplorePosts = `-- name: SearchExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -649,19 +691,22 @@ type SearchExplorePostsParams struct {
 }
 
 type SearchExplorePostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Content         json.RawMessage `json:"content"`
+	Caption         sql.NullString  `json:"caption"`
+	Visibility      PostVisibility  `json:"visibility"`
+	CurrentVersion  int32           `json:"current_version"`
+	IsCorrection    bool            `json:"is_correction"`
+	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorName      string          `json:"author_name"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
 }
 
 func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePostsParams) ([]SearchExplorePostsRow, error) {
@@ -690,8 +735,11 @@ func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePosts
 			&i.SermonSource,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.AuthorAvatarUrl,
 		); err != nil {
 			return nil, err
 		}

@@ -65,6 +65,7 @@ abstract class Post with _$Post {
     // Joined author fields
     @JsonKey(name: 'author_handle') required String authorHandle,
     @JsonKey(name: 'author_name') required String authorName,
+    @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
   }) = _Post;
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);

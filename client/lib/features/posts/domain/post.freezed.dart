@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Post {
 
- String get id;@JsonKey(name: 'author_id') String get authorId;@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> get content; String? get caption; String get visibility;@JsonKey(name: 'current_version') int get currentVersion;@JsonKey(name: 'is_correction') bool get isCorrection;@JsonKey(name: 'corrects_post_id') String? get correctsPostId;@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? get sermonSource;@JsonKey(name: 'scripture_refs') List<ScriptureRef> get scriptureRefs; List<String> get tags;@JsonKey(name: 'is_deleted') bool get isDeleted;@JsonKey(name: 'cover_image_url') String? get coverImageUrl;@JsonKey(name: 'post_type') String get postType;@JsonKey(name: 'published_at') DateTime get publishedAt;@JsonKey(name: 'author_handle') String get authorHandle;@JsonKey(name: 'author_name') String get authorName;
+ String get id;@JsonKey(name: 'author_id') String get authorId;@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> get content; String? get caption; String get visibility;@JsonKey(name: 'current_version') int get currentVersion;@JsonKey(name: 'is_correction') bool get isCorrection;@JsonKey(name: 'corrects_post_id') String? get correctsPostId;@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? get sermonSource;@JsonKey(name: 'scripture_refs') List<ScriptureRef> get scriptureRefs; List<String> get tags;@JsonKey(name: 'is_deleted') bool get isDeleted;@JsonKey(name: 'cover_image_url') String? get coverImageUrl;@JsonKey(name: 'post_type') String get postType;@JsonKey(name: 'published_at') DateTime get publishedAt;@JsonKey(name: 'author_handle') String get authorHandle;@JsonKey(name: 'author_name') String get authorName;@JsonKey(name: 'author_avatar_url') String? get authorAvatarUrl;
 /// Create a copy of Post
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $PostCopyWith<Post> get copyWith => _$PostCopyWithImpl<Post>(this as Post, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Post&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.currentVersion, currentVersion) || other.currentVersion == currentVersion)&&(identical(other.isCorrection, isCorrection) || other.isCorrection == isCorrection)&&(identical(other.correctsPostId, correctsPostId) || other.correctsPostId == correctsPostId)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other.scriptureRefs, scriptureRefs)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.postType, postType) || other.postType == postType)&&(identical(other.publishedAt, publishedAt) || other.publishedAt == publishedAt)&&(identical(other.authorHandle, authorHandle) || other.authorHandle == authorHandle)&&(identical(other.authorName, authorName) || other.authorName == authorName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Post&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.currentVersion, currentVersion) || other.currentVersion == currentVersion)&&(identical(other.isCorrection, isCorrection) || other.isCorrection == isCorrection)&&(identical(other.correctsPostId, correctsPostId) || other.correctsPostId == correctsPostId)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other.scriptureRefs, scriptureRefs)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.postType, postType) || other.postType == postType)&&(identical(other.publishedAt, publishedAt) || other.publishedAt == publishedAt)&&(identical(other.authorHandle, authorHandle) || other.authorHandle == authorHandle)&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.authorAvatarUrl, authorAvatarUrl) || other.authorAvatarUrl == authorAvatarUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(content),caption,visibility,currentVersion,isCorrection,correctsPostId,sermonSource,const DeepCollectionEquality().hash(scriptureRefs),const DeepCollectionEquality().hash(tags),isDeleted,coverImageUrl,postType,publishedAt,authorHandle,authorName);
+int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(content),caption,visibility,currentVersion,isCorrection,correctsPostId,sermonSource,const DeepCollectionEquality().hash(scriptureRefs),const DeepCollectionEquality().hash(tags),isDeleted,coverImageUrl,postType,publishedAt,authorHandle,authorName,authorAvatarUrl);
 
 @override
 String toString() {
-  return 'Post(id: $id, authorId: $authorId, content: $content, caption: $caption, visibility: $visibility, currentVersion: $currentVersion, isCorrection: $isCorrection, correctsPostId: $correctsPostId, sermonSource: $sermonSource, scriptureRefs: $scriptureRefs, tags: $tags, isDeleted: $isDeleted, coverImageUrl: $coverImageUrl, postType: $postType, publishedAt: $publishedAt, authorHandle: $authorHandle, authorName: $authorName)';
+  return 'Post(id: $id, authorId: $authorId, content: $content, caption: $caption, visibility: $visibility, currentVersion: $currentVersion, isCorrection: $isCorrection, correctsPostId: $correctsPostId, sermonSource: $sermonSource, scriptureRefs: $scriptureRefs, tags: $tags, isDeleted: $isDeleted, coverImageUrl: $coverImageUrl, postType: $postType, publishedAt: $publishedAt, authorHandle: $authorHandle, authorName: $authorName, authorAvatarUrl: $authorAvatarUrl)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $PostCopyWith<$Res>  {
   factory $PostCopyWith(Post value, $Res Function(Post) _then) = _$PostCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'author_id') String authorId,@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> content, String? caption, String visibility,@JsonKey(name: 'current_version') int currentVersion,@JsonKey(name: 'is_correction') bool isCorrection,@JsonKey(name: 'corrects_post_id') String? correctsPostId,@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,@JsonKey(name: 'scripture_refs') List<ScriptureRef> scriptureRefs, List<String> tags,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'post_type') String postType,@JsonKey(name: 'published_at') DateTime publishedAt,@JsonKey(name: 'author_handle') String authorHandle,@JsonKey(name: 'author_name') String authorName
+ String id,@JsonKey(name: 'author_id') String authorId,@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> content, String? caption, String visibility,@JsonKey(name: 'current_version') int currentVersion,@JsonKey(name: 'is_correction') bool isCorrection,@JsonKey(name: 'corrects_post_id') String? correctsPostId,@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,@JsonKey(name: 'scripture_refs') List<ScriptureRef> scriptureRefs, List<String> tags,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'post_type') String postType,@JsonKey(name: 'published_at') DateTime publishedAt,@JsonKey(name: 'author_handle') String authorHandle,@JsonKey(name: 'author_name') String authorName,@JsonKey(name: 'author_avatar_url') String? authorAvatarUrl
 });
 
 
@@ -65,7 +65,7 @@ class _$PostCopyWithImpl<$Res>
 
 /// Create a copy of Post
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? visibility = null,Object? currentVersion = null,Object? isCorrection = null,Object? correctsPostId = freezed,Object? sermonSource = freezed,Object? scriptureRefs = null,Object? tags = null,Object? isDeleted = null,Object? coverImageUrl = freezed,Object? postType = null,Object? publishedAt = null,Object? authorHandle = null,Object? authorName = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? visibility = null,Object? currentVersion = null,Object? isCorrection = null,Object? correctsPostId = freezed,Object? sermonSource = freezed,Object? scriptureRefs = null,Object? tags = null,Object? isDeleted = null,Object? coverImageUrl = freezed,Object? postType = null,Object? publishedAt = null,Object? authorHandle = null,Object? authorName = null,Object? authorAvatarUrl = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
@@ -84,7 +84,8 @@ as String?,postType: null == postType ? _self.postType : postType // ignore: cas
 as String,publishedAt: null == publishedAt ? _self.publishedAt : publishedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,authorHandle: null == authorHandle ? _self.authorHandle : authorHandle // ignore: cast_nullable_to_non_nullable
 as String,authorName: null == authorName ? _self.authorName : authorName // ignore: cast_nullable_to_non_nullable
-as String,
+as String,authorAvatarUrl: freezed == authorAvatarUrl ? _self.authorAvatarUrl : authorAvatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 /// Create a copy of Post
@@ -181,10 +182,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption,  String visibility, @JsonKey(name: 'current_version')  int currentVersion, @JsonKey(name: 'is_correction')  bool isCorrection, @JsonKey(name: 'corrects_post_id')  String? correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_refs')  List<ScriptureRef> scriptureRefs,  List<String> tags, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'post_type')  String postType, @JsonKey(name: 'published_at')  DateTime publishedAt, @JsonKey(name: 'author_handle')  String authorHandle, @JsonKey(name: 'author_name')  String authorName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption,  String visibility, @JsonKey(name: 'current_version')  int currentVersion, @JsonKey(name: 'is_correction')  bool isCorrection, @JsonKey(name: 'corrects_post_id')  String? correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_refs')  List<ScriptureRef> scriptureRefs,  List<String> tags, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'post_type')  String postType, @JsonKey(name: 'published_at')  DateTime publishedAt, @JsonKey(name: 'author_handle')  String authorHandle, @JsonKey(name: 'author_name')  String authorName, @JsonKey(name: 'author_avatar_url')  String? authorAvatarUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Post() when $default != null:
-return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibility,_that.currentVersion,_that.isCorrection,_that.correctsPostId,_that.sermonSource,_that.scriptureRefs,_that.tags,_that.isDeleted,_that.coverImageUrl,_that.postType,_that.publishedAt,_that.authorHandle,_that.authorName);case _:
+return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibility,_that.currentVersion,_that.isCorrection,_that.correctsPostId,_that.sermonSource,_that.scriptureRefs,_that.tags,_that.isDeleted,_that.coverImageUrl,_that.postType,_that.publishedAt,_that.authorHandle,_that.authorName,_that.authorAvatarUrl);case _:
   return orElse();
 
 }
@@ -202,10 +203,10 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibi
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption,  String visibility, @JsonKey(name: 'current_version')  int currentVersion, @JsonKey(name: 'is_correction')  bool isCorrection, @JsonKey(name: 'corrects_post_id')  String? correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_refs')  List<ScriptureRef> scriptureRefs,  List<String> tags, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'post_type')  String postType, @JsonKey(name: 'published_at')  DateTime publishedAt, @JsonKey(name: 'author_handle')  String authorHandle, @JsonKey(name: 'author_name')  String authorName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption,  String visibility, @JsonKey(name: 'current_version')  int currentVersion, @JsonKey(name: 'is_correction')  bool isCorrection, @JsonKey(name: 'corrects_post_id')  String? correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_refs')  List<ScriptureRef> scriptureRefs,  List<String> tags, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'post_type')  String postType, @JsonKey(name: 'published_at')  DateTime publishedAt, @JsonKey(name: 'author_handle')  String authorHandle, @JsonKey(name: 'author_name')  String authorName, @JsonKey(name: 'author_avatar_url')  String? authorAvatarUrl)  $default,) {final _that = this;
 switch (_that) {
 case _Post():
-return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibility,_that.currentVersion,_that.isCorrection,_that.correctsPostId,_that.sermonSource,_that.scriptureRefs,_that.tags,_that.isDeleted,_that.coverImageUrl,_that.postType,_that.publishedAt,_that.authorHandle,_that.authorName);case _:
+return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibility,_that.currentVersion,_that.isCorrection,_that.correctsPostId,_that.sermonSource,_that.scriptureRefs,_that.tags,_that.isDeleted,_that.coverImageUrl,_that.postType,_that.publishedAt,_that.authorHandle,_that.authorName,_that.authorAvatarUrl);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -222,10 +223,10 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibi
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption,  String visibility, @JsonKey(name: 'current_version')  int currentVersion, @JsonKey(name: 'is_correction')  bool isCorrection, @JsonKey(name: 'corrects_post_id')  String? correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_refs')  List<ScriptureRef> scriptureRefs,  List<String> tags, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'post_type')  String postType, @JsonKey(name: 'published_at')  DateTime publishedAt, @JsonKey(name: 'author_handle')  String authorHandle, @JsonKey(name: 'author_name')  String authorName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'author_id')  String authorId, @JsonKey(fromJson: _contentFromJson)  Map<String, dynamic> content,  String? caption,  String visibility, @JsonKey(name: 'current_version')  int currentVersion, @JsonKey(name: 'is_correction')  bool isCorrection, @JsonKey(name: 'corrects_post_id')  String? correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)  SermonSource? sermonSource, @JsonKey(name: 'scripture_refs')  List<ScriptureRef> scriptureRefs,  List<String> tags, @JsonKey(name: 'is_deleted')  bool isDeleted, @JsonKey(name: 'cover_image_url')  String? coverImageUrl, @JsonKey(name: 'post_type')  String postType, @JsonKey(name: 'published_at')  DateTime publishedAt, @JsonKey(name: 'author_handle')  String authorHandle, @JsonKey(name: 'author_name')  String authorName, @JsonKey(name: 'author_avatar_url')  String? authorAvatarUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _Post() when $default != null:
-return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibility,_that.currentVersion,_that.isCorrection,_that.correctsPostId,_that.sermonSource,_that.scriptureRefs,_that.tags,_that.isDeleted,_that.coverImageUrl,_that.postType,_that.publishedAt,_that.authorHandle,_that.authorName);case _:
+return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibility,_that.currentVersion,_that.isCorrection,_that.correctsPostId,_that.sermonSource,_that.scriptureRefs,_that.tags,_that.isDeleted,_that.coverImageUrl,_that.postType,_that.publishedAt,_that.authorHandle,_that.authorName,_that.authorAvatarUrl);case _:
   return null;
 
 }
@@ -237,7 +238,7 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibi
 @JsonSerializable()
 
 class _Post implements Post {
-  const _Post({required this.id, @JsonKey(name: 'author_id') required this.authorId, @JsonKey(fromJson: _contentFromJson) required final  Map<String, dynamic> content, this.caption, required this.visibility, @JsonKey(name: 'current_version') required this.currentVersion, @JsonKey(name: 'is_correction') required this.isCorrection, @JsonKey(name: 'corrects_post_id') this.correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) this.sermonSource, @JsonKey(name: 'scripture_refs') final  List<ScriptureRef> scriptureRefs = const [], final  List<String> tags = const [], @JsonKey(name: 'is_deleted') required this.isDeleted, @JsonKey(name: 'cover_image_url') this.coverImageUrl, @JsonKey(name: 'post_type') this.postType = 'standard', @JsonKey(name: 'published_at') required this.publishedAt, @JsonKey(name: 'author_handle') required this.authorHandle, @JsonKey(name: 'author_name') required this.authorName}): _content = content,_scriptureRefs = scriptureRefs,_tags = tags;
+  const _Post({required this.id, @JsonKey(name: 'author_id') required this.authorId, @JsonKey(fromJson: _contentFromJson) required final  Map<String, dynamic> content, this.caption, required this.visibility, @JsonKey(name: 'current_version') required this.currentVersion, @JsonKey(name: 'is_correction') required this.isCorrection, @JsonKey(name: 'corrects_post_id') this.correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) this.sermonSource, @JsonKey(name: 'scripture_refs') final  List<ScriptureRef> scriptureRefs = const [], final  List<String> tags = const [], @JsonKey(name: 'is_deleted') required this.isDeleted, @JsonKey(name: 'cover_image_url') this.coverImageUrl, @JsonKey(name: 'post_type') this.postType = 'standard', @JsonKey(name: 'published_at') required this.publishedAt, @JsonKey(name: 'author_handle') required this.authorHandle, @JsonKey(name: 'author_name') required this.authorName, @JsonKey(name: 'author_avatar_url') this.authorAvatarUrl}): _content = content,_scriptureRefs = scriptureRefs,_tags = tags;
   factory _Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
 
 @override final  String id;
@@ -275,6 +276,7 @@ class _Post implements Post {
 @override@JsonKey(name: 'published_at') final  DateTime publishedAt;
 @override@JsonKey(name: 'author_handle') final  String authorHandle;
 @override@JsonKey(name: 'author_name') final  String authorName;
+@override@JsonKey(name: 'author_avatar_url') final  String? authorAvatarUrl;
 
 /// Create a copy of Post
 /// with the given fields replaced by the non-null parameter values.
@@ -289,16 +291,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Post&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.currentVersion, currentVersion) || other.currentVersion == currentVersion)&&(identical(other.isCorrection, isCorrection) || other.isCorrection == isCorrection)&&(identical(other.correctsPostId, correctsPostId) || other.correctsPostId == correctsPostId)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other._scriptureRefs, _scriptureRefs)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.postType, postType) || other.postType == postType)&&(identical(other.publishedAt, publishedAt) || other.publishedAt == publishedAt)&&(identical(other.authorHandle, authorHandle) || other.authorHandle == authorHandle)&&(identical(other.authorName, authorName) || other.authorName == authorName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Post&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.currentVersion, currentVersion) || other.currentVersion == currentVersion)&&(identical(other.isCorrection, isCorrection) || other.isCorrection == isCorrection)&&(identical(other.correctsPostId, correctsPostId) || other.correctsPostId == correctsPostId)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other._scriptureRefs, _scriptureRefs)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.postType, postType) || other.postType == postType)&&(identical(other.publishedAt, publishedAt) || other.publishedAt == publishedAt)&&(identical(other.authorHandle, authorHandle) || other.authorHandle == authorHandle)&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.authorAvatarUrl, authorAvatarUrl) || other.authorAvatarUrl == authorAvatarUrl));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(_content),caption,visibility,currentVersion,isCorrection,correctsPostId,sermonSource,const DeepCollectionEquality().hash(_scriptureRefs),const DeepCollectionEquality().hash(_tags),isDeleted,coverImageUrl,postType,publishedAt,authorHandle,authorName);
+int get hashCode => Object.hash(runtimeType,id,authorId,const DeepCollectionEquality().hash(_content),caption,visibility,currentVersion,isCorrection,correctsPostId,sermonSource,const DeepCollectionEquality().hash(_scriptureRefs),const DeepCollectionEquality().hash(_tags),isDeleted,coverImageUrl,postType,publishedAt,authorHandle,authorName,authorAvatarUrl);
 
 @override
 String toString() {
-  return 'Post(id: $id, authorId: $authorId, content: $content, caption: $caption, visibility: $visibility, currentVersion: $currentVersion, isCorrection: $isCorrection, correctsPostId: $correctsPostId, sermonSource: $sermonSource, scriptureRefs: $scriptureRefs, tags: $tags, isDeleted: $isDeleted, coverImageUrl: $coverImageUrl, postType: $postType, publishedAt: $publishedAt, authorHandle: $authorHandle, authorName: $authorName)';
+  return 'Post(id: $id, authorId: $authorId, content: $content, caption: $caption, visibility: $visibility, currentVersion: $currentVersion, isCorrection: $isCorrection, correctsPostId: $correctsPostId, sermonSource: $sermonSource, scriptureRefs: $scriptureRefs, tags: $tags, isDeleted: $isDeleted, coverImageUrl: $coverImageUrl, postType: $postType, publishedAt: $publishedAt, authorHandle: $authorHandle, authorName: $authorName, authorAvatarUrl: $authorAvatarUrl)';
 }
 
 
@@ -309,7 +311,7 @@ abstract mixin class _$PostCopyWith<$Res> implements $PostCopyWith<$Res> {
   factory _$PostCopyWith(_Post value, $Res Function(_Post) _then) = __$PostCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'author_id') String authorId,@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> content, String? caption, String visibility,@JsonKey(name: 'current_version') int currentVersion,@JsonKey(name: 'is_correction') bool isCorrection,@JsonKey(name: 'corrects_post_id') String? correctsPostId,@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,@JsonKey(name: 'scripture_refs') List<ScriptureRef> scriptureRefs, List<String> tags,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'post_type') String postType,@JsonKey(name: 'published_at') DateTime publishedAt,@JsonKey(name: 'author_handle') String authorHandle,@JsonKey(name: 'author_name') String authorName
+ String id,@JsonKey(name: 'author_id') String authorId,@JsonKey(fromJson: _contentFromJson) Map<String, dynamic> content, String? caption, String visibility,@JsonKey(name: 'current_version') int currentVersion,@JsonKey(name: 'is_correction') bool isCorrection,@JsonKey(name: 'corrects_post_id') String? correctsPostId,@JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,@JsonKey(name: 'scripture_refs') List<ScriptureRef> scriptureRefs, List<String> tags,@JsonKey(name: 'is_deleted') bool isDeleted,@JsonKey(name: 'cover_image_url') String? coverImageUrl,@JsonKey(name: 'post_type') String postType,@JsonKey(name: 'published_at') DateTime publishedAt,@JsonKey(name: 'author_handle') String authorHandle,@JsonKey(name: 'author_name') String authorName,@JsonKey(name: 'author_avatar_url') String? authorAvatarUrl
 });
 
 
@@ -326,7 +328,7 @@ class __$PostCopyWithImpl<$Res>
 
 /// Create a copy of Post
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? visibility = null,Object? currentVersion = null,Object? isCorrection = null,Object? correctsPostId = freezed,Object? sermonSource = freezed,Object? scriptureRefs = null,Object? tags = null,Object? isDeleted = null,Object? coverImageUrl = freezed,Object? postType = null,Object? publishedAt = null,Object? authorHandle = null,Object? authorName = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? authorId = null,Object? content = null,Object? caption = freezed,Object? visibility = null,Object? currentVersion = null,Object? isCorrection = null,Object? correctsPostId = freezed,Object? sermonSource = freezed,Object? scriptureRefs = null,Object? tags = null,Object? isDeleted = null,Object? coverImageUrl = freezed,Object? postType = null,Object? publishedAt = null,Object? authorHandle = null,Object? authorName = null,Object? authorAvatarUrl = freezed,}) {
   return _then(_Post(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,authorId: null == authorId ? _self.authorId : authorId // ignore: cast_nullable_to_non_nullable
@@ -345,7 +347,8 @@ as String?,postType: null == postType ? _self.postType : postType // ignore: cas
 as String,publishedAt: null == publishedAt ? _self.publishedAt : publishedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,authorHandle: null == authorHandle ? _self.authorHandle : authorHandle // ignore: cast_nullable_to_non_nullable
 as String,authorName: null == authorName ? _self.authorName : authorName // ignore: cast_nullable_to_non_nullable
-as String,
+as String,authorAvatarUrl: freezed == authorAvatarUrl ? _self.authorAvatarUrl : authorAvatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -24,6 +24,8 @@ class ComposeState {
   final List<dynamic>? contentDelta;
   final List<String> tags;
   final List<ScriptureRef> scriptureRefs;
+  final String postType;
+  final String? coverImageUrl;
 
   ComposeState({
     required this.draftId,
@@ -35,6 +37,8 @@ class ComposeState {
     this.contentDelta,
     this.tags = const [],
     this.scriptureRefs = const [],
+    this.postType = 'standard',
+    this.coverImageUrl,
   });
 
   ComposeState copyWith({
@@ -47,6 +51,8 @@ class ComposeState {
     List<dynamic>? contentDelta,
     List<String>? tags,
     List<ScriptureRef>? scriptureRefs,
+    String? postType,
+    String? coverImageUrl,
   }) {
     return ComposeState(
       draftId: draftId ?? this.draftId,
@@ -58,6 +64,8 @@ class ComposeState {
       contentDelta: contentDelta ?? this.contentDelta,
       tags: tags ?? this.tags,
       scriptureRefs: scriptureRefs ?? this.scriptureRefs,
+      postType: postType ?? this.postType,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
     );
   }
 }
@@ -76,10 +84,17 @@ class ComposeNotifier extends Notifier<ComposeState> {
     _triggerAutosave();
   }
 
-  void updateMetadata({String? caption, SermonSource? sermonSource}) {
+  void updateMetadata({
+    String? caption,
+    SermonSource? sermonSource,
+    String? postType,
+    String? coverImageUrl,
+  }) {
     state = state.copyWith(
       caption: caption ?? state.caption,
       sermonSource: sermonSource ?? state.sermonSource,
+      postType: postType ?? state.postType,
+      coverImageUrl: coverImageUrl ?? state.coverImageUrl,
     );
     _triggerAutosave();
   }

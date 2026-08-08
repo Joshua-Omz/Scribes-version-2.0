@@ -35,6 +35,12 @@ _Conversation _$ConversationFromJson(Map<String, dynamic> json) =>
       createdAt: DateTime.parse(json['created_at'] as String),
       lastActive: DateTime.parse(json['last_active'] as String),
       unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
+      userALastReadAt: json['user_a_last_read_at'] == null
+          ? null
+          : DateTime.parse(json['user_a_last_read_at'] as String),
+      userBLastReadAt: json['user_b_last_read_at'] == null
+          ? null
+          : DateTime.parse(json['user_b_last_read_at'] as String),
     );
 
 Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
@@ -46,6 +52,8 @@ Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'last_active': instance.lastActive.toIso8601String(),
       'unread_count': instance.unreadCount,
+      'user_a_last_read_at': instance.userALastReadAt?.toIso8601String(),
+      'user_b_last_read_at': instance.userBLastReadAt?.toIso8601String(),
     };
 
 _Message _$MessageFromJson(Map<String, dynamic> json) => _Message(

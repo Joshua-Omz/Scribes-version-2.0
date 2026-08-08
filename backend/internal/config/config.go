@@ -63,10 +63,29 @@ func Load() Config {
 	}
 
 	r2Endpoint := os.Getenv("R2_ENDPOINT")
+	if r2Endpoint == "" {
+		log.Fatal("R2_ENDPOINT is not set")
+	}
+
 	r2AccessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
+	if r2AccessKeyID == "" {
+		log.Fatal("R2_ACCESS_KEY_ID is not set")
+	}
+
 	r2SecretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	if r2SecretAccessKey == "" {
+		log.Fatal("R2_SECRET_ACCESS_KEY is not set")
+	}
+
 	r2BucketName := os.Getenv("R2_BUCKET")
+	if r2BucketName == "" {
+		log.Fatal("R2_BUCKET is not set")
+	}
+
 	cdnDomain := os.Getenv("R2_PUBLIC_URL")
+	if cdnDomain == "" {
+		log.Fatal("R2_PUBLIC_URL is not set")
+	}
 
 	return Config{
 		DatabaseURL:               dbURL,

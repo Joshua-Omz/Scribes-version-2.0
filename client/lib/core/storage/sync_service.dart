@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:scribes/core/network/endpoints.dart';
 import '../../features/sync/domain/pending_record.dart';
 import '../../features/sync/domain/sync_response.dart';
@@ -44,10 +45,10 @@ class SyncService {
             await _storage.postsDao.upsertFromServer(record);
             break;
           default:
-            print('Unrecognized sync record type: ${record.type}');
+            debugPrint('Unrecognized sync record type: ${record.type}');
         }
-      } catch (e, stack) {
-        print('Failed to apply sync record ${record.localId}: $e');
+      } catch (e) {
+        debugPrint('Failed to apply sync record ${record.localId}: $e');
       }
     }
   }

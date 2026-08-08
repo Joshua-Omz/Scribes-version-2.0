@@ -87,6 +87,8 @@ class Conversations extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get lastActive => dateTime()();
   BoolColumn get isHidden => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get userALastReadAt => dateTime().nullable()();
+  DateTimeColumn get userBLastReadAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -126,7 +128,7 @@ class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(connection.openConnection());
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration {
@@ -177,6 +179,10 @@ class ScribesDatabase extends _$ScribesDatabase {
         if (from < 12) {
           await m.addColumn(posts, posts.coverImageUrl);
           await m.addColumn(posts, posts.postType);
+        }
+        if (from < 13) {
+          await m.addColumn(conversations, conversations.userALastReadAt);
+          await m.addColumn(conversations, conversations.userBLastReadAt);
         }
       },
     );

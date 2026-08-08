@@ -6,6 +6,7 @@ import '../domain/user.dart';
 import '../../sync/application/sync_service.dart';
 import '../../messages/data/message_repository.dart';
 import '../../../core/storage/database_provider.dart';
+import '../../../core/network/network_sync_notifier.dart';
 
 part 'auth_notifier.g.dart';
 
@@ -42,6 +43,9 @@ class AuthNotifier extends _$AuthNotifier {
         await syncService.sync(authorId: userId);
 
         if (userId != null) {
+          // Initialize network connectivity listener
+          ref.read(networkSyncProvider);
+
           final messageRepo = ref.read(messageRepositoryProvider);
           await messageRepo.flushOfflineQueue(userId);
           await messageRepo.syncMissedMessages();
@@ -110,6 +114,7 @@ class AuthNotifier extends _$AuthNotifier {
     required String displayName,
     String? bio,
     bool isChurch = false,
+    String? avatarUrl,
   }) async {
     final repo = ref.read(authRepositoryProvider);
     final updatedUser = await repo.updateProfile(
@@ -117,6 +122,7 @@ class AuthNotifier extends _$AuthNotifier {
       displayName: displayName,
       bio: bio,
       isChurch: isChurch,
+      avatarUrl: avatarUrl,
     );
     state = AsyncData(updatedUser);
   }

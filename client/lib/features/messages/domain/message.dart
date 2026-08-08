@@ -30,6 +30,8 @@ abstract class Conversation with _$Conversation {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'last_active') required DateTime lastActive,
     @JsonKey(name: 'unread_count') @Default(0) int unreadCount,
+    @JsonKey(name: 'user_a_last_read_at') DateTime? userALastReadAt,
+    @JsonKey(name: 'user_b_last_read_at') DateTime? userBLastReadAt,
   }) = _Conversation;
 
   factory Conversation.fromJson(Map<String, dynamic> json) =>

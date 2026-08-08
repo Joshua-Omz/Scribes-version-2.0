@@ -1,8 +1,8 @@
 -- name: GetFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -14,8 +14,8 @@ LIMIT $3;
 -- name: GetExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -27,8 +27,8 @@ LIMIT $3;
 -- name: GetFollowingFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN follows f ON p.author_id = f.followee_id
@@ -42,8 +42,8 @@ LIMIT $4;
 -- name: GetExplorePostsByTag :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN post_tags pt ON p.id = pt.post_id
@@ -58,8 +58,8 @@ LIMIT $4;
 -- name: GetExplorePostsByScripture :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN scripture_refs sr ON p.id = sr.post_id
@@ -74,8 +74,8 @@ LIMIT $4;
 -- name: SearchExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -88,8 +88,8 @@ LIMIT $3;
 -- name: GetChurchPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -116,8 +116,8 @@ LIMIT $2;
 -- name: GetForYouPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at,
-    u.handle AS author_handle, u.display_name AS author_name
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN post_tags pt ON p.id = pt.post_id

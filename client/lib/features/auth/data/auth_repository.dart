@@ -84,12 +84,14 @@ class AuthRepository {
     required String displayName,
     String? bio,
     bool isChurch = false,
+    String? avatarUrl,
   }) async {
     final response = await _api.updateProfile(
       handle: handle,
       displayName: displayName,
       bio: bio,
       isChurch: isChurch,
+      avatarUrl: avatarUrl,
     );
     return User.fromJson(response);
   }

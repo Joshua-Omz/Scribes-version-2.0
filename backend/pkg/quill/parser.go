@@ -26,8 +26,8 @@ type lineSegment struct {
 
 // ToMarkdown converts a Quill Delta to a Markdown string.
 func ToMarkdown(rawJSON []byte) (string, error) {
-	var delta Delta
-	if err := json.Unmarshal(rawJSON, &delta); err != nil {
+	ops, err := parseOps(rawJSON)
+	if err != nil {
 		return "", err
 	}
 
@@ -60,7 +60,7 @@ func ToMarkdown(rawJSON []byte) (string, error) {
 		currentLine = nil
 	}
 
-	for _, op := range delta.Ops {
+	for _, op := range ops {
 		text, ok := op.Insert.(string)
 		if !ok {
 			continue // skip embeds
@@ -110,18 +110,54 @@ func ToMarkdown(rawJSON []byte) (string, error) {
 
 // ToPlainText converts a Quill Delta to a Plain Text string.
 func ToPlainText(rawJSON []byte) (string, error) {
-	var delta Delta
-	if err := json.Unmarshal(rawJSON, &delta); err != nil {
+	ops, err := parseOps(rawJSON)
+	if err != nil {
 		return "", err
 	}
 
 	var sb strings.Builder
 
-	for _, op := range delta.Ops {
+	for _, op := range ops {
 		if text, ok := op.Insert.(string); ok {
 			sb.WriteString(text)
 		}
 	}
 
 	return strings.TrimSpace(sb.String()), nil
+}
+
+func parseOps(rawJSON []byte) ([]Op, error) {
+	// 1. Try array format (Flutter Quill)
+	var ops []Op
+	if err := json.Unmarshal(rawJSON, &ops); err == nil && len(ops) > 0 {
+		return ops, nil
+	}
+
+	// 2. Try object format with "ops" (Standard Quill format)
+	var delta Delta
+	if err := json.Unmarshal(rawJSON, &delta); err == nil && len(delta.Ops) > 0 {
+		return delta.Ops, nil
+	}
+
+	// 3. Try fallback format (create_post.py test script)
+	var dummy struct {
+		Title string `json:"title"`
+		Body  string `json:"body"`
+	}
+	if err := json.Unmarshal(rawJSON, &dummy); err == nil && (dummy.Title != "" || dummy.Body != "") {
+		var dummyOps []Op
+		if dummy.Title != "" {
+			dummyOps = append(dummyOps, Op{
+				Insert: dummy.Title + "\n",
+				Attributes: map[string]interface{}{"header": float64(1)},
+			})
+		}
+		if dummy.Body != "" {
+			dummyOps = append(dummyOps, Op{Insert: dummy.Body + "\n"})
+		}
+		return dummyOps, nil
+	}
+
+	// If all fail or it is empty, return empty ops
+	return nil, nil
 }

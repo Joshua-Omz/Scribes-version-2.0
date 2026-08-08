@@ -61,6 +61,7 @@ class AuthApi {
     required String displayName,
     String? bio,
     bool isChurch = false,
+    String? avatarUrl,
   }) async {
     final data = <String, dynamic>{
       'handle': handle,
@@ -69,6 +70,9 @@ class AuthApi {
     };
     if (bio != null) {
       data['bio'] = bio;
+    }
+    if (avatarUrl != null) {
+      data['avatar_url'] = avatarUrl;
     }
 
     final response = await _dio.patch(Endpoints.me, data: data);

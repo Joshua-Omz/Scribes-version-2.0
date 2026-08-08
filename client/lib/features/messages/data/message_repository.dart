@@ -47,22 +47,42 @@ class MessageRepository {
     await _api.rejectRequest(requestId);
   }
 
-  Stream<List<Conversation>> watchConversations() {
-    return (_db.select(_db.conversations)
-          ..where((c) => c.isHidden.equals(false))
-          ..orderBy([(c) => drift.OrderingTerm.desc(c.lastActive)]))
-        .watch()
-        .map((list) {
-      return list
-          .map((c) => Conversation(
-                id: c.id,
-                userAId: c.userAId,
-                userBId: c.userBId,
-                blocked: c.blocked,
-                createdAt: c.createdAt,
-                lastActive: c.lastActive,
-              ))
-          .toList();
+  Stream<List<Conversation>> watchConversations(String currentUserId) {
+    final query = _db.customSelect(
+      '''
+      SELECT c.*, 
+             (SELECT COUNT(*) FROM messages m 
+              WHERE m.conversation_id = c.id 
+                AND m.sender_id != ? 
+                AND m.is_deleted = 0 
+                AND m.sent_at > COALESCE(CASE WHEN c.user_a_id = ? THEN c.user_a_last_read_at ELSE c.user_b_last_read_at END, 0)) as unread_count
+      FROM conversations c
+      WHERE c.is_hidden = 0
+      ORDER BY c.last_active DESC
+      ''',
+      variables: [
+        drift.Variable.withString(currentUserId),
+        drift.Variable.withString(currentUserId),
+      ],
+      readsFrom: {_db.conversations, _db.messages},
+    );
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        final c = _db.conversations.map(row.data);
+        final unreadCount = row.read<int>('unread_count');
+        return Conversation(
+          id: c.id,
+          userAId: c.userAId,
+          userBId: c.userBId,
+          blocked: c.blocked,
+          createdAt: c.createdAt,
+          lastActive: c.lastActive,
+          unreadCount: unreadCount,
+          userALastReadAt: c.userALastReadAt,
+          userBLastReadAt: c.userBLastReadAt,
+        );
+      }).toList();
     });
   }
 
@@ -80,9 +100,8 @@ class MessageRepository {
                 createdAt: c.createdAt,
                 lastActive: c.lastActive,
                 isHidden: false,
-                // We do NOT overwrite isHidden here so that locally hidden chats stay hidden until a new message arrives.
-                // drift.InsertMode.insertOrReplace would overwrite it. 
-                // So we'll update selectively or just rely on a custom query.
+                userALastReadAt: c.userALastReadAt,
+                userBLastReadAt: c.userBLastReadAt,
               )),
           mode: drift.InsertMode.insertOrIgnore, // Only insert if missing. (Wait, lastActive updates won't be applied).
         );
@@ -94,6 +113,8 @@ class MessageRepository {
           db.ConversationsCompanion(
             lastActive: drift.Value(c.lastActive),
             blocked: drift.Value(c.blocked),
+            userALastReadAt: drift.Value(c.userALastReadAt),
+            userBLastReadAt: drift.Value(c.userBLastReadAt),
           ),
         );
       }
@@ -113,6 +134,8 @@ class MessageRepository {
               blocked: c.blocked,
               createdAt: c.createdAt,
               lastActive: c.lastActive,
+              userALastReadAt: c.userALastReadAt,
+              userBLastReadAt: c.userBLastReadAt,
             ))
         .toList();
   }
@@ -296,11 +319,27 @@ class MessageRepository {
     }
   }
 
-  Future<void> readConversation(String conversationId) async {
+  Future<void> readConversation(String conversationId, String userId) async {
+    // 1. Optimistic UI update in local DB
+    final now = DateTime.now();
+    final conv = await (_db.select(_db.conversations)..where((c) => c.id.equals(conversationId))).getSingleOrNull();
+    if (conv != null) {
+      if (conv.userAId == userId) {
+        await (_db.update(_db.conversations)..where((c) => c.id.equals(conversationId))).write(
+          db.ConversationsCompanion(userALastReadAt: drift.Value(now)),
+        );
+      } else {
+        await (_db.update(_db.conversations)..where((c) => c.id.equals(conversationId))).write(
+          db.ConversationsCompanion(userBLastReadAt: drift.Value(now)),
+        );
+      }
+    }
+
+    // 2. Network sync
     try {
       await _api.readConversation(conversationId);
     } catch (e) {
-      // Ignore network errors
+      // Background failure - will sync up on next refresh
     }
   }
   

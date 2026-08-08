@@ -8,7 +8,6 @@ import '../../../core/widgets/scribes_tab_bar.dart';
 import '../../../core/widgets/scribes_tab_bar_delegate.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../application/feed_notifier.dart';
-import '../../posts/domain/post.dart';
 import '../../../core/theme/scribes_colors.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../auth/application/auth_notifier.dart';

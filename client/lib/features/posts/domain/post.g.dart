@@ -30,6 +30,7 @@ _Post _$PostFromJson(Map<String, dynamic> json) => _Post(
   publishedAt: DateTime.parse(json['published_at'] as String),
   authorHandle: json['author_handle'] as String,
   authorName: json['author_name'] as String,
+  authorAvatarUrl: json['author_avatar_url'] as String?,
 );
 
 Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
@@ -50,4 +51,5 @@ Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
   'published_at': instance.publishedAt.toIso8601String(),
   'author_handle': instance.authorHandle,
   'author_name': instance.authorName,
+  'author_avatar_url': instance.authorAvatarUrl,
 };

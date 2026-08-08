@@ -41,7 +41,7 @@ class PostRepository {
     final payload = {
       'content': content,
       if (caption != null && caption.isNotEmpty) 'caption': caption,
-      if (tags != null) 'tags': tags,
+      'tags': ?tags,
     };
     final data = await _api.revisePost(id, payload);
     return Post.fromJson(data);

@@ -18,12 +18,15 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final String bodyExcerpt;
   final String authorName;
   final String authorHandle;
+  final String? authorAvatarUrl;
   final List<ScriptureRef> scriptureRefs;
   final List<String> tags;
   final String? caption;
   final String? sermonSource;
   final bool isCorrection;
   final DateTime? publishedAt;
+  final String postType;
+  final String? coverImageUrl;
   final int amenCount;
   final int insightCount;
   final int thoughtProvokingCount;
@@ -46,12 +49,15 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     required this.bodyExcerpt,
     required this.authorName,
     required this.authorHandle,
+    this.authorAvatarUrl,
     this.scriptureRefs = const [],
     this.tags = const [],
     this.caption,
     this.sermonSource,
     this.isCorrection = false,
     this.publishedAt,
+    this.postType = 'standard',
+    this.coverImageUrl,
     this.amenCount = 0,
     this.insightCount = 0,
     this.thoughtProvokingCount = 0,
@@ -120,6 +126,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                   child: ScribesAuthorHeader(
                     authorName: widget.authorName,
                     authorHandle: widget.authorHandle,
+                    avatarUrl: widget.authorAvatarUrl,
                     publishedAt: widget.publishedAt,
                     isCorrection: widget.isCorrection,
                     onTap: widget.onAuthorTap ?? () {},
@@ -195,6 +202,19 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 ),
               ),
             const SizedBox(height: 16),
+            if (widget.coverImageUrl != null && widget.postType == 'standard') ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(ScribesRadius.card),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Image.network(
+                    widget.coverImageUrl!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             Text(
               widget.title,
               style: ScribesTextStyles.displayMd.copyWith(
