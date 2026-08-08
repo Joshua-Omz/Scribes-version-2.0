@@ -1,0 +1,1 @@
+import base64; svg=open('client/assets/logo.svg').read().replace('fill="#000000"','fill="#C9A84C"'); print('data:image/svg+xml;base64,' + base64.b64encode(svg.encode('utf-8')).decode('utf-8'))
