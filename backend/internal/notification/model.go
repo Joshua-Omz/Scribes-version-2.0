@@ -62,4 +62,3 @@ type NotificationGroup struct {
 	Count      int         `json:"count"`
 	CreatedAt  time.Time   `json:"created_at"`
 }
-

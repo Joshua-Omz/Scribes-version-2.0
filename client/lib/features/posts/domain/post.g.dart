@@ -31,6 +31,8 @@ _Post _$PostFromJson(Map<String, dynamic> json) => _Post(
   authorHandle: json['author_handle'] as String,
   authorName: json['author_name'] as String,
   authorAvatarUrl: json['author_avatar_url'] as String?,
+  amenCount: (json['amen_count'] as num?)?.toInt() ?? 0,
+  commentCount: (json['comment_count'] as num?)?.toInt() ?? 0,
 );
 
 Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
@@ -52,4 +54,6 @@ Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
   'author_handle': instance.authorHandle,
   'author_name': instance.authorName,
   'author_avatar_url': instance.authorAvatarUrl,
+  'amen_count': instance.amenCount,
+  'comment_count': instance.commentCount,
 };

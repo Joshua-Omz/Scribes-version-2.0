@@ -22,20 +22,18 @@ class NotesDao extends DatabaseAccessor<ScribesDatabase> with _$NotesDaoMixin {
     return into(notes).insertOnConflictUpdate(
       NotesCompanion.insert(
         id: record.localId,
-        content: record.content['content'] ?? '',
-        title: Value(record.content['title'] as String?),
+        content: record.content.toString(), // or encode back to json depending on how it's stored
+        title: Value(record.titleOrCaption),
         authorId: record.content['author_id'] ?? '',
         serverSequence: Value(record.serverSequence),
         localOnly: const Value(false),
         updatedAt: record.updatedAt,
-        createdAt: record.content['created_at'] != null 
-            ? DateTime.parse(record.content['created_at']) 
-            : record.updatedAt,
+        createdAt: record.updatedAt, // simplify for now, can extract from content if needed
       ),
     );
   }
 
-  Future<void> markSynced(String localId, int serverSequence) {
+  Future<void> markSynced(String localId, int? serverSequence) {
     return (update(notes)..where((n) => n.id.equals(localId))).write(
       NotesCompanion(
         serverSequence: Value(serverSequence),

@@ -22,20 +22,18 @@ class DraftsDao extends DatabaseAccessor<ScribesDatabase> with _$DraftsDaoMixin 
     return into(drafts).insertOnConflictUpdate(
       DraftsCompanion.insert(
         id: record.localId,
-        content: record.content['content'] ?? '',
-        caption: Value(record.content['caption'] as String?),
+        content: record.content.toString(),
+        caption: Value(record.titleOrCaption),
         authorId: record.content['author_id'] ?? '',
         serverSequence: Value(record.serverSequence),
         localOnly: const Value(false),
         updatedAt: record.updatedAt,
-        createdAt: record.content['created_at'] != null 
-            ? DateTime.parse(record.content['created_at']) 
-            : record.updatedAt,
+        createdAt: record.updatedAt,
       ),
     );
   }
 
-  Future<void> markSynced(String localId, int serverSequence) {
+  Future<void> markSynced(String localId, int? serverSequence) {
     return (update(drafts)..where((d) => d.id.equals(localId))).write(
       DraftsCompanion(
         serverSequence: Value(serverSequence),

@@ -14,7 +14,7 @@ import '../../../core/widgets/scribes_error_state.dart';
 import '../../social/application/user_lookup_provider.dart';
 import '../../social/application/is_following_user_provider.dart';
 import '../../posts/application/user_posts_provider.dart';
-import '../../posts/domain/post.dart';
+
 import '../../social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../messages/presentation/widgets/dm_request_modal.dart';

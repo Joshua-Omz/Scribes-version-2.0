@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/google/uuid"
 	"strings"
 	"time"
-	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -77,13 +77,11 @@ type ExploreParams struct {
 	ScriptureChapter *int32
 }
 
-
-
 func (s *Service) GetFeed(ctx context.Context, cursor string, limit int32) (PaginatedFeedResponse, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
-	
+
 	t, id, err := decodeCursor(cursor)
 	if err != nil {
 		return PaginatedFeedResponse{}, err
@@ -111,7 +109,7 @@ func (s *Service) GetFollowingFeed(ctx context.Context, cursor string, limit int
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
-	
+
 	t, id, err := decodeCursor(cursor)
 	if err != nil {
 		return PaginatedFeedResponse{}, err
@@ -122,7 +120,7 @@ func (s *Service) GetFollowingFeed(ctx context.Context, cursor string, limit int
 	if err != nil {
 		return PaginatedFeedResponse{}, err
 	}
-	
+
 	var nextCursor string
 	if len(posts) > int(limit) {
 		last := posts[limit-1]

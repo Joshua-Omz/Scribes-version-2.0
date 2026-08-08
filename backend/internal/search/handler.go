@@ -105,9 +105,9 @@ func (h *Handler) SearchPosts(c *gin.Context) {
 			RrfScore:       p.RrfScore,
 		})
 	}
-    if mapped == nil {
-        mapped = []SearchPostResponse{}
-    }
+	if mapped == nil {
+		mapped = []SearchPostResponse{}
+	}
 
 	respond.JSON(c, http.StatusOK, gin.H{
 		"posts": mapped,
@@ -147,9 +147,9 @@ func (h *Handler) SearchAuthors(c *gin.Context) {
 			CreatedAt:   a.CreatedAt,
 		})
 	}
-    if mapped == nil {
-        mapped = []SearchAuthorResponse{}
-    }
+	if mapped == nil {
+		mapped = []SearchAuthorResponse{}
+	}
 
 	respond.JSON(c, http.StatusOK, gin.H{
 		"authors": mapped,

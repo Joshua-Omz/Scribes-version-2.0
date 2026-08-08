@@ -14,7 +14,7 @@ import 'package:scribes/features/social/application/saved_posts_provider.dart';
 import 'dart:ui';
 import '../../../core/widgets/scribes_grid_card.dart';
 import '../../posts/application/my_posts_provider.dart';
-import '../../posts/domain/post.dart';
+
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_post_card_skeleton.dart';
 import '../../../core/widgets/scribes_empty_state.dart';

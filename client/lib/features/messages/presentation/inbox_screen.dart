@@ -14,7 +14,7 @@ import 'package:scribes/features/auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/user_lookup_provider.dart';
 import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/messages/domain/message.dart';
-import 'package:scribes/features/messages/application/last_read_provider.dart';
+
 import 'package:scribes/features/messages/presentation/contact_search_delegate.dart';
 
 class InboxScreen extends ConsumerStatefulWidget {
@@ -307,7 +307,7 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
                             );
                           }
 
-                          final isFromOther = lastMessage.senderId == widget.otherUserId;
+
                           final unreadCount = widget.conversation.unreadCount;
                           final isUnread = unreadCount > 0;
 

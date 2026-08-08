@@ -7,6 +7,7 @@ import (
 	"scribes-api/internal/auth"
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
+	"scribes-api/internal/media"
 	"scribes-api/internal/message"
 	"scribes-api/internal/middleware"
 	"scribes-api/internal/note"
@@ -17,7 +18,6 @@ import (
 	"scribes-api/internal/social"
 	"scribes-api/internal/sync"
 	"scribes-api/internal/tag"
-	"scribes-api/internal/media"
 	"scribes-api/pkg/respond"
 
 	"github.com/gin-gonic/gin"
@@ -55,7 +55,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/posts/:id/versions", postHandler.ListVersions)
 	r.GET("/posts/:id/versions/:version", postHandler.GetVersion)
 	r.GET("/posts/:id/export", postHandler.Export)
-	
+
 	// Public social endpoints for posts
 	r.GET("/posts/:id/reactions", socialHandler.GetReactions)
 	r.GET("/posts/:id/comments", socialHandler.GetComments)
@@ -73,11 +73,11 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/tags/suggest", tagHandler.SuggestTags)
 	r.GET("/tags/trending", tagHandler.GetTrendingTags)
 	r.GET("/tags/:name/posts", feedHandler.GetExploreByTag)
-	
+
 	// Search
 	r.GET("/search/posts", searchHandler.SearchPosts)
 	r.GET("/search/users", searchHandler.SearchAuthors)
-	
+
 	// Recommendations
 	r.GET("/posts/recommendations", recommendationHandler.GetRecommendations)
 	r.GET("/posts/:id/similar", recommendationHandler.GetSimilarPosts)
@@ -140,7 +140,6 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/posts/:id/save", socialHandler.SavePost)
 		protected.DELETE("/posts/:id/save", socialHandler.UnsavePost)
 		protected.GET("/saved", socialHandler.ListSavedPosts)
-
 
 		// Direct Messaging endpoints
 		protected.POST("/message-requests", messageHandler.SendRequest)

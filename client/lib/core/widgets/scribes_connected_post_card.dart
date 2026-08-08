@@ -30,23 +30,14 @@ class ScribesConnectedPostCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
-    final reactionsState = ref.watch(postReactionsProvider(post.id));
-    final commentsState = ref.watch(postCommentsProvider(post.id));
     final savedPostsState = ref.watch(savedPostsProvider);
     final authState = ref.watch(authProvider);
     final isAuthenticated = authState.value != null;
 
-    final reactionsStateData = reactionsState.value;
-    final reactions = reactionsStateData?.counts ?? [];
-    final userReaction = (reactionsStateData?.modifiedReaction ?? false) 
-        ? reactionsStateData?.userReaction 
-        : null; // The backend doesn't currently return the initial user reaction on the Post model
-    final comments = commentsState.value ?? [];
-
-    final amenCount = reactions.where((r) => r.type == 'amen').fold(0, (sum, r) => sum + r.count);
-    final insightCount = reactions.where((r) => r.type == 'insightful').fold(0, (sum, r) => sum + r.count);
-    final thoughtProvokingCount = reactions.where((r) => r.type == 'thought_provoking').fold(0, (sum, r) => sum + r.count);
-    final commentCount = comments.length;
+    final amenCount = post.amenCount;
+    final insightCount = 0; // Not returned by backend yet
+    final thoughtProvokingCount = 0; // Not returned by backend yet
+    final commentCount = post.commentCount;
     
     final savedPosts = savedPostsState.value ?? [];
     final isSaved = savedPosts.any((p) => p['id'] == post.id || p['post_id'] == post.id);
@@ -100,7 +91,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
             insightCount: insightCount,
             thoughtProvokingCount: thoughtProvokingCount,
             commentCount: commentCount,
-            userReactionType: userReaction,
+            userReactionType: null,
             isSaved: isSaved,
             onSaveToggle: () {
               if (!isAuthenticated) {

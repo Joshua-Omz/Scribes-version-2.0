@@ -33,10 +33,10 @@ func NewService(repo *Repository, worker *Worker) *Service {
 			IsRead:     n.IsRead,
 			RefID:      n.RefID,
 			CreatedAt:  n.CreatedAt,
-			// Body, ActorHandle, ActorAvatar would need to be enriched if needed, 
+			// Body, ActorHandle, ActorAvatar would need to be enriched if needed,
 			// but for realtime direct_message we might just need the basic info or generate it.
 		}
-		
+
 		// In a real app we would call generateBody(ctx, &domainNotif, event.ActorID).
 		// For now we just broadcast what we have.
 		s.Broadcast(n.RecipientID, domainNotif)
@@ -110,8 +110,8 @@ func (s *Service) HasUnread(ctx context.Context, userID uuid.UUID) (bool, error)
 }
 
 // Grouping logic based on contract:
-// Grouping rule: Notifications of the same type and ref_id created within a 24-hour window 
-// by different actors are collapsed into a single NotificationGroup. 
+// Grouping rule: Notifications of the same type and ref_id created within a 24-hour window
+// by different actors are collapsed into a single NotificationGroup.
 // The most recent actor is named, the count includes all actors in the window.
 func (s *Service) groupNotifications(rows []generated.ListAllByUserRow) []NotificationGroup {
 	// Fast path for empty rows
@@ -187,7 +187,7 @@ func (s *Service) groupNotifications(rows []generated.ListAllByUserRow) []Notifi
 }
 
 func (s *Service) generateBody(ntype NotifType, actor string, count int) string {
-	// Post title is not in the DB row directly per our current schema, 
+	// Post title is not in the DB row directly per our current schema,
 	// the contract shows 'your post'. For v1, we use generic text if title isn't available.
 	switch ntype {
 	case NotifTypeMention:

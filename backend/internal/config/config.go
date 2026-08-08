@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	DatabaseURL    string
-	JWTSecret      string
-	JWTExpiryHours int
-	Port           string
+	DatabaseURL               string
+	JWTSecret                 string
+	JWTExpiryHours            int
+	Port                      string
 	BcryptCost                int
 	DummyHash                 string
 	EngagementRefreshInterval string

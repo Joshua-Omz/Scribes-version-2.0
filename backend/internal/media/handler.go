@@ -26,8 +26,9 @@ type PresignRequest struct {
 }
 
 type PresignResponse struct {
-	Url      string    `json:"url"`
-	UploadID uuid.UUID `json:"upload_id"`
+	UploadUrl string    `json:"upload_url"`
+	FileUrl   string    `json:"file_url"`
+	UploadID  uuid.UUID `json:"upload_id"`
 }
 
 func (h *Handler) HandlePresign(c *gin.Context) {
@@ -54,15 +55,16 @@ func (h *Handler) HandlePresign(c *gin.Context) {
 		return
 	}
 
-	url, uploadID, err := h.service.GeneratePresignedUpload(ctx, userID, req.ContentType, req.SizeBytes)
+	uploadUrl, fileUrl, uploadID, err := h.service.GeneratePresignedUpload(ctx, userID, req.ContentType, req.SizeBytes)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, "Failed to generate presigned URL")
 		return
 	}
 
 	respond.JSON(c, http.StatusOK, PresignResponse{
-		Url:      url,
-		UploadID: uploadID,
+		UploadUrl: uploadUrl,
+		FileUrl:   fileUrl,
+		UploadID:  uploadID,
 	})
 }
 

@@ -180,9 +180,9 @@ func (r *Repository) UpdateNote(ctx context.Context, id, authorID uuid.UUID, con
 }
 
 func (r *Repository) DeleteNote(ctx context.Context, id, authorID uuid.UUID) error {
-	_,err := r.q.GetNoteByID(ctx,id)
+	_, err := r.q.GetNoteByID(ctx, id)
 	if err != nil {
-		 log.Println("note does not exists to begin with")
+		log.Println("note does not exists to begin with")
 	}
 	return r.q.DeleteNote(ctx, generated.DeleteNoteParams{
 		ID:       id,

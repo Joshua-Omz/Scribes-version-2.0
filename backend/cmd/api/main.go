@@ -16,22 +16,21 @@ import (
 	"scribes-api/internal/db/generated"
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
+	"scribes-api/internal/media"
 	"scribes-api/internal/message"
 	"scribes-api/internal/note"
 	"scribes-api/internal/notification"
 	"scribes-api/internal/post"
+	"scribes-api/internal/recommendation"
+	"scribes-api/internal/search"
 	"scribes-api/internal/server"
 	"scribes-api/internal/social"
+	"scribes-api/internal/storage"
 	"scribes-api/internal/sync"
 	"scribes-api/internal/tag"
-	"scribes-api/internal/search"
-	"scribes-api/internal/recommendation"
-	"scribes-api/internal/media"
-	"scribes-api/internal/storage"
 
 	_ "github.com/lib/pq"
 )
-
 
 func main() {
 	cfg := config.Load()

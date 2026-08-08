@@ -115,6 +115,51 @@ abstract class _$ExploreScriptureFilter extends $Notifier<ScriptureFilter?> {
   }
 }
 
+@ProviderFor(ExploreFilteredNotifier)
+final exploreFilteredProvider = ExploreFilteredNotifierProvider._();
+
+final class ExploreFilteredNotifierProvider
+    extends $AsyncNotifierProvider<ExploreFilteredNotifier, List<Post>> {
+  ExploreFilteredNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreFilteredProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreFilteredNotifierHash();
+
+  @$internal
+  @override
+  ExploreFilteredNotifier create() => ExploreFilteredNotifier();
+}
+
+String _$exploreFilteredNotifierHash() =>
+    r'1809135a7c597e4bc3c261a81e84d813c25f3244';
+
+abstract class _$ExploreFilteredNotifier extends $AsyncNotifier<List<Post>> {
+  FutureOr<List<Post>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
+              AsyncValue<List<Post>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(ExploreTrendingNotifier)
 final exploreTrendingProvider = ExploreTrendingNotifierProvider._();
 

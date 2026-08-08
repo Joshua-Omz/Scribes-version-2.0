@@ -1,4 +1,3 @@
-
 package auth
 
 import (
@@ -39,16 +38,16 @@ func mapCreatedUser(dbUser generated.User) User {
 		avatar = &a
 	}
 	return User{
-		ID:          dbUser.ID,
-		Handle:      dbUser.Handle,
-		DisplayName: dbUser.DisplayName,
-		Email:       dbUser.Email,
-		Bio:         bio,
-		AvatarUrl:   avatar,
-		Role:        string(dbUser.Role),
-		IsChurch:    dbUser.IsChurch,
+		ID:           dbUser.ID,
+		Handle:       dbUser.Handle,
+		DisplayName:  dbUser.DisplayName,
+		Email:        dbUser.Email,
+		Bio:          bio,
+		AvatarUrl:    avatar,
+		Role:         string(dbUser.Role),
+		IsChurch:     dbUser.IsChurch,
 		SelectedTags: []string{}, // Fresh user has no tags
-		CreatedAt:   dbUser.CreatedAt,
+		CreatedAt:    dbUser.CreatedAt,
 		// newly created users have 0 followers/following
 		FollowersCount: 0,
 		FollowingCount: 0,
@@ -325,11 +324,11 @@ func (r *Repository) UpdateUserTags(ctx context.Context, id uuid.UUID, tags []uu
 	if err != nil {
 		return User{}, err
 	}
-	
+
 	for _, tagID := range tags {
 		err = r.q.AddUserTag(ctx, generated.AddUserTagParams{
 			UserID: id,
-			TagID: tagID,
+			TagID:  tagID,
 		})
 		if err != nil {
 			return User{}, err

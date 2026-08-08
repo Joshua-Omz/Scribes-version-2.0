@@ -115,11 +115,11 @@ func (h *Handler) GetExplore(c *gin.Context) {
 	}
 
 	params := ExploreParams{
-		Cursor:          cursor,
-		Limit:           limit,
-		Tag:             tag,
-		SearchQuery:     searchQuery,
-		ScriptureBook:   scriptureBook,
+		Cursor:           cursor,
+		Limit:            limit,
+		Tag:              tag,
+		SearchQuery:      searchQuery,
+		ScriptureBook:    scriptureBook,
 		ScriptureChapter: scriptureChapter,
 	}
 
@@ -134,7 +134,7 @@ func (h *Handler) GetExplore(c *gin.Context) {
 
 func (h *Handler) GetExploreByTag(c *gin.Context) {
 	name := c.Param("name")
-	
+
 	cursor := c.Query("cursor")
 	limitStr := c.Query("limit")
 	var limit int32 = 20

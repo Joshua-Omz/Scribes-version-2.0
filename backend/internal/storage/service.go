@@ -13,7 +13,7 @@ type StorageService interface {
 
 	// DeleteObject removes an object from the bucket.
 	DeleteObject(ctx context.Context, key string) error
-	
+
 	// GetPublicURL returns the full CDN URL for a given object key.
 	GetPublicURL(key string) string
 }

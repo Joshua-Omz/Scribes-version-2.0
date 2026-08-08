@@ -11,7 +11,7 @@ import (
 )
 
 type Service interface {
-	GeneratePresignedUpload(ctx context.Context, uploaderID uuid.UUID, contentType string, sizeBytes int64) (string, uuid.UUID, error)
+	GeneratePresignedUpload(ctx context.Context, uploaderID uuid.UUID, contentType string, sizeBytes int64) (string, string, uuid.UUID, error)
 	ConfirmUpload(ctx context.Context, uploadID uuid.UUID, uploaderID uuid.UUID, url string, mimeType string, sizeBytes int64, widthPx, heightPx *int) (*generated.MediaUpload, error)
 }
 
@@ -27,7 +27,7 @@ func NewService(db *generated.Queries, storage storage.StorageService) Service {
 	}
 }
 
-func (s *service) GeneratePresignedUpload(ctx context.Context, uploaderID uuid.UUID, contentType string, sizeBytes int64) (string, uuid.UUID, error) {
+func (s *service) GeneratePresignedUpload(ctx context.Context, uploaderID uuid.UUID, contentType string, sizeBytes int64) (string, string, uuid.UUID, error) {
 	// Generate a unique key for the upload
 	uploadID := uuid.New()
 	key := "uploads/" + uploaderID.String() + "/" + uploadID.String()
@@ -35,10 +35,12 @@ func (s *service) GeneratePresignedUpload(ctx context.Context, uploaderID uuid.U
 	// Presigned URL expires in 15 minutes
 	url, err := s.storage.GeneratePresignedUpload(ctx, key, contentType, 15*time.Minute)
 	if err != nil {
-		return "", uuid.Nil, err
+		return "", "", uuid.Nil, err
 	}
 
-	return url, uploadID, nil
+	publicURL := s.storage.GetPublicURL(key)
+
+	return url, publicURL, uploadID, nil
 }
 
 func (s *service) ConfirmUpload(ctx context.Context, uploadID uuid.UUID, uploaderID uuid.UUID, url string, mimeType string, sizeBytes int64, widthPx, heightPx *int) (*generated.MediaUpload, error) {
@@ -61,7 +63,7 @@ func (s *service) ConfirmUpload(ctx context.Context, uploadID uuid.UUID, uploade
 		HeightPx:   h,
 		PostID:     uuid.NullUUID{}, // PostID is null until attached to a post
 	})
-	
+
 	if err != nil {
 		return nil, err
 	}

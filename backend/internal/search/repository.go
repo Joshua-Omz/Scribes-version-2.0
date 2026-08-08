@@ -28,7 +28,7 @@ func (r *repository) SearchPostsHybrid(ctx context.Context, keywordQuery string,
 	if scriptureBook != nil && *scriptureBook != "" {
 		book = sql.NullString{String: *scriptureBook, Valid: true}
 	}
-	
+
 	var chapter sql.NullInt32
 	if scriptureChapter != nil && *scriptureChapter > 0 {
 		chapter = sql.NullInt32{Int32: *scriptureChapter, Valid: true}

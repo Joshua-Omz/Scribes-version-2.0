@@ -52,7 +52,7 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 	if input.Visibility != nil {
 		visibility = *input.Visibility
 	}
-	
+
 	postType := "standard"
 	if input.PostType != "" {
 		postType = input.PostType
@@ -205,10 +205,10 @@ func (s *Service) Delete(ctx context.Context, authorID, id uuid.UUID) error {
 }
 
 type ReviseInput struct {
-	Content       json.RawMessage       `json:"content" binding:"required"`
-	Caption       *string               `json:"caption,omitempty"`
-	Tags          []string              `json:"tags,omitempty"`
-	CoverImageUrl *string               `json:"cover_image_url,omitempty"`
+	Content       json.RawMessage `json:"content" binding:"required"`
+	Caption       *string         `json:"caption,omitempty"`
+	Tags          []string        `json:"tags,omitempty"`
+	CoverImageUrl *string         `json:"cover_image_url,omitempty"`
 }
 
 func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input ReviseInput) (Post, error) {
@@ -221,7 +221,7 @@ func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input Revi
 	if err != nil {
 		return Post{}, err
 	}
-	
+
 	if len(input.Tags) > 0 {
 		if len(input.Tags) > 8 {
 			return Post{}, errors.New("maximum of 8 tags allowed")
@@ -248,7 +248,7 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 	if err != nil {
 		return Post{}, err
 	}
-	
+
 	postType := "standard"
 	if input.PostType != "" {
 		postType = input.PostType
@@ -343,7 +343,7 @@ func (s *Service) Export(ctx context.Context, id uuid.UUID, format string) ([]by
 	}
 
 	var sb strings.Builder
-	
+
 	// Add Caption if present
 	if post.Caption != nil {
 		if format == "md" {

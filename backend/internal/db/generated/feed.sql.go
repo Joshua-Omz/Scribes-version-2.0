@@ -18,7 +18,9 @@ const getChurchPosts = `-- name: GetChurchPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -52,6 +54,8 @@ type GetChurchPostsRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) ([]GetChurchPostsRow, error) {
@@ -80,6 +84,8 @@ func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) 
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -98,7 +104,9 @@ const getExplorePosts = `-- name: GetExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -131,6 +139,8 @@ type GetExplorePostsRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams) ([]GetExplorePostsRow, error) {
@@ -159,6 +169,8 @@ func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -177,7 +189,9 @@ const getExplorePostsByScripture = `-- name: GetExplorePostsByScripture :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN scripture_refs sr ON p.id = sr.post_id
@@ -215,6 +229,8 @@ type GetExplorePostsByScriptureRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplorePostsByScriptureParams) ([]GetExplorePostsByScriptureRow, error) {
@@ -249,6 +265,8 @@ func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplore
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -267,7 +285,9 @@ const getExplorePostsByTag = `-- name: GetExplorePostsByTag :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN post_tags pt ON p.id = pt.post_id
@@ -304,6 +324,8 @@ type GetExplorePostsByTagRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsByTagParams) ([]GetExplorePostsByTagRow, error) {
@@ -337,6 +359,8 @@ func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsB
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -355,7 +379,9 @@ const getFeedPosts = `-- name: GetFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -388,6 +414,8 @@ type GetFeedPostsRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]GetFeedPostsRow, error) {
@@ -416,6 +444,8 @@ func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]G
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -434,7 +464,9 @@ const getFollowingFeedPosts = `-- name: GetFollowingFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN follows f ON p.author_id = f.followee_id
@@ -470,6 +502,8 @@ type GetFollowingFeedPostsRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFeedPostsParams) ([]GetFollowingFeedPostsRow, error) {
@@ -503,6 +537,8 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -521,7 +557,9 @@ const getForYouPosts = `-- name: GetForYouPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 JOIN post_tags pt ON p.id = pt.post_id
@@ -558,6 +596,8 @@ type GetForYouPostsRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) ([]GetForYouPostsRow, error) {
@@ -591,6 +631,8 @@ func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) 
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}
@@ -672,7 +714,9 @@ const searchExplorePosts = `-- name: SearchExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
-    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url
+    u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
 WHERE p.is_deleted = false 
@@ -707,6 +751,8 @@ type SearchExplorePostsRow struct {
 	AuthorHandle    string          `json:"author_handle"`
 	AuthorName      string          `json:"author_name"`
 	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AmenCount       int32           `json:"amen_count"`
+	CommentCount    int32           `json:"comment_count"`
 }
 
 func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePostsParams) ([]SearchExplorePostsRow, error) {
@@ -740,6 +786,8 @@ func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePosts
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
+			&i.AmenCount,
+			&i.CommentCount,
 		); err != nil {
 			return nil, err
 		}

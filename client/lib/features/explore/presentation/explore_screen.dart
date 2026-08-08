@@ -45,6 +45,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
+    final scriptureFilter = ref.watch(exploreScriptureFilterProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -65,6 +66,25 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     .copyWith(color: colors.primaryText),
               ),
               actions: [
+                if (scriptureFilter != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: ActionChip(
+                      label: Text('${scriptureFilter.book} ${scriptureFilter.chapter ?? ''}'.trim()),
+                      onPressed: () {
+                        ref.read(exploreScriptureFilterProvider.notifier).clear();
+                      },
+                      avatar: HugeIcon(
+                        icon: HugeIcons.strokeRoundedCancel01,
+                        color: colors.primaryText,
+                        size: 16,
+                      ),
+                      backgroundColor: colors.surfaceRaised,
+                      labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
                 ScribesIconButton(
                   icon: HugeIcons.strokeRoundedSearch01,
                   color: colors.secondaryText,
@@ -79,38 +99,120 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 ),
                 const SizedBox(width: 8),
               ],
-              bottom: TabBar(
-                controller: _tabController,
-                indicatorColor: colors.primaryText,
-                indicatorWeight: 2,
-                labelColor: colors.primaryText,
-                unselectedLabelColor: colors.secondaryText,
-                labelStyle: ScribesTextStyles.labelLg
-                    .copyWith(fontWeight: FontWeight.w600),
-                unselectedLabelStyle: ScribesTextStyles.labelLg
-                    .copyWith(fontWeight: FontWeight.w400),
-                tabs: const [
-                  Tab(text: 'For You'),
-                  Tab(text: 'Discover'),
-                  Tab(text: 'Churches'),
-                ],
-              ),
+              bottom: scriptureFilter == null
+                  ? TabBar(
+                      controller: _tabController,
+                      indicatorColor: colors.primaryText,
+                      indicatorWeight: 2,
+                      labelColor: colors.primaryText,
+                      unselectedLabelColor: colors.secondaryText,
+                      labelStyle: ScribesTextStyles.labelLg
+                          .copyWith(fontWeight: FontWeight.w600),
+                      unselectedLabelStyle: ScribesTextStyles.labelLg
+                          .copyWith(fontWeight: FontWeight.w400),
+                      tabs: const [
+                        Tab(text: 'For You'),
+                        Tab(text: 'Discover'),
+                        Tab(text: 'Churches'),
+                      ],
+                    )
+                  : null,
             ),
           ];
         },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildForYouTab(ref, colors),
-            _buildDiscoverTab(ref, colors),
-            _buildChurchesTab(ref, colors),
-          ],
-        ),
+        body: scriptureFilter == null
+            ? TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildForYouTab(context, ref, colors),
+                  _buildDiscoverTab(ref, colors),
+                  _buildChurchesTab(ref, colors),
+                ],
+              )
+            : _buildFilteredTab(ref, colors),
       ),
     );
   }
 
-  Widget _buildForYouTab(WidgetRef ref, dynamic colors) {
+  Widget _buildFilteredTab(WidgetRef ref, dynamic colors) {
+    final filteredState = ref.watch(exploreFilteredProvider);
+    return RefreshIndicator(
+      onRefresh: () => ref.read(exploreFilteredProvider.notifier).refresh(),
+      child: CustomScrollView(
+        slivers: [
+          filteredState.when(
+            data: (posts) {
+              if (posts.isEmpty) {
+                return SliverFillRemaining(
+                  child: ScribesEmptyState(
+                    icon: HugeIcons.strokeRoundedBookOpen01,
+                    title: 'No posts found',
+                    subtitle: 'No scriptures have been referenced here yet.',
+                  ),
+                );
+              }
+              final hasMore = ref.read(exploreFilteredProvider.notifier).hasMore;
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == posts.length) {
+                        ref.read(exploreFilteredProvider.notifier).loadMore();
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: ScribesLoadingIndicator(),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: ScribesConnectedPostCard(
+                          post: posts[index],
+                          isFeatured: false,
+                          isExploreScreen: true,
+                        ),
+                      );
+                    },
+                    childCount: posts.length + (hasMore ? 1 : 0),
+                  ),
+                ),
+              );
+            },
+            loading: () => SliverPadding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: ScribesShimmer(
+                        child: Container(
+                          height: 180,
+                          decoration: BoxDecoration(
+                            color: colors.surfaceRaised,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: 4,
+                ),
+              ),
+            ),
+            error: (e, st) => SliverFillRemaining(
+              child: ScribesErrorState(
+                title: 'Could not load posts',
+                subtitle: e.toString(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildForYouTab(BuildContext context, WidgetRef ref, dynamic colors) {
     final forYouState = ref.watch(exploreForYouProvider);
     return RefreshIndicator(
       onRefresh: () => ref.read(exploreForYouProvider.notifier).refresh(),
@@ -118,7 +220,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         slivers: [
           // Block A: Tags
           SliverToBoxAdapter(
-            child: _buildTagsSection(ref, colors),
+            child: _buildTagsSection(context, ref, colors),
           ),
           
           // Divider
@@ -154,7 +256,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  Widget _buildTagsSection(WidgetRef ref, dynamic colors) {
+  Widget _buildTagsSection(BuildContext context, WidgetRef ref, dynamic colors) {
     final user = ref.watch(authProvider).value;
     final selectedTags = user?.selectedTags ?? [];
 

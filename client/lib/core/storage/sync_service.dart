@@ -53,20 +53,14 @@ class SyncService {
     }
   }
 
-  Future<void> confirmSynced(SyncPushResponse response) async {
-    for (final confirmation in response.confirmed) {
-      switch (confirmation.type) {
+  Future<void> confirmSynced(List<PendingRecord> pushed) async {
+    for (final record in pushed) {
+      switch (record.type) {
         case 'note':
-          await _storage.notesDao.markSynced(
-            confirmation.localId,
-            confirmation.serverSequence,
-          );
+          await _storage.notesDao.markSynced(record.id, null);
           break;
         case 'draft':
-          await _storage.draftsDao.markSynced(
-            confirmation.localId,
-            confirmation.serverSequence,
-          );
+          await _storage.draftsDao.markSynced(record.id, null);
           break;
       }
     }
@@ -91,8 +85,10 @@ class SyncService {
         Endpoints.syncPush, 
         data: {'events': pending.map((r) => r.toJson()).toList()}
       );
-      final result = SyncPushResponse.fromJson(pushResponse.data);
-      await confirmSynced(result);
+      
+      if (pushResponse.statusCode == 200) {
+        await confirmSynced(pending);
+      }
     }
   }
 }

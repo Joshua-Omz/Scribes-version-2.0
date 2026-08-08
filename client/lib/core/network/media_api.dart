@@ -61,6 +61,9 @@ class MediaApi {
         Endpoints.mediaUploadConfirm,
         data: {
           'upload_id': uploadId,
+          'url': fileUrl,
+          'mime_type': mimeType,
+          'size_bytes': sizeBytes,
         },
       );
 

@@ -104,7 +104,7 @@ func (s *Service) AddComment(ctx context.Context, postID, authorID uuid.UUID, bo
 				ActorID:     authorID,
 			})
 		}
-		
+
 		// Handle mentions
 		for _, m := range mentions {
 			if m != authorID { // don't notify self

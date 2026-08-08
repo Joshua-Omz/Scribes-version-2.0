@@ -182,7 +182,7 @@ func (h *Handler) SearchContacts(c *gin.Context) {
 	userID, _ := uuid.Parse(claims.UserID)
 
 	query := c.Query("q")
-	
+
 	contacts, err := h.svc.SearchContacts(c.Request.Context(), userID, query)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, "failed to search contacts")
@@ -405,7 +405,7 @@ func (h *Handler) StreamMessages(c *gin.Context) {
 		respond.Error(c, http.StatusInternalServerError, "error verifying conversation")
 		return
 	}
-	
+
 	allowed := false
 	for _, conv := range convs {
 		if conv.ID == convID {

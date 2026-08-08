@@ -132,4 +132,3 @@ func (r *Repository) DeleteDraft(ctx context.Context, id, authorID uuid.UUID) er
 		AuthorID: authorID,
 	})
 }
-

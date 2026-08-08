@@ -16,23 +16,23 @@ import (
 // a post's content is versioned (Sprint 3), not mutated in place.
 // The PublishedAt timestamp is set once by the database DEFAULT and never changes.
 type Post struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
-	Content        json.RawMessage `json:"content"`
-	Caption        *string         `json:"caption,omitempty"`
-	Visibility     string          `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID *uuid.UUID      `json:"corrects_post_id,omitempty"`
-	SermonSource   *string         `json:"sermon_source,omitempty"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
+	ID             uuid.UUID                       `json:"id"`
+	AuthorID       uuid.UUID                       `json:"author_id"`
+	AuthorHandle   string                          `json:"author_handle"`
+	AuthorName     string                          `json:"author_name"`
+	Content        json.RawMessage                 `json:"content"`
+	Caption        *string                         `json:"caption,omitempty"`
+	Visibility     string                          `json:"visibility"`
+	CurrentVersion int32                           `json:"current_version"`
+	IsCorrection   bool                            `json:"is_correction"`
+	CorrectsPostID *uuid.UUID                      `json:"corrects_post_id,omitempty"`
+	SermonSource   *string                         `json:"sermon_source,omitempty"`
+	IsDeleted      bool                            `json:"is_deleted"`
+	PublishedAt    time.Time                       `json:"published_at"`
 	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
-	Tags           []string        `json:"tags"`
-	CoverImageUrl  *string         `json:"cover_image_url,omitempty"`
-	PostType       string          `json:"post_type"`
+	Tags           []string                        `json:"tags"`
+	CoverImageUrl  *string                         `json:"cover_image_url,omitempty"`
+	PostType       string                          `json:"post_type"`
 }
 
 func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
@@ -188,7 +188,7 @@ func (r *Repository) CreatePost(ctx context.Context, authorID uuid.UUID, content
 	if err != nil {
 		return Post{}, err
 	}
-	
+
 	// Fetch the hydrated post containing author details
 	return r.GetPostByID(ctx, dbPost.ID)
 }
@@ -364,7 +364,6 @@ func (r *Repository) RevisePost(ctx context.Context, id, authorID uuid.UUID, cur
 	}
 	return r.GetPostByID(ctx, dbPost.ID)
 }
-
 
 func (r *Repository) ListVersionsByPost(ctx context.Context, postID uuid.UUID) ([]PostVersion, error) {
 	dbVersions, err := r.q.ListVersionsByPost(ctx, postID)

@@ -73,24 +73,26 @@ func (r *Repository) enrichPosts(ctx context.Context, posts []FeedPost) error {
 }
 
 type FeedPost struct {
-	ID             uuid.UUID                `json:"id"`
-	AuthorID       uuid.UUID                `json:"author_id"`
-	Content        json.RawMessage          `json:"content"`
-	Caption        *string                  `json:"caption"`
-	Visibility     generated.PostVisibility `json:"visibility"`
-	CurrentVersion int32                    `json:"current_version"`
-	IsCorrection   bool                     `json:"is_correction"`
-	CorrectsPostID *uuid.UUID               `json:"corrects_post_id"`
-	SermonSource   *string                  `json:"sermon_source"`
-	IsDeleted      bool                     `json:"is_deleted"`
-	PublishedAt    time.Time                `json:"published_at"`
-	AuthorHandle   string                   `json:"author_handle"`
-	AuthorName     string                   `json:"author_name"`
-	CoverImageUrl  *string                  `json:"cover_image_url,omitempty"`
-	PostType       generated.PostType       `json:"post_type"`
-	AuthorAvatarUrl *string                 `json:"author_avatar_url,omitempty"`
-	ScriptureRefs  []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
-	Tags           []string                        `json:"tags,omitempty"`
+	ID              uuid.UUID                       `json:"id"`
+	AuthorID        uuid.UUID                       `json:"author_id"`
+	Content         json.RawMessage                 `json:"content"`
+	Caption         *string                         `json:"caption"`
+	Visibility      generated.PostVisibility        `json:"visibility"`
+	CurrentVersion  int32                           `json:"current_version"`
+	IsCorrection    bool                            `json:"is_correction"`
+	CorrectsPostID  *uuid.UUID                      `json:"corrects_post_id"`
+	SermonSource    *string                         `json:"sermon_source"`
+	IsDeleted       bool                            `json:"is_deleted"`
+	PublishedAt     time.Time                       `json:"published_at"`
+	AuthorHandle    string                          `json:"author_handle"`
+	AuthorName      string                          `json:"author_name"`
+	CoverImageUrl   *string                         `json:"cover_image_url,omitempty"`
+	PostType        generated.PostType              `json:"post_type"`
+	AuthorAvatarUrl *string                         `json:"author_avatar_url,omitempty"`
+	ScriptureRefs   []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
+	Tags            []string                        `json:"tags,omitempty"`
+	AmenCount       int32                           `json:"amen_count"`
+	CommentCount    int32                           `json:"comment_count"`
 }
 
 func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
@@ -121,9 +123,21 @@ func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
@@ -154,9 +168,21 @@ func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -188,9 +214,21 @@ func mapExplorePost(row generated.GetExplorePostsRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -222,9 +260,21 @@ func mapExploreTagPost(row generated.GetExplorePostsByTagRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -256,9 +306,21 @@ func mapExploreScripturePost(row generated.GetExplorePostsByScriptureRow) FeedPo
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -290,9 +352,21 @@ func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -324,9 +398,21 @@ func mapChurchPost(row generated.GetChurchPostsRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -358,9 +444,21 @@ func mapForYouPost(row generated.GetForYouPostsRow) FeedPost {
 		PublishedAt:    row.PublishedAt,
 		AuthorHandle:   row.AuthorHandle,
 		AuthorName:     row.AuthorName,
-		CoverImageUrl:  func() *string { if row.CoverImageUrl.Valid { return &row.CoverImageUrl.String }; return nil }(),
-		PostType:       row.PostType,
-		AuthorAvatarUrl: func() *string { if row.AuthorAvatarUrl.Valid { return &row.AuthorAvatarUrl.String }; return nil }(),
+		CoverImageUrl: func() *string {
+			if row.CoverImageUrl.Valid {
+				return &row.CoverImageUrl.String
+			}
+			return nil
+		}(),
+		PostType: row.PostType,
+		AuthorAvatarUrl: func() *string {
+			if row.AuthorAvatarUrl.Valid {
+				return &row.AuthorAvatarUrl.String
+			}
+			return nil
+		}(),
+		AmenCount:      row.AmenCount,
+		CommentCount:   row.CommentCount,
 	}
 }
 
@@ -521,5 +619,3 @@ func (r *Repository) GetForYouPosts(ctx context.Context, userID uuid.UUID, curso
 	}
 	return posts, nil
 }
-
-

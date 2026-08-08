@@ -104,7 +104,7 @@ func (h *Handler) GetFollowers(c *gin.Context) {
 		respond.Error(c, http.StatusInternalServerError, "failed to fetch followers")
 		return
 	}
-	
+
 	var res []UserResponse
 	for _, f := range followers {
 		var bio *string
@@ -142,7 +142,7 @@ func (h *Handler) GetFollowing(c *gin.Context) {
 		respond.Error(c, http.StatusInternalServerError, "failed to fetch following")
 		return
 	}
-	
+
 	var res []UserResponse
 	for _, f := range following {
 		var bio *string
@@ -230,7 +230,7 @@ func (h *Handler) GetReactions(c *gin.Context) {
 		respond.Error(c, http.StatusInternalServerError, "failed to fetch reactions")
 		return
 	}
-	
+
 	// Convert array to a more friendly map format if desired, or return as is.
 	// We will just return the array of counts.
 	respond.JSON(c, http.StatusOK, counts)
@@ -393,7 +393,7 @@ func (h *Handler) ListSavedPosts(c *gin.Context) {
 		return
 	}
 	userID, _ := uuid.Parse(claims.UserID)
-	
+
 	// Default to 'bookmark' if type is not provided
 	savedType := c.Query("type")
 	if savedType == "" {

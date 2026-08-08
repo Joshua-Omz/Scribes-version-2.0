@@ -44,6 +44,55 @@ class ExploreScriptureFilter extends _$ExploreScriptureFilter {
 }
 
 @riverpod
+class ExploreFilteredNotifier extends _$ExploreFilteredNotifier {
+  String? _nextCursor;
+
+  bool get hasMore => _nextCursor != null;
+
+  @override
+  FutureOr<List<Post>> build() async {
+    return _fetch(null);
+  }
+
+  Future<List<Post>> _fetch(String? cursor) async {
+    final filter = ref.read(exploreScriptureFilterProvider);
+    if (filter == null) return [];
+    
+    final repo = ref.read(exploreRepositoryProvider);
+    final response = await repo.getExplore(
+      cursor: cursor,
+      scriptureBook: filter.book,
+      scriptureChapter: filter.chapter,
+    );
+    _nextCursor = response.nextCursor;
+    return response.posts;
+  }
+
+  Future<void> loadMore() async {
+    if (_nextCursor == null) return;
+    if (state.isLoading || state.isRefreshing) return;
+
+    try {
+      final newPosts = await _fetch(_nextCursor);
+      final currentPosts = state.value ?? [];
+      state = AsyncData([...currentPosts, ...newPosts]);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _nextCursor = null;
+    try {
+      final posts = await _fetch(null);
+      state = AsyncData(posts);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+}
+@riverpod
 class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
   String? _nextCursor;
   bool get hasMore => _nextCursor != null;

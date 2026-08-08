@@ -28,7 +28,7 @@ func (h *Handler) GetNotifications(c *gin.Context) {
 		respond.Error(c, http.StatusInternalServerError, "failed to get notifications")
 		return
 	}
-	
+
 	hasUnread, err := h.svc.HasUnread(c.Request.Context(), userID)
 	if err != nil {
 		// Log error, but don't fail the whole request

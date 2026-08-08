@@ -25,7 +25,7 @@ func NewWorker(repo *Repository) *Worker {
 
 func (w *Worker) Start(ctx context.Context) {
 	slog.Info("Starting notification worker")
-	
+
 	// Ensure the ticker is stopped when worker exits
 	defer w.ticker.Stop()
 

@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:scribes/core/theme/scribes_radius.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../storage/scribes_cache_manager.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/scribes_text_styles.dart';
@@ -209,9 +211,11 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 borderRadius: BorderRadius.circular(ScribesRadius.card),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: Image.network(
-                    widget.coverImageUrl!,
+                  child: CachedNetworkImage(
+                    imageUrl: widget.coverImageUrl!,
                     fit: BoxFit.cover,
+                    memCacheWidth: 800,
+                    cacheManager: ScribesCacheManager.instance,
                   ),
                 ),
               ),

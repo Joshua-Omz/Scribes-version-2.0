@@ -25,20 +25,20 @@ type SyncEvent struct {
 
 // SyncPushEvent is a single mutation sent by the client during Push.
 type SyncPushEvent struct {
-	Type           string          `json:"type"`           // "note" or "draft"
+	Type           string          `json:"type"` // "note" or "draft"
 	ID             uuid.UUID       `json:"id"`
 	Content        json.RawMessage `json:"content"`
 	TitleOrCaption *string         `json:"title_or_caption,omitempty"`
-	ParentID       *uuid.UUID      `json:"parent_id,omitempty"`       // notebook_id for notes
-	SourceType     *string         `json:"source_type,omitempty"`     // note-specific
-	SourceLabel    *string         `json:"source_label,omitempty"`    // note-specific
-	SermonSource   *string         `json:"sermon_source,omitempty"`   // draft-specific
+	ParentID       *uuid.UUID      `json:"parent_id,omitempty"`     // notebook_id for notes
+	SourceType     *string         `json:"source_type,omitempty"`   // note-specific
+	SourceLabel    *string         `json:"source_label,omitempty"`  // note-specific
+	SermonSource   *string         `json:"sermon_source,omitempty"` // draft-specific
 }
 
 // SyncPushResult is the response from a successful Push.
 type SyncPushResult struct {
-	Applied      int   `json:"applied"`
-	MaxSequence  int64 `json:"max_sequence"`
+	Applied     int   `json:"applied"`
+	MaxSequence int64 `json:"max_sequence"`
 }
 
 type Repository struct {

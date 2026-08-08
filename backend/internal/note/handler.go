@@ -19,7 +19,6 @@ func NewHandler(svc *Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-
 // getAuthorID is a small helper to pull the authenticated user's ID
 // securely from the JWT claims populated by our middleware.
 func getAuthorID(c *gin.Context) (uuid.UUID, bool) {

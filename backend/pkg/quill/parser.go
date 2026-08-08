@@ -154,7 +154,7 @@ func parseOps(rawJSON []byte) ([]Op, error) {
 		var dummyOps []Op
 		if dummy.Title != "" {
 			dummyOps = append(dummyOps, Op{
-				Insert: dummy.Title + "\n",
+				Insert:     dummy.Title + "\n",
 				Attributes: map[string]interface{}{"header": float64(1)},
 			})
 		}

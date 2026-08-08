@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/network/endpoints.dart';
 
 part 'auth_api.g.dart';
@@ -23,32 +25,44 @@ class AuthApi {
     required String password,
     required bool isChurch,
   }) async {
-    final response = await _dio.post(Endpoints.register, data: {
-      'email': email,
-      'handle': handle,
-      'display_name': displayName,
-      'password': password,
-      'is_church': isChurch,
-    });
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await _dio.post(Endpoints.register, data: {
+        'email': email,
+        'handle': handle,
+        'display_name': displayName,
+        'password': password,
+        'is_church': isChurch,
+      }).timeout(const Duration(seconds: 10));
+      return response.data as Map<String, dynamic>;
+    } on TimeoutException {
+      throw ApiException('Connection timed out', 408);
+    }
   }
 
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
-    final response = await _dio.post(Endpoints.login, data: {
-      'email': email,
-      'password': password,
-    });
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await _dio.post(Endpoints.login, data: {
+        'email': email,
+        'password': password,
+      }).timeout(const Duration(seconds: 10));
+      return response.data as Map<String, dynamic>;
+    } on TimeoutException {
+      throw ApiException('Connection timed out', 408);
+    }
   }
 
   Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
-    final response = await _dio.post(Endpoints.googleLogin, data: {
-      'id_token': idToken,
-    });
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await _dio.post(Endpoints.googleLogin, data: {
+        'id_token': idToken,
+      }).timeout(const Duration(seconds: 10));
+      return response.data as Map<String, dynamic>;
+    } on TimeoutException {
+      throw ApiException('Connection timed out', 408);
+    }
   }
 
   Future<Map<String, dynamic>> getMe() async {

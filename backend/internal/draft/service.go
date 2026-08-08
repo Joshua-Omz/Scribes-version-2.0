@@ -74,7 +74,7 @@ func (s *Service) Update(ctx context.Context, authorID, draftID uuid.UUID, input
 	if err != nil {
 		return Draft{}, err
 	}
-	
+
 	return d, nil
 }
 

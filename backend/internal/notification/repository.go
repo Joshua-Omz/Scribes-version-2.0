@@ -52,14 +52,14 @@ func (r *Repository) ClearAll(ctx context.Context, userID uuid.UUID) error {
 
 func (r *Repository) DeleteBulk(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
 	return r.q.DeleteNotifications(ctx, generated.DeleteNotificationsParams{
-		Column1:    ids,
+		Column1:     ids,
 		RecipientID: userID,
 	})
 }
 
 func (r *Repository) MarkBulkRead(ctx context.Context, userID uuid.UUID, ids []uuid.UUID) error {
 	return r.q.MarkNotificationsRead(ctx, generated.MarkNotificationsReadParams{
-		Column1:    ids,
+		Column1:     ids,
 		RecipientID: userID,
 	})
 }

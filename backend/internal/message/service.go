@@ -34,7 +34,7 @@ func NewService(repo *Repository, notifSvc *notification.Service) *Service {
 func (s *Service) Subscribe(conversationID uuid.UUID) chan *generated.Message {
 	s.clientsMux.Lock()
 	defer s.clientsMux.Unlock()
-	
+
 	ch := make(chan *generated.Message, 20)
 	if s.clients[conversationID] == nil {
 		s.clients[conversationID] = make(map[chan *generated.Message]bool)
@@ -46,7 +46,7 @@ func (s *Service) Subscribe(conversationID uuid.UUID) chan *generated.Message {
 func (s *Service) Unsubscribe(conversationID uuid.UUID, ch chan *generated.Message) {
 	s.clientsMux.Lock()
 	defer s.clientsMux.Unlock()
-	
+
 	if subs, ok := s.clients[conversationID]; ok {
 		delete(subs, ch)
 		close(ch)
@@ -59,13 +59,13 @@ func (s *Service) Unsubscribe(conversationID uuid.UUID, ch chan *generated.Messa
 func (s *Service) broadcast(msg *generated.Message) {
 	s.clientsMux.RLock()
 	defer s.clientsMux.RUnlock()
-	
+
 	if subs, ok := s.clients[msg.ConversationID]; ok {
 		for ch := range subs {
 			select {
 			case ch <- msg:
 			default:
-				// If client cannot keep up, drop the message. 
+				// If client cannot keep up, drop the message.
 				// They can fetch missed messages via REST.
 			}
 		}
@@ -281,8 +281,8 @@ func (s *Service) UpdateMessage(ctx context.Context, messageID, senderID uuid.UU
 	if err != nil {
 		return generated.Message{}, err
 	}
-	
+
 	s.broadcast(&msg)
-	
+
 	return msg, nil
 }
