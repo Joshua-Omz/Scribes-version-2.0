@@ -20,9 +20,15 @@ type r2Provider struct {
 
 // NewR2Provider creates a new instance of the StorageService using Cloudflare R2
 func NewR2Provider(cfg config.Config) (StorageService, error) {
-	// R2 endpoint format: <ACCOUNT_ID>.r2.cloudflarestorage.com
-	endpoint := fmt.Sprintf("%s.r2.cloudflarestorage.com", cfg.R2AccountID)
-	
+	endpointStr := cfg.R2Endpoint
+	secure := true
+	if strings.HasPrefix(endpointStr, "https://") {
+		endpointStr = strings.TrimPrefix(endpointStr, "https://")
+	} else if strings.HasPrefix(endpointStr, "http://") {
+		endpointStr = strings.TrimPrefix(endpointStr, "http://")
+		secure = false
+	}
+
 	// Ensure cdnDomain is formatted correctly (strip trailing slash)
 	cdnDomain := strings.TrimRight(cfg.CDNDomain, "/")
 	if cdnDomain == "" {
@@ -30,9 +36,9 @@ func NewR2Provider(cfg config.Config) (StorageService, error) {
 		cdnDomain = "https://cdn.scribes.app"
 	}
 
-	minioClient, err := minio.New(endpoint, &minio.Options{
+	minioClient, err := minio.New(endpointStr, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.R2AccessKeyID, cfg.R2SecretAccessKey, ""),
-		Secure: true,
+		Secure: secure,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize R2 client: %w", err)

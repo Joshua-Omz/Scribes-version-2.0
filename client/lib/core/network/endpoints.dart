@@ -43,4 +43,8 @@ class Endpoints {
   // Sync
   static const String syncPull = '/sync';
   static const String syncPush = '/sync/push';
+
+  // Media
+  static const String mediaUploadPresign = '/media/upload/presign';
+  static const String mediaUploadConfirm = '/media/upload/confirm';
 }
