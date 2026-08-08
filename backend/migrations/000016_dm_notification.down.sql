@@ -1,0 +1,2 @@
+-- MIGRATION 016: DM notification down
+-- No action required or drop the triggered function if needed
