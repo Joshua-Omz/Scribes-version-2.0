@@ -127,6 +127,12 @@ func ToPlainText(rawJSON []byte) (string, error) {
 }
 
 func parseOps(rawJSON []byte) ([]Op, error) {
+	// 0. Handle double-encoded JSON strings (common when frontend stringifies JSON payload)
+	var str string
+	if err := json.Unmarshal(rawJSON, &str); err == nil {
+		rawJSON = []byte(str)
+	}
+
 	// 1. Try array format (Flutter Quill)
 	var ops []Op
 	if err := json.Unmarshal(rawJSON, &ops); err == nil && len(ops) > 0 {

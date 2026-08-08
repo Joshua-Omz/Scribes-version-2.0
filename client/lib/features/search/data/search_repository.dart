@@ -11,8 +11,8 @@ class SearchRepository {
 
   SearchRepository(this._api);
 
-  Future<List<Post>> searchPosts(String query, {int limit = 20, int offset = 0}) async {
-    final rawData = await _api.searchPosts(query, limit: limit, offset: offset);
+  Future<List<Post>> searchPosts(String query, {int limit = 20, int offset = 0, String? scriptureBook, int? scriptureChapter}) async {
+    final rawData = await _api.searchPosts(query, limit: limit, offset: offset, scriptureBook: scriptureBook, scriptureChapter: scriptureChapter);
     return rawData.map((json) => Post.fromJson(json)).toList();
   }
 

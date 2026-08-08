@@ -9,6 +9,7 @@ WITH keyword_search AS (
     FROM posts p
     WHERE p.is_deleted = false AND p.visibility = 'public'
       AND p.search_vector @@ websearch_to_tsquery('english', $1)
+      AND (sqlc.narg('scripture_book')::text IS NULL OR p.id IN (SELECT sr.post_id FROM scripture_refs sr WHERE sr.book = sqlc.narg('scripture_book') AND (sr.chapter = sqlc.narg('scripture_chapter') OR sqlc.narg('scripture_chapter') IS NULL)))
     ORDER BY keyword_score DESC
     LIMIT 100
 ),
@@ -20,6 +21,7 @@ semantic_search AS (
     WHERE p.is_deleted = false AND p.visibility = 'public'
       AND p.embedding IS NOT NULL
       AND $2::text IS NOT NULL
+      AND (sqlc.narg('scripture_book')::text IS NULL OR p.id IN (SELECT sr.post_id FROM scripture_refs sr WHERE sr.book = sqlc.narg('scripture_book') AND (sr.chapter = sqlc.narg('scripture_chapter') OR sqlc.narg('scripture_chapter') IS NULL)))
     ORDER BY p.embedding <=> $2::vector
     LIMIT 100
 )

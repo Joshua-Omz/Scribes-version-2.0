@@ -57,7 +57,20 @@ func (h *Handler) SearchPosts(c *gin.Context) {
 	}
 	offset, _ := strconv.Atoi(offsetStr)
 
-	posts, err := h.svc.SearchPosts(c.Request.Context(), query, int32(limit), int32(offset))
+	var scriptureBook *string
+	if sb := c.Query("scripture_book"); sb != "" {
+		scriptureBook = &sb
+	}
+
+	var scriptureChapter *int32
+	if sc := c.Query("scripture_chapter"); sc != "" {
+		if val, err := strconv.ParseInt(sc, 10, 32); err == nil {
+			v32 := int32(val)
+			scriptureChapter = &v32
+		}
+	}
+
+	posts, err := h.svc.SearchPosts(c.Request.Context(), query, int32(limit), int32(offset), scriptureBook, scriptureChapter)
 	if err != nil {
 		respond.JSON(c, http.StatusInternalServerError, gin.H{"error": "failed to search posts"})
 		return

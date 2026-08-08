@@ -11,6 +11,8 @@ import '../../../core/widgets/scribes_error_state.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_user_card.dart';
+import '../../../core/widgets/scribes_icon_button.dart';
+import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../application/search_notifier.dart';
 
 enum SearchMode { posts, people }
@@ -85,6 +87,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           onChanged: _onSearchChanged,
           onSubmitted: (q) => ref.read(searchProvider.notifier).search(q),
         ),
+        actions: [
+          ScribesIconButton(
+            icon: HugeIcons.strokeRoundedBookOpen01,
+            color: searchState.scriptureBook != null ? colors.gold : colors.secondaryText,
+            onPressed: () => _showScriptureFilterSheet(context, ref, colors),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
@@ -140,7 +150,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           final post = state.posts[index];
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: ScribesConnectedPostCard(post: post, isFeatured: false),
+            child: ScribesConnectedPostCard(
+              post: post, 
+              isFeatured: false,
+              isSearchScreen: true,
+            ),
           );
         },
       );
@@ -160,44 +174,56 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final author = state.authors[index];
-          return ScribesUserCard(user: author);
+          return ScribesUserCard(
+            user: author,
+            isListTile: true,
+          );
         },
       );
     }
   }
 
   Widget _buildSearchModeToggle(
-      SearchMode mode, WidgetRef ref, dynamic colors) {
+      SearchMode currentMode, WidgetRef ref, dynamic colors) {
     return Container(
-      height: 44,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: colors.surfaceRaised,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Expanded(
-              child: _buildToggleItem(
-                  'Posts', SearchMode.posts, mode, ref, colors)),
-          Expanded(
-              child: _buildToggleItem(
-                  'People', SearchMode.people, mode, ref, colors)),
+          _buildToggleItem(
+              'Posts', SearchMode.posts, currentMode, ref, colors),
+          _buildToggleItem(
+              'People', SearchMode.people, currentMode, ref, colors),
         ],
       ),
+    );
+  }
+
+  void _showScriptureFilterSheet(
+      BuildContext context, WidgetRef ref, dynamic colors) {
+    ScribesScriptureSelector.show(
+      context,
+      isExplore: true,
+      colors: colors,
+      onSelected: (book, chapter, verseStart, verseEnd) {
+        ref.read(searchProvider.notifier).setScriptureFilter(book, chapter);
+      },
     );
   }
 
   Widget _buildToggleItem(String label, SearchMode value,
       SearchMode current, WidgetRef ref, dynamic colors) {
     final isSelected = current == value;
-    return GestureDetector(
-      onTap: () => ref.read(searchModeProvider.notifier).setMode(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        alignment: Alignment.center,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => ref.read(searchModeProvider.notifier).setMode(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected ? colors.primaryText : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
@@ -218,6 +244,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
+      ),
       ),
     );
   }

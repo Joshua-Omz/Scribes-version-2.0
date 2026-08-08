@@ -17,12 +17,14 @@ class ScribesConnectedPostCard extends ConsumerWidget {
   final Post post;
   final bool isFeatured;
   final bool isExploreScreen;
+  final bool isSearchScreen;
 
   const ScribesConnectedPostCard({
     super.key,
     required this.post,
     this.isFeatured = false,
     this.isExploreScreen = false,
+    this.isSearchScreen = false,
   });
 
   @override
@@ -93,6 +95,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
             tags: post.tags,
             isFeatured: isFeatured,
             isExploreScreen: isExploreScreen,
+            isSearchScreen: isSearchScreen,
             amenCount: amenCount,
             insightCount: insightCount,
             thoughtProvokingCount: thoughtProvokingCount,

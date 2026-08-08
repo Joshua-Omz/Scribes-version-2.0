@@ -7,15 +7,24 @@ class SearchApi {
 
   SearchApi(this._client);
 
-  Future<List<dynamic>> searchPosts(String query, {int limit = 20, int offset = 0}) async {
+  Future<List<dynamic>> searchPosts(String query, {int limit = 20, int offset = 0, String? scriptureBook, int? scriptureChapter}) async {
     try {
+      final queryParams = {
+        'q': query,
+        'limit': limit,
+        'offset': offset,
+      };
+      
+      if (scriptureBook != null && scriptureBook.isNotEmpty) {
+        queryParams['scripture_book'] = scriptureBook;
+      }
+      if (scriptureChapter != null) {
+        queryParams['scripture_chapter'] = scriptureChapter;
+      }
+
       final response = await _client.get(
         '/search/posts',
-        queryParameters: {
-          'q': query,
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: queryParams,
       );
       
       final data = response.data['posts'] as List<dynamic>?;

@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	SearchPosts(ctx context.Context, query string, limit, offset int32) ([]generated.SearchPostsHybridRow, error)
+	SearchPosts(ctx context.Context, query string, limit, offset int32, scriptureBook *string, scriptureChapter *int32) ([]generated.SearchPostsHybridRow, error)
 	SearchAuthors(ctx context.Context, query string, limit, offset int32) ([]generated.SearchAuthorsRow, error)
 }
 
@@ -23,7 +23,7 @@ func NewService(repo Repository, provider EmbeddingProvider) Service {
 	}
 }
 
-func (s *service) SearchPosts(ctx context.Context, query string, limit, offset int32) ([]generated.SearchPostsHybridRow, error) {
+func (s *service) SearchPosts(ctx context.Context, query string, limit, offset int32, scriptureBook *string, scriptureChapter *int32) ([]generated.SearchPostsHybridRow, error) {
 	// For semantic search, generate embedding for the search query
 	// If query is empty, it shouldn't hit this, but just in case
 	var vecString interface{} = nil
@@ -34,7 +34,7 @@ func (s *service) SearchPosts(ctx context.Context, query string, limit, offset i
 		}
 	}
 
-	return s.repo.SearchPostsHybrid(ctx, query, vecString, limit, offset)
+	return s.repo.SearchPostsHybrid(ctx, query, vecString, limit, offset, scriptureBook, scriptureChapter)
 }
 
 func (s *service) SearchAuthors(ctx context.Context, query string, limit, offset int32) ([]generated.SearchAuthorsRow, error) {

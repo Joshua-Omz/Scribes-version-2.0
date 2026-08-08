@@ -2,7 +2,7 @@ import os
 import httpx
 import asyncio
 
-API_URL = "https://scribes-version-20-production.up.railway.app"
+API_URL = "http://localhost:8080"
 
 async def main():
     async with httpx.AsyncClient() as client:

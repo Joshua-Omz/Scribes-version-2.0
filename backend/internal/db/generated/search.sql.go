@@ -77,6 +77,7 @@ WITH keyword_search AS (
     FROM posts p
     WHERE p.is_deleted = false AND p.visibility = 'public'
       AND p.search_vector @@ websearch_to_tsquery('english', $1)
+      AND ($5::text IS NULL OR p.id IN (SELECT sr.post_id FROM scripture_refs sr WHERE sr.book = $5 AND (sr.chapter = $6 OR $6 IS NULL)))
     ORDER BY keyword_score DESC
     LIMIT 100
 ),
@@ -88,6 +89,7 @@ semantic_search AS (
     WHERE p.is_deleted = false AND p.visibility = 'public'
       AND p.embedding IS NOT NULL
       AND $2::text IS NOT NULL
+      AND ($5::text IS NULL OR p.id IN (SELECT sr.post_id FROM scripture_refs sr WHERE sr.book = $5 AND (sr.chapter = $6 OR $6 IS NULL)))
     ORDER BY p.embedding <=> $2::vector
     LIMIT 100
 )
@@ -106,10 +108,12 @@ LIMIT $3 OFFSET $4
 `
 
 type SearchPostsHybridParams struct {
-	WebsearchToTsquery string      `json:"websearch_to_tsquery"`
-	Column2            interface{} `json:"column_2"`
-	Limit              int32       `json:"limit"`
-	Offset             int32       `json:"offset"`
+	WebsearchToTsquery string         `json:"websearch_to_tsquery"`
+	Column2            interface{}    `json:"column_2"`
+	Limit              int32          `json:"limit"`
+	Offset             int32          `json:"offset"`
+	ScriptureBook      sql.NullString `json:"scripture_book"`
+	ScriptureChapter   sql.NullInt32  `json:"scripture_chapter"`
 }
 
 type SearchPostsHybridRow struct {
@@ -137,6 +141,8 @@ func (q *Queries) SearchPostsHybrid(ctx context.Context, arg SearchPostsHybridPa
 		arg.Column2,
 		arg.Limit,
 		arg.Offset,
+		arg.ScriptureBook,
+		arg.ScriptureChapter,
 	)
 	if err != nil {
 		return nil, err

@@ -11,6 +11,8 @@ class SearchState {
   final List<Post> posts;
   final List<User> authors;
   final String? error;
+  final String? scriptureBook;
+  final int? scriptureChapter;
 
   SearchState({
     this.query = '',
@@ -18,6 +20,8 @@ class SearchState {
     this.posts = const [],
     this.authors = const [],
     this.error,
+    this.scriptureBook,
+    this.scriptureChapter,
   });
 
   SearchState copyWith({
@@ -26,6 +30,9 @@ class SearchState {
     List<Post>? posts,
     List<User>? authors,
     String? error,
+    String? scriptureBook,
+    int? scriptureChapter,
+    bool clearScripture = false,
   }) {
     return SearchState(
       query: query ?? this.query,
@@ -33,6 +40,8 @@ class SearchState {
       posts: posts ?? this.posts,
       authors: authors ?? this.authors,
       error: error, // Can be null to clear
+      scriptureBook: clearScripture ? null : (scriptureBook ?? this.scriptureBook),
+      scriptureChapter: clearScripture ? null : (scriptureChapter ?? this.scriptureChapter),
     );
   }
 }
@@ -45,7 +54,7 @@ class SearchNotifier extends _$SearchNotifier {
   }
 
   Future<void> search(String query) async {
-    if (query.trim().isEmpty) {
+    if (query.trim().isEmpty && state.scriptureBook == null) {
       state = SearchState();
       return;
     }
@@ -57,7 +66,12 @@ class SearchNotifier extends _$SearchNotifier {
       
       // Fetch both simultaneously
       final results = await Future.wait([
-        repo.searchPosts(query, limit: 10),
+        repo.searchPosts(
+          query, 
+          limit: 10,
+          scriptureBook: state.scriptureBook,
+          scriptureChapter: state.scriptureChapter,
+        ),
         repo.searchAuthors(query, limit: 5),
       ]);
 
@@ -75,6 +89,16 @@ class SearchNotifier extends _$SearchNotifier {
         error: e.toString(),
       );
     }
+  }
+
+  void setScriptureFilter(String book, int? chapter) {
+    state = state.copyWith(scriptureBook: book, scriptureChapter: chapter);
+    search(state.query);
+  }
+
+  void clearScriptureFilter() {
+    state = state.copyWith(clearScripture: true);
+    search(state.query);
   }
 
   void clear() {

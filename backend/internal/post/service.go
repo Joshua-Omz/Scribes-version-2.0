@@ -375,11 +375,9 @@ func (s *Service) Export(ctx context.Context, id uuid.UUID, format string) ([]by
 
 	// Add Watermark
 	if format == "md" {
-		sb.WriteString("\n\n<br>\n<div align=\"center\">\n")
-		sb.WriteString(fmt.Sprintf("  <img src=\"data:image/svg+xml;base64,%s\" width=\"40\" alt=\"Scribes Logo\" />\n", logoBase64))
-		sb.WriteString("  <br>\n")
-		sb.WriteString("  <span style=\"color: #C9A84C; font-family: serif; font-style: italic;\">Exported from Scribes</span>\n")
-		sb.WriteString("</div>\n")
+		sb.WriteString("\n\n---\n\n")
+		sb.WriteString(fmt.Sprintf("![Scribes Logo](data:image/svg+xml;base64,%s)\n", logoBase64))
+		sb.WriteString("\n*Exported from Scribes*\n")
 	} else {
 		sb.WriteString("\n\n--------------------------------------------------\n")
 		sb.WriteString("              Exported from Scribes               \n")

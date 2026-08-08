@@ -42,6 +42,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   final VoidCallback? onShare;
 
   final bool isExploreScreen;
+  final bool isSearchScreen;
 
   const ScribesPostCard({
     super.key,
@@ -72,6 +73,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
     this.onSaveToggle,
     this.onShare,
     this.isExploreScreen = false,
+    this.isSearchScreen = false,
   });
 
   @override
@@ -202,7 +204,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 ),
               ),
             const SizedBox(height: 16),
-            if (widget.coverImageUrl != null && widget.postType == 'standard') ...[
+            if (!widget.isSearchScreen && widget.coverImageUrl != null && widget.postType == 'standard') ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(ScribesRadius.card),
                 child: AspectRatio(
@@ -219,19 +221,23 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               widget.title,
               style: ScribesTextStyles.displayMd.copyWith(
                 color: colors.primaryText,
+                fontSize: widget.isSearchScreen ? 20 : 24,
+                height: widget.isSearchScreen ? 1.1 : 1.2,
               ),
-              maxLines: 2,
+              maxLines: widget.isSearchScreen ? 1 : 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 12),
-            Text(
-              widget.bodyExcerpt,
-              style: ScribesTextStyles.bodyLg.copyWith(color: colors.secondaryText),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-            ),
+            if (!widget.isSearchScreen) ...[
+              const SizedBox(height: 12),
+              Text(
+                widget.bodyExcerpt,
+                style: ScribesTextStyles.bodyLg.copyWith(color: colors.secondaryText),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
             
-            if (hasEmbeddedContent) ...[
+            if (!widget.isSearchScreen && hasEmbeddedContent) ...[
               const SizedBox(height: 16),
               Material(
                 color: Colors.transparent,
