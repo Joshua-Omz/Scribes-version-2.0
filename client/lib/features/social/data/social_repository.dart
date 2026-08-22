@@ -5,7 +5,6 @@ import 'package:scribes/features/social/domain/comment_author.dart';
 import 'package:scribes/features/auth/domain/user.dart';
 import 'package:scribes/features/social/domain/reaction_count.dart';
 
-
 final socialRepositoryProvider = Provider((ref) {
   final api = ref.watch(socialApiProvider);
   return SocialRepository(api);
@@ -20,7 +19,9 @@ class SocialRepository {
 
   Future<List<ReactionCount>> getReactions(String postId) async {
     final data = await _api.getReactions(postId);
-    return data.map((e) => ReactionCount.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => ReactionCount.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> react(String postId, String type) async {
@@ -35,10 +36,16 @@ class SocialRepository {
 
   Future<List<Comment>> getComments(String postId) async {
     final data = await _api.getComments(postId);
-    return data.map((e) => Comment.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => Comment.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<Comment> addComment(String postId, String body, List<String> mentions) async {
+  Future<Comment> addComment(
+    String postId,
+    String body,
+    List<String> mentions,
+  ) async {
     final data = await _api.addComment(postId, body, mentions);
     return Comment.fromJson(data);
   }
@@ -60,7 +67,9 @@ class SocialRepository {
 
   Future<List<CommentAuthor>> searchUsers(String query) async {
     final data = await _api.searchUsers(query);
-    return data.map((e) => CommentAuthor.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => CommentAuthor.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   // ── Follows ────────────────────────────────────
@@ -97,7 +106,9 @@ class SocialRepository {
     await _api.unsavePost(postId, type: type);
   }
 
-  Future<List<Map<String, dynamic>>> getSavedPosts({String type = 'bookmark'}) async {
+  Future<List<Map<String, dynamic>>> getSavedPosts({
+    String type = 'bookmark',
+  }) async {
     final data = await _api.getSavedPosts(type: type);
     return data.map((e) => e as Map<String, dynamic>).toList();
   }

@@ -15,14 +15,14 @@ class ExploreRepository {
   ExploreRepository(this._api);
 
   Future<PaginatedFeed> getExplore({
-    String? cursor, 
+    String? cursor,
     String? tag,
     String? searchQuery,
     String? scriptureBook,
     int? scriptureChapter,
   }) async {
     final rawData = await _api.getExplore(
-      cursor: cursor, 
+      cursor: cursor,
       tag: tag,
       searchQuery: searchQuery,
       scriptureBook: scriptureBook,
@@ -36,16 +36,21 @@ class ExploreRepository {
     String? cursor,
     int limit = 20,
   }) async {
-    final rawData = await _api.getRecommendations(sortType: sortType, cursor: cursor, limit: limit);
+    final rawData = await _api.getRecommendations(
+      sortType: sortType,
+      cursor: cursor,
+      limit: limit,
+    );
     return _mapPaginatedFeed(rawData);
   }
 
   PaginatedFeed _mapPaginatedFeed(Map<String, dynamic> data) {
-    final posts = (data['posts'] as List<dynamic>?)?.map((p) => _mapPostData(p as Map<String, dynamic>)).toList() ?? [];
-    return PaginatedFeed.fromJson({
-      ...data,
-      'posts': posts,
-    });
+    final posts =
+        (data['posts'] as List<dynamic>?)
+            ?.map((p) => _mapPostData(p as Map<String, dynamic>))
+            .toList() ??
+        [];
+    return PaginatedFeed.fromJson({...data, 'posts': posts});
   }
 
   Map<String, dynamic> _mapPostData(Map<String, dynamic> data) {
@@ -60,6 +65,4 @@ class ExploreRepository {
       'author_handle': data['author_handle'] ?? 'unknown',
     };
   }
-
-
 }

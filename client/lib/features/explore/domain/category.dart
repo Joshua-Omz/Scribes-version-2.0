@@ -11,5 +11,6 @@ abstract class PostCategory with _$PostCategory {
     @JsonKey(name: 'is_deprecated') required bool isDeprecated,
   }) = _PostCategory;
 
-  factory PostCategory.fromJson(Map<String, dynamic> json) => _$PostCategoryFromJson(json);
+  factory PostCategory.fromJson(Map<String, dynamic> json) =>
+      _$PostCategoryFromJson(json);
 }

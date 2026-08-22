@@ -1,3 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 
-DatabaseConnection openConnection() => throw UnsupportedError('Unsupported platform');
+DatabaseConnection openConnection() =>
+    throw UnsupportedError('Unsupported platform');

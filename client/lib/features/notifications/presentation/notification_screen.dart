@@ -51,16 +51,24 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         elevation: 0,
         leading: isSelectionMode
             ? IconButton(
-                icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.primaryText),
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedCancel01,
+                  color: colors.primaryText,
+                ),
                 onPressed: _clearSelection,
               )
             : IconButton(
-                icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedArrowLeft01,
+                  color: colors.primaryText,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
         title: Text(
           isSelectionMode ? '${_selectedIds.length} Selected' : 'Notifications',
-          style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
         ),
         actions: [
           if (isSelectionMode) ...[
@@ -81,12 +89,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   }
                 }
                 if (allIds.isNotEmpty) {
-                  ref.read(notificationProvider.notifier).markSelectedRead(allIds).then((_) {
-                    _clearSelection();
-                  }).catchError((e) {
-                    debugPrint('Error marking read: $e');
-                    _clearSelection();
-                  });
+                  ref
+                      .read(notificationProvider.notifier)
+                      .markSelectedRead(allIds)
+                      .then((_) {
+                        _clearSelection();
+                      })
+                      .catchError((e) {
+                        debugPrint('Error marking read: $e');
+                        _clearSelection();
+                      });
                 } else {
                   _clearSelection();
                 }
@@ -110,12 +122,16 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   }
                 }
                 if (allIds.isNotEmpty) {
-                  ref.read(notificationProvider.notifier).deleteSelected(allIds).then((_) {
-                    _clearSelection();
-                  }).catchError((e) {
-                    debugPrint('Error deleting: $e');
-                    _clearSelection();
-                  });
+                  ref
+                      .read(notificationProvider.notifier)
+                      .deleteSelected(allIds)
+                      .then((_) {
+                        _clearSelection();
+                      })
+                      .catchError((e) {
+                        debugPrint('Error deleting: $e');
+                        _clearSelection();
+                      });
                 } else {
                   _clearSelection();
                 }
@@ -124,7 +140,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
             ),
           ] else ...[
             PopupMenuButton<String>(
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedMoreVerticalCircle01, color: colors.secondaryText),
+              icon: HugeIcon(
+                icon: HugeIcons.strokeRoundedMoreVerticalCircle01,
+                color: colors.secondaryText,
+              ),
               color: colors.surface,
               onSelected: (value) {
                 if (value == 'mark_all_read') {
@@ -136,11 +155,19 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   value: 'mark_all_read',
-                  child: Text('Mark all as read', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                  child: Text(
+                    'Mark all as read',
+                    style: ScribesTextStyles.bodyMd.copyWith(
+                      color: colors.primaryText,
+                    ),
+                  ),
                 ),
                 PopupMenuItem<String>(
                   value: 'clear_all',
-                  child: Text('Clear all', style: ScribesTextStyles.bodyMd.copyWith(color: Colors.red)),
+                  child: Text(
+                    'Clear all',
+                    style: ScribesTextStyles.bodyMd.copyWith(color: Colors.red),
+                  ),
                 ),
               ],
             ),
@@ -185,7 +212,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                       ),
                     ),
                     ...groupItems.map((n) {
-                      final id = n.id ?? n.refId.toString(); // Fallback for grouped rows without a single id
+                      final id =
+                          n.id ??
+                          n.refId
+                              .toString(); // Fallback for grouped rows without a single id
                       return NotificationRow(
                         notification: n,
                         isSelectionMode: isSelectionMode,

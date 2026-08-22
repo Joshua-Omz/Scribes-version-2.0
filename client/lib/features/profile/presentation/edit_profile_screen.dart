@@ -36,7 +36,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final user = ref.read(authProvider).value;
     _nameCtrl = TextEditingController(text: user?.displayName ?? '');
     _handleCtrl = TextEditingController(text: user?.handle ?? '');
-    _bioCtrl = TextEditingController(text: user?.bio ?? ''); 
+    _bioCtrl = TextEditingController(text: user?.bio ?? '');
     _isChurch = user?.isChurch ?? false;
     _avatarUrl = user?.avatarUrl;
   }
@@ -56,13 +56,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final colors = ref.read(themeProvider);
 
     if (displayName.isEmpty || handle.isEmpty) {
-      ScribesToast.show(context, 'Display name and handle are required', colors, isError: true);
+      ScribesToast.show(
+        context,
+        'Display name and handle are required',
+        colors,
+        isError: true,
+      );
       return;
     }
 
     setState(() => _isLoading = true);
     try {
-      await ref.read(authProvider.notifier).updateProfile(
+      await ref
+          .read(authProvider.notifier)
+          .updateProfile(
             handle: handle,
             displayName: displayName,
             bio: bio.isEmpty ? null : bio,
@@ -115,7 +122,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() => _isUploadingAvatar = true);
 
       final mediaApi = ref.read(mediaApiProvider);
-      
+
       // Determine mime type based on file extension
       String mimeType = 'image/jpeg';
       if (croppedFile.path.toLowerCase().endsWith('.png')) {
@@ -124,8 +131,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         mimeType = 'image/webp';
       }
 
-      final uploadedUrl = await mediaApi.uploadImage(File(croppedFile.path), mimeType);
-      
+      final uploadedUrl = await mediaApi.uploadImage(
+        File(croppedFile.path),
+        mimeType,
+      );
+
       setState(() {
         _avatarUrl = uploadedUrl;
       });
@@ -135,7 +145,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScribesToast.show(context, 'Failed to upload avatar: $e', colors, isError: true);
+        ScribesToast.show(
+          context,
+          'Failed to upload avatar: $e',
+          colors,
+          isError: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _isUploadingAvatar = false);
@@ -153,10 +168,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Edit Profile', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+        title: Text(
+          'Edit Profile',
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _save,
@@ -164,9 +187,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ? SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: colors.gold),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.gold,
+                    ),
                   )
-                : Text('Save', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
+                : Text(
+                    'Save',
+                    style: ScribesTextStyles.labelLg.copyWith(
+                      color: colors.gold,
+                    ),
+                  ),
           ),
           const SizedBox(width: 8),
         ],
@@ -205,21 +236,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: colors.background, width: 4),
                     ),
-                    child: HugeIcon(icon: HugeIcons.strokeRoundedCamera01, size: 16, color: colors.surfaceRaised),
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedCamera01,
+                      size: 16,
+                      color: colors.surfaceRaised,
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 48),
-            ScribesTextField(
-              labelText: 'Display Name',
-              controller: _nameCtrl,
-            ),
+            ScribesTextField(labelText: 'Display Name', controller: _nameCtrl),
             const SizedBox(height: 24),
-            ScribesTextField(
-              labelText: 'Handle',
-              controller: _handleCtrl,
-            ),
+            ScribesTextField(labelText: 'Handle', controller: _handleCtrl),
             const SizedBox(height: 24),
             ScribesTextField(
               labelText: 'Bio',
@@ -234,8 +263,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 border: Border.all(color: colors.border),
               ),
               child: SwitchListTile(
-                title: Text('This is a Church account', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
-                subtitle: Text('Church accounts get special features', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
+                title: Text(
+                  'This is a Church account',
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: colors.primaryText,
+                  ),
+                ),
+                subtitle: Text(
+                  'Church accounts get special features',
+                  style: ScribesTextStyles.caption.copyWith(
+                    color: colors.secondaryText,
+                  ),
+                ),
                 value: _isChurch,
                 onChanged: (val) => setState(() => _isChurch = val),
                 activeThumbColor: colors.gold,

@@ -11,5 +11,6 @@ abstract class Contact with _$Contact {
     @JsonKey(name: 'display_name') required String displayName,
   }) = _Contact;
 
-  factory Contact.fromJson(Map<String, dynamic> json) => _$ContactFromJson(json);
+  factory Contact.fromJson(Map<String, dynamic> json) =>
+      _$ContactFromJson(json);
 }

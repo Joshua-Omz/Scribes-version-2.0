@@ -40,8 +40,12 @@ class SearchState {
       posts: posts ?? this.posts,
       authors: authors ?? this.authors,
       error: error, // Can be null to clear
-      scriptureBook: clearScripture ? null : (scriptureBook ?? this.scriptureBook),
-      scriptureChapter: clearScripture ? null : (scriptureChapter ?? this.scriptureChapter),
+      scriptureBook: clearScripture
+          ? null
+          : (scriptureBook ?? this.scriptureBook),
+      scriptureChapter: clearScripture
+          ? null
+          : (scriptureChapter ?? this.scriptureChapter),
     );
   }
 }
@@ -63,11 +67,11 @@ class SearchNotifier extends _$SearchNotifier {
 
     try {
       final repo = ref.read(searchRepositoryProvider);
-      
+
       // Fetch both simultaneously
       final results = await Future.wait([
         repo.searchPosts(
-          query, 
+          query,
           limit: 10,
           scriptureBook: state.scriptureBook,
           scriptureChapter: state.scriptureChapter,
@@ -78,16 +82,9 @@ class SearchNotifier extends _$SearchNotifier {
       final posts = results[0] as List<Post>;
       final authors = results[1] as List<User>;
 
-      state = state.copyWith(
-        isLoading: false,
-        posts: posts,
-        authors: authors,
-      );
+      state = state.copyWith(isLoading: false, posts: posts, authors: authors);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 

@@ -19,7 +19,10 @@ class MessageRepository {
 
   MessageRepository(this._api, this._db);
 
-  Future<MessageRequest> sendRequest(String toUserId, String firstMessage) async {
+  Future<MessageRequest> sendRequest(
+    String toUserId,
+    String firstMessage,
+  ) async {
     return _api.sendRequest(toUserId, firstMessage);
   }
 
@@ -92,24 +95,30 @@ class MessageRepository {
       await _db.batch((batch) {
         batch.insertAll(
           _db.conversations,
-          conversations.map((c) => db.Conversation(
-                id: c.id,
-                userAId: c.userAId,
-                userBId: c.userBId,
-                blocked: c.blocked,
-                createdAt: c.createdAt,
-                lastActive: c.lastActive,
-                isHidden: false,
-                userALastReadAt: c.userALastReadAt,
-                userBLastReadAt: c.userBLastReadAt,
-              )),
-          mode: drift.InsertMode.insertOrIgnore, // Only insert if missing. (Wait, lastActive updates won't be applied).
+          conversations.map(
+            (c) => db.Conversation(
+              id: c.id,
+              userAId: c.userAId,
+              userBId: c.userBId,
+              blocked: c.blocked,
+              createdAt: c.createdAt,
+              lastActive: c.lastActive,
+              isHidden: false,
+              userALastReadAt: c.userALastReadAt,
+              userBLastReadAt: c.userBLastReadAt,
+            ),
+          ),
+          mode: drift
+              .InsertMode
+              .insertOrIgnore, // Only insert if missing. (Wait, lastActive updates won't be applied).
         );
       });
-      
+
       // Update lastActive for existing conversations without affecting isHidden
       for (var c in conversations) {
-        await (_db.update(_db.conversations)..where((tbl) => tbl.id.equals(c.id))).write(
+        await (_db.update(
+          _db.conversations,
+        )..where((tbl) => tbl.id.equals(c.id))).write(
           db.ConversationsCompanion(
             lastActive: drift.Value(c.lastActive),
             blocked: drift.Value(c.blocked),
@@ -125,25 +134,31 @@ class MessageRepository {
 
   Future<List<Conversation>> getConversations() async {
     // Kept for backward compatibility if needed, but mostly UI will use watchConversations.
-    final offline = await (_db.select(_db.conversations)..where((c) => c.isHidden.equals(false))).get();
+    final offline = await (_db.select(
+      _db.conversations,
+    )..where((c) => c.isHidden.equals(false))).get();
     return offline
-        .map((c) => Conversation(
-              id: c.id,
-              userAId: c.userAId,
-              userBId: c.userBId,
-              blocked: c.blocked,
-              createdAt: c.createdAt,
-              lastActive: c.lastActive,
-              userALastReadAt: c.userALastReadAt,
-              userBLastReadAt: c.userBLastReadAt,
-            ))
+        .map(
+          (c) => Conversation(
+            id: c.id,
+            userAId: c.userAId,
+            userBId: c.userBId,
+            blocked: c.blocked,
+            createdAt: c.createdAt,
+            lastActive: c.lastActive,
+            userALastReadAt: c.userALastReadAt,
+            userBLastReadAt: c.userBLastReadAt,
+          ),
+        )
         .toList();
   }
 
   Future<void> hideConversations(List<String> ids) async {
     await _db.transaction(() async {
       for (var id in ids) {
-        await (_db.update(_db.conversations)..where((c) => c.id.equals(id))).write(
+        await (_db.update(
+          _db.conversations,
+        )..where((c) => c.id.equals(id))).write(
           const db.ConversationsCompanion(isHidden: drift.Value(true)),
         );
       }
@@ -152,42 +167,60 @@ class MessageRepository {
 
   Future<void> clearConversation(String conversationId) async {
     // Delete all messages in the conversation locally
-    await (_db.delete(_db.messages)..where((m) => m.conversationId.equals(conversationId))).go();
+    await (_db.delete(
+      _db.messages,
+    )..where((m) => m.conversationId.equals(conversationId))).go();
   }
 
   Stream<List<Message>> watchMessages(String conversationId) {
-    return (_db.select(_db.messages)..where((m) => m.conversationId.equals(conversationId))..orderBy([(m) => drift.OrderingTerm.desc(m.sentAt)])).watch().map((list) {
-      return list.map((m) => Message(
-            id: m.id,
-            conversationId: m.conversationId,
-            senderId: m.senderId,
-            body: m.body,
-            isDeleted: m.isDeleted,
-            sentAt: m.sentAt,
-            replyToId: m.replyToId,
-            editedAt: m.editedAt,
-            status: m.status,
-          )).toList();
-    });
+    return (_db.select(_db.messages)
+          ..where((m) => m.conversationId.equals(conversationId))
+          ..orderBy([(m) => drift.OrderingTerm.desc(m.sentAt)]))
+        .watch()
+        .map((list) {
+          return list
+              .map(
+                (m) => Message(
+                  id: m.id,
+                  conversationId: m.conversationId,
+                  senderId: m.senderId,
+                  body: m.body,
+                  isDeleted: m.isDeleted,
+                  sentAt: m.sentAt,
+                  replyToId: m.replyToId,
+                  editedAt: m.editedAt,
+                  status: m.status,
+                ),
+              )
+              .toList();
+        });
   }
 
-  Future<void> refreshMessages(String conversationId, {DateTime? cursorTs}) async {
+  Future<void> refreshMessages(
+    String conversationId, {
+    DateTime? cursorTs,
+  }) async {
     try {
-      final messages = await _api.getMessages(conversationId, cursorTs: cursorTs);
+      final messages = await _api.getMessages(
+        conversationId,
+        cursorTs: cursorTs,
+      );
       await _db.batch((batch) {
         batch.insertAll(
           _db.messages,
-          messages.map((m) => db.Message(
-                id: m.id,
-                conversationId: m.conversationId,
-                senderId: m.senderId,
-                body: m.body,
-                isDeleted: m.isDeleted,
-                sentAt: m.sentAt,
-                replyToId: m.replyToId,
-                editedAt: m.editedAt,
-                status: 'sent', // from API is always sent
-              )),
+          messages.map(
+            (m) => db.Message(
+              id: m.id,
+              conversationId: m.conversationId,
+              senderId: m.senderId,
+              body: m.body,
+              isDeleted: m.isDeleted,
+              sentAt: m.sentAt,
+              replyToId: m.replyToId,
+              editedAt: m.editedAt,
+              status: 'sent', // from API is always sent
+            ),
+          ),
           mode: drift.InsertMode.insertOrReplace,
         );
       });
@@ -196,7 +229,12 @@ class MessageRepository {
     }
   }
 
-  Future<void> sendMessage(String conversationId, String body, String senderId, {String? replyToId}) async {
+  Future<void> sendMessage(
+    String conversationId,
+    String body,
+    String senderId, {
+    String? replyToId,
+  }) async {
     // 1. Optimistic UI: Insert pending message to chat queue
     final pendingId = const Uuid().v4();
     final now = DateTime.now();
@@ -224,29 +262,41 @@ class MessageRepository {
 
     // 2. Perform API call asynchronously
     try {
-      final msg = await _api.sendMessage(conversationId, body, replyToId: replyToId);
-      
+      final msg = await _api.sendMessage(
+        conversationId,
+        body,
+        replyToId: replyToId,
+      );
+
       // 3. On success, delete pending and insert real message
       await _db.transaction(() async {
-        await (_db.delete(_db.pendingChatMessages)..where((t) => t.id.equals(pendingId))).go();
-        await (_db.delete(_db.messages)..where((t) => t.id.equals(pendingId))).go();
-        
-        await _db.into(_db.messages).insert(
-          db.Message(
-            id: msg.id,
-            conversationId: msg.conversationId,
-            senderId: msg.senderId,
-            body: msg.body,
-            isDeleted: msg.isDeleted,
-            sentAt: msg.sentAt,
-            replyToId: msg.replyToId,
-            editedAt: msg.editedAt,
-            status: 'sent',
-          ),
-          mode: drift.InsertMode.insertOrReplace,
-        );
+        await (_db.delete(
+          _db.pendingChatMessages,
+        )..where((t) => t.id.equals(pendingId))).go();
+        await (_db.delete(
+          _db.messages,
+        )..where((t) => t.id.equals(pendingId))).go();
+
+        await _db
+            .into(_db.messages)
+            .insert(
+              db.Message(
+                id: msg.id,
+                conversationId: msg.conversationId,
+                senderId: msg.senderId,
+                body: msg.body,
+                isDeleted: msg.isDeleted,
+                sentAt: msg.sentAt,
+                replyToId: msg.replyToId,
+                editedAt: msg.editedAt,
+                status: 'sent',
+              ),
+              mode: drift.InsertMode.insertOrReplace,
+            );
         // Unhide conversation if it was hidden
-        await (_db.update(_db.conversations)..where((c) => c.id.equals(msg.conversationId))).write(
+        await (_db.update(
+          _db.conversations,
+        )..where((c) => c.id.equals(msg.conversationId))).write(
           const db.ConversationsCompanion(isHidden: drift.Value(false)),
         );
       });
@@ -260,11 +310,132 @@ class MessageRepository {
     final pending = await _db.select(_db.pendingChatMessages).get();
     for (final p in pending) {
       try {
-        final msg = await _api.sendMessage(p.conversationId, p.body, replyToId: p.replyToId);
+        final msg = await _api.sendMessage(
+          p.conversationId,
+          p.body,
+          replyToId: p.replyToId,
+        );
         await _db.transaction(() async {
-          await (_db.delete(_db.pendingChatMessages)..where((t) => t.id.equals(p.id))).go();
-          await (_db.delete(_db.messages)..where((t) => t.id.equals(p.id))).go();
-          await _db.into(_db.messages).insert(
+          await (_db.delete(
+            _db.pendingChatMessages,
+          )..where((t) => t.id.equals(p.id))).go();
+          await (_db.delete(
+            _db.messages,
+          )..where((t) => t.id.equals(p.id))).go();
+          await _db
+              .into(_db.messages)
+              .insert(
+                db.Message(
+                  id: msg.id,
+                  conversationId: msg.conversationId,
+                  senderId: msg.senderId,
+                  body: msg.body,
+                  isDeleted: msg.isDeleted,
+                  sentAt: msg.sentAt,
+                  replyToId: msg.replyToId,
+                  editedAt: msg.editedAt,
+                  status: 'sent',
+                ),
+                mode: drift.InsertMode.insertOrReplace,
+              );
+        });
+      } catch (e) {
+        // Skip on error, retry next time
+      }
+    }
+
+    final pendingReceipts = await _db.select(_db.pendingReadReceipts).get();
+    for (final r in pendingReceipts) {
+      try {
+        await _api.readConversation(r.conversationId);
+        await (_db.delete(
+          _db.pendingReadReceipts,
+        )..where((t) => t.conversationId.equals(r.conversationId))).go();
+      } catch (e) {
+        // Skip on error
+      }
+    }
+  }
+
+  Future<void> syncMissedMessages() async {
+    try {
+      final mostRecentMsg =
+          await (_db.select(_db.messages)
+                ..orderBy([(t) => drift.OrderingTerm.desc(t.sentAt)])
+                ..limit(1))
+              .getSingleOrNull();
+
+      final since =
+          mostRecentMsg?.sentAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final messages = await _api.syncMissedMessages(since);
+
+      if (messages.isNotEmpty) {
+        await _db.batch((batch) {
+          batch.insertAll(
+            _db.messages,
+            messages.map(
+              (m) => db.Message(
+                id: m.id,
+                conversationId: m.conversationId,
+                senderId: m.senderId,
+                body: m.body,
+                isDeleted: m.isDeleted,
+                sentAt: m.sentAt,
+                replyToId: m.replyToId,
+                editedAt: m.editedAt,
+                status: 'sent',
+              ),
+            ),
+            mode: drift.InsertMode.insertOrReplace,
+          );
+        });
+      }
+    } catch (e) {
+      // Ignore network errors
+    }
+  }
+
+  Future<void> readConversation(String conversationId, String userId) async {
+    // 1. Optimistic UI update in local DB
+    final now = DateTime.now();
+    final conv = await (_db.select(
+      _db.conversations,
+    )..where((c) => c.id.equals(conversationId))).getSingleOrNull();
+    if (conv != null) {
+      if (conv.userAId == userId) {
+        await (_db.update(
+          _db.conversations,
+        )..where((c) => c.id.equals(conversationId))).write(
+          db.ConversationsCompanion(userALastReadAt: drift.Value(now)),
+        );
+      } else {
+        await (_db.update(
+          _db.conversations,
+        )..where((c) => c.id.equals(conversationId))).write(
+          db.ConversationsCompanion(userBLastReadAt: drift.Value(now)),
+        );
+      }
+    }
+
+    // 2. Network sync
+    try {
+      await _api.readConversation(conversationId);
+    } catch (e) {
+      // Queue offline read receipt
+      await _db
+          .into(_db.pendingReadReceipts)
+          .insert(
+            db.PendingReadReceipt(conversationId: conversationId, readAt: now),
+            mode: drift.InsertMode.insertOrReplace,
+          );
+    }
+  }
+
+  Stream<Message> streamRealtimeMessages(String conversationId) async* {
+    await for (final msg in _api.streamMessages(conversationId)) {
+      await _db
+          .into(_db.messages)
+          .insert(
             db.Message(
               id: msg.id,
               conversationId: msg.conversationId,
@@ -278,107 +449,28 @@ class MessageRepository {
             ),
             mode: drift.InsertMode.insertOrReplace,
           );
-        });
-      } catch (e) {
-        // Skip on error, retry next time
-      }
-    }
-  }
-
-  Future<void> syncMissedMessages() async {
-    try {
-      final mostRecentMsg = await (_db.select(_db.messages)
-            ..orderBy([(t) => drift.OrderingTerm.desc(t.sentAt)])
-            ..limit(1))
-          .getSingleOrNull();
-
-      final since = mostRecentMsg?.sentAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final messages = await _api.syncMissedMessages(since);
-      
-      if (messages.isNotEmpty) {
-        await _db.batch((batch) {
-          batch.insertAll(
-            _db.messages,
-            messages.map((m) => db.Message(
-                  id: m.id,
-                  conversationId: m.conversationId,
-                  senderId: m.senderId,
-                  body: m.body,
-                  isDeleted: m.isDeleted,
-                  sentAt: m.sentAt,
-                  replyToId: m.replyToId,
-                  editedAt: m.editedAt,
-                  status: 'sent',
-                )),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-        });
-      }
-    } catch (e) {
-      // Ignore network errors
-    }
-  }
-
-  Future<void> readConversation(String conversationId, String userId) async {
-    // 1. Optimistic UI update in local DB
-    final now = DateTime.now();
-    final conv = await (_db.select(_db.conversations)..where((c) => c.id.equals(conversationId))).getSingleOrNull();
-    if (conv != null) {
-      if (conv.userAId == userId) {
-        await (_db.update(_db.conversations)..where((c) => c.id.equals(conversationId))).write(
-          db.ConversationsCompanion(userALastReadAt: drift.Value(now)),
-        );
-      } else {
-        await (_db.update(_db.conversations)..where((c) => c.id.equals(conversationId))).write(
-          db.ConversationsCompanion(userBLastReadAt: drift.Value(now)),
-        );
-      }
-    }
-
-    // 2. Network sync
-    try {
-      await _api.readConversation(conversationId);
-    } catch (e) {
-      // Background failure - will sync up on next refresh
-    }
-  }
-  
-  Stream<Message> streamRealtimeMessages(String conversationId) async* {
-    await for (final msg in _api.streamMessages(conversationId)) {
-      await _db.into(_db.messages).insert(
-        db.Message(
-          id: msg.id,
-          conversationId: msg.conversationId,
-          senderId: msg.senderId,
-          body: msg.body,
-          isDeleted: msg.isDeleted,
-          sentAt: msg.sentAt,
-          replyToId: msg.replyToId,
-          editedAt: msg.editedAt,
-          status: 'sent',
-        ),
-        mode: drift.InsertMode.insertOrReplace,
-      );
       // Unhide conversation if it was hidden
-      await (_db.update(_db.conversations)..where((c) => c.id.equals(msg.conversationId))).write(
-        const db.ConversationsCompanion(isHidden: drift.Value(false)),
-      );
+      await (_db.update(_db.conversations)
+            ..where((c) => c.id.equals(msg.conversationId)))
+          .write(const db.ConversationsCompanion(isHidden: drift.Value(false)));
       yield msg;
     }
   }
 
   Future<void> _saveConversationToDb(Conversation c) async {
-    await _db.into(_db.conversations).insert(
-      db.Conversation(
-        id: c.id,
-        userAId: c.userAId,
-        userBId: c.userBId,
-        blocked: c.blocked,
-        createdAt: c.createdAt,
-        lastActive: c.lastActive,
-        isHidden: false,
-      ),
-      mode: drift.InsertMode.insertOrReplace,
-    );
+    await _db
+        .into(_db.conversations)
+        .insert(
+          db.Conversation(
+            id: c.id,
+            userAId: c.userAId,
+            userBId: c.userBId,
+            blocked: c.blocked,
+            createdAt: c.createdAt,
+            lastActive: c.lastActive,
+            isHidden: false,
+          ),
+          mode: drift.InsertMode.insertOrReplace,
+        );
   }
 }

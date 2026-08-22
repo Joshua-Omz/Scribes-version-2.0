@@ -18,7 +18,10 @@ class DraftApi {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> updateDraft(String id, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateDraft(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
     final response = await _dio.put('${Endpoints.drafts}/$id', data: data);
     return response.data as Map<String, dynamic>;
   }
@@ -37,8 +40,14 @@ class DraftApi {
     await _dio.delete('${Endpoints.drafts}/$id');
   }
 
-  Future<Map<String, dynamic>> publishDraft(String id, {Map<String, dynamic>? data}) async {
-    final response = await _dio.post('${Endpoints.drafts}/$id/publish', data: data);
+  Future<Map<String, dynamic>> publishDraft(
+    String id, {
+    Map<String, dynamic>? data,
+  }) async {
+    final response = await _dio.post(
+      '${Endpoints.drafts}/$id/publish',
+      data: data,
+    );
     return response.data as Map<String, dynamic>;
   }
 }

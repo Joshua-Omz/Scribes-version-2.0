@@ -24,5 +24,6 @@ abstract class ScriptureRef with _$ScriptureRef {
     @JsonKey(name: 'verse_end', fromJson: _verseEndFromJson) int? verseEnd,
   }) = _ScriptureRef;
 
-  factory ScriptureRef.fromJson(Map<String, dynamic> json) => _$ScriptureRefFromJson(json);
+  factory ScriptureRef.fromJson(Map<String, dynamic> json) =>
+      _$ScriptureRefFromJson(json);
 }

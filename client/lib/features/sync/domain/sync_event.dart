@@ -15,5 +15,6 @@ abstract class SyncEvent with _$SyncEvent {
     @JsonKey(name: 'ts') required DateTime timestamp,
   }) = _SyncEvent;
 
-  factory SyncEvent.fromJson(Map<String, dynamic> json) => _$SyncEventFromJson(json);
+  factory SyncEvent.fromJson(Map<String, dynamic> json) =>
+      _$SyncEventFromJson(json);
 }

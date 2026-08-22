@@ -5,8 +5,9 @@ import '../../../features/sync/domain/sync_response.dart';
 part 'drafts_dao.g.dart';
 
 @DriftAccessor(tables: [Drafts])
-class DraftsDao extends DatabaseAccessor<ScribesDatabase> with _$DraftsDaoMixin {
-  DraftsDao(ScribesDatabase db) : super(db);
+class DraftsDao extends DatabaseAccessor<ScribesDatabase>
+    with _$DraftsDaoMixin {
+  DraftsDao(super.db);
 
   Future<int?> getMaxServerSequence() {
     return (selectOnly(drafts)..addColumns([drafts.serverSequence.max()]))

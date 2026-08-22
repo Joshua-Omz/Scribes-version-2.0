@@ -30,7 +30,7 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     try {
       final repo = ref.read(postRepositoryProvider);
       final apiPosts = await repo.listMyPosts();
-      
+
       if (apiPosts.isNotEmpty) {
         await db.batch((batch) {
           for (final post in apiPosts) {
@@ -47,8 +47,16 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
                 currentVersion: Value(post.currentVersion),
                 isCorrection: Value(post.isCorrection),
                 correctsPostId: Value(post.correctsPostId),
-                sermonSource: Value(post.sermonSource != null ? jsonEncode(post.sermonSource!.toJson()) : null),
-                scriptureTags: Value(jsonEncode(post.scriptureRefs.map((r) => r.toJson()).toList())),
+                sermonSource: Value(
+                  post.sermonSource != null
+                      ? jsonEncode(post.sermonSource!.toJson())
+                      : null,
+                ),
+                scriptureTags: Value(
+                  jsonEncode(
+                    post.scriptureRefs.map((r) => r.toJson()).toList(),
+                  ),
+                ),
                 isDeleted: Value(post.isDeleted),
                 publishedAt: Value(post.publishedAt),
               ),
@@ -62,10 +70,18 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
       debugPrint("Error fetching my posts from API: $e");
     }
 
-    final localPosts = await (db.select(db.posts)..where((t) => t.authorId.equals(user.id) & t.isDeleted.equals(false))).get();
-    
+    final localPosts =
+        await (db.select(db.posts)..where(
+              (t) => t.authorId.equals(user.id) & t.isDeleted.equals(false),
+            ))
+            .get();
+
     return localPosts.map((row) {
-      Map<String, dynamic> decodedContent = {'title': 'Untitled', 'body': '', 'excerpt': ''};
+      Map<String, dynamic> decodedContent = {
+        'title': 'Untitled',
+        'body': '',
+        'excerpt': '',
+      };
       try {
         final decoded = jsonDecode(row.content);
         if (decoded is Map<String, dynamic>) {
@@ -88,7 +104,9 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
         try {
           final decoded = jsonDecode(row.scriptureTags!);
           if (decoded is List) {
-            decodedRefs = decoded.map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>)).toList();
+            decodedRefs = decoded
+                .map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>))
+                .toList();
           }
         } catch (_) {}
       }
@@ -129,12 +147,12 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     try {
       final repo = ref.read(postRepositoryProvider);
       await repo.deletePost(id);
-      
+
       // Update local db to mark as deleted
       await (db.update(db.posts)..where((t) => t.id.equals(id))).write(
         const PostsCompanion(isDeleted: Value(true)),
       );
-      
+
       // Refresh the state
       await refresh();
     } catch (e) {

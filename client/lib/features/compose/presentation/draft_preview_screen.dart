@@ -22,7 +22,10 @@ class DraftPreviewScreen extends ConsumerWidget {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -33,7 +36,9 @@ class DraftPreviewScreen extends ConsumerWidget {
         ),
         title: Text(
           'Preview',
-          style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
         ),
         centerTitle: true,
         actions: [
@@ -58,7 +63,9 @@ class DraftPreviewScreen extends ConsumerWidget {
             children: [
               Text(
                 state.title.isNotEmpty ? state.title : 'Untitled',
-                style: ScribesTextStyles.displayXl.copyWith(color: colors.primaryText),
+                style: ScribesTextStyles.displayXl.copyWith(
+                  color: colors.primaryText,
+                ),
               ),
               const SizedBox(height: 24),
               if (state.contentDelta != null)
@@ -66,7 +73,9 @@ class DraftPreviewScreen extends ConsumerWidget {
               else
                 Text(
                   'No content written yet.',
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: colors.secondaryText,
+                  ),
                 ),
               const SizedBox(height: 32),
             ],
@@ -80,7 +89,10 @@ class DraftPreviewScreen extends ConsumerWidget {
           context.push('/compose');
         },
         backgroundColor: colors.surfaceRaised,
-        icon: HugeIcon(icon: HugeIcons.strokeRoundedPencil, color: colors.primaryText),
+        icon: HugeIcon(
+          icon: HugeIcons.strokeRoundedPencil,
+          color: colors.primaryText,
+        ),
         label: Text('Edit', style: TextStyle(color: colors.primaryText)),
       ),
     );

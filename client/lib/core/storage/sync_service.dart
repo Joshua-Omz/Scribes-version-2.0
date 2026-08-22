@@ -69,23 +69,23 @@ class SyncService {
   Future<void> syncNow() async {
     // 1. Pull
     final lastSeq = await getLastServerSequence();
-    
+
     final deltaResponse = await _api.get(
-      Endpoints.syncPull, 
-      queryParameters: {'seq': lastSeq.toString()}
+      Endpoints.syncPull,
+      queryParameters: {'seq': lastSeq.toString()},
     );
     final delta = SyncDeltaResponse.fromJson(deltaResponse.data);
     await applyDelta(delta);
 
     // 2. Push
     final pending = await getLocalOnlyRecords();
-    
+
     if (pending.isNotEmpty) {
       final pushResponse = await _api.post(
-        Endpoints.syncPush, 
-        data: {'events': pending.map((r) => r.toJson()).toList()}
+        Endpoints.syncPush,
+        data: {'events': pending.map((r) => r.toJson()).toList()},
       );
-      
+
       if (pushResponse.statusCode == 200) {
         await confirmSynced(pending);
       }

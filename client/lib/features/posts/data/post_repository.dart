@@ -20,7 +20,9 @@ class PostRepository {
 
   Future<List<PostVersion>> getPostVersions(String id) async {
     final data = await _api.getPostVersions(id);
-    return data.map((e) => PostVersion.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => PostVersion.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<Post>> listMyPosts() async {
@@ -37,7 +39,12 @@ class PostRepository {
     await _api.deletePost(id);
   }
 
-  Future<Post> revisePost(String id, Map<String, dynamic> content, String? caption, List<String>? tags) async {
+  Future<Post> revisePost(
+    String id,
+    Map<String, dynamic> content,
+    String? caption,
+    List<String>? tags,
+  ) async {
     final payload = {
       'content': content,
       if (caption != null && caption.isNotEmpty) 'caption': caption,

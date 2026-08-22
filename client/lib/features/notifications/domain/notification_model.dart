@@ -23,7 +23,8 @@ abstract class NotificationItem with _$NotificationItem {
   const factory NotificationItem({
     @JsonKey(name: 'id') String? id,
     @JsonKey(name: 'ids') List<String>? ids,
-    @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert) NotifType? type,
+    @JsonKey(name: 'type', unknownEnumValue: NotifType.adminAlert)
+    NotifType? type,
     @JsonKey(name: 'is_realtime') bool? isRealtime,
     @JsonKey(name: 'is_read') bool? isRead,
     @JsonKey(name: 'body') String? body,

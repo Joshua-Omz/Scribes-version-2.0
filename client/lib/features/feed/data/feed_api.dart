@@ -27,6 +27,7 @@ class FeedApi {
     if (data == null || data is String && data.isEmpty) return {'post': []};
     return data as Map<String, dynamic>;
   }
+
   Future<Map<String, dynamic>> getChurchPosts({
     String? cursor,
     int limit = 20,

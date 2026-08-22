@@ -32,13 +32,17 @@ class TopicSelectionScreen extends ConsumerWidget {
               elevation: 0,
               leading: IconButton(
                 icon: HugeIcon(
-                    icon: HugeIcons.strokeRoundedCancel01,
-                    color: colors.primaryText),
+                  icon: HugeIcons.strokeRoundedCancel01,
+                  color: colors.primaryText,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              title: Text('Your Interests',
-                  style: ScribesTextStyles.bodyLg
-                      .copyWith(color: colors.primaryText)),
+              title: Text(
+                'Your Interests',
+                style: ScribesTextStyles.bodyLg.copyWith(
+                  color: colors.primaryText,
+                ),
+              ),
               centerTitle: true,
             )
           : null,
@@ -51,8 +55,9 @@ class TopicSelectionScreen extends ConsumerWidget {
               if (!isModal) const SizedBox(height: 48),
               Text(
                 isModal ? 'Update Topics' : 'What draws you?',
-                style: ScribesTextStyles.displayLg
-                    .copyWith(color: colors.primaryText),
+                style: ScribesTextStyles.displayLg.copyWith(
+                  color: colors.primaryText,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -70,8 +75,9 @@ class TopicSelectionScreen extends ConsumerWidget {
                           spacing: 12.0,
                           runSpacing: 16.0,
                           children: state.availableTopics.map((topic) {
-                            final isSelected =
-                                state.selectedTopics.contains(topic);
+                            final isSelected = state.selectedTopics.contains(
+                              topic,
+                            );
                             return _TopicChip(
                               label: topic,
                               isSelected: isSelected,
@@ -91,8 +97,9 @@ class TopicSelectionScreen extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
                     state.error!,
-                    style: ScribesTextStyles.labelLg
-                        .copyWith(color: colors.orange),
+                    style: ScribesTextStyles.labelLg.copyWith(
+                      color: colors.orange,
+                    ),
                   ),
                 ),
               if (!isModal) ...[
@@ -104,13 +111,23 @@ class TopicSelectionScreen extends ConsumerWidget {
                     border: Border.all(color: colors.border),
                   ),
                   child: SwitchListTile(
-                    title: Text('This is a Church account', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
-                    subtitle: Text('Church accounts get special features', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
+                    title: Text(
+                      'This is a Church account',
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.primaryText,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Church accounts get special features',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                      ),
+                    ),
                     value: state.isChurch,
                     onChanged: (val) {
                       ref.read(onboardingProvider.notifier).setChurch(val);
                     },
-                    activeColor: colors.gold,
+                    activeThumbColor: colors.gold,
                   ),
                 ),
               ],
@@ -121,13 +138,18 @@ class TopicSelectionScreen extends ConsumerWidget {
                     onPressed: () async {
                       final user = ref.read(authProvider).value;
                       if (user != null) {
-                        await sharedPrefs.setBool('has_seen_onboarding_${user.id}', true);
+                        await sharedPrefs.setBool(
+                          'has_seen_onboarding_${user.id}',
+                          true,
+                        );
                       }
                       onContinue();
                     },
                     child: Text(
                       'Skip for now',
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                      ),
                     ),
                   ),
                 ),
@@ -151,8 +173,9 @@ class TopicSelectionScreen extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primaryText,
                       foregroundColor: colors.background,
-                      disabledBackgroundColor:
-                          colors.primaryText.withValues(alpha: 0.3),
+                      disabledBackgroundColor: colors.primaryText.withValues(
+                        alpha: 0.3,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -199,23 +222,29 @@ class _TopicChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primaryText : Colors.transparent,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: isSelected ? colors.primaryText : colors.border,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: '$label topic',
+      hint: isSelected ? 'Tap to deselect' : 'Tap to select',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.primaryText : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: isSelected ? colors.primaryText : colors.border,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: ScribesTextStyles.bodyMd.copyWith(
-            color: isSelected ? colors.background : colors.primaryText,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          child: Text(
+            label,
+            style: ScribesTextStyles.bodyMd.copyWith(
+              color: isSelected ? colors.background : colors.primaryText,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            ),
           ),
         ),
       ),

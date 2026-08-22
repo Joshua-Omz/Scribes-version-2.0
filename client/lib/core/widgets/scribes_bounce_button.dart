@@ -21,7 +21,8 @@ class ScribesBounceButton extends StatefulWidget {
   State<ScribesBounceButton> createState() => _ScribesBounceButtonState();
 }
 
-class _ScribesBounceButtonState extends State<ScribesBounceButton> with SingleTickerProviderStateMixin {
+class _ScribesBounceButtonState extends State<ScribesBounceButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -33,18 +34,20 @@ class _ScribesBounceButtonState extends State<ScribesBounceButton> with SingleTi
       duration: const Duration(milliseconds: 100),
       reverseDuration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleFactor).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
-    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleFactor)
+        .animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+        );
   }
 
   @override
   void didUpdateWidget(ScribesBounceButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.scaleFactor != widget.scaleFactor) {
-      _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleFactor).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
-      );
+      _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleFactor)
+          .animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+          );
     }
   }
 
@@ -68,7 +71,7 @@ class _ScribesBounceButtonState extends State<ScribesBounceButton> with SingleTi
     _triggerHaptic();
     widget.onTap();
   }
-  
+
   void _onLongPress() {
     if (widget.onLongPress != null) {
       _triggerHaptic();
@@ -88,10 +91,7 @@ class _ScribesBounceButtonState extends State<ScribesBounceButton> with SingleTi
       onTapUp: _onTapUp,
       onLongPress: widget.onLongPress != null ? _onLongPress : null,
       onTapCancel: _onTapCancel,
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: widget.child,
-      ),
+      child: ScaleTransition(scale: _scaleAnimation, child: widget.child),
     );
   }
 }

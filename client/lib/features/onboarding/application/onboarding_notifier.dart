@@ -96,7 +96,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
       final repo = ref.read(onboardingRepositoryProvider);
       await repo.saveTopics(state.selectedTopics.toList());
-      
+
       // Also update the isChurch flag
       final authNotif = ref.read(authProvider.notifier);
       // Update tags in auth provider to pass the router gate

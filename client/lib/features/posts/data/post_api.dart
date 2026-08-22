@@ -16,7 +16,9 @@ class PostApi {
   Future<Map<String, dynamic>> getPost(String id) async {
     final response = await _dio.get('${Endpoints.posts}/$id');
     final data = response.data;
-    if (data == null || data is String && data.isEmpty) throw Exception('Post not found');
+    if (data == null || data is String && data.isEmpty) {
+      throw Exception('Post not found');
+    }
     return data as Map<String, dynamic>;
   }
 
@@ -50,8 +52,14 @@ class PostApi {
     await _dio.delete('${Endpoints.posts}/$id');
   }
 
-  Future<Map<String, dynamic>> revisePost(String id, Map<String, dynamic> data) async {
-    final response = await _dio.patch('${Endpoints.posts}/$id/revise', data: data);
+  Future<Map<String, dynamic>> revisePost(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _dio.patch(
+      '${Endpoints.posts}/$id/revise',
+      data: data,
+    );
     return response.data as Map<String, dynamic>;
   }
 

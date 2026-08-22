@@ -4,7 +4,6 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-
 class ScribesEmptyState extends ConsumerWidget {
   final dynamic icon;
   final String title;
@@ -38,22 +37,23 @@ class ScribesEmptyState extends ConsumerWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: colors.border.withValues(alpha: 0.5)),
               ),
-              child: HugeIcon(icon: icon,
-                size: 48,
-                color: colors.goldMuted,
-              ),
+              child: HugeIcon(icon: icon, size: 48, color: colors.goldMuted),
             ),
             const SizedBox(height: 24),
             Text(
               title,
-              style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+              style: ScribesTextStyles.displayMd.copyWith(
+                color: colors.primaryText,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              style: ScribesTextStyles.bodyMd.copyWith(
+                color: colors.secondaryText,
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 32),
@@ -62,7 +62,10 @@ class ScribesEmptyState extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.gold,
                   foregroundColor: colors.surface,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -70,7 +73,10 @@ class ScribesEmptyState extends ConsumerWidget {
                 ),
                 child: Text(
                   actionLabel!,
-                  style: ScribesTextStyles.labelLg.copyWith(color: colors.surface, fontWeight: FontWeight.bold),
+                  style: ScribesTextStyles.labelLg.copyWith(
+                    color: colors.surface,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

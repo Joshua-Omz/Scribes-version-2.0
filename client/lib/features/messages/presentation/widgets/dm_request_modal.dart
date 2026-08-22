@@ -47,16 +47,26 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
     try {
       final api = ref.read(messageApiProvider);
       await api.sendRequest(widget.userId, text);
-      
+
       if (mounted) {
         context.pop();
         final colors = ref.read(themeProvider);
-        ScribesToast.show(context, 'Message request sent', colors, isError: false);
+        ScribesToast.show(
+          context,
+          'Message request sent',
+          colors,
+          isError: false,
+        );
       }
     } catch (e) {
       if (mounted) {
         final colors = ref.read(themeProvider);
-        ScribesToast.show(context, 'Failed to send request', colors, isError: true);
+        ScribesToast.show(
+          context,
+          'Failed to send request',
+          colors,
+          isError: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
@@ -97,7 +107,7 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
               ),
             ),
           ),
-          
+
           authorState.when(
             data: (author) => Row(
               children: [
@@ -109,11 +119,16 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
                     children: [
                       Text(
                         'Message Request',
-                        style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                        style: ScribesTextStyles.bodyMd.copyWith(
+                          color: colors.secondaryText,
+                        ),
                       ),
                       Text(
                         author.safeDisplayName,
-                        style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText, fontSize: 20),
+                        style: ScribesTextStyles.displayMd.copyWith(
+                          color: colors.primaryText,
+                          fontSize: 20,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -125,16 +140,18 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
             loading: () => const SizedBox(height: 48),
             error: (_, _) => const SizedBox(height: 48),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           TextField(
             controller: _controller,
             maxLines: 4,
             style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
             decoration: InputDecoration(
               hintText: 'Introduce yourself and start the conversation...',
-              hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              hintStyle: ScribesTextStyles.bodyMd.copyWith(
+                color: colors.secondaryText,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(color: colors.border),
@@ -151,9 +168,9 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
               fillColor: colors.surface,
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           ScribesBounceButton(
             onTap: _isSending ? () {} : _sendRequest,
             child: Container(
@@ -175,16 +192,26 @@ class _DmRequestModalState extends ConsumerState<DmRequestModal> {
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const HugeIcon(icon: HugeIcons.strokeRoundedMail01, color: Colors.white, size: 20),
+                          const HugeIcon(
+                            icon: HugeIcons.strokeRoundedMail01,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Send Request',
-                            style: ScribesTextStyles.bodyLg.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: ScribesTextStyles.bodyLg.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),

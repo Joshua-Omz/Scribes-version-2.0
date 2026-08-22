@@ -4338,6 +4338,231 @@ class PendingChatMessagesCompanion extends UpdateCompanion<PendingChatMessage> {
   }
 }
 
+class $PendingReadReceiptsTable extends PendingReadReceipts
+    with TableInfo<$PendingReadReceiptsTable, PendingReadReceipt> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PendingReadReceiptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _conversationIdMeta = const VerificationMeta(
+    'conversationId',
+  );
+  @override
+  late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
+    'conversation_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _readAtMeta = const VerificationMeta('readAt');
+  @override
+  late final GeneratedColumn<DateTime> readAt = GeneratedColumn<DateTime>(
+    'read_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [conversationId, readAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pending_read_receipts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PendingReadReceipt> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('conversation_id')) {
+      context.handle(
+        _conversationIdMeta,
+        conversationId.isAcceptableOrUnknown(
+          data['conversation_id']!,
+          _conversationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_conversationIdMeta);
+    }
+    if (data.containsKey('read_at')) {
+      context.handle(
+        _readAtMeta,
+        readAt.isAcceptableOrUnknown(data['read_at']!, _readAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_readAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {conversationId};
+  @override
+  PendingReadReceipt map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PendingReadReceipt(
+      conversationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}conversation_id'],
+      )!,
+      readAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}read_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PendingReadReceiptsTable createAlias(String alias) {
+    return $PendingReadReceiptsTable(attachedDatabase, alias);
+  }
+}
+
+class PendingReadReceipt extends DataClass
+    implements Insertable<PendingReadReceipt> {
+  final String conversationId;
+  final DateTime readAt;
+  const PendingReadReceipt({
+    required this.conversationId,
+    required this.readAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['conversation_id'] = Variable<String>(conversationId);
+    map['read_at'] = Variable<DateTime>(readAt);
+    return map;
+  }
+
+  PendingReadReceiptsCompanion toCompanion(bool nullToAbsent) {
+    return PendingReadReceiptsCompanion(
+      conversationId: Value(conversationId),
+      readAt: Value(readAt),
+    );
+  }
+
+  factory PendingReadReceipt.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PendingReadReceipt(
+      conversationId: serializer.fromJson<String>(json['conversationId']),
+      readAt: serializer.fromJson<DateTime>(json['readAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'conversationId': serializer.toJson<String>(conversationId),
+      'readAt': serializer.toJson<DateTime>(readAt),
+    };
+  }
+
+  PendingReadReceipt copyWith({String? conversationId, DateTime? readAt}) =>
+      PendingReadReceipt(
+        conversationId: conversationId ?? this.conversationId,
+        readAt: readAt ?? this.readAt,
+      );
+  PendingReadReceipt copyWithCompanion(PendingReadReceiptsCompanion data) {
+    return PendingReadReceipt(
+      conversationId: data.conversationId.present
+          ? data.conversationId.value
+          : this.conversationId,
+      readAt: data.readAt.present ? data.readAt.value : this.readAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingReadReceipt(')
+          ..write('conversationId: $conversationId, ')
+          ..write('readAt: $readAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(conversationId, readAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PendingReadReceipt &&
+          other.conversationId == this.conversationId &&
+          other.readAt == this.readAt);
+}
+
+class PendingReadReceiptsCompanion extends UpdateCompanion<PendingReadReceipt> {
+  final Value<String> conversationId;
+  final Value<DateTime> readAt;
+  final Value<int> rowid;
+  const PendingReadReceiptsCompanion({
+    this.conversationId = const Value.absent(),
+    this.readAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PendingReadReceiptsCompanion.insert({
+    required String conversationId,
+    required DateTime readAt,
+    this.rowid = const Value.absent(),
+  }) : conversationId = Value(conversationId),
+       readAt = Value(readAt);
+  static Insertable<PendingReadReceipt> custom({
+    Expression<String>? conversationId,
+    Expression<DateTime>? readAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (conversationId != null) 'conversation_id': conversationId,
+      if (readAt != null) 'read_at': readAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PendingReadReceiptsCompanion copyWith({
+    Value<String>? conversationId,
+    Value<DateTime>? readAt,
+    Value<int>? rowid,
+  }) {
+    return PendingReadReceiptsCompanion(
+      conversationId: conversationId ?? this.conversationId,
+      readAt: readAt ?? this.readAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (conversationId.present) {
+      map['conversation_id'] = Variable<String>(conversationId.value);
+    }
+    if (readAt.present) {
+      map['read_at'] = Variable<DateTime>(readAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingReadReceiptsCompanion(')
+          ..write('conversationId: $conversationId, ')
+          ..write('readAt: $readAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScribesDatabase extends GeneratedDatabase {
   _$ScribesDatabase(QueryExecutor e) : super(e);
   $ScribesDatabaseManager get managers => $ScribesDatabaseManager(this);
@@ -4350,6 +4575,8 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
   late final $MessagesTable messages = $MessagesTable(this);
   late final $PendingChatMessagesTable pendingChatMessages =
       $PendingChatMessagesTable(this);
+  late final $PendingReadReceiptsTable pendingReadReceipts =
+      $PendingReadReceiptsTable(this);
   late final NotesDao notesDao = NotesDao(this as ScribesDatabase);
   late final DraftsDao draftsDao = DraftsDao(this as ScribesDatabase);
   late final PostsDao postsDao = PostsDao(this as ScribesDatabase);
@@ -4366,6 +4593,7 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
     conversations,
     messages,
     pendingChatMessages,
+    pendingReadReceipts,
   ];
 }
 
@@ -6521,6 +6749,167 @@ typedef $$PendingChatMessagesTableProcessedTableManager =
       PendingChatMessage,
       PrefetchHooks Function()
     >;
+typedef $$PendingReadReceiptsTableCreateCompanionBuilder =
+    PendingReadReceiptsCompanion Function({
+      required String conversationId,
+      required DateTime readAt,
+      Value<int> rowid,
+    });
+typedef $$PendingReadReceiptsTableUpdateCompanionBuilder =
+    PendingReadReceiptsCompanion Function({
+      Value<String> conversationId,
+      Value<DateTime> readAt,
+      Value<int> rowid,
+    });
+
+class $$PendingReadReceiptsTableFilterComposer
+    extends Composer<_$ScribesDatabase, $PendingReadReceiptsTable> {
+  $$PendingReadReceiptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get readAt => $composableBuilder(
+    column: $table.readAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PendingReadReceiptsTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $PendingReadReceiptsTable> {
+  $$PendingReadReceiptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get readAt => $composableBuilder(
+    column: $table.readAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PendingReadReceiptsTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $PendingReadReceiptsTable> {
+  $$PendingReadReceiptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get conversationId => $composableBuilder(
+    column: $table.conversationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get readAt =>
+      $composableBuilder(column: $table.readAt, builder: (column) => column);
+}
+
+class $$PendingReadReceiptsTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $PendingReadReceiptsTable,
+          PendingReadReceipt,
+          $$PendingReadReceiptsTableFilterComposer,
+          $$PendingReadReceiptsTableOrderingComposer,
+          $$PendingReadReceiptsTableAnnotationComposer,
+          $$PendingReadReceiptsTableCreateCompanionBuilder,
+          $$PendingReadReceiptsTableUpdateCompanionBuilder,
+          (
+            PendingReadReceipt,
+            BaseReferences<
+              _$ScribesDatabase,
+              $PendingReadReceiptsTable,
+              PendingReadReceipt
+            >,
+          ),
+          PendingReadReceipt,
+          PrefetchHooks Function()
+        > {
+  $$PendingReadReceiptsTableTableManager(
+    _$ScribesDatabase db,
+    $PendingReadReceiptsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PendingReadReceiptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PendingReadReceiptsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PendingReadReceiptsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> conversationId = const Value.absent(),
+                Value<DateTime> readAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingReadReceiptsCompanion(
+                conversationId: conversationId,
+                readAt: readAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String conversationId,
+                required DateTime readAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PendingReadReceiptsCompanion.insert(
+                conversationId: conversationId,
+                readAt: readAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PendingReadReceiptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $PendingReadReceiptsTable,
+      PendingReadReceipt,
+      $$PendingReadReceiptsTableFilterComposer,
+      $$PendingReadReceiptsTableOrderingComposer,
+      $$PendingReadReceiptsTableAnnotationComposer,
+      $$PendingReadReceiptsTableCreateCompanionBuilder,
+      $$PendingReadReceiptsTableUpdateCompanionBuilder,
+      (
+        PendingReadReceipt,
+        BaseReferences<
+          _$ScribesDatabase,
+          $PendingReadReceiptsTable,
+          PendingReadReceipt
+        >,
+      ),
+      PendingReadReceipt,
+      PrefetchHooks Function()
+    >;
 
 class $ScribesDatabaseManager {
   final _$ScribesDatabase _db;
@@ -6541,4 +6930,6 @@ class $ScribesDatabaseManager {
       $$MessagesTableTableManager(_db, _db.messages);
   $$PendingChatMessagesTableTableManager get pendingChatMessages =>
       $$PendingChatMessagesTableTableManager(_db, _db.pendingChatMessages);
+  $$PendingReadReceiptsTableTableManager get pendingReadReceipts =>
+      $$PendingReadReceiptsTableTableManager(_db, _db.pendingReadReceipts);
 }

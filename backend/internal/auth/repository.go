@@ -93,6 +93,10 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (User, st
 		a := dbUser.AvatarUrl.String
 		avatar = &a
 	}
+	tags := dbUser.SelectedTags
+	if tags == nil {
+		tags = []string{}
+	}
 	return User{
 		ID:             dbUser.ID,
 		Handle:         dbUser.Handle,
@@ -102,7 +106,7 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (User, st
 		AvatarUrl:      avatar,
 		Role:           string(dbUser.Role),
 		IsChurch:       dbUser.IsChurch,
-		SelectedTags:   dbUser.SelectedTags,
+		SelectedTags:   tags,
 		CreatedAt:      dbUser.CreatedAt,
 		FollowersCount: int(dbUser.FollowersCount),
 		FollowingCount: int(dbUser.FollowingCount),
@@ -124,6 +128,10 @@ func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (User, error
 		a := dbUser.AvatarUrl.String
 		avatar = &a
 	}
+	tags := dbUser.SelectedTags
+	if tags == nil {
+		tags = []string{}
+	}
 	return User{
 		ID:             dbUser.ID,
 		Handle:         dbUser.Handle,
@@ -133,7 +141,7 @@ func (r *Repository) GetUserByID(ctx context.Context, id uuid.UUID) (User, error
 		AvatarUrl:      avatar,
 		Role:           string(dbUser.Role),
 		IsChurch:       dbUser.IsChurch,
-		SelectedTags:   dbUser.SelectedTags,
+		SelectedTags:   tags,
 		CreatedAt:      dbUser.CreatedAt,
 		FollowersCount: int(dbUser.FollowersCount),
 		FollowingCount: int(dbUser.FollowingCount),
@@ -155,6 +163,10 @@ func (r *Repository) GetUserByHandle(ctx context.Context, handle string) (User, 
 		a := dbUser.AvatarUrl.String
 		avatar = &a
 	}
+	tags := dbUser.SelectedTags
+	if tags == nil {
+		tags = []string{}
+	}
 	return User{
 		ID:             dbUser.ID,
 		Handle:         dbUser.Handle,
@@ -164,7 +176,7 @@ func (r *Repository) GetUserByHandle(ctx context.Context, handle string) (User, 
 		AvatarUrl:      avatar,
 		Role:           string(dbUser.Role),
 		IsChurch:       dbUser.IsChurch,
-		SelectedTags:   dbUser.SelectedTags,
+		SelectedTags:   tags,
 		CreatedAt:      dbUser.CreatedAt,
 		FollowersCount: int(dbUser.FollowersCount),
 		FollowingCount: int(dbUser.FollowingCount),

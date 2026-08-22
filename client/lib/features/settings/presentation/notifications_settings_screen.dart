@@ -25,16 +25,27 @@ class NotificationsSettingsScreen extends ConsumerWidget {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Notifications', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+        title: Text(
+          'Notifications',
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
+        ),
       ),
       body: state.when(
         data: (prefs) => _buildPreferences(context, ref, prefs, colors),
         loading: () => const Center(child: ScribesLoadingIndicator()),
         error: (e, _) => Center(
-          child: Text('Failed to load preferences: \$e', style: TextStyle(color: colors.primaryText)),
+          child: Text(
+            'Failed to load preferences: \$e',
+            style: TextStyle(color: colors.primaryText),
+          ),
         ),
       ),
     );
@@ -56,14 +67,16 @@ class NotificationsSettingsScreen extends ConsumerWidget {
           subtitle: 'Receive alerts on this device',
           value: prefs.pushEnabled,
           colors: colors,
-          onChanged: (val) => _updatePref(context, ref, prefs.copyWith(pushEnabled: val)),
+          onChanged: (val) =>
+              _updatePref(context, ref, prefs.copyWith(pushEnabled: val)),
         ),
         _buildSwitchTile(
           title: 'Email Notifications',
           subtitle: 'Receive updates in your inbox',
           value: prefs.emailEnabled,
           colors: colors,
-          onChanged: (val) => _updatePref(context, ref, prefs.copyWith(emailEnabled: val)),
+          onChanged: (val) =>
+              _updatePref(context, ref, prefs.copyWith(emailEnabled: val)),
         ),
         const SizedBox(height: 40),
         _buildSectionHeader('Activity Alerts', colors),
@@ -73,14 +86,16 @@ class NotificationsSettingsScreen extends ConsumerWidget {
           subtitle: 'When someone sends you a message',
           value: prefs.dmAlerts,
           colors: colors,
-          onChanged: (val) => _updatePref(context, ref, prefs.copyWith(dmAlerts: val)),
+          onChanged: (val) =>
+              _updatePref(context, ref, prefs.copyWith(dmAlerts: val)),
         ),
         _buildSwitchTile(
           title: 'New Followers',
           subtitle: 'When someone follows your profile',
           value: prefs.newFollowerAlerts,
           colors: colors,
-          onChanged: (val) => _updatePref(context, ref, prefs.copyWith(newFollowerAlerts: val)),
+          onChanged: (val) =>
+              _updatePref(context, ref, prefs.copyWith(newFollowerAlerts: val)),
         ),
       ],
     );
@@ -122,15 +137,17 @@ class NotificationsSettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: colors.secondaryText,
+                  ),
                 ),
               ],
             ),
           ),
           Switch.adaptive(
             value: value,
-            activeColor: colors.gold,
-            activeTrackColor: colors.gold.withOpacity(0.3),
+            activeThumbColor: colors.gold,
+            activeTrackColor: colors.gold.withValues(alpha: 0.3),
             inactiveThumbColor: colors.secondaryText,
             inactiveTrackColor: colors.border,
             onChanged: onChanged,
@@ -140,13 +157,24 @@ class NotificationsSettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _updatePref(BuildContext context, WidgetRef ref, NotificationPreferences newPrefs) async {
+  void _updatePref(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationPreferences newPrefs,
+  ) async {
     try {
-      await ref.read(notificationSettingsProvider.notifier).updatePreferences(newPrefs);
+      await ref
+          .read(notificationSettingsProvider.notifier)
+          .updatePreferences(newPrefs);
     } catch (e) {
       if (context.mounted) {
         final colors = ref.read(themeProvider);
-        ScribesToast.show(context, 'Failed to update preferences', colors, isError: true);
+        ScribesToast.show(
+          context,
+          'Failed to update preferences',
+          colors,
+          isError: true,
+        );
       }
     }
   }

@@ -110,12 +110,20 @@ func (s *Service) Publish(ctx context.Context, authorID, draftID uuid.UUID, tags
 		return post.Post{}, err
 	}
 
+	var meta struct {
+		CoverImageUrl *string `json:"cover_image_url"`
+		PostType      string  `json:"post_type"`
+	}
+	_ = json.Unmarshal(d.Content, &meta)
+
 	p, err := s.postSvc.Create(ctx, authorID, post.CreateInput{
 		Content:       d.Content,
 		Caption:       d.Caption,
 		SermonSource:  d.SermonSource,
 		Tags:          tags,
 		ScriptureRefs: scriptureRefs,
+		CoverImageUrl: meta.CoverImageUrl,
+		PostType:      meta.PostType,
 	})
 	if err != nil {
 		return post.Post{}, err

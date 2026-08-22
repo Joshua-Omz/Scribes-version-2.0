@@ -53,9 +53,9 @@ class ScribesGridCard extends ConsumerWidget {
               color: hasBadge ? colors.background : colors.surfaceRaised,
               borderRadius: BorderRadius.circular(ScribesRadius.card),
               border: Border.all(
-                color: isSelected 
-                  ? colors.gold 
-                  : colors.border.withValues(alpha: hasBadge ? 0.3 : 0.6),
+                color: isSelected
+                    ? colors.primaryText
+                    : colors.border.withValues(alpha: hasBadge ? 0.3 : 0.6),
                 width: isSelected ? 2.0 : 1.0,
               ),
               boxShadow: hasBadge
@@ -80,18 +80,25 @@ class ScribesGridCard extends ConsumerWidget {
                       children: [
                         if (hasBadge)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: colors.goldMuted.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(ScribesRadius.chip),
+                              color: colors.primaryText.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(
+                                ScribesRadius.chip,
+                              ),
                               border: Border.all(
-                                color: colors.goldMuted.withValues(alpha: 0.3),
+                                color: colors.primaryText.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Text(
                               badgeText!.toUpperCase(),
                               style: ScribesTextStyles.caption.copyWith(
-                                color: colors.gold,
+                                color: colors.primaryText,
                                 letterSpacing: 1.0,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -106,11 +113,12 @@ class ScribesGridCard extends ConsumerWidget {
                                 onTap: onSaveToggle,
                                 child: HugeIcon(
                                   icon: HugeIcons.strokeRoundedBookmark02,
-                                  color: colors.gold,
+                                  color: colors.primaryText,
                                   size: 18,
                                 ),
                               ),
-                            if (isSaved && onDelete != null) const SizedBox(width: 8),
+                            if (isSaved && onDelete != null)
+                              const SizedBox(width: 8),
                             if (onDelete != null)
                               GestureDetector(
                                 onTap: onDelete,
@@ -207,7 +215,7 @@ class ScribesGridCard extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           if (isSelected)
             Positioned(
               top: 8,
@@ -215,7 +223,7 @@ class ScribesGridCard extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: colors.gold,
+                  color: colors.primaryText,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.check, size: 16, color: colors.surfaceRaised),
@@ -226,4 +234,3 @@ class ScribesGridCard extends ConsumerWidget {
     );
   }
 }
-

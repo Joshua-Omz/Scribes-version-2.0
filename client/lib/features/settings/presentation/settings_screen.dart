@@ -19,10 +19,18 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Settings', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+        title: Text(
+          'Settings',
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -85,7 +93,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildThemeSelector(BuildContext context, WidgetRef ref, ScribesColors currentColors) {
+  Widget _buildThemeSelector(
+    BuildContext context,
+    WidgetRef ref,
+    ScribesColors currentColors,
+  ) {
     final themes = [
       {'name': 'Night', 'theme': ScribesColors.night},
       {'name': 'Parchment', 'theme': ScribesColors.parchment},
@@ -117,16 +129,20 @@ class SettingsScreen extends ConsumerWidget {
                       color: theme.background,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected ? currentColors.gold : theme.border,
+                        color: isSelected
+                            ? currentColors.primaryText
+                            : theme.border,
                         width: isSelected ? 2 : 1,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: currentColors.gold.withValues(alpha: 0.2),
+                                color: currentColors.primaryText.withValues(
+                                  alpha: 0.1,
+                                ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
-                              )
+                              ),
                             ]
                           : [],
                     ),
@@ -147,7 +163,7 @@ class SettingsScreen extends ConsumerWidget {
                               height: 16,
                               width: 16,
                               decoration: BoxDecoration(
-                                color: theme.gold,
+                                color: theme.primaryText,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -156,7 +172,9 @@ class SettingsScreen extends ConsumerWidget {
                               child: Container(
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: theme.primaryText.withValues(alpha: 0.1),
+                                  color: theme.primaryText.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
@@ -179,15 +197,23 @@ class SettingsScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (isSelected) ...[
-                        HugeIcon(icon: HugeIcons.strokeRoundedCheckmarkBadge01, size: 14, color: currentColors.gold),
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+                          size: 14,
+                          color: currentColors.primaryText,
+                        ),
                         const SizedBox(width: 4),
                       ],
                       Flexible(
                         child: Text(
                           name,
                           style: ScribesTextStyles.labelLg.copyWith(
-                            color: isSelected ? currentColors.primaryText : currentColors.secondaryText,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected
+                                ? currentColors.primaryText
+                                : currentColors.secondaryText,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -224,7 +250,7 @@ class SettingsScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: colors.border),
               ),
-              child: HugeIcon(icon: icon, size: 20, color: colors.gold),
+              child: HugeIcon(icon: icon, size: 20, color: colors.primaryText),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -250,7 +276,11 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, size: 20, color: colors.secondaryText),
+            HugeIcon(
+              icon: HugeIcons.strokeRoundedArrowRight01,
+              size: 20,
+              color: colors.secondaryText,
+            ),
           ],
         ),
       ),

@@ -15,7 +15,7 @@ class ConversationMessages extends _$ConversationMessages {
   Stream<List<Message>> build(String conversationId) {
     final repo = ref.watch(messageRepositoryProvider);
     final user = ref.read(authProvider).value;
-    
+
     // 0. Mark conversation as read on the server
     if (user != null) {
       repo.readConversation(conversationId, user.id);
@@ -25,15 +25,17 @@ class ConversationMessages extends _$ConversationMessages {
     repo.refreshMessages(conversationId);
 
     // 2. Start the realtime SSE subscription to listen for new messages
-    _realtimeSub = repo.streamRealtimeMessages(conversationId).listen(
-      (msg) {
-        // We don't need to manually update state here because the repo 
-        // inserts it into Drift, and we are returning a Drift watch stream.
-      },
-      onError: (err) {
-        // SSE error, might want to reconnect or handle gracefully
-      }
-    );
+    _realtimeSub = repo
+        .streamRealtimeMessages(conversationId)
+        .listen(
+          (msg) {
+            // We don't need to manually update state here because the repo
+            // inserts it into Drift, and we are returning a Drift watch stream.
+          },
+          onError: (err) {
+            // SSE error, might want to reconnect or handle gracefully
+          },
+        );
 
     ref.onDispose(() {
       _dbSub?.cancel();

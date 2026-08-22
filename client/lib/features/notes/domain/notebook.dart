@@ -12,5 +12,6 @@ abstract class Notebook with _$Notebook {
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _Notebook;
 
-  factory Notebook.fromJson(Map<String, dynamic> json) => _$NotebookFromJson(json);
+  factory Notebook.fromJson(Map<String, dynamic> json) =>
+      _$NotebookFromJson(json);
 }

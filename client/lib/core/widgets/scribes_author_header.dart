@@ -57,10 +57,7 @@ class ScribesAuthorHeader extends ConsumerWidget {
                     ),
                     if (isCorrection) ...[
                       const SizedBox(width: 8),
-                      const ScribesBadge(
-                        label: 'Correction',
-                        isFilled: true,
-                      ),
+                      const ScribesBadge(label: 'Correction', isFilled: true),
                     ],
                   ],
                 ),

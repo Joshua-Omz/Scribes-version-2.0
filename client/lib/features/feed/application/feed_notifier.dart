@@ -1,8 +1,6 @@
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../posts/domain/post.dart';
 import '../data/feed_repository.dart';
-
 
 part 'feed_notifier.g.dart';
 
@@ -22,10 +20,10 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<void> loadMore() async {
     if (_nextCursor == null) return;
-    
+
     // Prevent duplicate loads
     if (state.isLoading || state.isRefreshing) return;
-    
+
     // Using AsyncLoading will replace the previous list, which is bad for infinite scroll,
     // so we handle it without setting state to loading if we want to keep current posts.
     // Instead we just fetch and append.
@@ -33,7 +31,7 @@ class FeedNotifier extends _$FeedNotifier {
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFeed(cursor: _nextCursor);
       _nextCursor = response.nextCursor;
-      
+
       final currentPosts = state.value ?? [];
       state = AsyncData([...currentPosts, ...response.posts]);
     } catch (e, stack) {
@@ -73,14 +71,14 @@ class FollowingFeedNotifier extends _$FollowingFeedNotifier {
 
   Future<void> loadMore() async {
     if (_nextCursor == null) return;
-    
+
     if (state.isLoading || state.isRefreshing) return;
-    
+
     try {
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFollowingFeed(cursor: _nextCursor);
       _nextCursor = response.nextCursor;
-      
+
       final currentPosts = state.value ?? [];
       state = AsyncData([...currentPosts, ...response.posts]);
     } catch (e, stack) {

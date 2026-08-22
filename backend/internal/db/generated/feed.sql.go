@@ -20,6 +20,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -38,24 +40,26 @@ type GetChurchPostsParams struct {
 }
 
 type GetChurchPostsRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) ([]GetChurchPostsRow, error) {
@@ -85,6 +89,8 @@ func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) 
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -106,6 +112,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -123,24 +131,26 @@ type GetExplorePostsParams struct {
 }
 
 type GetExplorePostsRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams) ([]GetExplorePostsRow, error) {
@@ -170,6 +180,8 @@ func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -191,6 +203,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -213,24 +227,26 @@ type GetExplorePostsByScriptureParams struct {
 }
 
 type GetExplorePostsByScriptureRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplorePostsByScriptureParams) ([]GetExplorePostsByScriptureRow, error) {
@@ -266,6 +282,8 @@ func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplore
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -287,6 +305,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -308,24 +328,26 @@ type GetExplorePostsByTagParams struct {
 }
 
 type GetExplorePostsByTagRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsByTagParams) ([]GetExplorePostsByTagRow, error) {
@@ -360,6 +382,8 @@ func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsB
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -381,6 +405,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -398,24 +424,26 @@ type GetFeedPostsParams struct {
 }
 
 type GetFeedPostsRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]GetFeedPostsRow, error) {
@@ -445,6 +473,8 @@ func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]G
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -466,6 +496,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -486,24 +518,26 @@ type GetFollowingFeedPostsParams struct {
 }
 
 type GetFollowingFeedPostsRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFeedPostsParams) ([]GetFollowingFeedPostsRow, error) {
@@ -538,6 +572,8 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -559,6 +595,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -580,24 +618,26 @@ type GetForYouPostsParams struct {
 }
 
 type GetForYouPostsRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) ([]GetForYouPostsRow, error) {
@@ -632,6 +672,8 @@ func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) 
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err
@@ -716,6 +758,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -735,24 +779,26 @@ type SearchExplorePostsParams struct {
 }
 
 type SearchExplorePostsRow struct {
-	ID              uuid.UUID       `json:"id"`
-	AuthorID        uuid.UUID       `json:"author_id"`
-	Content         json.RawMessage `json:"content"`
-	Caption         sql.NullString  `json:"caption"`
-	Visibility      PostVisibility  `json:"visibility"`
-	CurrentVersion  int32           `json:"current_version"`
-	IsCorrection    bool            `json:"is_correction"`
-	CorrectsPostID  uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource    sql.NullString  `json:"sermon_source"`
-	IsDeleted       bool            `json:"is_deleted"`
-	PublishedAt     time.Time       `json:"published_at"`
-	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
-	PostType        PostType        `json:"post_type"`
-	AuthorHandle    string          `json:"author_handle"`
-	AuthorName      string          `json:"author_name"`
-	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
-	AmenCount       int32           `json:"amen_count"`
-	CommentCount    int32           `json:"comment_count"`
+	ID                    uuid.UUID       `json:"id"`
+	AuthorID              uuid.UUID       `json:"author_id"`
+	Content               json.RawMessage `json:"content"`
+	Caption               sql.NullString  `json:"caption"`
+	Visibility            PostVisibility  `json:"visibility"`
+	CurrentVersion        int32           `json:"current_version"`
+	IsCorrection          bool            `json:"is_correction"`
+	CorrectsPostID        uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource          sql.NullString  `json:"sermon_source"`
+	IsDeleted             bool            `json:"is_deleted"`
+	PublishedAt           time.Time       `json:"published_at"`
+	CoverImageUrl         sql.NullString  `json:"cover_image_url"`
+	PostType              PostType        `json:"post_type"`
+	AuthorHandle          string          `json:"author_handle"`
+	AuthorName            string          `json:"author_name"`
+	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
+	AmenCount             int32           `json:"amen_count"`
+	InsightCount          int32           `json:"insight_count"`
+	ThoughtProvokingCount int32           `json:"thought_provoking_count"`
+	CommentCount          int32           `json:"comment_count"`
 }
 
 func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePostsParams) ([]SearchExplorePostsRow, error) {
@@ -787,6 +833,8 @@ func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePosts
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
 			&i.AmenCount,
+			&i.InsightCount,
+			&i.ThoughtProvokingCount,
 			&i.CommentCount,
 		); err != nil {
 			return nil, err

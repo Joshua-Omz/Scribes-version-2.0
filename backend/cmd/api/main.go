@@ -12,6 +12,7 @@ import (
 
 	"scribes-api/internal/admin"
 	"scribes-api/internal/auth"
+	"scribes-api/internal/bible"
 	"scribes-api/internal/config"
 	"scribes-api/internal/db/generated"
 	"scribes-api/internal/draft"
@@ -54,6 +55,7 @@ func main() {
 		JWTExpiryHours: cfg.JWTExpiryHours,
 		BcryptCost:     cfg.BcryptCost,
 		DummyHash:      cfg.DummyHash,
+		GoogleClientID: cfg.GoogleClientID,
 	})
 	authHandler := auth.NewHandler(authSvc)
 
@@ -117,7 +119,11 @@ func main() {
 	mediaSvc := media.NewService(queries, storageProvider)
 	mediaHandler := media.NewHandler(mediaSvc)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, mediaHandler, cfg.JWTSecret)
+	bibleRepo := bible.NewRepository(db)
+	bibleSvc := bible.NewService(bibleRepo)
+	bibleHandler := bible.NewHandler(bibleSvc)
+
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, mediaHandler, bibleHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

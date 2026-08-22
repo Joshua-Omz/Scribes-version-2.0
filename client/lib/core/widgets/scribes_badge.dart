@@ -23,7 +23,9 @@ class ScribesBadge extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isFilled ? colors.gold.withValues(alpha: 0.2) : Colors.transparent,
+        color: isFilled
+            ? colors.gold.withValues(alpha: 0.2)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(
           color: isFilled ? colors.gold.withValues(alpha: 0.5) : colors.border,
@@ -33,7 +35,8 @@ class ScribesBadge extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            HugeIcon(icon: icon,
+            HugeIcon(
+              icon: icon,
               size: 14,
               color: isFilled ? colors.gold : colors.secondaryText,
             ),

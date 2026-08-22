@@ -26,11 +26,17 @@ class FeedRepository {
       return _mapPaginatedFeed(rawData);
     } catch (e) {
       // If network fails, serve from local DB
-      final records = await (_db.select(_db.posts)
-            ..orderBy([(t) => OrderingTerm(expression: t.publishedAt, mode: OrderingMode.desc)])
-            ..limit(20)) // Simplistic pagination for offline
-          .get();
-          
+      final records =
+          await (_db.select(_db.posts)
+                ..orderBy([
+                  (t) => OrderingTerm(
+                    expression: t.publishedAt,
+                    mode: OrderingMode.desc,
+                  ),
+                ])
+                ..limit(20)) // Simplistic pagination for offline
+              .get();
+
       final posts = records.map(_mapRecordToMap).toList();
       return PaginatedFeed.fromJson({
         'posts': posts,
@@ -45,10 +51,7 @@ class FeedRepository {
       return _mapPaginatedFeed(rawData);
     } catch (e) {
       // Offline fallback: for v1, we just return empty as we don't sync the follows table locally yet.
-      return PaginatedFeed.fromJson({
-        'posts': [],
-        'next_cursor': null,
-      });
+      return PaginatedFeed.fromJson({'posts': [], 'next_cursor': null});
     }
   }
 
@@ -57,10 +60,7 @@ class FeedRepository {
       final rawData = await _api.getChurchPosts(cursor: cursor);
       return _mapPaginatedFeed(rawData);
     } catch (e) {
-      return PaginatedFeed.fromJson({
-        'posts': [],
-        'next_cursor': null,
-      });
+      return PaginatedFeed.fromJson({'posts': [], 'next_cursor': null});
     }
   }
 
@@ -69,10 +69,7 @@ class FeedRepository {
       final rawData = await _api.getForYouPosts(cursor: cursor);
       return _mapPaginatedFeed(rawData);
     } catch (e) {
-      return PaginatedFeed.fromJson({
-        'posts': [],
-        'next_cursor': null,
-      });
+      return PaginatedFeed.fromJson({'posts': [], 'next_cursor': null});
     }
   }
 
@@ -117,10 +114,8 @@ class FeedRepository {
   }
 
   PaginatedFeed _mapPaginatedFeed(Map<String, dynamic> data) {
-    final posts = (data['posts'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
-    return PaginatedFeed.fromJson({
-      ...data,
-      'posts': posts,
-    });
+    final posts =
+        (data['posts'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    return PaginatedFeed.fromJson({...data, 'posts': posts});
   }
 }

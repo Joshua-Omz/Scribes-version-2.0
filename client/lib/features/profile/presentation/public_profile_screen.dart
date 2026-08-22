@@ -8,19 +8,15 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import 'dart:ui';
 import '../../../core/widgets/scribes_post_card_skeleton.dart';
-import '../../../core/widgets/scribes_grid_card.dart';
-import '../../../core/widgets/scribes_toast.dart';
+import '../../../core/widgets/scribes_post_tile.dart';
+import '../../../core/widgets/scribes_avatar.dart';
 import '../../../core/widgets/scribes_error_state.dart';
 import '../../social/application/user_lookup_provider.dart';
 import '../../social/application/is_following_user_provider.dart';
 import '../../posts/application/user_posts_provider.dart';
 
-import '../../social/application/saved_posts_provider.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
-import '../../messages/presentation/widgets/dm_request_modal.dart';
 import '../../auth/application/auth_notifier.dart';
-import '../../messages/application/inbox_providers.dart';
-import '../../messages/data/message_repository.dart';
 
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -85,23 +81,18 @@ class PublicProfileScreen extends ConsumerWidget {
                                 ),
                               );
                             },
-                            child: CircleAvatar(
+                            child: ScribesAvatar(
+                              authorName: user.displayName,
+                              imageUrl: user.avatarUrl,
                               radius: 40,
-                              backgroundColor: colors.surfaceRaised,
-                              child: Text(
-                                user.displayName.isNotEmpty
-                                    ? user.displayName[0].toUpperCase()
-                                    : '?',
-                                style: ScribesTextStyles.displayMd.copyWith(
-                                  color: colors.primaryText,
-                                ),
-                              ),
                             ),
                           ),
                           const Spacer(),
                           Consumer(
                             builder: (context, ref, child) {
-                              final postsState = ref.watch(userPostsProvider(userId));
+                              final postsState = ref.watch(
+                                userPostsProvider(userId),
+                              );
                               final postsCount = postsState.value?.length ?? 0;
                               return Row(
                                 children: [
@@ -219,7 +210,8 @@ class PublicProfileScreen extends ConsumerWidget {
       data: (isFollowing) {
         Widget followBtn;
         if (isFollowing) {
-          followBtn = Expanded(
+          followBtn = SizedBox(
+            width: double.infinity,
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.primaryText,
@@ -227,13 +219,16 @@ class PublicProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onPressed: () {
-                ref.read(isFollowingUserProvider(userId).notifier).toggleFollow();
+                ref
+                    .read(isFollowingUserProvider(userId).notifier)
+                    .toggleFollow();
               },
               child: Text('Unfollow', style: ScribesTextStyles.labelLg),
             ),
           );
         } else {
-          followBtn = Expanded(
+          followBtn = SizedBox(
+            width: double.infinity,
             child: FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: colors.primaryText,
@@ -241,7 +236,9 @@ class PublicProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onPressed: () {
-                ref.read(isFollowingUserProvider(userId).notifier).toggleFollow();
+                ref
+                    .read(isFollowingUserProvider(userId).notifier)
+                    .toggleFollow();
               },
               child: Text('Follow', style: ScribesTextStyles.labelLg),
             ),
@@ -251,56 +248,7 @@ class PublicProfileScreen extends ConsumerWidget {
           return const SizedBox.shrink();
         }
 
-        return Row(
-          children: [
-            followBtn,
-            const SizedBox(width: 8),
-            Expanded(
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: colors.surfaceRaised,
-                  foregroundColor: colors.primaryText,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(color: colors.border),
-                  ),
-                ),
-                onPressed: () async {
-                  final conversations = await ref.read(conversationsProvider.future);
-                  final existingConversation = conversations
-                      .where(
-                        (conv) =>
-                            conv.userAId == userId || conv.userBId == userId,
-                      )
-                      .firstOrNull;
-
-                  if (!context.mounted) return;
-
-                  if (existingConversation != null) {
-                    context.push('/conversation/${existingConversation.id}');
-                  } else {
-                    try {
-                      final repo = ref.read(messageRepositoryProvider);
-                      final conv = await repo.getOrCreateDirectConversation(userId);
-                      if (!context.mounted) return;
-                      context.push('/conversation/${conv.id}');
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      DmRequestModal.show(context, userId);
-                    }
-                  }
-                },
-                icon: HugeIcon(
-                  icon: HugeIcons.strokeRoundedMail01,
-                  size: 18,
-                  color: colors.primaryText,
-                ),
-                label: Text('Message', style: ScribesTextStyles.labelLg),
-              ),
-            ),
-          ],
-        );
+        return followBtn;
       },
     );
   }
@@ -335,62 +283,14 @@ class PublicProfileScreen extends ConsumerWidget {
             ),
           );
         }
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.85,
-            ),
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final post = posts[index];
-              final savedPosts = ref.watch(savedPostsProvider).value ?? [];
-              final isSaved = savedPosts.any(
-                (p) => p['id'] == post.id || p['post_id'] == post.id,
-              );
-
-              String excerpt = '';
-              if (post.content['ops'] != null) {
-                for (var op in post.content['ops']) {
-                  if (op['insert'] is String) {
-                    excerpt += op['insert'];
-                    if (excerpt.length > 100) {
-                      excerpt = '${excerpt.substring(0, 100)}...';
-                      break;
-                    }
-                  }
-                }
-              }
-              return ScribesGridCard(
-                title: post.content['title'] ?? '',
-                excerpt: excerpt,
-                date: post.publishedAt,
-                isSaved: isSaved,
-                onSaveToggle: () {
-                  if (isSaved) {
-                    ref.read(savedPostsProvider.notifier).unsavePost(post.id);
-                    ScribesToast.show(
-                      context,
-                      'Post unsaved',
-                      colors,
-                      icon: HugeIcons.strokeRoundedRemove01,
-                    );
-                  } else {
-                    ref.read(savedPostsProvider.notifier).savePost(post.id);
-                    ScribesToast.show(
-                      context,
-                      'Post saved',
-                      colors,
-                      icon: HugeIcons.strokeRoundedCheckmarkBadge01,
-                    );
-                  }
-                },
-                onTap: () => context.push('/posts/${post.id}'),
-              );
-            }, childCount: posts.length),
-          ),
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final post = posts[index];
+            return ScribesPostTile(
+              post: post,
+              onTap: () => context.push('/posts/${post.id}'),
+            );
+          }, childCount: posts.length),
         );
       },
     );

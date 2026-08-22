@@ -30,11 +30,15 @@ SermonSource? _sermonSourceFromJson(dynamic value) {
     if (value.trim().isEmpty) return null;
     try {
       final decoded = jsonDecode(value);
-      if (decoded is Map<String, dynamic>) return SermonSource.fromJson(decoded);
+      if (decoded is Map<String, dynamic>) {
+        return SermonSource.fromJson(decoded);
+      }
       if (decoded is String) {
         try {
           final doubleDecoded = jsonDecode(decoded);
-          if (doubleDecoded is Map<String, dynamic>) return SermonSource.fromJson(doubleDecoded);
+          if (doubleDecoded is Map<String, dynamic>) {
+            return SermonSource.fromJson(doubleDecoded);
+          }
         } catch (_) {}
       }
     } catch (_) {}
@@ -54,21 +58,28 @@ abstract class Post with _$Post {
     @JsonKey(name: 'current_version') required int currentVersion,
     @JsonKey(name: 'is_correction') required bool isCorrection,
     @JsonKey(name: 'corrects_post_id') String? correctsPostId,
-    @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,
-    @JsonKey(name: 'scripture_refs') @Default([]) List<ScriptureRef> scriptureRefs,
+    @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)
+    SermonSource? sermonSource,
+    @JsonKey(name: 'scripture_refs')
+    @Default([])
+    List<ScriptureRef> scriptureRefs,
     @Default([]) List<String> tags,
     @JsonKey(name: 'is_deleted') required bool isDeleted,
     @JsonKey(name: 'cover_image_url') String? coverImageUrl,
     @JsonKey(name: 'post_type') @Default('standard') String postType,
     @JsonKey(name: 'published_at') required DateTime publishedAt,
-    
+
     // Joined author fields
     @JsonKey(name: 'author_handle') required String authorHandle,
     @JsonKey(name: 'author_name') required String authorName,
     @JsonKey(name: 'author_avatar_url') String? authorAvatarUrl,
-    
+
     // Aggregations from feed SQL
     @JsonKey(name: 'amen_count') @Default(0) int amenCount,
+    @JsonKey(name: 'insight_count') @Default(0) int insightCount,
+    @JsonKey(name: 'thought_provoking_count')
+    @Default(0)
+    int thoughtProvokingCount,
     @JsonKey(name: 'comment_count') @Default(0) int commentCount,
   }) = _Post;
 

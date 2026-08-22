@@ -30,20 +30,30 @@ class ScribesProfileDraftCard extends ConsumerWidget {
         margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: colors.background, // differentiate by using background color instead of surfaceRaised
+          color: colors
+              .background, // differentiate by using background color instead of surfaceRaised
           borderRadius: BorderRadius.circular(ScribesRadius.card),
-          border: Border.all(color: colors.border.withValues(alpha: 0.5), style: BorderStyle.solid),
+          border: Border.all(
+            color: colors.border.withValues(alpha: 0.5),
+            style: BorderStyle.solid,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                HugeIcon(icon: HugeIcons.strokeRoundedFileEdit, size: 16, color: colors.orange),
+                HugeIcon(
+                  icon: HugeIcons.strokeRoundedFileEdit,
+                  size: 16,
+                  color: colors.orange,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'DRAFT • Last updated ${updatedAt.day}/${updatedAt.month}/${updatedAt.year}',
-                  style: ScribesTextStyles.caption.copyWith(color: colors.orange),
+                  style: ScribesTextStyles.caption.copyWith(
+                    color: colors.orange,
+                  ),
                 ),
               ],
             ),
@@ -68,7 +78,7 @@ class ScribesProfileDraftCard extends ConsumerWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-            ]
+            ],
           ],
         ),
       ),

@@ -25,7 +25,10 @@ class NoteApi {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> updateNote(String id, Map<String, dynamic> payload) async {
+  Future<Map<String, dynamic>> updateNote(
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
     final response = await _dio.patch('${Endpoints.notes}/$id', data: payload);
     return response.data as Map<String, dynamic>;
   }

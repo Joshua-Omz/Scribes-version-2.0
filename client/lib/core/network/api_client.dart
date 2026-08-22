@@ -12,14 +12,17 @@ Dio apiClient(Ref ref) {
   final storage = ref.watch(secureStorageProvider);
   final baseUrl = dotenv.env['API_URL'] ?? 'http://localhost:8080';
 
-  final dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 60),
-    receiveTimeout: const Duration(seconds: 60),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  ));
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 60),
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    ),
+  );
 
   dio.interceptors.add(
     InterceptorsWrapper(
@@ -44,9 +47,10 @@ Dio apiClient(Ref ref) {
         } else if (e.response != null) {
           // print('API RAW ERROR: ${e.response?.statusCode} ${e.response?.data}');
           if (e.response!.statusCode == 404) {
-             message = 'Endpoint not found or resource does not exist (404)';
+            message = 'Endpoint not found or resource does not exist (404)';
           } else {
-             message = 'Server returned ${e.response!.statusCode}: ${e.response?.data}';
+            message =
+                'Server returned ${e.response!.statusCode}: ${e.response?.data}';
           }
         } else if (e.type == DioExceptionType.connectionTimeout) {
           message = 'Connection timed out';

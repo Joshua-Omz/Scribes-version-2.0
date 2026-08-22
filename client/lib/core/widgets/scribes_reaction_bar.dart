@@ -41,7 +41,7 @@ class ScribesReactionBar extends ConsumerWidget {
             label: 'Amen',
             count: amenCount.toString(),
             onTap: () => onReact('amen'),
-            color: colors.orange,
+            color: colors.primaryText,
             isSelected: userReactions.contains('amen'),
             colors: colors,
           ),
@@ -51,7 +51,7 @@ class ScribesReactionBar extends ConsumerWidget {
             label: 'Insight',
             count: insightCount.toString(),
             onTap: () => onReact('insightful'),
-            color: colors.gold,
+            color: colors.primaryText,
             isSelected: userReactions.contains('insightful'),
             colors: colors,
           ),
@@ -118,18 +118,7 @@ class _ReactionChip extends StatelessWidget {
       onTap: onTap,
       scaleFactor: 0.95,
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: displayColor.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    spreadRadius: 0,
-                  )
-                ]
-              : null,
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: BackdropFilter(
@@ -141,7 +130,9 @@ class _ReactionChip extends StatelessWidget {
                   color: displayColor.withValues(alpha: isSelected ? 1.0 : 0.2),
                 ),
                 borderRadius: BorderRadius.circular(16),
-                color: isSelected ? displayColor.withValues(alpha: 0.15) : displayColor.withValues(alpha: 0.05),
+                color: isSelected
+                    ? displayColor.withValues(alpha: 0.15)
+                    : displayColor.withValues(alpha: 0.05),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -151,7 +142,9 @@ class _ReactionChip extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       '$label $count',
-                      style: ScribesTextStyles.labelLg.copyWith(color: displayColor),
+                      style: ScribesTextStyles.labelLg.copyWith(
+                        color: displayColor,
+                      ),
                     ),
                   ],
                 ],

@@ -5,10 +5,9 @@ part 'reaction_count.g.dart';
 
 @freezed
 abstract class ReactionCount with _$ReactionCount {
-  const factory ReactionCount({
-    required String type,
-    required int count,
-  }) = _ReactionCount;
+  const factory ReactionCount({required String type, required int count}) =
+      _ReactionCount;
 
-  factory ReactionCount.fromJson(Map<String, dynamic> json) => _$ReactionCountFromJson(json);
+  factory ReactionCount.fromJson(Map<String, dynamic> json) =>
+      _$ReactionCountFromJson(json);
 }

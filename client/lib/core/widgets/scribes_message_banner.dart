@@ -13,7 +13,12 @@ class ScribesMessageBanner extends StatelessWidget {
     required this.onTap,
   });
 
-  static void show(BuildContext context, {required String title, required String message, required VoidCallback onTap}) {
+  static void show(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required VoidCallback onTap,
+  }) {
     final overlay = Overlay.of(context);
     late OverlayEntry entry;
 
@@ -69,7 +74,7 @@ class ScribesMessageBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -81,7 +86,7 @@ class ScribesMessageBanner extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFD4621A).withOpacity(0.2), // orange soft
+              color: const Color(0xFFD4621A).withValues(alpha: 0.2), // orange soft
               shape: BoxShape.circle,
             ),
             child: const HugeIcon(

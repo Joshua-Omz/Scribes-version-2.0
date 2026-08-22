@@ -1,20 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:scribes/core/network/api_exception.dart';
 
-
 class SearchApi {
   final Dio _client;
 
   SearchApi(this._client);
 
-  Future<List<dynamic>> searchPosts(String query, {int limit = 20, int offset = 0, String? scriptureBook, int? scriptureChapter}) async {
+  Future<List<dynamic>> searchPosts(
+    String query, {
+    int limit = 20,
+    int offset = 0,
+    String? scriptureBook,
+    int? scriptureChapter,
+  }) async {
     try {
-      final queryParams = {
-        'q': query,
-        'limit': limit,
-        'offset': offset,
-      };
-      
+      final queryParams = {'q': query, 'limit': limit, 'offset': offset};
+
       if (scriptureBook != null && scriptureBook.isNotEmpty) {
         queryParams['scripture_book'] = scriptureBook;
       }
@@ -26,7 +27,7 @@ class SearchApi {
         '/search/posts',
         queryParameters: queryParams,
       );
-      
+
       final data = response.data['posts'] as List<dynamic>?;
       return data ?? [];
     } on DioException catch (e) {
@@ -34,17 +35,17 @@ class SearchApi {
     }
   }
 
-  Future<List<dynamic>> searchAuthors(String query, {int limit = 20, int offset = 0}) async {
+  Future<List<dynamic>> searchAuthors(
+    String query, {
+    int limit = 20,
+    int offset = 0,
+  }) async {
     try {
       final response = await _client.get(
         '/search/users',
-        queryParameters: {
-          'q': query,
-          'limit': limit,
-          'offset': offset,
-        },
+        queryParameters: {'q': query, 'limit': limit, 'offset': offset},
       );
-      
+
       final data = response.data['authors'] as List<dynamic>?;
       return data ?? [];
     } on DioException catch (e) {
@@ -56,12 +57,9 @@ class SearchApi {
     try {
       final response = await _client.get(
         '/tags/suggest',
-        queryParameters: {
-          'q': query,
-          'limit': 10,
-        },
+        queryParameters: {'q': query, 'limit': 10},
       );
-      
+
       final data = response.data as List<dynamic>?;
       return data?.map((e) => e['name'].toString()).toList() ?? [];
     } on DioException catch (e) {

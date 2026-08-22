@@ -26,13 +26,18 @@ class AuthApi {
     required bool isChurch,
   }) async {
     try {
-      final response = await _dio.post(Endpoints.register, data: {
-        'email': email,
-        'handle': handle,
-        'display_name': displayName,
-        'password': password,
-        'is_church': isChurch,
-      }).timeout(const Duration(seconds: 10));
+      final response = await _dio
+          .post(
+            Endpoints.register,
+            data: {
+              'email': email,
+              'handle': handle,
+              'display_name': displayName,
+              'password': password,
+              'is_church': isChurch,
+            },
+          )
+          .timeout(const Duration(seconds: 10));
       return response.data as Map<String, dynamic>;
     } on TimeoutException {
       throw ApiException('Connection timed out', 408);
@@ -44,10 +49,9 @@ class AuthApi {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(Endpoints.login, data: {
-        'email': email,
-        'password': password,
-      }).timeout(const Duration(seconds: 10));
+      final response = await _dio
+          .post(Endpoints.login, data: {'email': email, 'password': password})
+          .timeout(const Duration(seconds: 10));
       return response.data as Map<String, dynamic>;
     } on TimeoutException {
       throw ApiException('Connection timed out', 408);
@@ -56,9 +60,9 @@ class AuthApi {
 
   Future<Map<String, dynamic>> loginWithGoogle(String idToken) async {
     try {
-      final response = await _dio.post(Endpoints.googleLogin, data: {
-        'id_token': idToken,
-      }).timeout(const Duration(seconds: 10));
+      final response = await _dio
+          .post(Endpoints.googleLogin, data: {'id_token': idToken})
+          .timeout(const Duration(seconds: 10));
       return response.data as Map<String, dynamic>;
     } on TimeoutException {
       throw ApiException('Connection timed out', 408);
@@ -94,9 +98,7 @@ class AuthApi {
   }
 
   Future<Map<String, dynamic>> updateTags(List<String> tags) async {
-    final response = await _dio.put(Endpoints.meTags, data: {
-      'tags': tags,
-    });
+    final response = await _dio.put(Endpoints.meTags, data: {'tags': tags});
     return response.data as Map<String, dynamic>;
   }
 
@@ -104,20 +106,20 @@ class AuthApi {
     required String newEmail,
     required String currentPassword,
   }) async {
-    await _dio.patch(Endpoints.updateEmail, data: {
-      'new_email': newEmail,
-      'current_password': currentPassword,
-    });
+    await _dio.patch(
+      Endpoints.updateEmail,
+      data: {'new_email': newEmail, 'current_password': currentPassword},
+    );
   }
 
   Future<void> updatePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
-    await _dio.patch(Endpoints.updatePassword, data: {
-      'current_password': currentPassword,
-      'new_password': newPassword,
-    });
+    await _dio.patch(
+      Endpoints.updatePassword,
+      data: {'current_password': currentPassword, 'new_password': newPassword},
+    );
   }
 
   Future<Map<String, dynamic>> getNotificationPreferences() async {
@@ -131,19 +133,23 @@ class AuthApi {
     required bool dmAlerts,
     required bool newFollowerAlerts,
   }) async {
-    final response = await _dio.patch(Endpoints.notificationPreferences, data: {
-      'push_enabled': pushEnabled,
-      'email_enabled': emailEnabled,
-      'dm_alerts': dmAlerts,
-      'new_follower_alerts': newFollowerAlerts,
-    });
+    final response = await _dio.patch(
+      Endpoints.notificationPreferences,
+      data: {
+        'push_enabled': pushEnabled,
+        'email_enabled': emailEnabled,
+        'dm_alerts': dmAlerts,
+        'new_follower_alerts': newFollowerAlerts,
+      },
+    );
     return response.data as Map<String, dynamic>;
   }
 
   Future<List<dynamic>> getSuggestedUsers({int limit = 10}) async {
-    final response = await _dio.get(Endpoints.suggestedUsers, queryParameters: {
-      'limit': limit,
-    });
+    final response = await _dio.get(
+      Endpoints.suggestedUsers,
+      queryParameters: {'limit': limit},
+    );
     return response.data as List<dynamic>;
   }
 }

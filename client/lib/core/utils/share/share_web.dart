@@ -13,12 +13,13 @@ class ShareImpl implements ShareInterface {
     String? subject,
   }) async {
     final bytes = Uint8List.fromList(utf8.encode(content));
-    
+
     // Map mime types to the simplified extension for FileSaver
     String ext = filename.split('.').last;
     MimeType saverMimeType = MimeType.text;
     if (ext == 'md') {
-      saverMimeType = MimeType.text; // file_saver doesn't have a specific markdown one
+      saverMimeType =
+          MimeType.text; // file_saver doesn't have a specific markdown one
     } else if (ext == 'txt') {
       saverMimeType = MimeType.text;
     }

@@ -45,7 +45,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
-      ref.read(conversationMessagesProvider(widget.conversationId).notifier).sendMessage(text, replyToId: _replyingTo?.id);
+      ref
+          .read(conversationMessagesProvider(widget.conversationId).notifier)
+          .sendMessage(text, replyToId: _replyingTo?.id);
       _messageController.clear();
       setState(() {
         _replyingTo = null;
@@ -62,10 +64,15 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
-    final messagesStream = ref.watch(conversationMessagesProvider(widget.conversationId));
+    final messagesStream = ref.watch(
+      conversationMessagesProvider(widget.conversationId),
+    );
     final currentUser = ref.watch(authProvider).value;
 
-    ref.listen(conversationMessagesProvider(widget.conversationId), (prev, next) {
+    ref.listen(conversationMessagesProvider(widget.conversationId), (
+      prev,
+      next,
+    ) {
       if (next.hasValue) {
         ref.read(lastReadProvider.notifier).markAsRead(widget.conversationId);
       }
@@ -77,13 +84,19 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
         title: _buildAppBarTitle(colors, currentUser?.id),
         actions: [
           PopupMenuButton<String>(
-            icon: HugeIcon(icon: HugeIcons.strokeRoundedMoreVerticalCircle01, color: colors.primaryText),
+            icon: HugeIcon(
+              icon: HugeIcons.strokeRoundedMoreVerticalCircle01,
+              color: colors.primaryText,
+            ),
             color: colors.surface,
             onSelected: (value) async {
               if (value == 'clear') {
@@ -91,23 +104,50 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: colors.surfaceRaised,
-                    title: Text('Clear Conversation?', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
-                    content: Text('This will delete all messages locally on this device.', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
+                    title: Text(
+                      'Clear Conversation?',
+                      style: ScribesTextStyles.bodyLg.copyWith(
+                        color: colors.primaryText,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    content: Text(
+                      'This will delete all messages locally on this device.',
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                      ),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        child: Text('Cancel', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                        child: Text(
+                          'Cancel',
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.primaryText,
+                          ),
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        child: Text('Clear', style: ScribesTextStyles.bodyMd.copyWith(color: colors.orange)),
+                        child: Text(
+                          'Clear',
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.orange,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 );
 
                 if (confirmed == true) {
-                  ref.read(conversationMessagesProvider(widget.conversationId).notifier).clearConversation();
+                  ref
+                      .read(
+                        conversationMessagesProvider(
+                          widget.conversationId,
+                        ).notifier,
+                      )
+                      .clearConversation();
                 }
               }
             },
@@ -116,9 +156,18 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 value: 'clear',
                 child: Row(
                   children: [
-                    HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: colors.orange, size: 20),
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedDelete01,
+                      color: colors.orange,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
-                    Text('Clear Conversation', style: ScribesTextStyles.bodyMd.copyWith(color: colors.orange)),
+                    Text(
+                      'Clear Conversation',
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.orange,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -126,9 +175,18 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 value: 'block',
                 child: Row(
                   children: [
-                    HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.primaryText, size: 20),
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedCancel01,
+                      color: colors.primaryText,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
-                    Text('Block User', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                    Text(
+                      'Block User',
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.primaryText,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -145,14 +203,21 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   return Center(
                     child: Text(
                       'No messages yet. Say hi!',
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                      ),
                     ),
                   );
                 }
 
                 return ListView.builder(
                   reverse: true, // Show newest at the bottom
-                  padding: EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 100 + MediaQuery.of(context).padding.bottom),
+                  padding: EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 24,
+                    bottom: 100 + MediaQuery.of(context).padding.bottom,
+                  ),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
@@ -187,94 +252,119 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   }) {
     final text = message.body;
     final timestamp = message.sentAt;
-    
+
     Message? replyMessage;
     if (message.replyToId != null) {
-      replyMessage = messages.where((m) => m.id == message.replyToId).firstOrNull;
+      replyMessage = messages
+          .where((m) => m.id == message.replyToId)
+          .firstOrNull;
     }
-    
+
     Widget bubble = Opacity(
       opacity: message.status == 'pending' ? 0.6 : 1.0,
       child: Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isMe ? colors.gold : colors.surfaceRaised,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 16),
-          ),
-          border: isMe ? null : Border.all(color: colors.border),
-        ),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Check if there is a reply
-            if (message.replyToId != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isMe ? Colors.white.withValues(alpha: 0.15) : colors.background,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.reply, size: 14, color: isMe ? Colors.white70 : colors.gold),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        replyMessage?.body ?? 'Original message unavailable',
-                        style: ScribesTextStyles.labelLg.copyWith(
-                          color: isMe ? Colors.white : colors.primaryText,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Text(
-              text,
-              style: ScribesTextStyles.bodyMd.copyWith(
-                color: isMe ? Colors.white : colors.primaryText,
-              ),
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isMe ? colors.gold : colors.surfaceRaised,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomLeft: Radius.circular(isMe ? 16 : 0),
+              bottomRight: Radius.circular(isMe ? 0 : 16),
             ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}',
-                  style: ScribesTextStyles.caption.copyWith(
-                    color: isMe ? Colors.white70 : colors.secondaryText,
-                    fontSize: 10,
+            border: isMe ? null : Border.all(color: colors.border),
+          ),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Check if there is a reply
+              if (message.replyToId != null)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : colors.background,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.reply,
+                        size: 14,
+                        color: isMe ? Colors.white70 : colors.gold,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          replyMessage?.body ?? 'Original message unavailable',
+                          style: ScribesTextStyles.labelLg.copyWith(
+                            color: isMe ? Colors.white : colors.primaryText,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                if (isMe) ...[
-                  const SizedBox(width: 4),
-                  if (message.status == 'pending')
-                    const HugeIcon(icon: HugeIcons.strokeRoundedTime01, size: 12, color: Colors.white70)
-                  else if (message.status == 'error')
-                    const HugeIcon(icon: HugeIcons.strokeRoundedAlert01, size: 12, color: Colors.redAccent)
-                  else
-                    const HugeIcon(icon: HugeIcons.strokeRoundedTick02, size: 12, color: Colors.white70),
+              Text(
+                text,
+                style: ScribesTextStyles.bodyMd.copyWith(
+                  color: isMe ? Colors.white : colors.primaryText,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}',
+                    style: ScribesTextStyles.caption.copyWith(
+                      color: isMe ? Colors.white70 : colors.secondaryText,
+                      fontSize: 10,
+                    ),
+                  ),
+                  if (isMe) ...[
+                    const SizedBox(width: 4),
+                    if (message.status == 'pending')
+                      const HugeIcon(
+                        icon: HugeIcons.strokeRoundedTime01,
+                        size: 12,
+                        color: Colors.white70,
+                      )
+                    else if (message.status == 'error')
+                      const HugeIcon(
+                        icon: HugeIcons.strokeRoundedAlert01,
+                        size: 12,
+                        color: Colors.redAccent,
+                      )
+                    else
+                      const HugeIcon(
+                        icon: HugeIcons.strokeRoundedTick02,
+                        size: 12,
+                        color: Colors.white70,
+                      ),
+                  ],
                 ],
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
 
     return Dismissible(
       key: ValueKey(message.id),
@@ -286,7 +376,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
-        child: HugeIcon(icon: HugeIcons.strokeRoundedArrowTurnBackward, color: colors.gold),
+        child: HugeIcon(
+          icon: HugeIcons.strokeRoundedArrowTurnBackward,
+          color: colors.gold,
+        ),
       ),
       child: bubble,
     );
@@ -314,11 +407,15 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                     children: [
                       Text(
                         'Replying to message',
-                        style: ScribesTextStyles.labelSm.copyWith(color: colors.gold),
+                        style: ScribesTextStyles.labelSm.copyWith(
+                          color: colors.gold,
+                        ),
                       ),
                       Text(
                         _replyingTo!.body,
-                        style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+                        style: ScribesTextStyles.bodyMd.copyWith(
+                          color: colors.primaryText,
+                        ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -326,7 +423,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, size: 20, color: colors.secondaryText),
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedCancel01,
+                    size: 20,
+                    color: colors.secondaryText,
+                  ),
                   onPressed: () {
                     setState(() {
                       _replyingTo = null;
@@ -353,18 +454,26 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                   isSearchPill: true,
                   minLines: 1,
                   maxLines: 5,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                margin: const EdgeInsets.only(bottom: 2), // Align with text field
+                margin: const EdgeInsets.only(
+                  bottom: 2,
+                ), // Align with text field
                 decoration: BoxDecoration(
                   color: colors.gold,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const HugeIcon(icon: HugeIcons.strokeRoundedSent, color: Colors.white),
+                  icon: const HugeIcon(
+                    icon: HugeIcons.strokeRoundedSent,
+                    color: Colors.white,
+                  ),
                   onPressed: _sendMessage,
                 ),
               ),
@@ -377,8 +486,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
   Widget _buildAppBarTitle(dynamic colors, String? currentUserId) {
     final conversations = ref.watch(conversationsProvider).value ?? [];
-    final conversation = conversations.where((c) => c.id == widget.conversationId).firstOrNull;
-    
+    final conversation = conversations
+        .where((c) => c.id == widget.conversationId)
+        .firstOrNull;
+
     if (conversation == null || currentUserId == null) {
       return Row(
         children: [
@@ -387,7 +498,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           Expanded(
             child: Text(
               'Conversation',
-              style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+              style: ScribesTextStyles.displayMd.copyWith(
+                color: colors.primaryText,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -396,7 +509,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       );
     }
 
-    final otherUserId = conversation.userAId == currentUserId ? conversation.userBId : conversation.userAId;
+    final otherUserId = conversation.userAId == currentUserId
+        ? conversation.userBId
+        : conversation.userAId;
     final authorState = ref.watch(commentAuthorProvider(otherUserId));
 
     return authorState.when(
@@ -405,7 +520,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         authorHandle: author.handle,
         onTap: () => context.push('/users/${author.id}'),
       ),
-      loading: () => const Row(children: [CircleAvatar(radius: 18, backgroundColor: Colors.grey)]),
+      loading: () => const Row(
+        children: [CircleAvatar(radius: 18, backgroundColor: Colors.grey)],
+      ),
       error: (e, st) => Row(
         children: [
           const ScribesAvatar(authorName: 'Unknown', radius: 18),
@@ -413,7 +530,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           Expanded(
             child: Text(
               'Unknown User',
-              style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+              style: ScribesTextStyles.displayMd.copyWith(
+                color: colors.primaryText,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

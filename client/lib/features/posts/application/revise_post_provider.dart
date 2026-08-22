@@ -11,15 +11,20 @@ class RevisePostNotifier extends _$RevisePostNotifier {
     return const AsyncData(null);
   }
 
-  Future<void> revisePost(String id, Map<String, dynamic> content, String? caption, List<String>? tags) async {
+  Future<void> revisePost(
+    String id,
+    Map<String, dynamic> content,
+    String? caption,
+    List<String>? tags,
+  ) async {
     state = const AsyncLoading();
     try {
       final postRepo = ref.read(postRepositoryProvider);
       await postRepo.revisePost(id, content, caption, tags);
-      
+
       // Invalidate the post detail so it fetches the new version
       ref.invalidate(postDetailProvider(id));
-      
+
       state = const AsyncData(null);
     } catch (e, stack) {
       state = AsyncError(e, stack);

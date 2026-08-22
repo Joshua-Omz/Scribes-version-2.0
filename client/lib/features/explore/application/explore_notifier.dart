@@ -6,10 +6,7 @@ import '../../feed/data/feed_repository.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/domain/user.dart';
 
-
 part 'explore_notifier.g.dart';
-
-
 
 @riverpod
 class ExploreSelectedTag extends _$ExploreSelectedTag {
@@ -20,8 +17,6 @@ class ExploreSelectedTag extends _$ExploreSelectedTag {
     state = tag;
   }
 }
-
-
 
 class ScriptureFilter {
   final String book;
@@ -57,7 +52,7 @@ class ExploreFilteredNotifier extends _$ExploreFilteredNotifier {
   Future<List<Post>> _fetch(String? cursor) async {
     final filter = ref.read(exploreScriptureFilterProvider);
     if (filter == null) return [];
-    
+
     final repo = ref.read(exploreRepositoryProvider);
     final response = await repo.getExplore(
       cursor: cursor,
@@ -92,6 +87,7 @@ class ExploreFilteredNotifier extends _$ExploreFilteredNotifier {
     }
   }
 }
+
 @riverpod
 class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
   String? _nextCursor;
@@ -104,7 +100,53 @@ class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
 
   Future<List<Post>> _fetch(String? cursor) async {
     final repo = ref.read(exploreRepositoryProvider);
-    final response = await repo.getRecommendations(sortType: 'overall', cursor: cursor);
+    final response = await repo.getRecommendations(
+      sortType: 'overall',
+      cursor: cursor,
+    );
+    _nextCursor = response.nextCursor;
+    return response.posts;
+  }
+
+  Future<void> loadMore() async {
+    if (_nextCursor == null) return;
+    if (state.isLoading || state.isRefreshing) return;
+
+    try {
+      final newPosts = await _fetch(_nextCursor);
+      final currentPosts = state.value ?? [];
+      state = AsyncData([...currentPosts, ...newPosts]);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    _nextCursor = null;
+    try {
+      final posts = await _fetch(null);
+      state = AsyncData(posts);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
+  }
+}
+
+@riverpod
+class ExploreDiscoverNotifier extends _$ExploreDiscoverNotifier {
+  String? _nextCursor;
+
+  bool get hasMore => _nextCursor != null;
+
+  @override
+  FutureOr<List<Post>> build() async {
+    return _fetch(null);
+  }
+
+  Future<List<Post>> _fetch(String? cursor) async {
+    final repo = ref.read(exploreRepositoryProvider);
+    final response = await repo.getExplore(cursor: cursor);
     _nextCursor = response.nextCursor;
     return response.posts;
   }
@@ -137,21 +179,30 @@ class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
 @riverpod
 Future<List<Post>> exploreInsightful(Ref ref) async {
   final repo = ref.watch(exploreRepositoryProvider);
-  final response = await repo.getRecommendations(sortType: 'insightful', limit: 10);
+  final response = await repo.getRecommendations(
+    sortType: 'insightful',
+    limit: 10,
+  );
   return response.posts;
 }
 
 @riverpod
 Future<List<Post>> exploreProphetic(Ref ref) async {
   final repo = ref.watch(exploreRepositoryProvider);
-  final response = await repo.getRecommendations(sortType: 'prophetic', limit: 10);
+  final response = await repo.getRecommendations(
+    sortType: 'prophetic',
+    limit: 10,
+  );
   return response.posts;
 }
 
 @riverpod
 Future<List<Post>> exploreAffirmed(Ref ref) async {
   final repo = ref.watch(exploreRepositoryProvider);
-  final response = await repo.getRecommendations(sortType: 'affirmed', limit: 10);
+  final response = await repo.getRecommendations(
+    sortType: 'affirmed',
+    limit: 10,
+  );
   return response.posts;
 }
 

@@ -13,15 +13,18 @@ import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/network/media_api.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
+import '../../auth/application/auth_notifier.dart';
 import '../application/compose_provider.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
+import '../../../core/widgets/scribes_image_resolver.dart';
 import '../../search/data/search_repository.dart';
 
 class PublishMetadataScreen extends ConsumerStatefulWidget {
   const PublishMetadataScreen({super.key});
 
   @override
-  ConsumerState<PublishMetadataScreen> createState() => _PublishMetadataScreenState();
+  ConsumerState<PublishMetadataScreen> createState() =>
+      _PublishMetadataScreenState();
 }
 
 class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
@@ -55,8 +58,8 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                 color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
-              )
-            ]
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -72,13 +75,18 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
               const SizedBox(height: 24),
               Text(
                 'Publish Post?',
-                style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+                style: ScribesTextStyles.displayMd.copyWith(
+                  color: colors.primaryText,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 'Publishing creates a public post that cannot be erased. It will be permanently added to your scroll and visible to your followers.',
                 textAlign: TextAlign.center,
-                style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText, height: 1.5),
+                style: ScribesTextStyles.bodyMd.copyWith(
+                  color: colors.secondaryText,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 32),
               Row(
@@ -87,10 +95,17 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                     child: TextButton(
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       onPressed: () => Navigator.pop(ctx),
-                      child: Text('Not yet', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
+                      child: Text(
+                        'Not yet',
+                        style: ScribesTextStyles.labelLg.copyWith(
+                          color: colors.secondaryText,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -101,22 +116,59 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                         foregroundColor: colors.surfaceRaised,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       onPressed: () {
                         Navigator.pop(ctx);
-                        ref.read(composeProvider.notifier).publishToCloud().then((_) {
+                        final authUser = ref.read(authProvider).value;
+                        if (authUser == null) {
+                          ScribesToast.show(
+                            context,
+                            'Please sign in or create an account to publish your post to the global scroll.',
+                            colors,
+                            isError: false,
+                          );
+                          context.push('/auth');
+                          return;
+                        }
+                        // Optimistically fire the publish operation
+                        ref
+                            .read(composeProvider.notifier)
+                            .publishToCloud()
+                            .catchError((err) {
+                              if (context.mounted) {
+                                ScribesToast.show(
+                                  context,
+                                  'Error publishing: $err',
+                                  colors,
+                                  isError: true,
+                                );
+                              }
+                            });
+
+                        // Immediately show the success toast
+                        ScribesToast.show(
+                          context,
+                          'Post published!',
+                          colors,
+                          icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+                        );
+
+                        // Wait 2 seconds before routing to the feed screen
+                        Future.delayed(const Duration(seconds: 2), () {
                           if (context.mounted) {
-                            ScribesToast.show(context, 'Post published!', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
                             context.go('/');
-                          }
-                        }).catchError((err) {
-                          if (context.mounted) {
-                            ScribesToast.show(context, 'Error publishing: $err', colors, isError: true);
                           }
                         });
                       },
-                      child: Text('Publish', style: ScribesTextStyles.labelLg.copyWith(fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'Publish',
+                        style: ScribesTextStyles.labelLg.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -158,6 +210,11 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
 
       if (croppedFile == null) return;
 
+      // 1. Set local cropped file path immediately for zero-latency preview
+      ref
+          .read(composeProvider.notifier)
+          .updateMetadata(coverImageUrl: croppedFile.path);
+
       setState(() => _isUploadingCover = true);
 
       final mediaApi = ref.read(mediaApiProvider);
@@ -168,16 +225,29 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
         mimeType = 'image/webp';
       }
 
-      final uploadedUrl = await mediaApi.uploadImage(File(croppedFile.path), mimeType);
-      
-      ref.read(composeProvider.notifier).updateMetadata(coverImageUrl: uploadedUrl);
+      try {
+        final uploadedUrl = await mediaApi.uploadImage(
+          File(croppedFile.path),
+          mimeType,
+        );
 
-      if (mounted) {
-        ScribesToast.show(context, 'Cover image added!', colors);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScribesToast.show(context, 'Failed to upload image: $e', colors, isError: true);
+        ref
+            .read(composeProvider.notifier)
+            .updateMetadata(coverImageUrl: uploadedUrl);
+
+        if (mounted) {
+          ScribesToast.show(context, 'Cover image added!', colors);
+        }
+      } catch (e) {
+        // If remote upload fails, retain local image path so preview works seamlessly
+        if (mounted) {
+          ScribesToast.show(
+            context,
+            'Cover image set locally ($e)',
+            colors,
+            isError: false,
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _isUploadingCover = false);
@@ -185,7 +255,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
   }
 
   void _removeCoverImage() {
-    ref.read(composeProvider.notifier).updateMetadata(coverImageUrl: null);
+    ref.read(composeProvider.notifier).clearCoverImage();
   }
 
   @override
@@ -199,29 +269,49 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () {
             context.pop(); // Go back to Preview
           },
         ),
         title: Text(
           'Post Details',
-          style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
         ),
         centerTitle: true,
         actions: [
           TextButton(
             onPressed: () {
               if (composeState.title.trim().isEmpty) {
-                ScribesToast.show(context, 'Please add a title before publishing.', colors, isError: true);
+                ScribesToast.show(
+                  context,
+                  'Please add a title before publishing.',
+                  colors,
+                  isError: true,
+                );
                 return;
               }
               if (composeState.contentDelta == null) {
-                ScribesToast.show(context, 'Post body cannot be empty.', colors, isError: true);
+                ScribesToast.show(
+                  context,
+                  'Post body cannot be empty.',
+                  colors,
+                  isError: true,
+                );
                 return;
               }
               if (composeState.scriptureRefs.length < 2) {
-                ScribesToast.show(context, 'Please add between 2 and 3 scripture tags.', colors, isError: true);
+                ScribesToast.show(
+                  context,
+                  'Please add between 2 and 3 scripture tags.',
+                  colors,
+                  isError: true,
+                );
                 return;
               }
               _showPublishConfirmation(context, ref);
@@ -248,29 +338,36 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                   children: [
                     Text(
                       'Context is everything.',
-                      style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
+                      style: ScribesTextStyles.displayLg.copyWith(
+                        color: colors.primaryText,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Add optional metadata to help others discover your post.',
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText, height: 1.5),
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),
               ),
-              
+
               // Form Area
               Container(
                 decoration: BoxDecoration(
                   color: colors.surface,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                   border: Border(top: BorderSide(color: colors.border)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, -4),
-                    )
+                    ),
                   ],
                 ),
                 padding: const EdgeInsets.all(24),
@@ -280,7 +377,10 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                     // Post Type Selection
                     Text(
                       'Post Type',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                      style: ScribesTextStyles.labelSm.copyWith(
+                        color: colors.secondaryText,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Container(
@@ -293,18 +393,28 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => ref.read(composeProvider.notifier).updateMetadata(postType: 'standard'),
+                              onTap: () => ref
+                                  .read(composeProvider.notifier)
+                                  .updateMetadata(postType: 'standard'),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: composeState.postType == 'standard' ? colors.gold.withOpacity(0.1) : Colors.transparent,
-                                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                                  color: composeState.postType == 'standard'
+                                      ? colors.gold.withValues(alpha: 0.1)
+                                      : Colors.transparent,
+                                  borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(8),
+                                  ),
                                 ),
                                 child: Center(
                                   child: Text(
                                     'Standard',
                                     style: ScribesTextStyles.labelLg.copyWith(
-                                      color: composeState.postType == 'standard' ? colors.gold : colors.secondaryText,
+                                      color: composeState.postType == 'standard'
+                                          ? colors.gold
+                                          : colors.secondaryText,
                                     ),
                                   ),
                                 ),
@@ -314,18 +424,28 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                           Container(width: 1, height: 24, color: colors.border),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => ref.read(composeProvider.notifier).updateMetadata(postType: 'passage'),
+                              onTap: () => ref
+                                  .read(composeProvider.notifier)
+                                  .updateMetadata(postType: 'passage'),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: composeState.postType == 'passage' ? colors.gold.withOpacity(0.1) : Colors.transparent,
-                                  borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                                  color: composeState.postType == 'passage'
+                                      ? colors.gold.withValues(alpha: 0.1)
+                                      : Colors.transparent,
+                                  borderRadius: const BorderRadius.horizontal(
+                                    right: Radius.circular(8),
+                                  ),
                                 ),
                                 child: Center(
                                   child: Text(
                                     'Passage',
                                     style: ScribesTextStyles.labelLg.copyWith(
-                                      color: composeState.postType == 'passage' ? colors.gold : colors.secondaryText,
+                                      color: composeState.postType == 'passage'
+                                          ? colors.gold
+                                          : colors.secondaryText,
                                     ),
                                   ),
                                 ),
@@ -336,7 +456,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Cover Image Selection (Standard posts only)
                     if (composeState.postType == 'standard') ...[
                       Row(
@@ -344,7 +464,10 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                         children: [
                           Text(
                             'Cover Image',
-                            style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                            style: ScribesTextStyles.labelSm.copyWith(
+                              color: colors.secondaryText,
+                              letterSpacing: 1.2,
+                            ),
                           ),
                           if (composeState.coverImageUrl != null)
                             TextButton(
@@ -354,13 +477,20 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                                 minimumSize: const Size(0, 0),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                              child: Text('Remove', style: ScribesTextStyles.labelSm.copyWith(color: colors.orange)),
+                              child: Text(
+                                'Remove',
+                                style: ScribesTextStyles.labelSm.copyWith(
+                                  color: colors.orange,
+                                ),
+                              ),
                             ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       GestureDetector(
-                        onTap: _isUploadingCover ? null : _pickAndUploadCoverImage,
+                        onTap: _isUploadingCover
+                            ? null
+                            : _pickAndUploadCoverImage,
                         child: Container(
                           width: double.infinity,
                           height: 180,
@@ -368,27 +498,109 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             color: colors.surface,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: colors.border),
-                            image: composeState.coverImageUrl != null
-                                ? DecorationImage(
-                                    image: NetworkImage(composeState.coverImageUrl!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
                           ),
+                          clipBehavior: Clip.antiAlias,
                           child: _isUploadingCover
-                              ? Center(child: CircularProgressIndicator(color: colors.gold))
-                              : composeState.coverImageUrl == null
-                                  ? Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                    color: colors.gold,
+                                  ),
+                                )
+                              : composeState.coverImageUrl != null &&
+                                      composeState.coverImageUrl!.isNotEmpty
+                                  ? Stack(
                                       children: [
-                                        HugeIcon(icon: HugeIcons.strokeRoundedImage01, color: colors.secondaryText, size: 32),
-                                        const SizedBox(height: 8),
-                                        Text('Add Cover Image (Optional)', style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText)),
-                                        const SizedBox(height: 4),
-                                        Text('Recommended aspect ratio: 16:9', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
+                                        Positioned.fill(
+                                          child: ScribesImageResolver.buildImage(
+                                            imageUrl:
+                                                composeState.coverImageUrl,
+                                            fit: BoxFit.cover,
+                                            memCacheWidth: 800,
+                                            placeholder: (context, url) =>
+                                                Center(
+                                              child: CircularProgressIndicator(
+                                                color: colors.gold,
+                                              ),
+                                            ),
+                                            errorWidget: (context, url, err) =>
+                                                Center(
+                                              child: Text(
+                                                'Failed to load image preview',
+                                                style: ScribesTextStyles.caption
+                                                    .copyWith(
+                                                  color: colors.orange,
+                                                ),
+                                              ),
+                                            ),
+                                            fallback: Container(
+                                              color: colors.surfaceRaised,
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          right: 8,
+                                          bottom: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black54,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                HugeIcon(
+                                                  icon: HugeIcons
+                                                      .strokeRoundedPencil,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Change',
+                                                  style: ScribesTextStyles
+                                                      .caption
+                                                      .copyWith(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     )
-                                  : null,
+                                  : Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        HugeIcon(
+                                          icon: HugeIcons.strokeRoundedImage01,
+                                          color: colors.secondaryText,
+                                          size: 32,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Add Cover Image (Optional)',
+                                          style: ScribesTextStyles.labelLg
+                                              .copyWith(
+                                            color: colors.secondaryText,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Recommended aspect ratio: 16:9',
+                                          style: ScribesTextStyles.caption
+                                              .copyWith(
+                                            color: colors.secondaryText,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -403,20 +615,37 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                           children: [
                             Text(
                               'Scripture Tags',
-                              style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                              style: ScribesTextStyles.labelSm.copyWith(
+                                color: colors.secondaryText,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Add 2 to 3 scripture references.',
-                              style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText.withValues(alpha: 0.7)),
+                              style: ScribesTextStyles.caption.copyWith(
+                                color: colors.secondaryText.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                         if (composeState.scriptureRefs.length < 3)
                           TextButton.icon(
-                            icon: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign, size: 16, color: colors.gold),
-                            label: Text('Add', style: ScribesTextStyles.labelLg.copyWith(color: colors.gold)),
-                            onPressed: () => _showAddScriptureSheet(context, ref, colors),
+                            icon: HugeIcon(
+                              icon: HugeIcons.strokeRoundedPlusSign,
+                              size: 16,
+                              color: colors.gold,
+                            ),
+                            label: Text(
+                              'Add',
+                              style: ScribesTextStyles.labelLg.copyWith(
+                                color: colors.gold,
+                              ),
+                            ),
+                            onPressed: () =>
+                                _showAddScriptureSheet(context, ref, colors),
                           ),
                       ],
                     ),
@@ -432,13 +661,19 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                           return InputChip(
                             label: Text(
                               refStr,
-                              style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                              style: ScribesTextStyles.labelLg.copyWith(
+                                color: colors.primaryText,
+                              ),
                             ),
-                            onDeleted: () => ref.read(composeProvider.notifier).removeScriptureRef(refData),
+                            onDeleted: () => ref
+                                .read(composeProvider.notifier)
+                                .removeScriptureRef(refData),
                             backgroundColor: colors.surfaceRaised,
                             deleteIconColor: colors.secondaryText,
                             side: BorderSide(color: colors.border),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           );
                         }).toList(),
                       ),
@@ -448,12 +683,17 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Tags',
-                      style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold),
+                      style: ScribesTextStyles.labelLg.copyWith(
+                        color: colors.primaryText,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Add up to 8 tags to help others find your post (e.g. grace, prophecy).',
-                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText.withValues(alpha: 0.7)),
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText.withValues(alpha: 0.7),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     if (composeState.tags.isNotEmpty)
@@ -473,51 +713,73 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             onDeleted: () {
                               ref.read(composeProvider.notifier).removeTag(tag);
                             },
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           );
                         }).toList(),
                       ),
-                    if (composeState.tags.isNotEmpty) const SizedBox(height: 12),
+                    if (composeState.tags.isNotEmpty)
+                      const SizedBox(height: 12),
                     if (composeState.tags.length < 8)
                       RawAutocomplete<String>(
                         focusNode: _tagFocusNode,
                         textEditingController: _tagController,
-                        optionsBuilder: (TextEditingValue textEditingValue) async {
-                          final query = textEditingValue.text.replaceAll(',', '').trim();
-                          if (query.isEmpty) return const Iterable<String>.empty();
-                          try {
-                            final repo = ref.read(searchRepositoryProvider);
-                            return await repo.suggestTags(query);
-                          } catch (_) {
-                            return const Iterable<String>.empty();
-                          }
-                        },
+                        optionsBuilder:
+                            (TextEditingValue textEditingValue) async {
+                              final query = textEditingValue.text
+                                  .replaceAll(',', '')
+                                  .trim();
+                              if (query.isEmpty) {
+                                return const Iterable<String>.empty();
+                              }
+                              try {
+                                final repo = ref.read(searchRepositoryProvider);
+                                return await repo.suggestTags(query);
+                              } catch (_) {
+                                return const Iterable<String>.empty();
+                              }
+                            },
                         onSelected: (String selection) {
                           ref.read(composeProvider.notifier).addTag(selection);
                           _tagController.clear();
                         },
-                        fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                          return ScribesTextField(
-                            controller: textEditingController,
-                            focusNode: focusNode,
-                            hintText: 'Add a tag (press Enter or comma)',
-                            onSubmitted: (value) {
-                              if (value.trim().isNotEmpty) {
-                                ref.read(composeProvider.notifier).addTag(value);
-                                textEditingController.clear();
-                              }
+                        fieldViewBuilder:
+                            (
+                              context,
+                              textEditingController,
+                              focusNode,
+                              onFieldSubmitted,
+                            ) {
+                              return ScribesTextField(
+                                controller: textEditingController,
+                                focusNode: focusNode,
+                                hintText: 'Add a tag (press Enter or comma)',
+                                onSubmitted: (value) {
+                                  if (value.trim().isNotEmpty) {
+                                    ref
+                                        .read(composeProvider.notifier)
+                                        .addTag(value);
+                                    textEditingController.clear();
+                                  }
+                                },
+                                onChanged: (value) {
+                                  if (value.endsWith(',') ||
+                                      value.endsWith(' ')) {
+                                    final tag = value.substring(
+                                      0,
+                                      value.length - 1,
+                                    );
+                                    if (tag.trim().isNotEmpty) {
+                                      ref
+                                          .read(composeProvider.notifier)
+                                          .addTag(tag);
+                                      textEditingController.clear();
+                                    }
+                                  }
+                                },
+                              );
                             },
-                            onChanged: (value) {
-                              if (value.endsWith(',') || value.endsWith(' ')) {
-                                final tag = value.substring(0, value.length - 1);
-                                if (tag.trim().isNotEmpty) {
-                                  ref.read(composeProvider.notifier).addTag(tag);
-                                  textEditingController.clear();
-                                }
-                              }
-                            },
-                          );
-                        },
                         optionsViewBuilder: (context, onSelected, options) {
                           return Align(
                             alignment: Alignment.topLeft,
@@ -526,18 +788,30 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                               borderRadius: BorderRadius.circular(8),
                               color: colors.surface,
                               child: ConstrainedBox(
-                                constraints: BoxConstraints(maxHeight: 200, maxWidth: MediaQuery.of(context).size.width - 48),
+                                constraints: BoxConstraints(
+                                  maxHeight: 200,
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width - 48,
+                                ),
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   shrinkWrap: true,
                                   itemCount: options.length,
                                   itemBuilder: (context, index) {
-                                    final String option = options.elementAt(index);
+                                    final String option = options.elementAt(
+                                      index,
+                                    );
                                     return InkWell(
                                       onTap: () => onSelected(option),
                                       child: Padding(
                                         padding: const EdgeInsets.all(16.0),
-                                        child: Text('#$option', style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText)),
+                                        child: Text(
+                                          '#$option',
+                                          style: ScribesTextStyles.bodyMd
+                                              .copyWith(
+                                                color: colors.primaryText,
+                                              ),
+                                        ),
                                       ),
                                     );
                                   },
@@ -552,7 +826,10 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                     // Caption Field
                     Text(
                       'Caption',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                      style: ScribesTextStyles.labelSm.copyWith(
+                        color: colors.secondaryText,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     ScribesTextField(
@@ -560,14 +837,19 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                       maxLines: 4,
                       minLines: 2,
                       hintText: 'Share a thought about this note...',
-                      onChanged: (value) => ref.read(composeProvider.notifier).updateMetadata(caption: value),
+                      onChanged: (value) => ref
+                          .read(composeProvider.notifier)
+                          .updateMetadata(caption: value),
                     ),
                     const SizedBox(height: 40),
 
                     // Sermon Details Section
                     Text(
                       'Sermon Details',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                      style: ScribesTextStyles.labelSm.copyWith(
+                        color: colors.secondaryText,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -584,8 +866,14 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             initialValue: composeState.sermonSource?.preacher,
                             colors: colors,
                             onChanged: (value) {
-                              final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                              ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(preacher: value));
+                              final src =
+                                  composeState.sermonSource ??
+                                  const SermonSource(preacher: '');
+                              ref
+                                  .read(composeProvider.notifier)
+                                  .updateMetadata(
+                                    sermonSource: src.copyWith(preacher: value),
+                                  );
                             },
                           ),
                           Divider(height: 1, color: colors.border, indent: 48),
@@ -595,8 +883,14 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             initialValue: composeState.sermonSource?.church,
                             colors: colors,
                             onChanged: (value) {
-                              final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                              ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(church: value));
+                              final src =
+                                  composeState.sermonSource ??
+                                  const SermonSource(preacher: '');
+                              ref
+                                  .read(composeProvider.notifier)
+                                  .updateMetadata(
+                                    sermonSource: src.copyWith(church: value),
+                                  );
                             },
                           ),
                           Divider(height: 1, color: colors.border, indent: 48),
@@ -606,8 +900,14 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             initialValue: composeState.sermonSource?.series,
                             colors: colors,
                             onChanged: (value) {
-                              final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                              ref.read(composeProvider.notifier).updateMetadata(sermonSource: src.copyWith(series: value));
+                              final src =
+                                  composeState.sermonSource ??
+                                  const SermonSource(preacher: '');
+                              ref
+                                  .read(composeProvider.notifier)
+                                  .updateMetadata(
+                                    sermonSource: src.copyWith(series: value),
+                                  );
                             },
                           ),
                           Divider(height: 1, color: colors.border, indent: 48),
@@ -633,29 +933,55 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                                 },
                               );
                               if (date != null) {
-                                final src = composeState.sermonSource ?? const SermonSource(preacher: '');
-                                ref.read(composeProvider.notifier).updateMetadata(
-                                  sermonSource: src.copyWith(date: date.toIso8601String().split('T')[0]),
-                                );
+                                final src =
+                                    composeState.sermonSource ??
+                                    const SermonSource(preacher: '');
+                                ref
+                                    .read(composeProvider.notifier)
+                                    .updateMetadata(
+                                      sermonSource: src.copyWith(
+                                        date: date.toIso8601String().split(
+                                          'T',
+                                        )[0],
+                                      ),
+                                    );
                               }
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
                               child: Row(
                                 children: [
-                                  HugeIcon(icon: HugeIcons.strokeRoundedCalendar01, size: 20, color: colors.secondaryText),
+                                  HugeIcon(
+                                    icon: HugeIcons.strokeRoundedCalendar01,
+                                    size: 20,
+                                    color: colors.secondaryText,
+                                  ),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Text(
-                                      composeState.sermonSource?.date ?? 'Date Preached',
+                                      composeState.sermonSource?.date ??
+                                          'Date Preached',
                                       style: ScribesTextStyles.bodyMd.copyWith(
-                                        color: composeState.sermonSource?.date == null 
-                                          ? colors.secondaryText.withValues(alpha: 0.5) 
-                                          : colors.primaryText,
+                                        color:
+                                            composeState.sermonSource?.date ==
+                                                null
+                                            ? colors.secondaryText.withValues(
+                                                alpha: 0.5,
+                                              )
+                                            : colors.primaryText,
                                       ),
                                     ),
                                   ),
-                                  HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, size: 20, color: colors.secondaryText.withValues(alpha: 0.5)),
+                                  HugeIcon(
+                                    icon: HugeIcons.strokeRoundedArrowRight01,
+                                    size: 20,
+                                    color: colors.secondaryText.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -699,20 +1025,26 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
     );
   }
 
-  void _showAddScriptureSheet(BuildContext context, WidgetRef ref, dynamic colors) {
+  void _showAddScriptureSheet(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
     ScribesScriptureSelector.show(
       context,
       colors: colors,
       onSelected: (book, chapter, verseStart, verseEnd) {
         if (chapter != null && verseStart != null) {
-          ref.read(composeProvider.notifier).addScriptureRef(
-            ScriptureRef(
-              book: book,
-              chapter: chapter,
-              verseStart: verseStart,
-              verseEnd: verseEnd,
-            ),
-          );
+          ref
+              .read(composeProvider.notifier)
+              .addScriptureRef(
+                ScriptureRef(
+                  book: book,
+                  chapter: chapter,
+                  verseStart: verseStart,
+                  verseEnd: verseEnd,
+                ),
+              );
         }
       },
     );

@@ -47,4 +47,13 @@ class Endpoints {
   // Media
   static const String mediaUploadPresign = '/media/upload/presign';
   static const String mediaUploadConfirm = '/media/upload/confirm';
+
+  // Bible
+  static const String bibleBooks = '/bible/books';
+  static String bibleChapter(String book, int chapter) =>
+      '/bible/$book/$chapter';
+  static String bibleVerseRange(String book, int chapter, String range) =>
+      '/bible/$book/$chapter/$range';
+  static const String bibleSearch = '/bible/search';
+  static const String bibleReadingPosition = '/bible/reading-position';
 }

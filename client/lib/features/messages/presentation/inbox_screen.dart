@@ -1,11 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scribes/core/theme/theme_provider.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
-import 'package:scribes/core/widgets/scribes_tab_bar.dart';
-import 'package:scribes/core/widgets/scribes_tab_bar_delegate.dart';
+
 import 'package:scribes/core/widgets/scribes_avatar.dart';
 import 'package:scribes/core/widgets/scribes_empty_state.dart';
 import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
@@ -24,19 +24,29 @@ class InboxScreen extends ConsumerStatefulWidget {
   ConsumerState<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProviderStateMixin {
+class _InboxScreenState extends ConsumerState<InboxScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isMultiSelectMode = false;
   final Set<String> _selectedIds = {};
+  Timer? _pollingTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      ref.read(messageRepositoryProvider).syncMissedMessages();
+    });
   }
 
   @override
   void dispose() {
+    _pollingTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -54,25 +64,35 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
               backgroundColor: colors.background,
               elevation: 0,
               pinned: true,
-              leading: _isMultiSelectMode ? IconButton(
-                icon: HugeIcon(
-                    icon: HugeIcons.strokeRoundedCancel01, 
-                    color: colors.primaryText),
-                onPressed: () {
-                  setState(() {
-                    _isMultiSelectMode = false;
-                    _selectedIds.clear();
-                  });
-                },
-              ) : null,
+              leading: _isMultiSelectMode
+                  ? IconButton(
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedCancel01,
+                        color: colors.primaryText,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isMultiSelectMode = false;
+                          _selectedIds.clear();
+                        });
+                      },
+                    )
+                  : null,
               title: Text(
-                _isMultiSelectMode ? '${_selectedIds.length} Selected' : 'Direct Messages', 
-                style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)
+                _isMultiSelectMode
+                    ? '${_selectedIds.length} Selected'
+                    : 'Direct Messages',
+                style: ScribesTextStyles.displayMd.copyWith(
+                  color: colors.primaryText,
+                ),
               ),
               actions: [
                 if (!_isMultiSelectMode)
                   IconButton(
-                    icon: HugeIcon(icon: HugeIcons.strokeRoundedSearch01, color: colors.primaryText),
+                    icon: HugeIcon(
+                      icon: HugeIcons.strokeRoundedSearch01,
+                      color: colors.primaryText,
+                    ),
                     onPressed: () {
                       showSearch(
                         context: context,
@@ -82,10 +102,15 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
                   ),
                 if (_isMultiSelectMode)
                   IconButton(
-                    icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: colors.orange),
+                    icon: HugeIcon(
+                      icon: HugeIcons.strokeRoundedDelete01,
+                      color: colors.orange,
+                    ),
                     onPressed: () async {
                       if (_selectedIds.isNotEmpty) {
-                        await ref.read(conversationsProvider.notifier).hideConversations(_selectedIds.toList());
+                        await ref
+                            .read(conversationsProvider.notifier)
+                            .hideConversations(_selectedIds.toList());
                         setState(() {
                           _isMultiSelectMode = false;
                           _selectedIds.clear();
@@ -94,28 +119,29 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
                     },
                   ),
               ],
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: ScribesTabBarDelegate(
-                child: ScribesTabBar(
-                  selectedIndex: _tabController.index,
-                  tabs: const ['Messages', 'Requests'],
-                  onTabChanged: (index) {
-                    _tabController.animateTo(index);
-                    setState(() {});
-                  },
+              bottom: TabBar(
+                controller: _tabController,
+                indicatorColor: colors.primaryText,
+                indicatorWeight: 2,
+                labelColor: colors.primaryText,
+                unselectedLabelColor: colors.secondaryText,
+                labelStyle: ScribesTextStyles.labelLg.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
+                unselectedLabelStyle: ScribesTextStyles.labelLg.copyWith(
+                  fontWeight: FontWeight.w400,
+                ),
+                tabs: const [
+                  Tab(text: 'Messages'),
+                  Tab(text: 'Requests'),
+                ],
               ),
             ),
           ];
         },
         body: TabBarView(
           controller: _tabController,
-          children: [
-            _buildMessagesTab(),
-            _buildRequestsTab(),
-          ],
+          children: [_buildMessagesTab(), _buildRequestsTab()],
         ),
       ),
     );
@@ -139,7 +165,8 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
         }
 
         return RefreshIndicator(
-          onRefresh: () async => ref.read(conversationsProvider.notifier).refresh(),
+          onRefresh: () async =>
+              ref.read(conversationsProvider.notifier).refresh(),
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: conversations.length,
@@ -147,8 +174,10 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with SingleTickerProv
             itemBuilder: (context, index) {
               final conversation = conversations[index];
               final isUserA = conversation.userAId == currentUser?.id;
-              final otherUserId = isUserA ? conversation.userBId : conversation.userAId;
-              
+              final otherUserId = isUserA
+                  ? conversation.userBId
+                  : conversation.userAId;
+
               return _ConversationTile(
                 conversation: conversation,
                 otherUserId: otherUserId,
@@ -254,7 +283,9 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Material(
-        color: widget.isSelected ? widget.colors.surfaceRaised : Colors.transparent,
+        color: widget.isSelected
+            ? widget.colors.surfaceRaised
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -266,15 +297,27 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
               children: [
                 if (widget.isMultiSelectMode) ...[
                   Icon(
-                    widget.isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: widget.isSelected ? widget.colors.orange : widget.colors.secondaryText,
+                    widget.isSelected
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color: widget.isSelected
+                        ? widget.colors.orange
+                        : widget.colors.secondaryText,
                   ),
                   const SizedBox(width: 12),
                 ],
                 authorState.when(
-                  data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 26),
-                  loading: () => const CircleAvatar(radius: 26, backgroundColor: Colors.grey),
-                  error: (_, _) => const ScribesAvatar(authorName: 'Unknown', radius: 26),
+                  data: (author) => ScribesAvatar(
+                    authorName: author.safeDisplayName,
+                    imageUrl: author.avatarUrl,
+                    radius: 26,
+                  ),
+                  loading: () => const CircleAvatar(
+                    radius: 26,
+                    backgroundColor: Colors.grey,
+                  ),
+                  error: (_, _) =>
+                      const ScribesAvatar(authorName: 'Unknown', radius: 26),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -284,16 +327,31 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
                       authorState.when(
                         data: (author) => Text(
                           author.safeDisplayName,
-                          style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold),
+                          style: ScribesTextStyles.bodyLg.copyWith(
+                            color: widget.colors.primaryText,
+                            fontWeight: FontWeight.bold,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
-                        error: (_, _) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: widget.colors.primaryText, fontWeight: FontWeight.bold)),
+                        loading: () => Container(
+                          width: 100,
+                          height: 14,
+                          color: Colors.grey.withValues(alpha: 0.3),
+                        ),
+                        error: (_, _) => Text(
+                          'Unknown User',
+                          style: ScribesTextStyles.bodyLg.copyWith(
+                            color: widget.colors.primaryText,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       StreamBuilder<List<Message>>(
-                        stream: ref.watch(messageRepositoryProvider).watchMessages(widget.conversation.id),
+                        stream: ref
+                            .watch(messageRepositoryProvider)
+                            .watchMessages(widget.conversation.id),
                         builder: (context, snapshot) {
                           final messages = snapshot.data ?? [];
                           final lastMessage = messages.firstOrNull;
@@ -301,12 +359,13 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
                           if (lastMessage == null) {
                             return Text(
                               'Tap to view conversation',
-                              style: ScribesTextStyles.bodyMd.copyWith(color: widget.colors.secondaryText),
+                              style: ScribesTextStyles.bodyMd.copyWith(
+                                color: widget.colors.secondaryText,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             );
                           }
-
 
                           final unreadCount = widget.conversation.unreadCount;
                           final isUnread = unreadCount > 0;
@@ -317,8 +376,12 @@ class _ConversationTileState extends ConsumerState<_ConversationTile> {
                                 child: Text(
                                   lastMessage.body,
                                   style: ScribesTextStyles.bodyMd.copyWith(
-                                    color: isUnread ? widget.colors.primaryText : widget.colors.secondaryText,
-                                    fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+                                    color: isUnread
+                                        ? widget.colors.primaryText
+                                        : widget.colors.secondaryText,
+                                    fontWeight: isUnread
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -376,9 +439,17 @@ class _RequestTile extends ConsumerWidget {
           Row(
             children: [
               authorState.when(
-                data: (author) => ScribesAvatar(authorName: author.safeDisplayName, radius: 20),
-                loading: () => const CircleAvatar(radius: 20, backgroundColor: Colors.grey),
-                error: (_, _) => const ScribesAvatar(authorName: 'Unknown', radius: 20),
+                data: (author) => ScribesAvatar(
+                  authorName: author.safeDisplayName,
+                  imageUrl: author.avatarUrl,
+                  radius: 20,
+                ),
+                loading: () => const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey,
+                ),
+                error: (_, _) =>
+                    const ScribesAvatar(authorName: 'Unknown', radius: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -388,16 +459,31 @@ class _RequestTile extends ConsumerWidget {
                     children: [
                       Text(
                         isOutgoing ? 'Sent request to' : 'Request from',
-                        style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                        style: ScribesTextStyles.labelSm.copyWith(
+                          color: colors.secondaryText,
+                        ),
                       ),
                       Text(
                         author.safeDisplayName,
-                        style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold),
+                        style: ScribesTextStyles.bodyLg.copyWith(
+                          color: colors.primaryText,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
-                  loading: () => Container(width: 100, height: 14, color: Colors.grey.withValues(alpha: 0.3)),
-                  error: (_, _) => Text('Unknown User', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText, fontWeight: FontWeight.bold)),
+                  loading: () => Container(
+                    width: 100,
+                    height: 14,
+                    color: Colors.grey.withValues(alpha: 0.3),
+                  ),
+                  error: (_, _) => Text(
+                    'Unknown User',
+                    style: ScribesTextStyles.bodyLg.copyWith(
+                      color: colors.primaryText,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -411,7 +497,9 @@ class _RequestTile extends ConsumerWidget {
             ),
             child: Text(
               request.firstMessage,
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
+              style: ScribesTextStyles.bodyMd.copyWith(
+                color: colors.primaryText,
+              ),
             ),
           ),
           if (!isOutgoing) ...[
@@ -425,7 +513,9 @@ class _RequestTile extends ConsumerWidget {
                       side: BorderSide(color: colors.border),
                     ),
                     onPressed: () {
-                      ref.read(pendingRequestsProvider.notifier).rejectRequest(request.id);
+                      ref
+                          .read(pendingRequestsProvider.notifier)
+                          .rejectRequest(request.id);
                     },
                     child: const Text('Reject'),
                   ),
@@ -438,7 +528,9 @@ class _RequestTile extends ConsumerWidget {
                       foregroundColor: colors.surface,
                     ),
                     onPressed: () {
-                      ref.read(pendingRequestsProvider.notifier).approveRequest(request.id);
+                      ref
+                          .read(pendingRequestsProvider.notifier)
+                          .approveRequest(request.id);
                     },
                     child: const Text('Approve'),
                   ),
@@ -450,7 +542,9 @@ class _RequestTile extends ConsumerWidget {
             Center(
               child: Text(
                 'Waiting for approval',
-                style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                style: ScribesTextStyles.labelSm.copyWith(
+                  color: colors.secondaryText,
+                ),
               ),
             ),
           ],
@@ -459,4 +553,3 @@ class _RequestTile extends ConsumerWidget {
     );
   }
 }
-

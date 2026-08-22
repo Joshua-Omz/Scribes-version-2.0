@@ -19,7 +19,7 @@ class ShareImpl implements ShareInterface {
       ShareParams(
         files: [XFile(file.path, mimeType: mimeType)],
         subject: subject,
-      )
+      ),
     );
   }
 

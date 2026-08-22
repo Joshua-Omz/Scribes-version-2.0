@@ -3,11 +3,11 @@ package recommendation
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"scribes-api/pkg/respond"
-	"time"
 )
 
 type Handler struct {
@@ -19,17 +19,20 @@ func NewHandler(svc Service) *Handler {
 }
 
 type RecommendationResponse struct {
-	ID             string      `json:"id"`
-	AuthorID       string      `json:"author_id"`
-	Caption        *string     `json:"caption"`
-	Content        interface{} `json:"content"`
-	SermonSource   *string     `json:"sermon_source"`
-	Visibility     string      `json:"visibility"`
-	IsDeleted      bool        `json:"is_deleted"`
-	PublishedAt    time.Time   `json:"published_at"`
-	AuthorName     string      `json:"author_name"`
-	AuthorHandle   string      `json:"author_handle"`
-	AuthorIsChurch bool        `json:"author_is_church"`
+	ID              string      `json:"id"`
+	AuthorID        string      `json:"author_id"`
+	Caption         *string     `json:"caption"`
+	Content         interface{} `json:"content"`
+	SermonSource    *string     `json:"sermon_source"`
+	Visibility      string      `json:"visibility"`
+	IsDeleted       bool        `json:"is_deleted"`
+	PublishedAt     time.Time   `json:"published_at"`
+	CoverImageUrl   *string     `json:"cover_image_url"`
+	PostType        string      `json:"post_type"`
+	AuthorName      string      `json:"author_name"`
+	AuthorHandle    string      `json:"author_handle"`
+	AuthorAvatarUrl *string     `json:"author_avatar_url"`
+	AuthorIsChurch  bool        `json:"author_is_church"`
 }
 
 func (h *Handler) GetRecommendations(c *gin.Context) {
@@ -62,18 +65,29 @@ func (h *Handler) GetRecommendations(c *gin.Context) {
 		if p.SermonSource.Valid {
 			sermonSource = &p.SermonSource.String
 		}
+		var coverImageUrl *string
+		if p.CoverImageUrl.Valid {
+			coverImageUrl = &p.CoverImageUrl.String
+		}
+		var authorAvatarUrl *string
+		if p.AuthorAvatarUrl.Valid {
+			authorAvatarUrl = &p.AuthorAvatarUrl.String
+		}
 		mapped = append(mapped, RecommendationResponse{
-			ID:             p.ID.String(),
-			AuthorID:       p.AuthorID.String(),
-			Caption:        caption,
-			Content:        p.Content,
-			SermonSource:   sermonSource,
-			Visibility:     string(p.Visibility),
-			IsDeleted:      p.IsDeleted,
-			PublishedAt:    p.PublishedAt,
-			AuthorName:     p.AuthorName,
-			AuthorHandle:   p.AuthorHandle,
-			AuthorIsChurch: p.AuthorIsChurch,
+			ID:              p.ID.String(),
+			AuthorID:        p.AuthorID.String(),
+			Caption:         caption,
+			Content:         p.Content,
+			SermonSource:    sermonSource,
+			Visibility:      string(p.Visibility),
+			IsDeleted:       p.IsDeleted,
+			PublishedAt:     p.PublishedAt,
+			CoverImageUrl:   coverImageUrl,
+			PostType:        string(p.PostType),
+			AuthorName:      p.AuthorName,
+			AuthorHandle:    p.AuthorHandle,
+			AuthorAvatarUrl: authorAvatarUrl,
+			AuthorIsChurch:  p.AuthorIsChurch,
 		})
 	}
 	if mapped == nil {
@@ -115,18 +129,29 @@ func (h *Handler) GetSimilarPosts(c *gin.Context) {
 		if p.SermonSource.Valid {
 			sermonSource = &p.SermonSource.String
 		}
+		var coverImageUrl *string
+		if p.CoverImageUrl.Valid {
+			coverImageUrl = &p.CoverImageUrl.String
+		}
+		var authorAvatarUrl *string
+		if p.AuthorAvatarUrl.Valid {
+			authorAvatarUrl = &p.AuthorAvatarUrl.String
+		}
 		mapped = append(mapped, RecommendationResponse{
-			ID:             p.ID.String(),
-			AuthorID:       p.AuthorID.String(),
-			Caption:        caption,
-			Content:        p.Content,
-			SermonSource:   sermonSource,
-			Visibility:     string(p.Visibility),
-			IsDeleted:      p.IsDeleted,
-			PublishedAt:    p.PublishedAt,
-			AuthorName:     p.AuthorName,
-			AuthorHandle:   p.AuthorHandle,
-			AuthorIsChurch: p.AuthorIsChurch,
+			ID:              p.ID.String(),
+			AuthorID:        p.AuthorID.String(),
+			Caption:         caption,
+			Content:         p.Content,
+			SermonSource:    sermonSource,
+			Visibility:      string(p.Visibility),
+			IsDeleted:       p.IsDeleted,
+			PublishedAt:     p.PublishedAt,
+			CoverImageUrl:   coverImageUrl,
+			PostType:        string(p.PostType),
+			AuthorName:      p.AuthorName,
+			AuthorHandle:    p.AuthorHandle,
+			AuthorAvatarUrl: authorAvatarUrl,
+			AuthorIsChurch:  p.AuthorIsChurch,
 		})
 	}
 	if mapped == nil {

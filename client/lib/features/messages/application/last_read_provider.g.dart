@@ -20,7 +20,7 @@ final class LastReadNotifierProvider
         argument: null,
         retry: null,
         name: r'lastReadProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class LastReadNotifierProvider
   }
 }
 
-String _$lastReadNotifierHash() => r'8a8223894d45c8cb8ab1ab9af57807ade43e190e';
+String _$lastReadNotifierHash() => r'f1f235f18262394b340f949ab34a4428e12fc44e';
 
 abstract class _$LastReadNotifier extends $Notifier<Map<String, DateTime>> {
   Map<String, DateTime> build();

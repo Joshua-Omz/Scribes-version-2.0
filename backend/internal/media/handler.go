@@ -22,6 +22,7 @@ func NewHandler(service Service) *Handler {
 
 type PresignRequest struct {
 	ContentType string `json:"content_type"`
+	MimeType    string `json:"mime_type"`
 	SizeBytes   int64  `json:"size_bytes"`
 }
 
@@ -55,7 +56,15 @@ func (h *Handler) HandlePresign(c *gin.Context) {
 		return
 	}
 
-	uploadUrl, fileUrl, uploadID, err := h.service.GeneratePresignedUpload(ctx, userID, req.ContentType, req.SizeBytes)
+	contentType := req.ContentType
+	if contentType == "" {
+		contentType = req.MimeType
+	}
+	if contentType == "" {
+		contentType = "image/jpeg"
+	}
+
+	uploadUrl, fileUrl, uploadID, err := h.service.GeneratePresignedUpload(ctx, userID, contentType, req.SizeBytes)
 	if err != nil {
 		respond.Error(c, http.StatusInternalServerError, "Failed to generate presigned URL")
 		return

@@ -51,7 +51,7 @@ final class PostReactionsNotifierProvider
 }
 
 String _$postReactionsNotifierHash() =>
-    r'ea0080b9dcf9bcfa04fc3c7ba6281c737f0ad62e';
+    r'dfa691073d1ca752157af27b0fde2f4976a284a8';
 
 final class PostReactionsNotifierFamily extends $Family
     with

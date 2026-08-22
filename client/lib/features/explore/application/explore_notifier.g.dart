@@ -205,6 +205,51 @@ abstract class _$ExploreTrendingNotifier extends $AsyncNotifier<List<Post>> {
   }
 }
 
+@ProviderFor(ExploreDiscoverNotifier)
+final exploreDiscoverProvider = ExploreDiscoverNotifierProvider._();
+
+final class ExploreDiscoverNotifierProvider
+    extends $AsyncNotifierProvider<ExploreDiscoverNotifier, List<Post>> {
+  ExploreDiscoverNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exploreDiscoverProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exploreDiscoverNotifierHash();
+
+  @$internal
+  @override
+  ExploreDiscoverNotifier create() => ExploreDiscoverNotifier();
+}
+
+String _$exploreDiscoverNotifierHash() =>
+    r'b093a9fd78bc45d550c87181ade72ee3e60d969b';
+
+abstract class _$ExploreDiscoverNotifier extends $AsyncNotifier<List<Post>> {
+  FutureOr<List<Post>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
+              AsyncValue<List<Post>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(exploreInsightful)
 final exploreInsightfulProvider = ExploreInsightfulProvider._();
 

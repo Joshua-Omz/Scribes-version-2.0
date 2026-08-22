@@ -145,23 +145,36 @@ func parseOps(rawJSON []byte) ([]Op, error) {
 		return delta.Ops, nil
 	}
 
-	// 3. Try fallback format (create_post.py test script)
-	var dummy struct {
-		Title string `json:"title"`
-		Body  string `json:"body"`
+	// 3. Try envelope format: { "title": "...", "excerpt": "...", "body": [...] or "..." }
+	var envelope struct {
+		Title string          `json:"title"`
+		Body  json.RawMessage `json:"body"`
 	}
-	if err := json.Unmarshal(rawJSON, &dummy); err == nil && (dummy.Title != "" || dummy.Body != "") {
-		var dummyOps []Op
-		if dummy.Title != "" {
-			dummyOps = append(dummyOps, Op{
-				Insert:     dummy.Title + "\n",
+	if err := json.Unmarshal(rawJSON, &envelope); err == nil && (len(envelope.Body) > 0 || envelope.Title != "") {
+		var result []Op
+		if envelope.Title != "" {
+			result = append(result, Op{
+				Insert:     envelope.Title + "\n",
 				Attributes: map[string]interface{}{"header": float64(1)},
 			})
 		}
-		if dummy.Body != "" {
-			dummyOps = append(dummyOps, Op{Insert: dummy.Body + "\n"})
+
+		if len(envelope.Body) > 0 {
+			bodyOps, _ := parseOps(envelope.Body)
+			if len(bodyOps) > 0 {
+				result = append(result, bodyOps...)
+			} else {
+				// Check if body was a plain string (e.g. legacy/test script)
+				var bodyStr string
+				if err := json.Unmarshal(envelope.Body, &bodyStr); err == nil && bodyStr != "" {
+					result = append(result, Op{Insert: bodyStr + "\n"})
+				}
+			}
 		}
-		return dummyOps, nil
+
+		if len(result) > 0 {
+			return result, nil
+		}
 	}
 
 	// If all fail or it is empty, return empty ops

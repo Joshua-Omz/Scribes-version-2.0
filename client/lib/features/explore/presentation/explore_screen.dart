@@ -62,17 +62,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               leading: null,
               title: Text(
                 'Explore',
-                style: ScribesTextStyles.displayMd
-                    .copyWith(color: colors.primaryText),
+                style: ScribesTextStyles.displayMd.copyWith(
+                  color: colors.primaryText,
+                ),
               ),
               actions: [
                 if (scriptureFilter != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: ActionChip(
-                      label: Text('${scriptureFilter.book} ${scriptureFilter.chapter ?? ''}'.trim()),
+                      label: Text(
+                        '${scriptureFilter.book} ${scriptureFilter.chapter ?? ''}'
+                            .trim(),
+                      ),
                       onPressed: () {
-                        ref.read(exploreScriptureFilterProvider.notifier).clear();
+                        ref
+                            .read(exploreScriptureFilterProvider.notifier)
+                            .clear();
                       },
                       avatar: HugeIcon(
                         icon: HugeIcons.strokeRoundedCancel01,
@@ -80,9 +86,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         size: 16,
                       ),
                       backgroundColor: colors.surfaceRaised,
-                      labelStyle: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                      labelStyle: ScribesTextStyles.labelLg.copyWith(
+                        color: colors.primaryText,
+                      ),
                       side: BorderSide.none,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ScribesIconButton(
@@ -106,10 +116,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       indicatorWeight: 2,
                       labelColor: colors.primaryText,
                       unselectedLabelColor: colors.secondaryText,
-                      labelStyle: ScribesTextStyles.labelLg
-                          .copyWith(fontWeight: FontWeight.w600),
-                      unselectedLabelStyle: ScribesTextStyles.labelLg
-                          .copyWith(fontWeight: FontWeight.w400),
+                      labelStyle: ScribesTextStyles.labelLg.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      unselectedLabelStyle: ScribesTextStyles.labelLg.copyWith(
+                        fontWeight: FontWeight.w400,
+                      ),
                       tabs: const [
                         Tab(text: 'For You'),
                         Tab(text: 'Discover'),
@@ -151,53 +163,55 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   ),
                 );
               }
-              final hasMore = ref.read(exploreFilteredProvider.notifier).hasMore;
+              final hasMore = ref
+                  .read(exploreFilteredProvider.notifier)
+                  .hasMore;
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == posts.length) {
-                        ref.read(exploreFilteredProvider.notifier).loadMore();
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          child: ScribesLoadingIndicator(),
-                        );
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        child: ScribesConnectedPostCard(
-                          post: posts[index],
-                          isFeatured: false,
-                          isExploreScreen: true,
-                        ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    if (index == posts.length) {
+                      ref.read(exploreFilteredProvider.notifier).loadMore();
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.0),
+                        child: ScribesLoadingIndicator(),
                       );
-                    },
-                    childCount: posts.length + (hasMore ? 1 : 0),
-                  ),
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: ScribesConnectedPostCard(
+                        post: posts[index],
+                        isFeatured: false,
+                        isExploreScreen: true,
+                      ),
+                    );
+                  }, childCount: posts.length + (hasMore ? 1 : 0)),
                 ),
               );
             },
             loading: () => SliverPadding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: ScribesShimmer(
-                        child: Container(
-                          height: 180,
-                          decoration: BoxDecoration(
-                            color: colors.surfaceRaised,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
+                    child: ScribesShimmer(
+                      child: Container(
+                        height: 180,
+                        decoration: BoxDecoration(
+                          color: colors.surfaceRaised,
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                    );
-                  },
-                  childCount: 4,
-                ),
+                    ),
+                  );
+                }, childCount: 4),
               ),
             ),
             error: (e, st) => SliverFillRemaining(
@@ -219,10 +233,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       child: CustomScrollView(
         slivers: [
           // Block A: Tags
-          SliverToBoxAdapter(
-            child: _buildTagsSection(context, ref, colors),
-          ),
-          
+          SliverToBoxAdapter(child: _buildTagsSection(context, ref, colors)),
+
           // Divider
           SliverToBoxAdapter(
             child: Padding(
@@ -232,9 +244,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
 
           // Block B: Who to Follow
-          SliverToBoxAdapter(
-            child: _buildSuggestedUsersSection(ref, colors),
-          ),
+          SliverToBoxAdapter(child: _buildSuggestedUsersSection(ref, colors)),
 
           // Divider
           SliverToBoxAdapter(
@@ -248,7 +258,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           _buildPostsFeedSliver(
             forYouState,
             colors,
-            onLoadMore: () => ref.read(exploreForYouProvider.notifier).loadMore(),
+            onLoadMore: () =>
+                ref.read(exploreForYouProvider.notifier).loadMore(),
             hasMore: ref.read(exploreForYouProvider.notifier).hasMore,
           ),
         ],
@@ -256,7 +267,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-  Widget _buildTagsSection(BuildContext context, WidgetRef ref, dynamic colors) {
+  Widget _buildTagsSection(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
     final user = ref.watch(authProvider).value;
     final selectedTags = user?.selectedTags ?? [];
 
@@ -270,11 +285,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             children: [
               Text(
                 'Your Interests',
-                style: ScribesTextStyles.labelLg
-                    .copyWith(color: colors.secondaryText, fontWeight: FontWeight.w600),
+                style: ScribesTextStyles.labelLg.copyWith(
+                  color: colors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               IconButton(
-                icon: HugeIcon(icon: HugeIcons.strokeRoundedSettings01, size: 20, color: colors.secondaryText),
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedSettings01,
+                  size: 20,
+                  color: colors.secondaryText,
+                ),
                 onPressed: () {
                   showModalBottomSheet(
                     context: context,
@@ -284,7 +305,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       height: MediaQuery.of(ctx).size.height * 0.85,
                       decoration: BoxDecoration(
                         color: colors.background,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
                       ),
                       child: TopicSelectionScreen(
                         isModal: true,
@@ -308,7 +331,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   children: [
                     Text(
                       'No interests selected yet.',
-                      style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
@@ -325,7 +350,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                             height: MediaQuery.of(ctx).size.height * 0.85,
                             decoration: BoxDecoration(
                               color: colors.background,
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
                             ),
                             child: TopicSelectionScreen(
                               isModal: true,
@@ -350,10 +377,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               children: selectedTags.map((tag) {
                 return Chip(
                   label: Text(tag),
-                  labelStyle: ScribesTextStyles.labelSm.copyWith(color: colors.primaryText),
+                  labelStyle: ScribesTextStyles.labelSm.copyWith(
+                    color: colors.primaryText,
+                  ),
                   backgroundColor: colors.surfaceRaised,
                   side: BorderSide(color: colors.border),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 );
               }).toList(),
             ),
@@ -369,11 +400,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            top: 16.0,
+            bottom: 8.0,
+          ),
           child: Text(
             'Who to Follow',
-            style: ScribesTextStyles.labelLg
-                .copyWith(color: colors.secondaryText, fontWeight: FontWeight.w600),
+            style: ScribesTextStyles.labelLg.copyWith(
+              color: colors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         SizedBox(
@@ -384,7 +422,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 return Center(
                   child: Text(
                     'No suggestions right now.',
-                    style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                    style: ScribesTextStyles.bodyMd.copyWith(
+                      color: colors.secondaryText,
+                    ),
                   ),
                 );
               }
@@ -413,14 +453,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildDiscoverTab(WidgetRef ref, dynamic colors) {
-    final trendingState = ref.watch(exploreTrendingProvider);
-    
+    final discoverState = ref.watch(exploreDiscoverProvider);
+
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(exploreInsightfulProvider);
         ref.invalidate(explorePropheticProvider);
         ref.invalidate(exploreAffirmedProvider);
-        await ref.read(exploreTrendingProvider.notifier).refresh();
+        await ref.read(exploreDiscoverProvider.notifier).refresh();
       },
       child: CustomScrollView(
         slivers: [
@@ -433,7 +473,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
           SliverToBoxAdapter(
             child: _buildRecommendationRow(
-              title: 'Prophetic of the Times',
+              title: 'Most Prophetic',
               provider: explorePropheticProvider,
               colors: colors,
             ),
@@ -447,19 +487,27 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 24.0, bottom: 8.0),
+              padding: const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                top: 24.0,
+                bottom: 8.0,
+              ),
               child: Text(
-                'Trending This Week',
-                style: ScribesTextStyles.labelLg
-                    .copyWith(color: colors.secondaryText, fontWeight: FontWeight.w600),
+                'Recent Discoveries',
+                style: ScribesTextStyles.labelLg.copyWith(
+                  color: colors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
           _buildPostsFeedSliver(
-            trendingState,
+            discoverState,
             colors,
-            onLoadMore: () => ref.read(exploreTrendingProvider.notifier).loadMore(),
-            hasMore: ref.read(exploreTrendingProvider.notifier).hasMore,
+            onLoadMore: () =>
+                ref.read(exploreDiscoverProvider.notifier).loadMore(),
+            hasMore: ref.read(exploreDiscoverProvider.notifier).hasMore,
           ),
         ],
       ),
@@ -476,11 +524,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 24.0, bottom: 12.0),
+          padding: const EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            top: 24.0,
+            bottom: 12.0,
+          ),
           child: Text(
             title,
-            style: ScribesTextStyles.labelLg
-                .copyWith(color: colors.secondaryText, fontWeight: FontWeight.w600),
+            style: ScribesTextStyles.labelLg.copyWith(
+              color: colors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         SizedBox(
@@ -491,7 +546,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 return Center(
                   child: Text(
                     'No posts available.',
-                    style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                    style: ScribesTextStyles.bodyMd.copyWith(
+                      color: colors.secondaryText,
+                    ),
                   ),
                 );
               }
@@ -505,9 +562,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     width: 280,
                     child: ScribesExploreCard(
                       post: posts[index],
-                      categoryLabel: title == 'Most Insightful' ? 'Insightful' 
-                                   : title == 'Prophetic of the Times' ? 'Prophetic' 
-                                   : 'Affirmed',
+                      categoryLabel: title == 'Most Insightful'
+                          ? 'Insightful'
+                          : (title == 'Most Prophetic' ||
+                                  title == 'Prophetic of the Times')
+                              ? 'Prophetic'
+                              : 'Affirmed',
                       onTap: () => context.push('/posts/${posts[index].id}'),
                     ),
                   );
@@ -552,7 +612,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           _buildPostsFeedSliver(
             churchesState,
             colors,
-            onLoadMore: () => ref.read(exploreChurchesProvider.notifier).loadMore(),
+            onLoadMore: () =>
+                ref.read(exploreChurchesProvider.notifier).loadMore(),
             hasMore: ref.read(exploreChurchesProvider.notifier).hasMore,
           ),
         ],
@@ -583,53 +644,51 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         return SliverPadding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index == posts.length) {
-                  onLoadMore();
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(child: ScribesLoadingIndicator()),
-                  );
-                }
-
-                final post = posts[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: ScribesConnectedPostCard(
-                    post: post,
-                    isFeatured: false,
-                    isExploreScreen: true,
-                  ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              if (index == posts.length) {
+                onLoadMore();
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: ScribesLoadingIndicator()),
                 );
-              },
-              childCount: posts.length + (hasMore ? 1 : 0),
-            ),
+              }
+
+              final post = posts[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: ScribesConnectedPostCard(
+                  post: post,
+                  isFeatured: false,
+                  isExploreScreen: true,
+                ),
+              );
+            }, childCount: posts.length + (hasMore ? 1 : 0)),
           ),
         );
       },
       loading: () => SliverPadding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0, vertical: 8.0),
-                child: ScribesShimmer(
-                  child: Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: colors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: ScribesShimmer(
+                child: Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: colors.surfaceRaised,
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-              );
-            },
-            childCount: 4,
-          ),
+              ),
+            );
+          }, childCount: 4),
         ),
       ),
       error: (e, st) => SliverFillRemaining(
@@ -641,10 +700,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     );
   }
 
-
-
   void _showScriptureFilterSheet(
-      BuildContext context, WidgetRef ref, dynamic colors) {
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
     ScribesScriptureSelector.show(
       context,
       isExplore: true,
@@ -656,5 +716,4 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       },
     );
   }
-
 }

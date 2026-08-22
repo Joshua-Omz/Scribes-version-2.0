@@ -58,7 +58,12 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
             expandedHeight: _isSearchActive ? null : 180.0,
             centerTitle: !_isSearchActive,
             leading: IconButton(
-              icon: HugeIcon(icon: isSelectionMode ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+              icon: HugeIcon(
+                icon: isSelectionMode
+                    ? HugeIcons.strokeRoundedCancel01
+                    : HugeIcons.strokeRoundedArrowLeft01,
+                color: colors.primaryText,
+              ),
               onPressed: () {
                 if (isSelectionMode) {
                   setState(() => _selectedIds.clear());
@@ -78,7 +83,9 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                 ? null
                 : FlexibleSpaceBar(
                     title: Text(
-                      isSelectionMode ? '${_selectedIds.length} Selected' : 'My Notes',
+                      isSelectionMode
+                          ? '${_selectedIds.length} Selected'
+                          : 'My Notes',
                       style: ScribesTextStyles.displayLg.copyWith(
                         color: colors.primaryText,
                       ),
@@ -100,14 +107,20 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                     hintText: 'Search notes...',
                     autofocus: true,
                     isSearchPill: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
                     onChanged: (query) => setState(() => _searchQuery = query),
                   )
                 : null,
             actions: [
               if (!_isSearchActive && !isSelectionMode)
                 IconButton(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedSearch01, color: colors.primaryText),
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedSearch01,
+                    color: colors.primaryText,
+                  ),
                   onPressed: () => setState(() => _isSearchActive = true),
                 ),
               const SizedBox(width: 8),
@@ -124,9 +137,16 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                   try {
                     final body = note.content['body'];
                     if (body is List && body.isNotEmpty) {
-                      final firstInsert = body.firstWhere((e) => e['insert'] is String, orElse: () => null);
+                      final firstInsert = body.firstWhere(
+                        (e) => e['insert'] is String,
+                        orElse: () => null,
+                      );
                       if (firstInsert != null) {
-                        snippet = firstInsert['insert'].toString().replaceAll('\n', ' ').trim().toLowerCase();
+                        snippet = firstInsert['insert']
+                            .toString()
+                            .replaceAll('\n', ' ')
+                            .trim()
+                            .toLowerCase();
                       }
                     }
                   } catch (_) {}
@@ -140,16 +160,28 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        HugeIcon(icon: HugeIcons.strokeRoundedFile01, size: 64, color: colors.border),
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedFile01,
+                          size: 64,
+                          color: colors.border,
+                        ),
                         const SizedBox(height: 16),
                         Text(
-                          _searchQuery.isNotEmpty ? 'No matches found.' : 'No notes yet',
-                          style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+                          _searchQuery.isNotEmpty
+                              ? 'No matches found.'
+                              : 'No notes yet',
+                          style: ScribesTextStyles.displayMd.copyWith(
+                            color: colors.primaryText,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          _searchQuery.isNotEmpty ? 'Try a different search term.' : 'Jot down thoughts and ideas.',
-                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                          _searchQuery.isNotEmpty
+                              ? 'Try a different search term.'
+                              : 'Jot down thoughts and ideas.',
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.secondaryText,
+                          ),
                         ),
                       ],
                     ),
@@ -165,38 +197,48 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.8,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final note = filteredNotes[index];
-                      String snippet = '';
-                      try {
-                        final body = note.content['body'];
-                        if (body is List && body.isNotEmpty) {
-                          final firstInsert = body.firstWhere((e) => e['insert'] is String, orElse: () => null);
-                          if (firstInsert != null) {
-                            snippet = firstInsert['insert'].toString().replaceAll('\n', ' ').trim();
-                          }
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final note = filteredNotes[index];
+                    String snippet = '';
+                    try {
+                      final body = note.content['body'];
+                      if (body is List && body.isNotEmpty) {
+                        final firstInsert = body.firstWhere(
+                          (e) => e['insert'] is String,
+                          orElse: () => null,
+                        );
+                        if (firstInsert != null) {
+                          snippet = firstInsert['insert']
+                              .toString()
+                              .replaceAll('\n', ' ')
+                              .trim();
                         }
-                      } catch (_) {}
-                      
-                      return ScribesGridCard(
-                        title: note.title ?? '',
-                        excerpt: snippet,
-                        date: note.updatedAt,
-                        isSelected: _selectedIds.contains(note.id),
-                        onLongPress: () => _toggleSelection(note.id),
-                        onTap: () {
-                          if (isSelectionMode) {
-                            _toggleSelection(note.id);
-                          } else {
-                            ref.read(noteEditorProvider.notifier).loadNote(note.id, note.content, title: note.title, notebookId: note.notebookId);
-                            context.push('/notes/edit');
-                          }
-                        },
-                      );
-                    },
-                    childCount: filteredNotes.length,
-                  ),
+                      }
+                    } catch (_) {}
+
+                    return ScribesGridCard(
+                      title: note.title ?? '',
+                      excerpt: snippet,
+                      date: note.updatedAt,
+                      isSelected: _selectedIds.contains(note.id),
+                      onLongPress: () => _toggleSelection(note.id),
+                      onTap: () {
+                        if (isSelectionMode) {
+                          _toggleSelection(note.id);
+                        } else {
+                          ref
+                              .read(noteEditorProvider.notifier)
+                              .loadNote(
+                                note.id,
+                                note.content,
+                                title: note.title,
+                                notebookId: note.notebookId,
+                              );
+                          context.push('/notes/edit');
+                        }
+                      },
+                    );
+                  }, childCount: filteredNotes.length),
                 ),
               );
             },
@@ -207,7 +249,10 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
             ),
             error: (err, stack) => SliverFillRemaining(
               child: Center(
-                child: Text('Error loading notes: $err', style: TextStyle(color: colors.primaryText)),
+                child: Text(
+                  'Error loading notes: $err',
+                  style: TextStyle(color: colors.primaryText),
+                ),
               ),
             ),
           ),
@@ -228,13 +273,24 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                   SnackBar(content: Text('Deleted $count note(s)')),
                 );
               },
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete02, color: colors.surfaceRaised),
-              label: Text('Delete', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
+              icon: HugeIcon(
+                icon: HugeIcons.strokeRoundedDelete02,
+                color: colors.surfaceRaised,
+              ),
+              label: Text(
+                'Delete',
+                style: ScribesTextStyles.labelLg.copyWith(
+                  color: colors.surfaceRaised,
+                ),
+              ),
             )
           : FloatingActionButton(
               heroTag: null,
               backgroundColor: colors.gold,
-              child: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign, color: colors.surfaceRaised),
+              child: HugeIcon(
+                icon: HugeIcons.strokeRoundedPlusSign,
+                color: colors.surfaceRaised,
+              ),
               onPressed: () {
                 ref.read(noteEditorProvider.notifier).reset();
                 context.push('/notes/edit');

@@ -23,7 +23,9 @@ SermonSource? _sermonSourceFromJson(dynamic value) {
     if (value.trim().isEmpty) return null;
     try {
       final decoded = jsonDecode(value);
-      if (decoded is Map<String, dynamic>) return SermonSource.fromJson(decoded);
+      if (decoded is Map<String, dynamic>) {
+        return SermonSource.fromJson(decoded);
+      }
     } catch (_) {}
     return SermonSource(preacher: value);
   }
@@ -37,7 +39,8 @@ abstract class Draft with _$Draft {
     @JsonKey(name: 'author_id') required String authorId,
     @JsonKey(fromJson: _contentFromJson) required Map<String, dynamic> content,
     String? caption,
-    @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) SermonSource? sermonSource,
+    @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson)
+    SermonSource? sermonSource,
     @JsonKey(name: 'scripture_tags') @Default([]) List<String> scriptureTags,
     @JsonKey(name: 'post_type') @Default('standard') String postType,
     @JsonKey(name: 'cover_image_url') String? coverImageUrl,

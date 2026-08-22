@@ -22,7 +22,9 @@ class NotificationRepository {
   }
 
   // Returns grouped notifications by time period: TODAY, THIS WEEK, EARLIER
-  Map<String, List<NotificationItem>> groupByTime(List<NotificationItem> items) {
+  Map<String, List<NotificationItem>> groupByTime(
+    List<NotificationItem> items,
+  ) {
     final now = DateTime.now();
     final today = items.where((n) {
       final diff = now.difference(n.safeCreatedAt);
@@ -42,7 +44,7 @@ class NotificationRepository {
     if (today.isNotEmpty) result['TODAY'] = today;
     if (thisWeek.isNotEmpty) result['THIS WEEK'] = thisWeek;
     if (earlier.isNotEmpty) result['EARLIER'] = earlier;
-    
+
     return result;
   }
 

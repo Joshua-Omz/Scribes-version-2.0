@@ -32,7 +32,7 @@ class ScribesUserCard extends ConsumerWidget {
             children: [
               ScribesAvatar(
                 authorName: user.displayName,
-                imageUrl: null,
+                imageUrl: user.avatarUrl,
                 radius: 24,
               ),
               const SizedBox(width: 12),
@@ -42,13 +42,17 @@ class ScribesUserCard extends ConsumerWidget {
                   children: [
                     Text(
                       user.displayName,
-                      style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                      style: ScribesTextStyles.labelLg.copyWith(
+                        color: colors.primaryText,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       '@${user.handle}',
-                      style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.labelSm.copyWith(
+                        color: colors.secondaryText,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -63,18 +67,24 @@ class ScribesUserCard extends ConsumerWidget {
                   data: (isFollowing) => OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      backgroundColor: isFollowing ? Colors.transparent : colors.primaryText,
+                      backgroundColor: isFollowing
+                          ? Colors.transparent
+                          : colors.primaryText,
                       side: BorderSide(
                         color: isFollowing ? colors.border : colors.primaryText,
                       ),
                     ),
                     onPressed: () {
-                      ref.read(isFollowingUserProvider(user.id).notifier).toggleFollow();
+                      ref
+                          .read(isFollowingUserProvider(user.id).notifier)
+                          .toggleFollow();
                     },
                     child: Text(
                       isFollowing ? 'Following' : 'Follow',
                       style: ScribesTextStyles.labelSm.copyWith(
-                        color: isFollowing ? colors.primaryText : colors.background,
+                        color: isFollowing
+                            ? colors.primaryText
+                            : colors.background,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -89,7 +99,7 @@ class ScribesUserCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  error: (_, __) => const SizedBox(),
+                  error: (_, _) => const SizedBox(),
                 ),
               ),
             ],
@@ -115,20 +125,24 @@ class ScribesUserCard extends ConsumerWidget {
           children: [
             ScribesAvatar(
               authorName: user.displayName,
-              imageUrl: null,
+              imageUrl: user.avatarUrl,
               radius: 28,
             ),
             const SizedBox(height: 12),
             Text(
               user.displayName,
-              style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+              style: ScribesTextStyles.labelLg.copyWith(
+                color: colors.primaryText,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
             Text(
               '@${user.handle}',
-              style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+              style: ScribesTextStyles.labelSm.copyWith(
+                color: colors.secondaryText,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -141,18 +155,24 @@ class ScribesUserCard extends ConsumerWidget {
                 data: (isFollowing) => OutlinedButton(
                   style: OutlinedButton.styleFrom(
                     padding: EdgeInsets.zero,
-                    backgroundColor: isFollowing ? Colors.transparent : colors.primaryText,
+                    backgroundColor: isFollowing
+                        ? Colors.transparent
+                        : colors.primaryText,
                     side: BorderSide(
                       color: isFollowing ? colors.border : colors.primaryText,
                     ),
                   ),
                   onPressed: () {
-                    ref.read(isFollowingUserProvider(user.id).notifier).toggleFollow();
+                    ref
+                        .read(isFollowingUserProvider(user.id).notifier)
+                        .toggleFollow();
                   },
                   child: Text(
                     isFollowing ? 'Following' : 'Follow',
                     style: ScribesTextStyles.labelSm.copyWith(
-                      color: isFollowing ? colors.primaryText : colors.background,
+                      color: isFollowing
+                          ? colors.primaryText
+                          : colors.background,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -167,7 +187,7 @@ class ScribesUserCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-                error: (_, __) => const SizedBox(),
+                error: (_, _) => const SizedBox(),
               ),
             ),
           ],

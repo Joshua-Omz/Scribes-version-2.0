@@ -12,7 +12,9 @@ class NetworkSyncNotifier {
   bool _wasOffline = false;
 
   NetworkSyncNotifier(this._ref) {
-    Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+    Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
       if (results.contains(ConnectivityResult.none)) {
         _wasOffline = true;
       } else if (_wasOffline) {
@@ -27,10 +29,10 @@ class NetworkSyncNotifier {
     final user = _ref.read(authProvider).value;
     if (user != null) {
       final messageRepo = _ref.read(messageRepositoryProvider);
-      
+
       // 1. Flush outbound offline queue
       await messageRepo.flushOfflineQueue(user.id);
-      
+
       // 2. Perform gap-filling sync for inbound missed messages
       await messageRepo.syncMissedMessages();
     }

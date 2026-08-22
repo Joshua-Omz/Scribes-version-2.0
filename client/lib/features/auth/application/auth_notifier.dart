@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:drift/drift.dart';
 
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
 import '../../sync/application/sync_service.dart';
 import '../../messages/data/message_repository.dart';
 import '../../../core/storage/database_provider.dart';
+import '../../../core/storage/drift_database.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../../core/network/network_sync_notifier.dart';
 
 part 'auth_notifier.g.dart';
@@ -19,10 +22,12 @@ class AuthNotifier extends _$AuthNotifier {
     if (!hasToken) {
       return null;
     }
-    
+
     // Fetch the user profile from the /me endpoint
     try {
       final user = await repo.getMe();
+      // Claim any offline guest records
+      await _claimGuestRecords(user.id);
       // Trigger sync in background
       _triggerSync(user.id);
       return user;
@@ -32,6 +37,44 @@ class AuthNotifier extends _$AuthNotifier {
       // For now, if /me fails, we assume we're not authenticated.
       await repo.logout();
       return null;
+    }
+  }
+
+  Future<void> _claimGuestRecords(String newUserId) async {
+    try {
+      final storage = ref.read(secureStorageProvider);
+      final guestId = await storage.getGuestId();
+      if (guestId != null && guestId.isNotEmpty && guestId != newUserId) {
+        final db = ref.read(databaseProvider);
+        await db.transaction(() async {
+          // Re-parent unsynced guest notes to the newly authenticated user
+          await (db.update(
+            db.notes,
+          )..where((t) => t.authorId.equals(guestId))).write(
+            NotesCompanion(
+              authorId: Value(newUserId),
+              isSynced: const Value(false),
+            ),
+          );
+
+          // Re-parent unsynced guest drafts to the newly authenticated user
+          await (db.update(
+            db.drafts,
+          )..where((t) => t.authorId.equals(guestId))).write(
+            DraftsCompanion(
+              authorId: Value(newUserId),
+              isSynced: const Value(false),
+            ),
+          );
+
+          // Re-parent notebooks
+          await (db.update(db.notebooks)
+                ..where((t) => t.ownerId.equals(guestId)))
+              .write(NotebooksCompanion(ownerId: Value(newUserId)));
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to claim guest records: $e');
     }
   }
 
@@ -73,19 +116,18 @@ class AuthNotifier extends _$AuthNotifier {
         password: password,
         isChurch: isChurch,
       );
+      await _claimGuestRecords(user.id);
       _triggerSync(user.id);
       return user;
     });
   }
 
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> login({required String email, required String password}) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
       final user = await repo.login(email: email, password: password);
+      await _claimGuestRecords(user.id);
       _triggerSync(user.id);
       return user;
     });
@@ -96,6 +138,7 @@ class AuthNotifier extends _$AuthNotifier {
     state = await AsyncValue.guard(() async {
       final repo = ref.read(authRepositoryProvider);
       final user = await repo.loginWithGoogle(idToken);
+      await _claimGuestRecords(user.id);
       _triggerSync(user.id);
       return user;
     });
@@ -105,7 +148,7 @@ class AuthNotifier extends _$AuthNotifier {
     final repo = ref.read(authRepositoryProvider);
     final db = ref.read(databaseProvider);
     await repo.logout();
-    await db.clearAllData();
+    await db.clearAllData(preserveUnsynced: true);
     state = const AsyncData(null);
   }
 
@@ -128,12 +171,21 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> updateTags(List<String> tags) async {
-    // For now, since tags are mostly mocked strings instead of UUIDs in the frontend,
-    // we just update the local state so the router lets the user pass the onboarding gate.
-    final currentUser = state.value;
-    if (currentUser != null) {
-      final updatedUser = currentUser.copyWith(selectedTags: tags);
+    final repo = ref.read(authRepositoryProvider);
+    try {
+      final updatedUser = await repo.updateTags(tags);
       state = AsyncData(updatedUser);
+    } catch (e) {
+      // If the API call fails, still update local state so the router gate
+      // doesn't trap the user on onboarding. The onboarding flow already
+      // sends tags via OnboardingApi.saveUserTopics() as a separate call,
+      // so this is a best-effort sync of auth state.
+      final currentUser = state.value;
+      if (currentUser != null) {
+        final updatedUser = currentUser.copyWith(selectedTags: tags);
+        state = AsyncData(updatedUser);
+      }
+      debugPrint('updateTags API call failed, updated local state only: $e');
     }
   }
 

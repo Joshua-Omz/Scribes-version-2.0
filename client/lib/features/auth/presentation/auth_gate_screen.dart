@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/scribes_radius.dart';
@@ -12,6 +14,7 @@ import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_toast.dart';
+import '../../../core/widgets/scribes_ornament_divider.dart';
 import '../application/auth_notifier.dart';
 import '../domain/user.dart';
 
@@ -24,7 +27,7 @@ class AuthGateScreen extends ConsumerStatefulWidget {
 
 class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _isLogin = true;
-  
+
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _passwordCtrl2 = TextEditingController();
@@ -35,25 +38,55 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   bool _obscurePassword2 = true;
   bool _isChurch = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _emailCtrl.addListener(_onTextChanged);
+    _passwordCtrl.addListener(_onTextChanged);
+    _passwordCtrl2.addListener(_onTextChanged);
+    _handleCtrl.addListener(_onTextChanged);
+    _nameCtrl.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    setState(() {});
+  }
+
+  bool get _isValid {
+    if (_isLogin) {
+      return _emailCtrl.text.trim().isNotEmpty && _passwordCtrl.text.isNotEmpty;
+    } else {
+      return _emailCtrl.text.trim().isNotEmpty &&
+          _passwordCtrl.text.isNotEmpty &&
+          _passwordCtrl2.text.isNotEmpty &&
+          _handleCtrl.text.trim().isNotEmpty &&
+          _nameCtrl.text.trim().isNotEmpty;
+    }
+  }
+
   void _submit() {
     final notifier = ref.read(authProvider.notifier);
-    
+
     if (_isLogin) {
       notifier.login(
-        email: _emailCtrl.text,
+        email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
       );
     } else {
       if (_passwordCtrl.text != _passwordCtrl2.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Passwords don't match")),
+        final colors = ref.read(themeProvider);
+        ScribesToast.show(
+          context,
+          "Passwords do not match",
+          colors,
+          isError: true,
         );
         return;
       }
       notifier.register(
-        email: _emailCtrl.text,
-        handle: _handleCtrl.text,
-        displayName: _nameCtrl.text,
+        email: _emailCtrl.text.trim(),
+        handle: _handleCtrl.text.trim().replaceAll('@', ''),
+        displayName: _nameCtrl.text.trim(),
         password: _passwordCtrl.text,
         isChurch: _isChurch,
       );
@@ -62,26 +95,37 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
 
   void _signInWithGoogle() async {
     final notifier = ref.read(authProvider.notifier);
-    
+
     try {
       debugPrint('Starting Google Sign-In...');
       final googleUser = await GoogleSignIn.instance.authenticate();
-      debugPrint('googleUser returned: \$googleUser');
-      
+      debugPrint('googleUser returned: $googleUser');
+
       final googleAuth = googleUser.authentication;
-      debugPrint('googleAuth retrieved. idToken is null? \${googleAuth.idToken == null}');
-      
       if (googleAuth.idToken != null) {
-        debugPrint('Calling backend with idToken...');
+        debugPrint('Calling backend with Google idToken...');
         notifier.loginWithGoogle(googleAuth.idToken!);
       } else {
-        debugPrint('ERROR: idToken is null! Check Google Cloud console SHA-1 and Client ID config.');
+        if (mounted) {
+          final colors = ref.read(themeProvider);
+          ScribesToast.show(
+            context,
+            'Google Sign-In token unavailable. Please try again.',
+            colors,
+            isError: true,
+          );
+        }
       }
-    } catch (e) {
-      debugPrint('Google Sign-In exception: \$e\\n\$stack');
+    } catch (e, stack) {
+      debugPrint('Google Sign-In exception: $e\n$stack');
       if (mounted) {
         final colors = ref.read(themeProvider);
-        ScribesToast.show(context, 'Google Sign-In failed: $e', colors, isError: true);
+        ScribesToast.show(
+          context,
+          'Google Sign-In failed: $e',
+          colors,
+          isError: true,
+        );
       }
     }
   }
@@ -90,6 +134,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   void dispose() {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _passwordCtrl2.dispose();
     _handleCtrl.dispose();
     _nameCtrl.dispose();
     super.dispose();
@@ -101,11 +146,48 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
     final authState = ref.watch(authProvider);
 
     ref.listen<AsyncValue<User?>>(authProvider, (previous, next) {
+      if (next is AsyncData &&
+          next.value != null &&
+          (previous?.value == null || previous is AsyncLoading)) {
+        final user = next.value!;
+        final name = user.displayName.isNotEmpty
+            ? user.displayName
+            : user.handle;
+        final message = _isLogin
+            ? 'Welcome back to the Sanctuary, $name'
+            : 'Welcome to Scribes, $name';
+
+        ScribesToast.show(
+          context,
+          message,
+          colors,
+          icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+        );
+
+        final needsOnboarding = user.selectedTags.isEmpty;
+        if (needsOnboarding) {
+          context.go('/onboarding');
+          return;
+        }
+
+        final redirect =
+            GoRouterState.of(context).uri.queryParameters['redirect'];
+        if (redirect != null && redirect.isNotEmpty) {
+          context.go(redirect);
+          return;
+        }
+
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/');
+        }
+      }
+
       if (next is AsyncError) {
         final error = next.error;
         String message = error.toString();
-        
-        // Extract inner ApiException message if wrapped by DioException
+
         if (error is DioException && error.error is ApiException) {
           message = (error.error as ApiException).message;
         } else if (error is ApiException) {
@@ -116,258 +198,686 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/logo.svg',
-                  width: 120,
-                  height: 120,
-                  colorFilter: ColorFilter.mode(colors.gold, BlendMode.srcIn),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Scaffold(
+        backgroundColor: colors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: HugeIcon(
+              icon: HugeIcons.strokeRoundedArrowLeft01,
+              color: colors.primaryText,
+              size: 22,
+            ),
+            tooltip: 'Back',
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
+              },
+              child: Text(
+                'Explore as Guest',
+                style: ScribesTextStyles.labelSm.copyWith(
+                  color: colors.gold,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  _isLogin ? 'Welcome back.' : 'Join Scribes.',
-                  style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _isLogin 
-                    ? 'Log in to continue building your sacred library.' 
-                    : 'Create an account to join the conversation.',
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                
-                // Toggle
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(ScribesRadius.button),
-                    border: Border.all(color: colors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => setState(() => _isLogin = true),
-                            borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
-                            splashColor: colors.gold.withValues(alpha: 0.1),
-                            highlightColor: colors.gold.withValues(alpha: 0.05),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _isLogin ? colors.surfaceRaised : Colors.transparent,
-                                borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
-                                boxShadow: _isLogin ? [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  )
-                                ] : null,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Log in', 
-                                style: ScribesTextStyles.labelLg.copyWith(
-                                  color: _isLogin ? colors.primaryText : colors.secondaryText,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => setState(() => _isLogin = false),
-                            borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
-                            splashColor: colors.gold.withValues(alpha: 0.1),
-                            highlightColor: colors.gold.withValues(alpha: 0.05),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: !_isLogin ? colors.surfaceRaised : Colors.transparent,
-                                borderRadius: BorderRadius.circular(ScribesRadius.button - 2),
-                                boxShadow: !_isLogin ? [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  )
-                                ] : null,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Sign up', 
-                                style: ScribesTextStyles.labelLg.copyWith(
-                                  color: !_isLogin ? colors.primaryText : colors.secondaryText,
-                                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 28.0,
+                vertical: 16.0,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Sacred Illuminated Emblem & Seal
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Radiant ambient aura glow
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  colors.gold.withValues(alpha: 0.18),
+                                  colors.gold.withValues(alpha: 0.04),
+                                  Colors.transparent,
+                                ],
                               ),
                             ),
                           ),
-                        ),
+                          // Illuminated glass seal
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: colors.surfaceRaised,
+                              border: Border.all(
+                                color: colors.gold.withValues(alpha: 0.4),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colors.gold.withValues(alpha: 0.12),
+                                  blurRadius: 18,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: SvgPicture.asset(
+                              'assets/logo.svg',
+                              width: 38,
+                              height: 38,
+                              colorFilter: ColorFilter.mode(
+                                colors.gold,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
+                    ),
+                    const SizedBox(height: 16),
 
-                // Form
-                if (!_isLogin) ...[
-                  ScribesTextField(labelText: 'Handle', controller: _handleCtrl),
-                  const SizedBox(height: 16),
-                  ScribesTextField(labelText: 'Display Name', controller: _nameCtrl),
-                  const SizedBox(height: 16),
-                ],
-                ScribesTextField(labelText: 'Email', controller: _emailCtrl, keyboardType: TextInputType.emailAddress),
-                const SizedBox(height: 16),
-                ScribesTextField(
-                  labelText: 'Password', 
-                  controller: _passwordCtrl, 
-                  obscureText: _obscurePassword,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: colors.secondaryText,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-                if (!_isLogin) ...[
-                  const SizedBox(height: 16),
-                  ScribesTextField(
-                    labelText: "Re-enter Password", 
-                    controller: _passwordCtrl2, 
-                    obscureText: _obscurePassword2,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword2 ? Icons.visibility_off : Icons.visibility,
-                        color: colors.secondaryText,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword2 = !_obscurePassword2;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: Checkbox(
-                          value: _isChurch,
-                          onChanged: (value) {
-                            setState(() {
-                              _isChurch = value ?? false;
-                            });
-                          },
-                          activeColor: colors.gold,
-                          checkColor: colors.surfaceRaised,
-                          side: BorderSide(color: colors.border),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'This is a Church account',
-                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                
-                const SizedBox(height: 40),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.gold,
-                    foregroundColor: colors.surfaceRaised,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ScribesRadius.button),
-                    ),
-                  ),
-                  onPressed: authState.isLoading ? null : _submit,
-                  child: authState.isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: ScribesLoadingIndicator(size: 20))
-                    : Text(_isLogin ? 'Log in' : 'Create Account', style: ScribesTextStyles.labelLg),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.surfaceRaised,
-                    foregroundColor: colors.primaryText,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ScribesRadius.button),
-                      side: BorderSide(color: colors.border),
-                    ),
-                  ),
-                  onPressed: authState.isLoading ? null : _signInWithGoogle,
-                  icon: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
-                    width: 20,
-                    height: 20,
-                  ),
-                  label: Text('Continue with Google', style: ScribesTextStyles.labelLg),
-                ),
-                
-                if (authState.hasError) ...[
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: colors.orange.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(ScribesRadius.card),
-                      border: Border.all(color: colors.orange.withValues(alpha: 0.3)),
-                    ),
-                    child: Text(
-                      _getCleanErrorMessage(authState.error),
-                      style: ScribesTextStyles.caption.copyWith(color: colors.orange),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 24),
-                if (_isLogin)
-                  Center(
-                    child: TextButton(
-                      onPressed: () {}, // Forgot password
+                    // Top Motto Caption
+                    Center(
                       child: Text(
-                        'Forgot password?',
-                        style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
+                        'SCRIBES SANCTUARY',
+                        style: ScribesTextStyles.caption.copyWith(
+                          color: colors.goldMuted,
+                          letterSpacing: 2.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                    const SizedBox(height: 8),
+
+                    // Animated Headline & Subtitle
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.06),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      ),
+                      child: Column(
+                        key: ValueKey<bool>(_isLogin),
+                        children: [
+                          Text(
+                            _isLogin
+                                ? 'Welcome to the Sanctuary'
+                                : 'Join the Sacred Fellowship',
+                            style: ScribesTextStyles.displayLg.copyWith(
+                              color: colors.primaryText,
+                              letterSpacing: 0.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _isLogin
+                                ? 'Sign in to access your sacred notes, library, and reflections.'
+                                : 'Create your scribe profile to write, meditate, and share insight.',
+                            style: ScribesTextStyles.bodyMd.copyWith(
+                              color: colors.secondaryText,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Liturgical Ornament Divider
+                    const ScribesOrnamentDivider(),
+                    const SizedBox(height: 24),
+
+                    // Segmented Log in / Sign up Switcher
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(
+                          ScribesRadius.button + 2,
+                        ),
+                        border: Border.all(
+                          color: colors.border.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => setState(() => _isLogin = true),
+                                borderRadius: BorderRadius.circular(
+                                  ScribesRadius.button,
+                                ),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 11,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _isLogin
+                                        ? colors.surfaceRaised
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(
+                                      ScribesRadius.button,
+                                    ),
+                                    border: _isLogin
+                                        ? Border.all(
+                                            color: colors.gold.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                          )
+                                        : null,
+                                    boxShadow: _isLogin
+                                        ? [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
+                                              ),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Log in',
+                                    style: ScribesTextStyles.labelLg.copyWith(
+                                      color: _isLogin
+                                          ? colors.primaryText
+                                          : colors.secondaryText,
+                                      fontWeight: _isLogin
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => setState(() => _isLogin = false),
+                                borderRadius: BorderRadius.circular(
+                                  ScribesRadius.button,
+                                ),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 11,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: !_isLogin
+                                        ? colors.surfaceRaised
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(
+                                      ScribesRadius.button,
+                                    ),
+                                    border: !_isLogin
+                                        ? Border.all(
+                                            color: colors.gold.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                          )
+                                        : null,
+                                    boxShadow: !_isLogin
+                                        ? [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.08,
+                                              ),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Create Account',
+                                    style: ScribesTextStyles.labelLg.copyWith(
+                                      color: !_isLogin
+                                          ? colors.primaryText
+                                          : colors.secondaryText,
+                                      fontWeight: !_isLogin
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Animated Form Fields
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOut,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (!_isLogin) ...[
+                            ScribesTextField(
+                              labelText: 'Handle',
+                              controller: _handleCtrl,
+                              hintText: 'e.g. john_theologian',
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14.0,
+                                ),
+                                child: Text(
+                                  '@',
+                                  style: ScribesTextStyles.labelLg.copyWith(
+                                    color: colors.gold,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: 14),
+                            ScribesTextField(
+                              labelText: 'Display Name',
+                              controller: _nameCtrl,
+                              hintText: 'e.g. John of Patmos',
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0,
+                                ),
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedUser,
+                                  color: colors.secondaryText,
+                                  size: 18,
+                                ),
+                              ),
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+
+                          ScribesTextField(
+                            labelText: 'Email Address',
+                            controller: _emailCtrl,
+                            hintText: 'scribe@sanctuary.org',
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                              ),
+                              child: HugeIcon(
+                                icon: HugeIcons.strokeRoundedMail01,
+                                color: colors.secondaryText,
+                                size: 18,
+                              ),
+                            ),
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: 14),
+
+                          ScribesTextField(
+                            labelText: 'Password',
+                            controller: _passwordCtrl,
+                            obscureText: _obscurePassword,
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                              ),
+                              child: HugeIcon(
+                                icon: HugeIcons.strokeRoundedLockPassword,
+                                color: colors.secondaryText,
+                                size: 18,
+                              ),
+                            ),
+                            textInputAction: _isLogin
+                                ? TextInputAction.done
+                                : TextInputAction.next,
+                            onSubmitted: (_) {
+                              if (_isLogin) _submit();
+                            },
+                            suffixIcon: IconButton(
+                              tooltip: _obscurePassword
+                                  ? 'Show password'
+                                  : 'Hide password',
+                              icon: HugeIcon(
+                                icon: _obscurePassword
+                                    ? HugeIcons.strokeRoundedViewOffSlash
+                                    : HugeIcons.strokeRoundedView,
+                                color: colors.secondaryText,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
+
+                          if (!_isLogin) ...[
+                            const SizedBox(height: 14),
+                            ScribesTextField(
+                              labelText: "Confirm Password",
+                              controller: _passwordCtrl2,
+                              obscureText: _obscurePassword2,
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0,
+                                ),
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedLockPassword,
+                                  color: colors.secondaryText,
+                                  size: 18,
+                                ),
+                              ),
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _submit(),
+                              suffixIcon: IconButton(
+                                tooltip: _obscurePassword2
+                                    ? 'Show password'
+                                    : 'Hide password',
+                                icon: HugeIcon(
+                                  icon: _obscurePassword2
+                                      ? HugeIcons.strokeRoundedViewOffSlash
+                                      : HugeIcons.strokeRoundedView,
+                                  color: colors.secondaryText,
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword2 = !_obscurePassword2;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Ministry / Church Option Card
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceRaised,
+                                borderRadius: BorderRadius.circular(
+                                  ScribesRadius.card,
+                                ),
+                                border: Border.all(
+                                  color: _isChurch
+                                      ? colors.gold.withValues(alpha: 0.5)
+                                      : colors.border.withValues(alpha: 0.6),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: Checkbox(
+                                      value: _isChurch,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _isChurch = value ?? false;
+                                        });
+                                      },
+                                      activeColor: colors.gold,
+                                      checkColor: colors.background,
+                                      side: BorderSide(
+                                        color: colors.border,
+                                        width: 1.5,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _isChurch = !_isChurch;
+                                        });
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Church or Ministry Account',
+                                            style: ScribesTextStyles.labelLg
+                                                .copyWith(
+                                                  color: colors.primaryText,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Enables verified sermon archiving & community study features.',
+                                            style: ScribesTextStyles.caption
+                                                .copyWith(
+                                                  color: colors.secondaryText,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Primary Sacred CTA Button
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.gold,
+                        foregroundColor: colors.background,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 2,
+                        shadowColor: colors.gold.withValues(alpha: 0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            ScribesRadius.button + 2,
+                          ),
+                        ),
+                      ),
+                      onPressed: (authState.isLoading || !_isValid)
+                          ? null
+                          : _submit,
+                      child: authState.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: ScribesLoadingIndicator(size: 20),
+                            )
+                          : Text(
+                              _isLogin ? 'Enter Sanctuary' : 'Create Account',
+                              style: ScribesTextStyles.labelLg.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.4,
+                                color: colors.background,
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Subtle "OR" divider
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: colors.border.withValues(alpha: 0.5),
+                            height: 1,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Text(
+                            'or',
+                            style: ScribesTextStyles.caption.copyWith(
+                              color: colors.secondaryText,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: colors.border.withValues(alpha: 0.5),
+                            height: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Google Authentication Button
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.surfaceRaised,
+                        foregroundColor: colors.primaryText,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            ScribesRadius.button + 2,
+                          ),
+                          side: BorderSide(
+                            color: colors.border.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ),
+                      onPressed: authState.isLoading ? null : _signInWithGoogle,
+                      icon: CachedNetworkImage(
+                        imageUrl:
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png',
+                        width: 18,
+                        height: 18,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: Center(
+                            child: ScribesLoadingIndicator(size: 14),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Image.network(
+                          'https://developers.google.com/identity/images/g-logo.png',
+                          width: 18,
+                          height: 18,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.g_mobiledata,
+                            size: 20,
+                            color: colors.primaryText,
+                          ),
+                        ),
+                      ),
+                      label: Text(
+                        'Continue with Google',
+                        style: ScribesTextStyles.labelLg.copyWith(
+                          color: colors.primaryText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    if (authState.hasError) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(
+                            ScribesRadius.card,
+                          ),
+                          border: Border.all(
+                            color: colors.orange.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          _getCleanErrorMessage(authState.error),
+                          style: ScribesTextStyles.caption.copyWith(
+                            color: colors.orange,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+                    if (_isLogin)
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            ScribesToast.show(
+                              context,
+                              'Password recovery instructions sent if registered.',
+                              colors,
+                            );
+                          },
+                          child: Text(
+                            'Forgot password?',
+                            style: ScribesTextStyles.caption.copyWith(
+                              color: colors.secondaryText,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -376,12 +886,12 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
   }
 
   String _getCleanErrorMessage(Object? error) {
-    if (error == null) return 'Unknown error';
+    if (error == null) return 'Unknown error occurred';
     if (error is DioException && error.error is ApiException) {
       return (error.error as ApiException).message;
-    } else if (error is ApiException) {
-      return error.message;
     }
-    return error.toString();
+    if (error is ApiException) return error.message;
+    final str = error.toString();
+    return str.replaceAll('Exception:', '').trim();
   }
 }

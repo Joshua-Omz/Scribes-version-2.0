@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'api_client.dart';
@@ -16,7 +15,7 @@ MediaApi mediaApi(Ref ref) {
 
 class MediaApi {
   final Dio _apiClient;
-  
+
   // Create a separate Dio instance without interceptors for direct R2 uploads
   final Dio _uploadClient = Dio();
 
@@ -25,11 +24,12 @@ class MediaApi {
   Future<String> uploadImage(File file, String mimeType) async {
     try {
       final sizeBytes = await file.length();
-      
+
       // 1. Get presigned URL
       final presignRes = await _apiClient.post(
         Endpoints.mediaUploadPresign,
         data: {
+          'content_type': mimeType,
           'mime_type': mimeType,
           'size_bytes': sizeBytes,
         },
@@ -45,15 +45,15 @@ class MediaApi {
         uploadUrl,
         data: bytes,
         options: Options(
-          headers: {
-            'Content-Type': mimeType,
-            'Content-Length': sizeBytes,
-          },
+          headers: {'Content-Type': mimeType, 'Content-Length': sizeBytes},
         ),
       );
 
       if (uploadRes.statusCode != 200) {
-         throw ApiException('Failed to upload image to storage', uploadRes.statusCode);
+        throw ApiException(
+          'Failed to upload image to storage',
+          uploadRes.statusCode,
+        );
       }
 
       // 3. Confirm upload with backend

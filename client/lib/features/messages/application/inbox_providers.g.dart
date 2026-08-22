@@ -83,7 +83,7 @@ final class ConversationsNotifierProvider
 }
 
 String _$conversationsNotifierHash() =>
-    r'd4b4c4259c621ecba5ceeed0d850992a291453f2';
+    r'13c67a0b0ff07c9510ce49240bb02b0591e881a0';
 
 abstract class _$ConversationsNotifier
     extends $StreamNotifier<List<Conversation>> {
@@ -138,7 +138,7 @@ final class UnreadMessagesCountProvider
 }
 
 String _$unreadMessagesCountHash() =>
-    r'6d8358836e35a04b8fce622cf370b3254aad62ff';
+    r'21ef7945296f7b85217897b038e85f2a0958ae5f';
 
 abstract class _$UnreadMessagesCount extends $Notifier<int> {
   int build();

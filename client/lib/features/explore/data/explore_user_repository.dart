@@ -15,6 +15,8 @@ class ExploreUserRepository {
   Future<List<CommentAuthor>> searchUsers(String query) async {
     if (query.trim().isEmpty) return [];
     final results = await _api.searchUsers(query);
-    return results.map((e) => CommentAuthor.fromJson(e as Map<String, dynamic>)).toList();
+    return results
+        .map((e) => CommentAuthor.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }

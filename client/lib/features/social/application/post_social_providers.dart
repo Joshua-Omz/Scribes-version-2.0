@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scribes/features/social/data/social_repository.dart';
@@ -13,62 +12,125 @@ class PostReactionsState {
   final List<ReactionCount> counts;
   final String? userReaction;
   final bool modifiedReaction;
-  PostReactionsState({required this.counts, this.userReaction, this.modifiedReaction = false});
+  PostReactionsState({
+    required this.counts,
+    this.userReaction,
+    this.modifiedReaction = false,
+  });
 }
 
 @riverpod
 class PostReactionsNotifier extends _$PostReactionsNotifier {
   @override
   Future<PostReactionsState> build(String postId) async {
-    final repo = ref.watch(socialRepositoryProvider);
+    // Do NOT fetch immediately to prevent N+1 issues in feeds.
+    // Reactions will be fetched explicitly by the detail screen or updated optimistically.
+    return PostReactionsState(counts: []);
+  }
+
+  Future<void> fetch() async {
+    final repo = ref.read(socialRepositoryProvider);
     try {
       final counts = await repo.getReactions(postId);
-      return PostReactionsState(counts: counts);
+      final currentState = state.value;
+      state = AsyncData(
+        PostReactionsState(
+          counts: counts,
+          userReaction: currentState?.userReaction,
+          modifiedReaction: currentState?.modifiedReaction ?? false,
+        ),
+      );
     } catch (e) {
       debugPrint('[PostReactionsNotifier] Reactions fetch failed: $e');
-      return PostReactionsState(counts: []);
     }
   }
 
-  Future<void> react(String type, {String? knownUserReaction}) async {
+  Future<void> react(
+    String type, {
+    int? initialAmenCount,
+    int? initialInsightCount,
+    int? initialThoughtProvokingCount,
+    String? knownUserReaction,
+  }) async {
     final repo = ref.read(socialRepositoryProvider);
-    
+
     final currentState = state.value;
-    final currentUserReaction = currentState?.modifiedReaction == true 
-        ? currentState?.userReaction 
+    final currentUserReaction = currentState?.modifiedReaction == true
+        ? currentState?.userReaction
         : knownUserReaction;
-        
+
     final isRemoving = currentUserReaction == type;
-    
+
     // --- OPTIMISTIC UPDATE ---
-    if (isRemoving) {
-      final newCounts = List<ReactionCount>.from(currentState?.counts ?? []);
-      final idx = newCounts.indexWhere((c) => c.type == type);
-      if (idx >= 0) {
-        newCounts[idx] = ReactionCount(type: type, count: (newCounts[idx].count - 1).clamp(0, 999999));
+    List<ReactionCount> currentCounts = currentState?.counts ?? [];
+    if (currentCounts.isEmpty) {
+      if (initialAmenCount != null) {
+        currentCounts.add(ReactionCount(type: 'amen', count: initialAmenCount));
       }
-      state = AsyncData(PostReactionsState(counts: newCounts, userReaction: null, modifiedReaction: true));
-    } else {
-      if (currentState != null) {
-        final newCounts = List<ReactionCount>.from(currentState.counts);
-        
-        if (currentUserReaction != null) {
-           final oldIdx = newCounts.indexWhere((c) => c.type == currentUserReaction);
-           if (oldIdx >= 0) {
-             newCounts[oldIdx] = ReactionCount(type: currentUserReaction, count: (newCounts[oldIdx].count - 1).clamp(0, 999999));
-           }
-        }
-        
-        final newIdx = newCounts.indexWhere((c) => c.type == type);
-        if (newIdx >= 0) {
-          newCounts[newIdx] = ReactionCount(type: type, count: newCounts[newIdx].count + 1);
-        } else {
-          newCounts.add(ReactionCount(type: type, count: 1));
-        }
-        state = AsyncData(PostReactionsState(counts: newCounts, userReaction: type, modifiedReaction: true));
+      if (initialInsightCount != null) {
+        currentCounts.add(
+          ReactionCount(type: 'insightful', count: initialInsightCount),
+        );
+      }
+      if (initialThoughtProvokingCount != null) {
+        currentCounts.add(
+          ReactionCount(
+            type: 'thought_provoking',
+            count: initialThoughtProvokingCount,
+          ),
+        );
       }
     }
-    
+
+    if (isRemoving) {
+      final newCounts = List<ReactionCount>.from(currentCounts);
+      final idx = newCounts.indexWhere((c) => c.type == type);
+      if (idx >= 0) {
+        newCounts[idx] = ReactionCount(
+          type: type,
+          count: (newCounts[idx].count - 1).clamp(0, 999999),
+        );
+      }
+      state = AsyncData(
+        PostReactionsState(
+          counts: newCounts,
+          userReaction: null,
+          modifiedReaction: true,
+        ),
+      );
+    } else {
+      final newCounts = List<ReactionCount>.from(currentCounts);
+
+      if (currentUserReaction != null) {
+        final oldIdx = newCounts.indexWhere(
+          (c) => c.type == currentUserReaction,
+        );
+        if (oldIdx >= 0) {
+          newCounts[oldIdx] = ReactionCount(
+            type: currentUserReaction,
+            count: (newCounts[oldIdx].count - 1).clamp(0, 999999),
+          );
+        }
+      }
+
+      final newIdx = newCounts.indexWhere((c) => c.type == type);
+      if (newIdx >= 0) {
+        newCounts[newIdx] = ReactionCount(
+          type: type,
+          count: newCounts[newIdx].count + 1,
+        );
+      } else {
+        newCounts.add(ReactionCount(type: type, count: 1));
+      }
+      state = AsyncData(
+        PostReactionsState(
+          counts: newCounts,
+          userReaction: type,
+          modifiedReaction: true,
+        ),
+      );
+    }
+
     // --- NETWORK CALL ---
     try {
       if (isRemoving) {
@@ -76,12 +138,9 @@ class PostReactionsNotifier extends _$PostReactionsNotifier {
       } else {
         await repo.react(postId, type);
       }
-      
-      // Fetch from server to sync 
-      final freshCounts = await repo.getReactions(postId);
-      if (state.value != null) {
-          state = AsyncData(PostReactionsState(counts: freshCounts, userReaction: state.value!.userReaction, modifiedReaction: state.value!.modifiedReaction));
-      }
+
+      // Fetch from server to sync
+      await fetch();
     } catch (e) {
       // Revert on failure (simplified)
       if (currentState != null) {
@@ -107,7 +166,7 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
   Future<void> addComment(String body, List<String> mentions) async {
     final user = ref.read(authProvider).value;
     if (user == null) return;
-    
+
     final tempId = 'temp-${const Uuid().v4()}';
     final tempComment = Comment(
       id: tempId,
@@ -119,17 +178,21 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
       isHidden: false,
       isDeleted: false,
     );
-    
+
     // Optimistic Add
     if (state.value != null) {
       state = AsyncData([...state.value!, tempComment]);
     }
-    
+
     // Background Network Call
     _addCommentInBackground(body, mentions, tempId);
   }
 
-  Future<void> _addCommentInBackground(String body, List<String> mentions, String tempId) async {
+  Future<void> _addCommentInBackground(
+    String body,
+    List<String> mentions,
+    String tempId,
+  ) async {
     final repo = ref.read(socialRepositoryProvider);
     int attempts = 0;
     while (attempts < 3) {
@@ -144,10 +207,14 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
       } catch (e) {
         attempts++;
         if (attempts >= 3) {
-          debugPrint('[PostCommentsNotifier] Failed to add comment after retries: $e');
+          debugPrint(
+            '[PostCommentsNotifier] Failed to add comment after retries: $e',
+          );
           // Revert optimistic add
           if (state.value != null) {
-             state = AsyncData(state.value!.where((c) => c.id != tempId).toList());
+            state = AsyncData(
+              state.value!.where((c) => c.id != tempId).toList(),
+            );
           }
           return;
         }
@@ -166,7 +233,7 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
         state = AsyncData(updatedList);
       }
     }
-    
+
     final repo = ref.read(socialRepositoryProvider);
     try {
       await repo.hideComment(commentId);
@@ -180,10 +247,10 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
     if (state.value != null) {
       state = AsyncData(state.value!.where((c) => c.id != commentId).toList());
     }
-    
+
     _deleteCommentInBackground(commentId);
   }
-  
+
   Future<void> _deleteCommentInBackground(String commentId) async {
     final repo = ref.read(socialRepositoryProvider);
     int attempts = 0;
@@ -194,7 +261,9 @@ class PostCommentsNotifier extends _$PostCommentsNotifier {
       } catch (e) {
         attempts++;
         if (attempts >= 3) {
-          debugPrint('[PostCommentsNotifier] Failed to delete comment after retries: $e');
+          debugPrint(
+            '[PostCommentsNotifier] Failed to delete comment after retries: $e',
+          );
           return;
         }
         await Future.delayed(Duration(seconds: 2 * attempts));

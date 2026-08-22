@@ -52,7 +52,10 @@ class ScribesDrawer extends ConsumerWidget {
                         CircleAvatar(
                           radius: 20,
                           backgroundColor: colors.surfaceRaised,
-                          child: HugeIcon(icon: HugeIcons.strokeRoundedUser, color: colors.gold),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedUser,
+                            color: colors.gold,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -61,12 +64,16 @@ class ScribesDrawer extends ConsumerWidget {
                             children: [
                               Text(
                                 'Welcome to Scribes',
-                                style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText),
+                                style: ScribesTextStyles.labelLg.copyWith(
+                                  color: colors.primaryText,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Sign in to sync your work',
-                                style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText),
+                                style: ScribesTextStyles.labelSm.copyWith(
+                                  color: colors.secondaryText,
+                                ),
                               ),
                             ],
                           ),
@@ -75,25 +82,24 @@ class ScribesDrawer extends ConsumerWidget {
                     ),
                 ],
               ),
-        ),
-        
-        const SizedBox(height: 16),
-            
+            ),
+
+            const SizedBox(height: 16),
+
+            _buildMenuItem(
+              context: context,
+              colors: colors,
+              icon: HugeIcons.strokeRoundedBook01,
+              title: 'Bible',
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/bible');
+              },
+            ),
+            const SizedBox(height:8),
+
             // Menu Items
             if (user != null) ...[
-
-              _buildMenuItem(
-                context: context,
-                colors: colors,
-                icon: HugeIcons.strokeRoundedBook03,
-                title: 'Bible',
-                onTap: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bible navigation is coming soon!')),
-                  );
-                },
-              ),
               _buildMenuItem(
                 context: context,
                 colors: colors,
@@ -126,9 +132,9 @@ class ScribesDrawer extends ConsumerWidget {
                 },
               ),
             ],
-            
+
             const Divider(height: 32, thickness: 1),
-            
+
             _buildMenuItem(
               context: context,
               colors: colors,
@@ -139,9 +145,9 @@ class ScribesDrawer extends ConsumerWidget {
                 context.push('/settings');
               },
             ),
-            
+
             const Spacer(),
-            
+
             if (user != null)
               _buildMenuItem(
                 context: context,
@@ -161,6 +167,7 @@ class ScribesDrawer extends ConsumerWidget {
       ),
     );
   }
+
   Widget _buildMenuItem({
     required BuildContext context,
     required ScribesColors colors,
@@ -171,7 +178,8 @@ class ScribesDrawer extends ConsumerWidget {
     Color? iconColor,
   }) {
     return ListTile(
-      leading: HugeIcon(icon: icon,
+      leading: HugeIcon(
+        icon: icon,
         color: iconColor ?? colors.secondaryText,
         size: 24,
       ),

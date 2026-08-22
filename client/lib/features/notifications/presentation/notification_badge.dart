@@ -6,15 +6,12 @@ import '../application/notification_provider.dart';
 class NotificationBadge extends ConsumerWidget {
   final Widget child;
 
-  const NotificationBadge({
-    super.key,
-    required this.child,
-  });
+  const NotificationBadge({super.key, required this.child});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasUnread = ref.watch(hasUnreadNotificationsProvider);
-    
+
     return Stack(
       children: [
         child,
@@ -26,7 +23,9 @@ class NotificationBadge extends ConsumerWidget {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: Theme.of(context).extension<ScribesColors>()?.gold ?? Colors.orange,
+                color:
+                    Theme.of(context).extension<ScribesColors>()?.gold ??
+                    Colors.orange,
                 shape: BoxShape.circle,
               ),
             ),

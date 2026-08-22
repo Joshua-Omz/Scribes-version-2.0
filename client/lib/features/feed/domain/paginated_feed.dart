@@ -11,5 +11,6 @@ abstract class PaginatedFeed with _$PaginatedFeed {
     @JsonKey(name: 'next_cursor') String? nextCursor,
   }) = _PaginatedFeed;
 
-  factory PaginatedFeed.fromJson(Map<String, dynamic> json) => _$PaginatedFeedFromJson(json);
+  factory PaginatedFeed.fromJson(Map<String, dynamic> json) =>
+      _$PaginatedFeedFromJson(json);
 }

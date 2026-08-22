@@ -14,13 +14,14 @@ class EmailPasswordScreen extends ConsumerStatefulWidget {
   const EmailPasswordScreen({super.key});
 
   @override
-  ConsumerState<EmailPasswordScreen> createState() => _EmailPasswordScreenState();
+  ConsumerState<EmailPasswordScreen> createState() =>
+      _EmailPasswordScreenState();
 }
 
 class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
   final _emailController = TextEditingController();
   final _emailPasswordController = TextEditingController();
-  
+
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -51,16 +52,20 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
     final colors = ref.read(themeProvider);
 
     if (email.isEmpty || password.isEmpty) {
-      ScribesToast.show(context, 'Both fields are required', colors, isError: true);
+      ScribesToast.show(
+        context,
+        'Both fields are required',
+        colors,
+        isError: true,
+      );
       return;
     }
 
     setState(() => _isEmailLoading = true);
     try {
-      await ref.read(authProvider.notifier).updateEmail(
-            newEmail: email,
-            currentPassword: password,
-          );
+      await ref
+          .read(authProvider.notifier)
+          .updateEmail(newEmail: email, currentPassword: password);
       if (mounted) {
         ScribesToast.show(context, 'Email updated successfully', colors);
         _emailPasswordController.clear();
@@ -81,21 +86,30 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
     final colors = ref.read(themeProvider);
 
     if (current.isEmpty || newPass.isEmpty || confirm.isEmpty) {
-      ScribesToast.show(context, 'All fields are required', colors, isError: true);
+      ScribesToast.show(
+        context,
+        'All fields are required',
+        colors,
+        isError: true,
+      );
       return;
     }
 
     if (newPass != confirm) {
-      ScribesToast.show(context, 'New passwords do not match', colors, isError: true);
+      ScribesToast.show(
+        context,
+        'New passwords do not match',
+        colors,
+        isError: true,
+      );
       return;
     }
 
     setState(() => _isPasswordLoading = true);
     try {
-      await ref.read(authProvider.notifier).updatePassword(
-            currentPassword: current,
-            newPassword: newPass,
-          );
+      await ref
+          .read(authProvider.notifier)
+          .updatePassword(currentPassword: current, newPassword: newPass);
       if (mounted) {
         ScribesToast.show(context, 'Password updated successfully', colors);
         _currentPasswordController.clear();
@@ -121,10 +135,18 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
-        title: Text('Security', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+        title: Text(
+          'Security',
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -135,28 +157,45 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
             controller: _emailController,
             labelText: 'New Email Address',
             hintText: 'email@example.com',
-            prefixIcon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, color: colors.secondaryText, size: 20),
+            prefixIcon: HugeIcon(
+              icon: HugeIcons.strokeRoundedMail01,
+              color: colors.secondaryText,
+              size: 20,
+            ),
           ),
           const SizedBox(height: 16),
           ScribesTextField(
             controller: _emailPasswordController,
             labelText: 'Current Password',
             hintText: 'To verify it\'s you',
-            prefixIcon: HugeIcon(icon: HugeIcons.strokeRoundedLockKey, color: colors.secondaryText, size: 20),
+            prefixIcon: HugeIcon(
+              icon: HugeIcons.strokeRoundedLockKey,
+              color: colors.secondaryText,
+              size: 20,
+            ),
             obscureText: true,
           ),
           const SizedBox(height: 24),
-          _buildSaveButton('Update Email', _isEmailLoading, _updateEmail, colors),
-          
+          _buildSaveButton(
+            'Update Email',
+            _isEmailLoading,
+            _updateEmail,
+            colors,
+          ),
+
           const SizedBox(height: 48),
-          
+
           _buildSectionHeader('Change Password', colors),
           const SizedBox(height: 16),
           ScribesTextField(
             controller: _currentPasswordController,
             labelText: 'Current Password',
             hintText: 'Enter your old password',
-            prefixIcon: HugeIcon(icon: HugeIcons.strokeRoundedLockKey, color: colors.secondaryText, size: 20),
+            prefixIcon: HugeIcon(
+              icon: HugeIcons.strokeRoundedLockKey,
+              color: colors.secondaryText,
+              size: 20,
+            ),
             obscureText: true,
           ),
           const SizedBox(height: 16),
@@ -164,7 +203,11 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
             controller: _newPasswordController,
             labelText: 'New Password',
             hintText: 'Minimum 8 characters',
-            prefixIcon: HugeIcon(icon: HugeIcons.strokeRoundedLockKey, color: colors.secondaryText, size: 20),
+            prefixIcon: HugeIcon(
+              icon: HugeIcons.strokeRoundedLockKey,
+              color: colors.secondaryText,
+              size: 20,
+            ),
             obscureText: true,
           ),
           const SizedBox(height: 16),
@@ -172,11 +215,20 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
             controller: _confirmPasswordController,
             labelText: 'Confirm New Password',
             hintText: 'Must match new password',
-            prefixIcon: HugeIcon(icon: HugeIcons.strokeRoundedLockKey, color: colors.secondaryText, size: 20),
+            prefixIcon: HugeIcon(
+              icon: HugeIcons.strokeRoundedLockKey,
+              color: colors.secondaryText,
+              size: 20,
+            ),
             obscureText: true,
           ),
           const SizedBox(height: 24),
-          _buildSaveButton('Update Password', _isPasswordLoading, _updatePassword, colors),
+          _buildSaveButton(
+            'Update Password',
+            _isPasswordLoading,
+            _updatePassword,
+            colors,
+          ),
         ],
       ),
     );
@@ -193,7 +245,12 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
     );
   }
 
-  Widget _buildSaveButton(String text, bool isLoading, VoidCallback onPressed, ScribesColors colors) {
+  Widget _buildSaveButton(
+    String text,
+    bool isLoading,
+    VoidCallback onPressed,
+    ScribesColors colors,
+  ) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -209,9 +266,17 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
             ? SizedBox(
                 height: 20,
                 width: 20,
-                child: CircularProgressIndicator(color: colors.background, strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  color: colors.background,
+                  strokeWidth: 2,
+                ),
               )
-            : Text(text, style: ScribesTextStyles.labelLg.copyWith(fontWeight: FontWeight.bold)),
+            : Text(
+                text,
+                style: ScribesTextStyles.labelLg.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }

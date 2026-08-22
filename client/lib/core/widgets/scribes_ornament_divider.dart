@@ -9,7 +9,7 @@ class ScribesOrnamentDivider extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
-    
+
     return Row(
       children: [
         Expanded(
@@ -22,7 +22,9 @@ class ScribesOrnamentDivider extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Opacity(
             opacity: 0.2,
-            child: HugeIcon(icon: HugeIcons.strokeRoundedDiamond01, // Geometric medallion ornament
+            child: HugeIcon(
+              icon: HugeIcons
+                  .strokeRoundedDiamond01, // Geometric medallion ornament
               color: colors.gold,
               size: 16,
             ),

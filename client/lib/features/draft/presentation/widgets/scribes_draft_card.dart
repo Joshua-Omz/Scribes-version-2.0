@@ -23,15 +23,17 @@ class ScribesDraftCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
-    
+
     // Extract title from content if available, otherwise "Untitled Draft"
     String title = 'Untitled Draft';
     String excerpt = 'No content';
 
-    if (draft.content.containsKey('title') && draft.content['title'].toString().trim().isNotEmpty) {
+    if (draft.content.containsKey('title') &&
+        draft.content['title'].toString().trim().isNotEmpty) {
       title = draft.content['title'];
     }
-    if (draft.content.containsKey('excerpt') && draft.content['excerpt'].toString().trim().isNotEmpty) {
+    if (draft.content.containsKey('excerpt') &&
+        draft.content['excerpt'].toString().trim().isNotEmpty) {
       excerpt = draft.content['excerpt'];
     }
 
@@ -67,7 +69,10 @@ class ScribesDraftCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -85,7 +90,11 @@ class ScribesDraftCard extends ConsumerWidget {
                       Material(
                         color: Colors.transparent,
                         child: IconButton(
-                          icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.secondaryText, size: 20),
+                          icon: HugeIcon(
+                            icon: HugeIcons.strokeRoundedCancel01,
+                            color: colors.secondaryText,
+                            size: 20,
+                          ),
                           onPressed: onDelete,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -97,14 +106,19 @@ class ScribesDraftCard extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(
                   title,
-                  style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText, height: 1.2),
+                  style: ScribesTextStyles.displayMd.copyWith(
+                    color: colors.primaryText,
+                    height: 1.2,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   excerpt,
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: colors.secondaryText,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -113,24 +127,37 @@ class ScribesDraftCard extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    HugeIcon(icon: HugeIcons.strokeRoundedClock01, size: 14, color: colors.secondaryText),
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedClock01,
+                      size: 14,
+                      color: colors.secondaryText,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'Last saved $formattedDate',
-                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                      ),
                     ),
                     const Spacer(),
-                    if (draft.sermonSource != null && draft.sermonSource!.isNotEmpty)
+                    if (draft.sermonSource != null &&
+                        draft.sermonSource!.isNotEmpty)
                       Flexible(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            HugeIcon(icon: HugeIcons.strokeRoundedChurch, size: 14, color: colors.gold),
+                            HugeIcon(
+                              icon: HugeIcons.strokeRoundedChurch,
+                              size: 14,
+                              color: colors.gold,
+                            ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
                                 draft.sermonSource!.displayTitle,
-                                style: ScribesTextStyles.labelSm.copyWith(color: colors.gold),
+                                style: ScribesTextStyles.labelSm.copyWith(
+                                  color: colors.gold,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

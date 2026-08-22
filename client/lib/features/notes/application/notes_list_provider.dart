@@ -5,9 +5,11 @@ import '../data/note_repository.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../sync/application/sync_service.dart';
 
-final notesListProvider = AsyncNotifierProvider<NotesListNotifier, List<Note>>(() {
-  return NotesListNotifier();
-});
+final notesListProvider = AsyncNotifierProvider<NotesListNotifier, List<Note>>(
+  () {
+    return NotesListNotifier();
+  },
+);
 
 class NotesListNotifier extends AsyncNotifier<List<Note>> {
   String? _currentNotebookId;
@@ -25,7 +27,7 @@ class NotesListNotifier extends AsyncNotifier<List<Note>> {
 
   Future<List<Note>> _fetchNotes() async {
     final repo = ref.watch(noteRepositoryProvider);
-    
+
     // In background, sync from API could be triggered here
     // For now we prioritize fast local read
     return repo.getAllLocalNotes(notebookId: _currentNotebookId);

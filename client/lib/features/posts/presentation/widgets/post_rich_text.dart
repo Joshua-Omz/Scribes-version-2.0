@@ -2,31 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
+import 'package:scribes/core/theme/scribes_quill_scripture_helper.dart';
+import 'package:scribes/core/widgets/scribes_scripture_quick_dialog.dart';
 
-class PostRichText extends StatelessWidget {
+class PostRichText extends StatefulWidget {
   final List<dynamic> content;
 
   const PostRichText({super.key, required this.content});
 
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<ScribesColors>()!;
+  State<PostRichText> createState() => _PostRichTextState();
+}
 
+class _PostRichTextState extends State<PostRichText> {
+  late final QuillController _controller;
+  String? _lastTappedRef;
+  DateTime? _lastTapTime;
+
+  @override
+  void initState() {
+    super.initState();
     Document document;
     try {
-      document = Document.fromJson(content);
-    } catch (e) {
-      return Text('Failed to load document: $e', style: TextStyle(color: colors.primaryText));
+      document = Document.fromJson(widget.content);
+    } catch (_) {
+      document = Document();
     }
 
-    final controller = QuillController(
+    _controller = QuillController(
       document: document,
       selection: const TextSelection.collapsed(offset: 0),
       readOnly: true,
     );
+    _controller.addListener(_onSelectionChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant PostRichText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.content != widget.content) {
+      try {
+        _controller.document = Document.fromJson(widget.content);
+      } catch (_) {}
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onSelectionChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onSelectionChanged() {
+    final ref = ScribesQuillScriptureHelper.getActiveScriptureReference(
+      _controller,
+    );
+    if (ref != null && ref.isNotEmpty) {
+      final now = DateTime.now();
+      // Debounce opening dialog if tapped rapidly
+      if (_lastTappedRef != ref ||
+          _lastTapTime == null ||
+          now.difference(_lastTapTime!).inMilliseconds > 600) {
+        _lastTappedRef = ref;
+        _lastTapTime = now;
+        if (mounted) {
+          ScribesScriptureQuickDialog.show(context, reference: ref);
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<ScribesColors>()!;
 
     return QuillEditor.basic(
-      controller: controller,
+      controller: _controller,
       config: QuillEditorConfig(
         scrollable: false,
         autoFocus: false,
@@ -34,7 +86,7 @@ class PostRichText extends StatelessWidget {
         padding: EdgeInsets.zero,
         customStyleBuilder: (Attribute attribute) {
           if (attribute.key == 'scripture') {
-            return TextStyle(color: colors.gold, fontStyle: FontStyle.italic);
+            return ScribesQuillScriptureHelper.buildScriptureTextStyle(colors);
           }
           return const TextStyle();
         },
@@ -55,9 +107,7 @@ class PostRichText extends StatelessWidget {
             const VerticalSpacing(0, 0),
             const VerticalSpacing(0, 0),
             BoxDecoration(
-              border: Border(
-                left: BorderSide(color: colors.gold, width: 4),
-              ),
+              border: Border(left: BorderSide(color: colors.gold, width: 4)),
             ),
           ),
         ),

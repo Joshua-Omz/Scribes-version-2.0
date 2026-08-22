@@ -6,7 +6,7 @@ part 'notes_dao.g.dart';
 
 @DriftAccessor(tables: [Notes])
 class NotesDao extends DatabaseAccessor<ScribesDatabase> with _$NotesDaoMixin {
-  NotesDao(ScribesDatabase db) : super(db);
+  NotesDao(super.db);
 
   Future<int?> getMaxServerSequence() {
     return (selectOnly(notes)..addColumns([notes.serverSequence.max()]))
@@ -22,13 +22,15 @@ class NotesDao extends DatabaseAccessor<ScribesDatabase> with _$NotesDaoMixin {
     return into(notes).insertOnConflictUpdate(
       NotesCompanion.insert(
         id: record.localId,
-        content: record.content.toString(), // or encode back to json depending on how it's stored
+        content: record.content
+            .toString(), // or encode back to json depending on how it's stored
         title: Value(record.titleOrCaption),
         authorId: record.content['author_id'] ?? '',
         serverSequence: Value(record.serverSequence),
         localOnly: const Value(false),
         updatedAt: record.updatedAt,
-        createdAt: record.updatedAt, // simplify for now, can extract from content if needed
+        createdAt: record
+            .updatedAt, // simplify for now, can extract from content if needed
       ),
     );
   }

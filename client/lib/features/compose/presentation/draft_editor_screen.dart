@@ -6,8 +6,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../../core/theme/scribes_quill_scripture_helper.dart';
 import '../../../core/widgets/scribes_auto_save_dot.dart';
 import '../../../core/widgets/scribes_toast.dart';
+import '../../../core/widgets/scribes_scripture_selector.dart';
+import '../../../core/widgets/scribes_scripture_quick_dialog.dart';
+import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
 
 class DraftEditorScreen extends ConsumerStatefulWidget {
@@ -22,13 +26,14 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   late final TextEditingController _titleController;
+  String? _activeInlineScripture;
 
   @override
   void initState() {
     super.initState();
     final state = ref.read(composeProvider);
     _titleController = TextEditingController(text: state.title);
-    
+
     if (state.contentDelta != null) {
       final doc = Document.fromJson(state.contentDelta!);
       _controller = QuillController(
@@ -53,11 +58,94 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
 
   void _onDocumentChanged() {
     ref.read(composeProvider.notifier).onDocumentChanged(_controller);
+    final active = ScribesQuillScriptureHelper.getActiveScriptureReference(
+      _controller,
+    );
+    if (active != _activeInlineScripture) {
+      setState(() {
+        _activeInlineScripture = active;
+      });
+    }
+  }
+
+  void _openScriptureSelector() {
+    final colors = ref.read(themeProvider);
+    ScribesScriptureSelector.show(
+      context,
+      colors: colors,
+      onSelected: (book, chapter, verseStart, verseEnd) {
+        if (chapter != null && verseStart != null) {
+          final refObj = ScriptureRef(
+            book: book,
+            chapter: chapter,
+            verseStart: verseStart,
+            verseEnd: verseEnd,
+          );
+          ref.read(composeProvider.notifier).addScriptureRef(refObj);
+        }
+      },
+    );
+  }
+
+  void _showScriptureQuickDialog(ScriptureRef refObj) {
+    final colors = ref.read(themeProvider);
+    String reference = '${refObj.book} ${refObj.chapter}:${refObj.verseStart}';
+    if (refObj.verseEnd != null && refObj.verseEnd != refObj.verseStart) {
+      reference += '-${refObj.verseEnd}';
+    }
+
+    ScribesScriptureQuickDialog.show(
+      context,
+      reference: reference,
+      onRemove: () {
+        ref.read(composeProvider.notifier).removeScriptureRef(refObj);
+        if (_activeInlineScripture == reference) {
+          ScribesQuillScriptureHelper.removeScriptureAttribute(_controller);
+          setState(() => _activeInlineScripture = null);
+        }
+      },
+      onInsertIntoNote: (verseText) {
+        final index = _controller.selection.baseOffset >= 0
+            ? _controller.selection.baseOffset
+            : _controller.document.length - 1;
+        _controller.document.insert(
+          index,
+          '\n"$verseText" — $reference (BSB)\n',
+        );
+        ScribesToast.show(
+          context,
+          'Inserted $reference into draft',
+          colors,
+          icon: HugeIcons.strokeRoundedBookOpen01,
+        );
+      },
+    );
+  }
+
+  void _showInlineScriptureDialog(String reference) {
+    ScribesScriptureQuickDialog.show(
+      context,
+      reference: reference,
+      onRemove: () {
+        ScribesQuillScriptureHelper.removeScriptureAttribute(_controller);
+        setState(() => _activeInlineScripture = null);
+      },
+      onInsertIntoNote: (verseText) {
+        final index = _controller.selection.baseOffset >= 0
+            ? _controller.selection.baseOffset
+            : _controller.document.length - 1;
+        _controller.document.insert(
+          index,
+          '\n"$verseText" — $reference (BSB)\n',
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
+    final composeState = ref.watch(composeProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -65,20 +153,23 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
         backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () async {
             await ref.read(composeProvider.notifier).forceSave();
             if (context.mounted) {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go('/drafts');
+                context.go('/posts');
               }
             }
           },
         ),
         title: Text(
-          'Writing Studio',
+          'Compose',
           style: ScribesTextStyles.displayMd.copyWith(
             color: colors.primaryText,
           ),
@@ -87,27 +178,35 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
         actions: [
           Consumer(
             builder: (context, ref, child) {
-              final composeState = ref.watch(composeProvider);
+              final state = ref.watch(composeProvider);
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (composeState.isSaving || composeState.lastSavedAt != null)
+                  if (state.isSaving || state.lastSavedAt != null)
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: ScribesAutoSaveDot(
-                        state: composeState.isSaving ? SaveState.saving : SaveState.localSaved,
+                        state: state.isSaving
+                            ? SaveState.saving
+                            : SaveState.localSaved,
                       ),
                     ),
                   TextButton(
-                    onPressed: () {
-                      ref.read(composeProvider.notifier).syncContent(_controller);
-                      context.push('/compose/preview');
+                    onPressed: () async {
+                      await ref.read(composeProvider.notifier).forceSave();
+                      if (context.mounted) {
+                        context.push('/compose/preview');
+                      }
                     },
                     child: Text(
-                      'Preview',
-                      style: ScribesTextStyles.labelLg.copyWith(color: colors.gold),
+                      'Next',
+                      style: ScribesTextStyles.labelLg.copyWith(
+                        color: colors.gold,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                 ],
               );
             },
@@ -116,26 +215,198 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
       ),
       body: Column(
         children: [
-
           Expanded(
-            child: Container(
-              color: colors.background,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
+                  const SizedBox(height: 16),
+                  TextField(
                     controller: _titleController,
-                    style: ScribesTextStyles.displayXl.copyWith(color: colors.primaryText),
+                    style: ScribesTextStyles.displayLg.copyWith(
+                      color: colors.primaryText,
+                    ),
                     decoration: InputDecoration(
-                      hintText: 'Title',
-                      hintStyle: ScribesTextStyles.displayXl.copyWith(color: colors.secondaryText.withValues(alpha: 0.5)),
+                      hintText: 'Title...',
+                      hintStyle: ScribesTextStyles.displayLg.copyWith(
+                        color: colors.secondaryText.withValues(alpha: 0.5),
+                      ),
                       border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
                     ),
                     onChanged: (val) {
                       ref.read(composeProvider.notifier).updateTitle(val);
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  // Scripture Tag Bar
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ...composeState.scriptureRefs.map((refObj) {
+                        String refStr =
+                            '${refObj.book} ${refObj.chapter}:${refObj.verseStart}';
+                        if (refObj.verseEnd != null &&
+                            refObj.verseEnd != refObj.verseStart) {
+                          refStr += '-${refObj.verseEnd}';
+                        }
+                        return InkWell(
+                          onTap: () => _showScriptureQuickDialog(refObj),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.surfaceRaised,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: colors.goldMuted.withValues(alpha: 0.6),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                HugeIcon(
+                                  icon: HugeIcons.strokeRoundedBookOpen01,
+                                  size: 13,
+                                  color: colors.gold,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  refStr,
+                                  style: ScribesTextStyles.labelSm.copyWith(
+                                    color: colors.gold,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                GestureDetector(
+                                  onTap: () => ref
+                                      .read(composeProvider.notifier)
+                                      .removeScriptureRef(refObj),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 13,
+                                    color: colors.secondaryText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                      InkWell(
+                        onTap: _openScriptureSelector,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.gold.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: colors.goldMuted.withValues(alpha: 0.4),
+                              style: BorderStyle.solid,
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add, size: 14, color: colors.gold),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Tag Scripture',
+                                style: ScribesTextStyles.labelSm.copyWith(
+                                  color: colors.gold,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Cursor-Aware Scripture Inspector Pill
+                  if (_activeInlineScripture != null)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.gold.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: colors.goldMuted.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                            size: 15,
+                            color: colors.gold,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showInlineScriptureDialog(
+                                _activeInlineScripture!,
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    _activeInlineScripture!,
+                                    style: ScribesTextStyles.labelSm.copyWith(
+                                      color: colors.gold,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '• Tap to preview verse',
+                                    style: ScribesTextStyles.caption.copyWith(
+                                      color: colors.secondaryText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              ScribesQuillScriptureHelper.removeScriptureAttribute(
+                                _controller,
+                              );
+                              setState(() => _activeInlineScripture = null);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 14,
+                                color: colors.secondaryText,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 4),
                   Expanded(
                     child: QuillEditor.basic(
                       controller: _controller,
@@ -144,7 +415,8 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                       config: QuillEditorConfig(
                         customStyleBuilder: (Attribute attribute) {
                           if (attribute.key == 'scripture') {
-                            return TextStyle(color: colors.gold, fontStyle: FontStyle.italic);
+                            return ScribesQuillScriptureHelper
+                                .buildScriptureTextStyle(colors);
                           }
                           return const TextStyle();
                         },
@@ -188,6 +460,7 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
           QuillSimpleToolbar(
             controller: _controller,
             config: QuillSimpleToolbarConfig(
+              showDividers: true,
               multiRowsDisplay: false,
               color: colors.surfaceRaised,
               showAlignmentButtons: false,
@@ -200,23 +473,109 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
               showClearFormat: false,
               customButtons: [
                 QuillToolbarCustomButtonOptions(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedBookOpen01),
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedBookOpen01,
+                    size: 18,
+                    color: colors.gold,
+                  ),
                   tooltip: 'Tag as Scripture',
                   onPressed: () {
                     final selection = _controller.selection;
                     if (!selection.isCollapsed) {
-                      final text = _controller.document.getPlainText(
-                        selection.start,
-                        selection.end - selection.start,
+                      ScribesScriptureSelector.show(
+                        context,
+                        colors: colors,
+                        onSelected: (book, chapter, verseStart, verseEnd) {
+                          String refStr = book;
+                          if (chapter != null) {
+                            refStr += ' $chapter';
+                            if (verseStart != null) {
+                              refStr += ':$verseStart';
+                              if (verseEnd != null && verseEnd != verseStart) {
+                                refStr += '-$verseEnd';
+                              }
+                            }
+                          }
+                          ScribesQuillScriptureHelper.applyScriptureAttribute(
+                            _controller,
+                            refStr,
+                          );
+                          if (chapter != null && verseStart != null) {
+                            ref
+                                .read(composeProvider.notifier)
+                                .addScriptureRef(
+                                  ScriptureRef(
+                                    book: book,
+                                    chapter: chapter,
+                                    verseStart: verseStart,
+                                    verseEnd: verseEnd,
+                                  ),
+                                );
+                          }
+                          ScribesToast.show(
+                            context,
+                            'Tagged as Scripture: $refStr',
+                            colors,
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                          );
+                        },
                       );
-                      if (text.trim().isNotEmpty) {
-                        _controller.formatSelection(Attribute('scripture', AttributeScope.inline, text.trim()));
-                        final colors = ref.read(themeProvider);
-                        ScribesToast.show(context, 'Tagged as Scripture: ${text.trim()}', colors, icon: HugeIcons.strokeRoundedBookOpen01);
-                      }
                     } else {
-                      final colors = ref.read(themeProvider);
-                      ScribesToast.show(context, 'Highlight text to tag as scripture', colors, icon: HugeIcons.strokeRoundedBookOpen01);
+                      ScribesScriptureSelector.show(
+                        context,
+                        colors: colors,
+                        onSelected: (book, chapter, verseStart, verseEnd) {
+                          String refStr = book;
+                          if (chapter != null) {
+                            refStr += ' $chapter';
+                            if (verseStart != null) {
+                              refStr += ':$verseStart';
+                              if (verseEnd != null && verseEnd != verseStart) {
+                                refStr += '-$verseEnd';
+                              }
+                            }
+                          }
+                          final offset = _controller.selection.baseOffset >= 0
+                              ? _controller.selection.baseOffset
+                              : _controller.document.length - 1;
+                          _controller.document.insert(offset, refStr);
+                          _controller.updateSelection(
+                            TextSelection(
+                              baseOffset: offset,
+                              extentOffset: offset + refStr.length,
+                            ),
+                            ChangeSource.local,
+                          );
+                          ScribesQuillScriptureHelper.applyScriptureAttribute(
+                            _controller,
+                            refStr,
+                          );
+                          _controller.updateSelection(
+                            TextSelection.collapsed(
+                              offset: offset + refStr.length,
+                            ),
+                            ChangeSource.local,
+                          );
+                          if (chapter != null && verseStart != null) {
+                            ref
+                                .read(composeProvider.notifier)
+                                .addScriptureRef(
+                                  ScriptureRef(
+                                    book: book,
+                                    chapter: chapter,
+                                    verseStart: verseStart,
+                                    verseEnd: verseEnd,
+                                  ),
+                                );
+                          }
+                          ScribesToast.show(
+                            context,
+                            'Inserted Scripture: $refStr',
+                            colors,
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                          );
+                        },
+                      );
                     }
                   },
                 ),

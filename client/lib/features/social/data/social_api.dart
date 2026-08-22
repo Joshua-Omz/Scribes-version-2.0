@@ -22,7 +22,10 @@ class SocialApi {
   }
 
   Future<void> react(String postId, String type) async {
-    await _dio.post('${Endpoints.posts}/$postId/reactions', data: {'type': type});
+    await _dio.post(
+      '${Endpoints.posts}/$postId/reactions',
+      data: {'type': type},
+    );
   }
 
   Future<void> unreact(String postId) async {
@@ -37,20 +40,25 @@ class SocialApi {
     return response.data as List<dynamic>;
   }
 
-  Future<Map<String, dynamic>> addComment(String postId, String body, List<String> mentions) async {
-    final response = await _dio.post('${Endpoints.posts}/$postId/comments', data: {
-      'body': body,
-      'mentions': mentions,
-    });
+  Future<Map<String, dynamic>> addComment(
+    String postId,
+    String body,
+    List<String> mentions,
+  ) async {
+    final response = await _dio.post(
+      '${Endpoints.posts}/$postId/comments',
+      data: {'body': body, 'mentions': mentions},
+    );
     return response.data as Map<String, dynamic>;
   }
 
   /// Unified PATCH endpoint for hide/delete actions.
   /// [action] must be "hide" or "delete".
   Future<void> patchComment(String commentId, String action) async {
-    await _dio.patch('${Endpoints.comments}/$commentId', data: {
-      'action': action,
-    });
+    await _dio.patch(
+      '${Endpoints.comments}/$commentId',
+      data: {'action': action},
+    );
   }
 
   // ── User Lookup ────────────────────────────────
@@ -61,9 +69,10 @@ class SocialApi {
   }
 
   Future<List<dynamic>> searchUsers(String query) async {
-    final response = await _dio.get('${Endpoints.users}/search', queryParameters: {
-      'q': query,
-    });
+    final response = await _dio.get(
+      '${Endpoints.users}/search',
+      queryParameters: {'q': query},
+    );
     if (response.data == null) return [];
     return response.data as List<dynamic>;
   }
@@ -106,7 +115,10 @@ class SocialApi {
   }
 
   Future<List<dynamic>> getSavedPosts({String type = 'bookmark'}) async {
-    final response = await _dio.get(Endpoints.saved, queryParameters: {'type': type});
+    final response = await _dio.get(
+      Endpoints.saved,
+      queryParameters: {'type': type},
+    );
     if (response.data == null) return [];
     return response.data as List<dynamic>;
   }

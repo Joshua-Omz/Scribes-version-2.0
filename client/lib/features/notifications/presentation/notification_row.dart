@@ -30,12 +30,14 @@ class NotificationRow extends ConsumerWidget {
       if (onTap != null) onTap!();
       return;
     }
-    
+
     // Auto-mark as read
     if (!notification.safeIsRead) {
-      ref.read(notificationProvider.notifier).markSelectedRead(notification.safeIds);
+      ref
+          .read(notificationProvider.notifier)
+          .markSelectedRead(notification.safeIds);
     }
-    
+
     // Navigate based on type + ref_id
     switch (notification.safeType) {
       case NotifType.mention:
@@ -55,17 +57,19 @@ class NotificationRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<ScribesColors>()!;
-    
+
     return InkWell(
       onTap: () => _handleTap(context, ref),
       onLongPress: onLongPress,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.surface,
+          color: isSelected
+              ? colors.gold.withValues(alpha: 0.1)
+              : colors.surface,
           border: Border(
             bottom: BorderSide(color: colors.border, width: 0.5),
-            left: notification.showRealtimeAccent 
+            left: notification.showRealtimeAccent
                 ? BorderSide(color: colors.goldMuted, width: 2.0)
                 : BorderSide.none,
           ),
@@ -78,7 +82,9 @@ class NotificationRow extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8, right: 12),
                 child: Icon(
-                  isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  isSelected
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
                   color: isSelected ? colors.gold : colors.secondaryText,
                   size: 20,
                 ),
@@ -100,7 +106,7 @@ class NotificationRow extends ConsumerWidget {
               else
                 const SizedBox(width: 16), // space replacement for unread dot
             ],
-              
+
             // Avatar
             ScribesAvatar(
               imageUrl: notification.actorAvatar,
@@ -108,7 +114,7 @@ class NotificationRow extends ConsumerWidget {
               authorName: notification.actorHandle ?? 'S',
             ),
             const SizedBox(width: 12),
-            
+
             // Body text + timestamp
             Expanded(
               child: Column(
@@ -117,13 +123,17 @@ class NotificationRow extends ConsumerWidget {
                   Text(
                     notification.safeBody,
                     style: ScribesTextStyles.bodyMd.copyWith(
-                      color: notification.safeIsRead ? colors.secondaryText : colors.primaryText,
+                      color: notification.safeIsRead
+                          ? colors.secondaryText
+                          : colors.primaryText,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     timeago.format(notification.safeCreatedAt),
-                    style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                    style: ScribesTextStyles.caption.copyWith(
+                      color: colors.secondaryText,
+                    ),
                   ),
                 ],
               ),

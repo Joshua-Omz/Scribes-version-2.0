@@ -6,7 +6,7 @@ part 'posts_dao.g.dart';
 
 @DriftAccessor(tables: [Posts])
 class PostsDao extends DatabaseAccessor<ScribesDatabase> with _$PostsDaoMixin {
-  PostsDao(ScribesDatabase db) : super(db);
+  PostsDao(super.db);
 
   Future<int?> getMaxServerSequence() {
     return (selectOnly(posts)..addColumns([posts.serverSequence.max()]))

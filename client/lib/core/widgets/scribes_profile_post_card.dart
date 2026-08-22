@@ -51,7 +51,9 @@ class ScribesProfilePostCard extends ConsumerWidget {
                     padding: const EdgeInsets.only(top: 12.0),
                     child: Text(
                       '${publishedAt!.day}/${publishedAt!.month}/${publishedAt!.year}',
-                      style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText),
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                      ),
                     ),
                   )
                 else
@@ -65,9 +67,12 @@ class ScribesProfilePostCard extends ConsumerWidget {
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: isSaved ? colors.gold : Colors.transparent,
-                        borderRadius: BorderRadius.circular(ScribesRadius.button),
+                        borderRadius: BorderRadius.circular(
+                          ScribesRadius.button,
+                        ),
                       ),
-                      child: HugeIcon(icon: HugeIcons.strokeRoundedBookmark01,
+                      child: HugeIcon(
+                        icon: HugeIcons.strokeRoundedBookmark01,
                         color: isSaved ? colors.surface : colors.secondaryText,
                         size: 20,
                       ),

@@ -3,7 +3,7 @@ import '../../../core/storage/secure_storage.dart';
 
 part 'last_read_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class LastReadNotifier extends _$LastReadNotifier {
   @override
   Map<String, DateTime> build() {
@@ -14,11 +14,9 @@ class LastReadNotifier extends _$LastReadNotifier {
   Future<void> loadForConversation(String conversationId) async {
     final storage = ref.read(secureStorageProvider);
     final value = await storage.getLastRead(conversationId);
+    if (!ref.mounted) return;
     if (value != null) {
-      state = {
-        ...state,
-        conversationId: DateTime.parse(value),
-      };
+      state = {...state, conversationId: DateTime.parse(value)};
     }
   }
 
@@ -28,15 +26,14 @@ class LastReadNotifier extends _$LastReadNotifier {
     for (final id in conversationIds) {
       if (state.containsKey(id)) continue;
       final value = await storage.getLastRead(id);
+      if (!ref.mounted) return;
       if (value != null) {
         updates[id] = DateTime.parse(value);
       }
     }
+    if (!ref.mounted) return;
     if (updates.isNotEmpty) {
-      state = {
-        ...state,
-        ...updates,
-      };
+      state = {...state, ...updates};
     }
   }
 
@@ -44,10 +41,8 @@ class LastReadNotifier extends _$LastReadNotifier {
     final now = DateTime.now();
     final storage = ref.read(secureStorageProvider);
     await storage.saveLastRead(conversationId, now.toIso8601String());
-    
-    state = {
-      ...state,
-      conversationId: now,
-    };
+    if (!ref.mounted) return;
+
+    state = {...state, conversationId: now};
   }
 }

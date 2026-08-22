@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../../core/theme/scribes_quill_scripture_helper.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_scripture_selector.dart';
+import '../../../core/widgets/scribes_scripture_quick_dialog.dart';
 import '../domain/post.dart';
 import '../application/revise_post_provider.dart';
 
@@ -27,6 +30,7 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
   late final TextEditingController _captionController;
   late final TextEditingController _tagController;
   List<String> _tags = [];
+  String? _activeInlineScripture;
 
   @override
   void initState() {
@@ -48,16 +52,29 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
     } else {
       _controller = QuillController.basic();
     }
+    _controller.addListener(_onDocumentChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onDocumentChanged);
     _controller.dispose();
     _captionController.dispose();
     _tagController.dispose();
     _focusNode.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onDocumentChanged() {
+    final active = ScribesQuillScriptureHelper.getActiveScriptureReference(
+      _controller,
+    );
+    if (active != _activeInlineScripture) {
+      setState(() {
+        _activeInlineScripture = active;
+      });
+    }
   }
 
   void _saveRevision() async {
@@ -160,7 +177,86 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
                       color: colors.primaryText.withValues(alpha: 0.5),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+
+                  // Cursor-Aware Scripture Inspector Pill
+                  if (_activeInlineScripture != null)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.gold.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: colors.goldMuted.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                            size: 15,
+                            color: colors.gold,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                ScribesScriptureQuickDialog.show(
+                                  context,
+                                  reference: _activeInlineScripture!,
+                                  onRemove: () {
+                                    ScribesQuillScriptureHelper.removeScriptureAttribute(
+                                      _controller,
+                                    );
+                                    setState(() => _activeInlineScripture = null);
+                                  },
+                                );
+                              },
+                              child: Row(
+                                children: [
+                                  Text(
+                                    _activeInlineScripture!,
+                                    style: ScribesTextStyles.labelSm.copyWith(
+                                      color: colors.gold,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '• Tap to preview verse',
+                                    style: ScribesTextStyles.caption.copyWith(
+                                      color: colors.secondaryText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              ScribesQuillScriptureHelper.removeScriptureAttribute(
+                                _controller,
+                              );
+                              setState(() => _activeInlineScripture = null);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 14,
+                                color: colors.secondaryText,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 4),
                   Expanded(
                     child: QuillEditor.basic(
                       controller: _controller,
@@ -169,10 +265,8 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
                       config: QuillEditorConfig(
                         customStyleBuilder: (Attribute attribute) {
                           if (attribute.key == 'scripture') {
-                            return TextStyle(
-                              color: colors.gold,
-                              fontStyle: FontStyle.italic,
-                            );
+                            return ScribesQuillScriptureHelper
+                                .buildScriptureTextStyle(colors);
                           }
                           return const TextStyle();
                         },
@@ -236,16 +330,21 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Tags Section
                   Text(
                     'Tags',
-                    style: ScribesTextStyles.labelSm.copyWith(color: colors.secondaryText, letterSpacing: 1.2),
+                    style: ScribesTextStyles.labelSm.copyWith(
+                      color: colors.secondaryText,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Add up to 8 tags (e.g. grace, prophecy).',
-                    style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText.withValues(alpha: 0.7)),
+                    style: ScribesTextStyles.caption.copyWith(
+                      color: colors.secondaryText.withValues(alpha: 0.7),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (_tags.isNotEmpty)
@@ -256,7 +355,9 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
                         return InputChip(
                           label: Text(
                             "#$tag",
-                            style: ScribesTextStyles.labelSm.copyWith(color: colors.gold),
+                            style: ScribesTextStyles.labelSm.copyWith(
+                              color: colors.gold,
+                            ),
                           ),
                           backgroundColor: colors.surfaceRaised,
                           deleteIconColor: colors.orange,
@@ -292,6 +393,7 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
           QuillSimpleToolbar(
             controller: _controller,
             config: QuillSimpleToolbarConfig(
+              showDividers:true,
               multiRowsDisplay: false,
               color: colors.surfaceRaised,
               showAlignmentButtons: false,
@@ -304,38 +406,84 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
               showClearFormat: false,
               customButtons: [
                 QuillToolbarCustomButtonOptions(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedBookOpen01),
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedBookOpen01,
+                    size: 18,
+                    color: colors.gold,
+                  ),
                   tooltip: 'Tag as Scripture',
                   onPressed: () {
                     final selection = _controller.selection;
                     if (!selection.isCollapsed) {
-                      final text = _controller.document.getPlainText(
-                        selection.start,
-                        selection.end - selection.start,
-                      );
-                      if (text.trim().isNotEmpty) {
-                        _controller.formatSelection(
-                          Attribute(
-                            'scripture',
-                            AttributeScope.inline,
-                            text.trim(),
-                          ),
-                        );
-                        final colors = ref.read(themeProvider);
-                        ScribesToast.show(
-                          context,
-                          'Tagged as Scripture: ${text.trim()}',
-                          colors,
-                          icon: HugeIcons.strokeRoundedBookOpen01,
-                        );
-                      }
-                    } else {
-                      final colors = ref.read(themeProvider);
-                      ScribesToast.show(
+                      ScribesScriptureSelector.show(
                         context,
-                        'Highlight text to tag as scripture',
-                        colors,
-                        icon: HugeIcons.strokeRoundedBookOpen01,
+                        colors: colors,
+                        onSelected: (book, chapter, verseStart, verseEnd) {
+                          String refStr = book;
+                          if (chapter != null) {
+                            refStr += ' $chapter';
+                            if (verseStart != null) {
+                              refStr += ':$verseStart';
+                              if (verseEnd != null && verseEnd != verseStart) {
+                                refStr += '-$verseEnd';
+                              }
+                            }
+                          }
+                          ScribesQuillScriptureHelper.applyScriptureAttribute(
+                            _controller,
+                            refStr,
+                          );
+                          ScribesToast.show(
+                            context,
+                            'Tagged as Scripture: $refStr',
+                            colors,
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                          );
+                        },
+                      );
+                    } else {
+                      ScribesScriptureSelector.show(
+                        context,
+                        colors: colors,
+                        onSelected: (book, chapter, verseStart, verseEnd) {
+                          String refStr = book;
+                          if (chapter != null) {
+                            refStr += ' $chapter';
+                            if (verseStart != null) {
+                              refStr += ':$verseStart';
+                              if (verseEnd != null && verseEnd != verseStart) {
+                                refStr += '-$verseEnd';
+                              }
+                            }
+                          }
+                          final offset = _controller.selection.baseOffset >= 0
+                              ? _controller.selection.baseOffset
+                              : _controller.document.length - 1;
+                          _controller.document.insert(offset, refStr);
+                          _controller.updateSelection(
+                            TextSelection(
+                              baseOffset: offset,
+                              extentOffset: offset + refStr.length,
+                            ),
+                            ChangeSource.local,
+                          );
+                          ScribesQuillScriptureHelper.applyScriptureAttribute(
+                            _controller,
+                            refStr,
+                          );
+                          _controller.updateSelection(
+                            TextSelection.collapsed(
+                              offset: offset + refStr.length,
+                            ),
+                            ChangeSource.local,
+                          );
+                          ScribesToast.show(
+                            context,
+                            'Inserted Scripture: $refStr',
+                            colors,
+                            icon: HugeIcons.strokeRoundedBookOpen01,
+                          );
+                        },
                       );
                     }
                   },

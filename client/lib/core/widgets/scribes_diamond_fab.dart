@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,16 +26,28 @@ class ScribesDiamondFab extends ConsumerWidget {
         child: Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(
-            color: colors.primaryText,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.goldMuted, width: 1),
-          ),
-          child: Transform.rotate(
-            angle: -45 * 3.1415927 / 180,
-            child: HugeIcon(icon: icon,
-              color: colors.surfaceRaised,
-              size: 28,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colors.surface.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.border, width: 1.2),
+                ),
+                child: Transform.rotate(
+                  angle: -45 * 3.1415927 / 180,
+                  child: Center(
+                    child: HugeIcon(
+                      icon: icon,
+                      color: colors.primaryText,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

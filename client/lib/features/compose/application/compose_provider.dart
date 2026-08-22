@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
-import 'package:hugeicons/hugeicons.dart';
 
-import '../../../core/theme/theme_provider.dart';
-import '../../../core/widgets/scribes_toast.dart';
 import '../../draft/data/draft_repository.dart';
 import '../../draft/application/drafts_list_provider.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
+import '../../../core/theme/scribes_quill_scripture_helper.dart';
 
-final composeProvider = NotifierProvider<ComposeNotifier, ComposeState>(() => ComposeNotifier());
+final composeProvider = NotifierProvider<ComposeNotifier, ComposeState>(
+  () => ComposeNotifier(),
+);
 
 class ComposeState {
   final String draftId;
@@ -101,11 +101,14 @@ class ComposeNotifier extends Notifier<ComposeState> {
 
   void addTag(String tag) {
     final current = List<String>.from(state.tags);
-    final normalizedTag = tag.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final normalizedTag = tag.trim().toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9]'),
+      '',
+    );
     if (normalizedTag.isEmpty) return;
     // Keep the original casing for display when adding
     final tagToAdd = tag.trim().replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
-    
+
     if (!current.map((t) => t.toLowerCase()).contains(normalizedTag)) {
       if (current.length >= 8) return; // Enforce max 8 tags
       current.add(tagToAdd);
@@ -129,7 +132,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
 
   void removeScriptureRef(ScriptureRef ref) {
     state = state.copyWith(
-      scriptureRefs: state.scriptureRefs.where((r) => r != ref).toList()
+      scriptureRefs: state.scriptureRefs.where((r) => r != ref).toList(),
     );
     _triggerAutosave();
   }
@@ -141,7 +144,9 @@ class ComposeNotifier extends Notifier<ComposeState> {
 
   void syncContent(QuillController controller) {
     _lastController = controller;
-    state = state.copyWith(contentDelta: controller.document.toDelta().toJson());
+    state = state.copyWith(
+      contentDelta: controller.document.toDelta().toJson(),
+    );
   }
 
   void _triggerAutosave() {
@@ -164,29 +169,47 @@ class ComposeNotifier extends Notifier<ComposeState> {
     state = state.copyWith(isSaving: true);
 
     final repo = ref.read(draftRepositoryProvider);
-    
+
     // Construct Sprint 5 standard JSON format
     final plainText = controller.document.toPlainText();
-    final excerptText = plainText.length > 100 ? '${plainText.substring(0, 100)}...' : plainText;
-    
+    final excerptText = plainText.length > 100
+        ? '${plainText.substring(0, 100)}...'
+        : plainText;
+
+    final deltaJson = controller.document.toDelta().toJson();
+
     final contentMap = {
       'title': state.title,
       'excerpt': excerptText.trim(),
-      'body': controller.document.toDelta().toJson(),
+      'body': deltaJson,
+      'cover_image_url': state.coverImageUrl,
+      'post_type': state.postType,
+      'caption': state.caption,
+      'tags': state.tags,
+      'scripture_refs': state.scriptureRefs.map((ref) => ref.toJson()).toList(),
     };
 
     final jsonContent = jsonEncode(contentMap);
-    
+
     String? sermonSourceJson;
     if (state.sermonSource != null) {
       sermonSourceJson = jsonEncode(state.sermonSource!.toJson());
     }
 
-    // For compatibility with any legacy fields if necessary
+    // Extract inline scripture references and merge with top-level tags
+    final inlineRefs = ScribesQuillScriptureHelper.extractScriptureRefs(deltaJson);
     final List<String> scriptureTags = state.scriptureRefs.map((r) {
-      if (r.verseEnd != null) return '${r.book} ${r.chapter}:${r.verseStart}-${r.verseEnd}';
+      if (r.verseEnd != null && r.verseEnd != r.verseStart) {
+        return '${r.book} ${r.chapter}:${r.verseStart}-${r.verseEnd}';
+      }
       return '${r.book} ${r.chapter}:${r.verseStart}';
     }).toList();
+
+    for (final inlineRef in inlineRefs) {
+      if (!scriptureTags.contains(inlineRef)) {
+        scriptureTags.add(inlineRef);
+      }
+    }
 
     await repo.saveDraftLocally(
       state.draftId,
@@ -194,9 +217,6 @@ class ComposeNotifier extends Notifier<ComposeState> {
       caption: state.caption.trim().isEmpty ? null : state.caption.trim(),
       sermonSource: sermonSourceJson,
       scriptureTags: scriptureTags,
-
-      // Note: we might need to serialize scriptureRefs natively to Drafts later, 
-      // but for v1 it might be handled in Draft Repository.
     );
 
     ref.read(draftsListProvider.notifier).refresh();
@@ -206,23 +226,33 @@ class ComposeNotifier extends Notifier<ComposeState> {
       lastSavedAt: DateTime.now(),
       contentDelta: controller.document.toDelta().toJson(),
     );
-
-    // Show a small global toast for autosave
-    try {
-      final themeColors = ref.read(themeProvider);
-      ScribesToast.show(
-        null, // Use global scaffold key
-        'Draft saved',
-        themeColors,
-        icon: HugeIcons.strokeRoundedCloudSavingDone01,
-      );
-    } catch (_) {}
   }
 
   Future<void> publishToCloud() async {
     await forceSave();
     final repo = ref.read(draftRepositoryProvider);
-    await repo.publishDraft(state.draftId, tags: state.tags, scriptureRefs: state.scriptureRefs);
+    await repo.publishDraft(
+      state.draftId,
+      tags: state.tags,
+      scriptureRefs: state.scriptureRefs,
+    );
+  }
+
+  void clearCoverImage() {
+    state = ComposeState(
+      draftId: state.draftId,
+      isSaving: state.isSaving,
+      lastSavedAt: state.lastSavedAt,
+      title: state.title,
+      caption: state.caption,
+      sermonSource: state.sermonSource,
+      contentDelta: state.contentDelta,
+      tags: state.tags,
+      scriptureRefs: state.scriptureRefs,
+      postType: state.postType,
+      coverImageUrl: null,
+    );
+    _triggerAutosave();
   }
 
   void reset() {
@@ -231,7 +261,12 @@ class ComposeNotifier extends Notifier<ComposeState> {
     state = ComposeState(draftId: const Uuid().v4());
   }
 
-  void loadDraft(String draftId, Map<String, dynamic> content, {String? caption, SermonSource? sermonSource}) {
+  void loadDraft(
+    String draftId,
+    Map<String, dynamic> content, {
+    String? caption,
+    SermonSource? sermonSource,
+  }) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _lastController = null;
     state = ComposeState(
@@ -239,7 +274,14 @@ class ComposeNotifier extends Notifier<ComposeState> {
       title: content['title'] ?? '',
       caption: caption ?? '',
       sermonSource: sermonSource,
-      contentDelta: content['body'] != null ? List<dynamic>.from(content['body']) : null,
+      postType: (content['post_type'] ?? 'standard').toString(),
+      coverImageUrl: content['cover_image_url'] as String?,
+      tags: content['tags'] != null
+          ? List<String>.from(content['tags'])
+          : const [],
+      contentDelta: content['body'] != null
+          ? List<dynamic>.from(content['body'])
+          : null,
     );
   }
 }

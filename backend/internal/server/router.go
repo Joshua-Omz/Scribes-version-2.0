@@ -5,6 +5,7 @@ import (
 
 	"scribes-api/internal/admin"
 	"scribes-api/internal/auth"
+	"scribes-api/internal/bible"
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
 	"scribes-api/internal/media"
@@ -36,7 +37,7 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, mediaHandler *media.Handler, jwtSecret string) *gin.Engine {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, mediaHandler *media.Handler, bibleHandler *bible.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 	r.Use(corsMiddleware())
 	r.GET("/health", func(c *gin.Context) {
@@ -82,6 +83,12 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/posts/recommendations", recommendationHandler.GetRecommendations)
 	r.GET("/posts/:id/similar", recommendationHandler.GetSimilarPosts)
 
+	// Public Bible endpoints — strictly no auth required per contract
+	r.GET("/bible/books", bibleHandler.GetBooks)
+	r.GET("/bible/:book/:chapter", bibleHandler.GetChapter)
+	r.GET("/bible/:book/:chapter/:verseRange", bibleHandler.GetVerseRange)
+	r.GET("/bible/search", bibleHandler.Search)
+
 	// Protected routes
 	protected := r.Group("/")
 	protected.Use(middleware.ValidateJWT(jwtSecret))
@@ -98,6 +105,10 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.GET("/feed/following", feedHandler.GetFollowingFeed)
 		protected.GET("/explore/for-you", feedHandler.GetForYou)
 		protected.GET("/users/suggested", authHandler.GetSuggestedUsers)
+
+		// Bible reading position
+		protected.GET("/bible/reading-position", bibleHandler.GetReadingPosition)
+		protected.POST("/bible/reading-position", bibleHandler.SaveReadingPosition)
 
 		// Note endpoints
 		protected.GET("/notes", noteHandler.List)

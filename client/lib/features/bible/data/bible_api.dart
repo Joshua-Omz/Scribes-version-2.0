@@ -1,0 +1,94 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/network/api_client.dart';
+import '../../../core/network/endpoints.dart';
+import '../domain/bible_models.dart';
+
+final bibleApiProvider = Provider<BibleApi>((ref) {
+  final dio = ref.watch(apiClientProvider);
+  return BibleApi(dio);
+});
+
+class BibleApi {
+  final Dio _dio;
+
+  BibleApi(this._dio);
+
+  Future<List<BibleBook>> getBooks({String translation = 'BSB'}) async {
+    final response = await _dio.get(
+      Endpoints.bibleBooks,
+      queryParameters: {'translation': translation},
+    );
+    final data = response.data as Map<String, dynamic>;
+    final list = data['books'] as List<dynamic>? ?? [];
+    return list
+        .map((b) => BibleBook.fromJson(b as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<BibleChapter> getChapter(
+    String book,
+    int chapter, {
+    String translation = 'BSB',
+  }) async {
+    final cleanBook = Uri.encodeComponent(
+      book.toLowerCase().replaceAll(' ', '-'),
+    );
+    final response = await _dio.get(
+      Endpoints.bibleChapter(cleanBook, chapter),
+      queryParameters: {'translation': translation},
+    );
+    return BibleChapter.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<VerseRangeResult> getVerseRange(
+    String book,
+    int chapter,
+    String range, {
+    String translation = 'BSB',
+  }) async {
+    final cleanBook = Uri.encodeComponent(
+      book.toLowerCase().replaceAll(' ', '-'),
+    );
+    final response = await _dio.get(
+      Endpoints.bibleVerseRange(cleanBook, chapter, range),
+      queryParameters: {'translation': translation},
+    );
+    return VerseRangeResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<BibleSearchResult>> search(
+    String query, {
+    int limit = 20,
+    String translation = 'BSB',
+  }) async {
+    final response = await _dio.get(
+      Endpoints.bibleSearch,
+      queryParameters: {'q': query, 'limit': limit, 'translation': translation},
+    );
+    final data = response.data as Map<String, dynamic>;
+    final list = data['results'] as List<dynamic>? ?? [];
+    return list
+        .map((r) => BibleSearchResult.fromJson(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<BibleReadingPosition?> getReadingPosition() async {
+    try {
+      final response = await _dio.get(Endpoints.bibleReadingPosition);
+      return BibleReadingPosition.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> saveReadingPosition(String book, int chapter) async {
+    await _dio.post(
+      Endpoints.bibleReadingPosition,
+      data: {'book': book, 'chapter': chapter, 'translation': 'BSB'},
+    );
+  }
+}

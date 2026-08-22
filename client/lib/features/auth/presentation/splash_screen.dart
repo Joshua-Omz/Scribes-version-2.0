@@ -1,32 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_ornament_divider.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
+/// Purely visual splash screen.
+///
+/// Navigation is handled entirely by GoRouter's redirect, which listens to
+/// [authProvider] via [refreshListenable]. When auth state resolves from
+/// AsyncLoading → AsyncData, the redirect fires and routes the user to
+/// either '/' (authenticated) or '/auth' (unauthenticated).
+///
+/// Previous implementation had a hardcoded 2-second Future.delayed + context.go('/')
+/// that raced the auth state — if GET /me took >2s (slow network, cold start),
+/// users landed on the feed without a token and every API call 401'd.
+class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends ConsumerState<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        context.go('/');
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
 
     return Scaffold(

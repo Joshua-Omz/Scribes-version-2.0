@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../domain/note.dart' as domain;
 import 'note_api.dart';
@@ -11,42 +13,58 @@ import 'note_api.dart';
 final noteRepositoryProvider = Provider<NoteRepository>((ref) {
   final db = ref.watch(databaseProvider);
   final api = ref.watch(noteApiProvider);
+  final storage = ref.watch(secureStorageProvider);
   final authState = ref.watch(authProvider);
 
   String? currentUserId = authState.value?.id;
 
-  return NoteRepository(db, api, currentUserId);
+  return NoteRepository(db, api, storage, currentUserId);
 });
 
 class NoteRepository {
   final ScribesDatabase _db;
   final NoteApi _api;
+  final SecureStorage _storage;
   final String? _currentUserId;
 
-  NoteRepository(this._db, this._api, this._currentUserId);
+  NoteRepository(this._db, this._api, this._storage, this._currentUserId);
 
-  Future<void> saveNoteLocally(String id, String content, {String? title, String? notebookId}) async {
-    final userId = _currentUserId;
-    if (userId == null) return;
+  Future<String> _resolveAuthorId() async {
+    if (_currentUserId != null && _currentUserId.isNotEmpty) {
+      return _currentUserId;
+    }
+    return await _storage.getOrCreateGuestId();
+  }
 
+  Future<void> saveNoteLocally(
+    String id,
+    String content, {
+    String? title,
+    String? notebookId,
+  }) async {
+    final authorId = await _resolveAuthorId();
     final now = DateTime.now();
 
-    await _db.into(_db.notes).insertOnConflictUpdate(
-      NotesCompanion(
-        id: Value(id),
-        authorId: Value(userId),
-        content: Value(content),
-        title: Value(title),
-        notebookId: Value(notebookId),
-        isSynced: const Value(false),
-        createdAt: Value(now), // This will update createdAt as well, but for simplicity it works
-        updatedAt: Value(now),
-      ),
-    );
+    await _db
+        .into(_db.notes)
+        .insertOnConflictUpdate(
+          NotesCompanion(
+            id: Value(id),
+            authorId: Value(authorId),
+            content: Value(content),
+            title: Value(title),
+            notebookId: Value(notebookId),
+            isSynced: const Value(false),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
   }
 
   Future<domain.Note?> getNoteLocally(String id) async {
-    final record = await (_db.select(_db.notes)..where((t) => t.id.equals(id))).getSingleOrNull();
+    final record = await (_db.select(
+      _db.notes,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     if (record == null) return null;
 
     dynamic decoded;
@@ -60,10 +78,7 @@ class NoteRepository {
     if (decoded is Map<String, dynamic>) {
       contentMap = decoded;
     } else if (decoded is List) {
-      contentMap = {
-        'title': record.title ?? '',
-        'body': decoded,
-      };
+      contentMap = {'title': record.title ?? '', 'body': decoded};
     } else {
       contentMap = {'body': []};
     }
@@ -84,15 +99,22 @@ class NoteRepository {
   }
 
   Future<List<domain.Note>> getAllLocalNotes({String? notebookId}) async {
-    final userId = _currentUserId;
-    if (userId == null) return [];
-    
-    var query = _db.select(_db.notes)..where((t) => t.authorId.equals(userId));
+    final authorId = await _resolveAuthorId();
+
+    var query = _db.select(_db.notes)
+      ..where((t) => t.authorId.equals(authorId));
     if (notebookId != null) {
       query = query..where((t) => t.notebookId.equals(notebookId));
     }
-    
-    final records = await (query..orderBy([(t) => OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc)])).get();
+
+    final records =
+        await (query..orderBy([
+              (t) => OrderingTerm(
+                expression: t.updatedAt,
+                mode: OrderingMode.desc,
+              ),
+            ]))
+            .get();
 
     return records.map((record) {
       dynamic decoded;
@@ -106,10 +128,7 @@ class NoteRepository {
       if (decoded is Map<String, dynamic>) {
         contentMap = decoded;
       } else if (decoded is List) {
-        contentMap = {
-          'title': record.title ?? '',
-          'body': decoded,
-        };
+        contentMap = {'title': record.title ?? '', 'body': decoded};
       } else {
         contentMap = {'body': []};
       }
@@ -147,59 +166,82 @@ class NoteRepository {
       final data = await _api.createNote(payload);
       cloudNote = domain.Note.fromJson(data);
     }
-    
+
     if (cloudNote.id != id) {
       // Drift ignores primary key updates using .write(), so we must delete and recreate.
       await deleteNoteLocally(id);
       await saveNoteLocally(
-        cloudNote.id, 
-        jsonEncode(cloudNote.content), 
-        title: cloudNote.title, 
+        cloudNote.id,
+        jsonEncode(cloudNote.content),
+        title: cloudNote.title,
         notebookId: cloudNote.notebookId,
       );
-      
+
       // Mark the newly inserted note as synced
-      await (_db.update(_db.notes)..where((t) => t.id.equals(cloudNote.id))).write(
-        const NotesCompanion(isSynced: Value(true)),
-      );
+      await (_db.update(_db.notes)..where((t) => t.id.equals(cloudNote.id)))
+          .write(const NotesCompanion(isSynced: Value(true)));
     } else {
       await (_db.update(_db.notes)..where((t) => t.id.equals(id))).write(
         const NotesCompanion(isSynced: Value(true)),
       );
     }
-    
+
     return cloudNote;
   }
 
   Future<Map<String, dynamic>> promoteToDraft(String id) async {
-    // 1. Sync to cloud first
-    final cloudNote = await pushToCloud(id);
-    
-    // 2. Call promote endpoint
-    final draftDataResponse = await _api.promoteNoteToDraft(cloudNote.id);
-    
-    // 3. Insert into local drafts so it appears immediately!
-    final draftId = draftDataResponse['draft_id'];
-    final contentJson = jsonEncode(cloudNote.content);
+    final localNote = await getNoteLocally(id);
+    if (localNote == null) throw Exception('Note not found locally');
+
+    final authorId = await _resolveAuthorId();
     final now = DateTime.now();
 
-    await _db.into(_db.drafts).insertOnConflictUpdate(
-      DraftsCompanion(
-        id: Value(draftId),
-        authorId: Value(_currentUserId!),
-        content: Value(contentJson),
-        isSynced: const Value(true),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-      ),
-    );
-    
-    // 4. We no longer delete the note locally, so it persists as requested by the user.
-    // await deleteNoteLocally(id);
-    
-    return {
-      'id': draftId,
-      'content': cloudNote.content,
-    };
+    // If online & authenticated, promote via backend API
+    if (_currentUserId != null && _currentUserId.isNotEmpty) {
+      try {
+        final cloudNote = await pushToCloud(id);
+        final draftDataResponse = await _api.promoteNoteToDraft(cloudNote.id);
+        final draftId = draftDataResponse['draft_id'];
+        final contentJson = jsonEncode(cloudNote.content);
+
+        await _db
+            .into(_db.drafts)
+            .insertOnConflictUpdate(
+              DraftsCompanion(
+                id: Value(draftId),
+                authorId: Value(authorId),
+                content: Value(contentJson),
+                caption: Value(localNote.title),
+                isSynced: const Value(true),
+                createdAt: Value(now),
+                updatedAt: Value(now),
+              ),
+            );
+
+        return {'id': draftId, 'content': cloudNote.content};
+      } catch (_) {
+        // Fallback to local offline promotion if server is offline
+      }
+    }
+
+    // Local-first offline promotion
+    final draftId = const Uuid().v4();
+    final contentJson = jsonEncode(localNote.content);
+
+    await _db
+        .into(_db.drafts)
+        .insertOnConflictUpdate(
+          DraftsCompanion(
+            id: Value(draftId),
+            authorId: Value(authorId),
+            content: Value(contentJson),
+            caption: Value(localNote.title),
+            isSynced: const Value(false),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
+
+    return {'id': draftId, 'content': localNote.content};
   }
 }

@@ -21,6 +21,7 @@ class NotificationApi {
   Future<void> markAllRead() async {
     await _dio.post(Endpoints.notificationsReadAll);
   }
+
   Future<void> clearAll() async {
     await _dio.delete(Endpoints.notificationsClearAll);
   }
@@ -40,7 +41,7 @@ class NotificationApi {
     );
 
     final stream = response.data!.stream;
-    
+
     await for (final chunk in stream) {
       final text = utf8.decode(chunk);
       final lines = text.split('\n');

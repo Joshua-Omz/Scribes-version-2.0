@@ -252,13 +252,25 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
     );
   }
 
-  void _showReplyViaDMDialog(BuildContext context, Comment comment, ScribesColors colors) {
-    final controller = TextEditingController(text: 'Replying to your comment: "${comment.body}"\n\n');
+  void _showReplyViaDMDialog(
+    BuildContext context,
+    Comment comment,
+    ScribesColors colors,
+  ) {
+    final controller = TextEditingController(
+      text: 'Replying to your comment: "${comment.body}"\n\n',
+    );
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.surface,
-        title: Text('Reply via DM', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText, fontSize: 20)),
+        title: Text(
+          'Reply via DM',
+          style: ScribesTextStyles.displayMd.copyWith(
+            color: colors.primaryText,
+            fontSize: 20,
+          ),
+        ),
         content: ScribesTextField(
           controller: controller,
           maxLines: 4,
@@ -268,35 +280,68 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: colors.secondaryText)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colors.secondaryText),
+            ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: colors.gold, elevation: 0),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.gold,
+              elevation: 0,
+            ),
             onPressed: () async {
               final text = controller.text.trim();
               if (text.isNotEmpty) {
                 Navigator.pop(ctx);
                 try {
-                  final conversations = await ref.read(conversationsProvider.future);
-                  final existing = conversations.where((c) => c.userAId == comment.authorId || c.userBId == comment.authorId).firstOrNull;
-                  
+                  final conversations = await ref.read(
+                    conversationsProvider.future,
+                  );
+                  final existing = conversations
+                      .where(
+                        (c) =>
+                            c.userAId == comment.authorId ||
+                            c.userBId == comment.authorId,
+                      )
+                      .firstOrNull;
+
                   if (existing != null) {
                     final currentUserId = ref.read(authProvider).value?.id;
                     if (currentUserId != null) {
-                      await ref.read(messageRepositoryProvider).sendMessage(existing.id, text, currentUserId);
+                      await ref
+                          .read(messageRepositoryProvider)
+                          .sendMessage(existing.id, text, currentUserId);
                       if (context.mounted) {
-                        ScribesToast.show(context, 'Message sent', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+                        ScribesToast.show(
+                          context,
+                          'Message sent',
+                          colors,
+                          icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+                        );
                       }
                     }
                   } else {
-                    await ref.read(messageRepositoryProvider).sendRequest(comment.authorId, text);
+                    await ref
+                        .read(messageRepositoryProvider)
+                        .sendRequest(comment.authorId, text);
                     if (context.mounted) {
-                      ScribesToast.show(context, 'Message request sent', colors, icon: HugeIcons.strokeRoundedCheckmarkBadge01);
+                      ScribesToast.show(
+                        context,
+                        'Message request sent',
+                        colors,
+                        icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+                      );
                     }
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    ScribesToast.show(context, 'Failed to send message', colors, icon: HugeIcons.strokeRoundedAlert01);
+                    ScribesToast.show(
+                      context,
+                      'Failed to send message',
+                      colors,
+                      icon: HugeIcons.strokeRoundedAlert01,
+                    );
                   }
                 }
               }
@@ -342,198 +387,207 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom - 40,
+              maxHeight:
+                  MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).viewInsets.bottom -
+                  40,
             ),
             height: MediaQuery.of(context).size.height * 0.75,
             decoration: BoxDecoration(
               color: colors.surface.withValues(alpha: 0.8),
             ),
             child: Column(
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Thoughts',
-                    style: ScribesTextStyles.displayMd.copyWith(
-                      color: colors.primaryText,
-                      fontSize: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Divider(height: 1, color: colors.border),
-
-            // Comments List
-            Expanded(
-              child: commentsState.when(
-                data: (comments) {
-                  if (comments.isEmpty) {
-                    return const Center(
-                      child: ScribesEmptyState(
-                        icon: HugeIcons.strokeRoundedMessage01,
-                        title: 'No thoughts yet',
-                        subtitle: 'Be the first to share your thoughts!',
-                      ),
-                    );
-                  }
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      ref.invalidate(postCommentsProvider(widget.postId));
-                    },
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: comments.length,
-                      separatorBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Divider(height: 1, color: colors.border),
-                      ),
-                      itemBuilder: (context, index) {
-                        final comment = comments[index];
-                        return _CommentTile(
-                          comment: comment,
-                          colors: colors,
-                          onLongPress: () =>
-                              _showCommentActions(context, comment, colors),
-                        );
-                      },
-                    ),
-                  );
-                },
-                loading: () => ListView.separated(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: 4,
-                  separatorBuilder: (context, index) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(height: 1, color: colors.border),
-                  ),
-                  itemBuilder: (context, index) => ScribesShimmer(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: colors.surfaceRaised,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: 14,
-                                width: 100,
-                                color: colors.surfaceRaised,
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                height: 14,
-                                width: double.infinity,
-                                color: colors.surfaceRaised,
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                height: 14,
-                                width: 150,
-                                color: colors.surfaceRaised,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                error: (error, stack) => ScribesErrorState(
-                  title: 'Failed to load comments',
-                  subtitle: error.toString(),
-                  onRetry: () => ref.refresh(postCommentsProvider(widget.postId)),
-                ),
-              ),
-            ),
-
-            // @mention autocomplete overlay + Input Area
-            Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                // Mention suggestions
-                if (_showMentionOverlay && _activeMentionQuery != null)
-                  _MentionSuggestions(
-                    query: _activeMentionQuery!,
-                    colors: colors,
-                    onSelect: _insertMention,
+                // Drag handle
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
+                ),
 
-                // Input Area
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 12,
-                    bottom: 32,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.background,
-                    border: Border(top: BorderSide(color: colors.border)),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: ScribesTextField(
-                          controller: _commentController,
-                          focusNode: _focusNode,
-                          maxLines: 4,
-                          minLines: 1,
-                          hintText: 'Share your thoughts...',
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          color: colors.gold,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: HugeIcon(icon: HugeIcons.strokeRoundedSent,
-                            color: colors.surfaceRaised,
-                          ),
-                          onPressed: _submitComment,
+                      Text(
+                        'Thoughts',
+                        style: ScribesTextStyles.displayMd.copyWith(
+                          color: colors.primaryText,
+                          fontSize: 24,
                         ),
                       ),
                     ],
                   ),
                 ),
+
+                Divider(height: 1, color: colors.border),
+
+                // Comments List
+                Expanded(
+                  child: commentsState.when(
+                    data: (comments) {
+                      if (comments.isEmpty) {
+                        return const Center(
+                          child: ScribesEmptyState(
+                            icon: HugeIcons.strokeRoundedMessage01,
+                            title: 'No thoughts yet',
+                            subtitle: 'Be the first to share your thoughts!',
+                          ),
+                        );
+                      }
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(postCommentsProvider(widget.postId));
+                        },
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(20),
+                          itemCount: comments.length,
+                          separatorBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Divider(height: 1, color: colors.border),
+                          ),
+                          itemBuilder: (context, index) {
+                            final comment = comments[index];
+                            return _CommentTile(
+                              comment: comment,
+                              colors: colors,
+                              onLongPress: () =>
+                                  _showCommentActions(context, comment, colors),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    loading: () => ListView.separated(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: 4,
+                      separatorBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Divider(height: 1, color: colors.border),
+                      ),
+                      itemBuilder: (context, index) => ScribesShimmer(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: colors.surfaceRaised,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    height: 14,
+                                    width: 100,
+                                    color: colors.surfaceRaised,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    height: 14,
+                                    width: double.infinity,
+                                    color: colors.surfaceRaised,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    height: 14,
+                                    width: 150,
+                                    color: colors.surfaceRaised,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    error: (error, stack) => ScribesErrorState(
+                      title: 'Failed to load comments',
+                      subtitle: error.toString(),
+                      onRetry: () =>
+                          ref.refresh(postCommentsProvider(widget.postId)),
+                    ),
+                  ),
+                ),
+
+                // @mention autocomplete overlay + Input Area
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Mention suggestions
+                    if (_showMentionOverlay && _activeMentionQuery != null)
+                      _MentionSuggestions(
+                        query: _activeMentionQuery!,
+                        colors: colors,
+                        onSelect: _insertMention,
+                      ),
+
+                    // Input Area
+                    Container(
+                      padding: const EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 12,
+                        bottom: 32,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.background,
+                        border: Border(top: BorderSide(color: colors.border)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: ScribesTextField(
+                              controller: _commentController,
+                              focusNode: _focusNode,
+                              maxLines: 4,
+                              minLines: 1,
+                              hintText: 'Share your thoughts...',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 2),
+                            decoration: BoxDecoration(
+                              color: colors.gold,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: HugeIcon(
+                                icon: HugeIcons.strokeRoundedSent,
+                                color: colors.surfaceRaised,
+                              ),
+                              onPressed: _submitComment,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
-    ),
-  ));
+    );
   }
 }
 
@@ -590,7 +644,11 @@ class _CommentTile extends ConsumerWidget {
             error: (_, _) => CircleAvatar(
               radius: 18,
               backgroundColor: colors.surfaceRaised,
-              child: HugeIcon(icon: HugeIcons.strokeRoundedUser, size: 20, color: colors.gold),
+              child: HugeIcon(
+                icon: HugeIcons.strokeRoundedUser,
+                size: 20,
+                color: colors.gold,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -664,10 +722,15 @@ class _CommentTile extends ConsumerWidget {
                         // TODO: trigger reply
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4.0,
+                          vertical: 2.0,
+                        ),
                         child: Text(
                           'Reply',
-                          style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
+                          style: ScribesTextStyles.labelLg.copyWith(
+                            color: colors.secondaryText,
+                          ),
                         ),
                       ),
                     ),
@@ -681,16 +744,29 @@ class _CommentTile extends ConsumerWidget {
                         }
                         return InkWell(
                           onTap: () async {
-                            final conversations = await ref.read(conversationsProvider.future);
-                            final existing = conversations.where((c) => c.userAId == comment.authorId || c.userBId == comment.authorId).firstOrNull;
+                            final conversations = await ref.read(
+                              conversationsProvider.future,
+                            );
+                            final existing = conversations
+                                .where(
+                                  (c) =>
+                                      c.userAId == comment.authorId ||
+                                      c.userBId == comment.authorId,
+                                )
+                                .firstOrNull;
                             if (!context.mounted) return;
                             if (existing != null) {
                               Navigator.of(context).pop();
                               context.push('/conversation/${existing.id}');
                             } else {
                               try {
-                                final repo = ref.read(messageRepositoryProvider);
-                                final conv = await repo.getOrCreateDirectConversation(comment.authorId);
+                                final repo = ref.read(
+                                  messageRepositoryProvider,
+                                );
+                                final conv = await repo
+                                    .getOrCreateDirectConversation(
+                                      comment.authorId,
+                                    );
                                 if (!context.mounted) return;
                                 Navigator.of(context).pop();
                                 context.push('/conversation/${conv.id}');
@@ -701,20 +777,29 @@ class _CommentTile extends ConsumerWidget {
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4.0,
+                              vertical: 2.0,
+                            ),
                             child: Row(
                               children: [
-                                HugeIcon(icon: HugeIcons.strokeRoundedMail01, size: 14, color: colors.secondaryText),
+                                HugeIcon(
+                                  icon: HugeIcons.strokeRoundedMail01,
+                                  size: 14,
+                                  color: colors.secondaryText,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Message',
-                                  style: ScribesTextStyles.labelLg.copyWith(color: colors.secondaryText),
+                                  style: ScribesTextStyles.labelLg.copyWith(
+                                    color: colors.secondaryText,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         );
-                      }
+                      },
                     ),
                   ],
                 ),
@@ -731,7 +816,8 @@ class _CommentTile extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          HugeIcon(icon: HugeIcons.strokeRoundedRemove01,
+          HugeIcon(
+            icon: HugeIcons.strokeRoundedRemove01,
             size: 16,
             color: colors.secondaryText.withValues(alpha: 0.5),
           ),

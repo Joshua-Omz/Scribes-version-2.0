@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/draft_repository.dart';
 import '../domain/draft.dart';
 
-final draftsListProvider = AsyncNotifierProvider<DraftsListNotifier, List<Draft>>(() {
-  return DraftsListNotifier();
-});
+final draftsListProvider =
+    AsyncNotifierProvider<DraftsListNotifier, List<Draft>>(() {
+      return DraftsListNotifier();
+    });
 
 class DraftsListNotifier extends AsyncNotifier<List<Draft>> {
   @override

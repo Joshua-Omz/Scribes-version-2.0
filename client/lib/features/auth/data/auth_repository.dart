@@ -41,14 +41,8 @@ class AuthRepository {
     return User.fromJson(response['user'] as Map<String, dynamic>);
   }
 
-  Future<User> login({
-    required String email,
-    required String password,
-  }) async {
-    final response = await _api.login(
-      email: email,
-      password: password,
-    );
+  Future<User> login({required String email, required String password}) async {
+    final response = await _api.login(email: email, password: password);
 
     final token = response['token'] as String;
     await _storage.saveToken(token);
@@ -127,7 +121,8 @@ class AuthRepository {
   }
 
   Future<NotificationPreferences> updateNotificationPreferences(
-      NotificationPreferences preferences) async {
+    NotificationPreferences preferences,
+  ) async {
     final response = await _api.updateNotificationPreferences(
       pushEnabled: preferences.pushEnabled,
       emailEnabled: preferences.emailEnabled,
@@ -139,6 +134,8 @@ class AuthRepository {
 
   Future<List<User>> getSuggestedUsers({int limit = 10}) async {
     final response = await _api.getSuggestedUsers(limit: limit);
-    return response.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+    return response
+        .map((e) => User.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }

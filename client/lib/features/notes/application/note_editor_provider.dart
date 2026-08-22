@@ -7,8 +7,12 @@ import 'package:uuid/uuid.dart';
 import '../data/note_repository.dart';
 import 'notes_list_provider.dart';
 import '../../draft/application/drafts_list_provider.dart';
+import '../../../core/theme/scribes_quill_scripture_helper.dart';
 
-final noteEditorProvider = NotifierProvider<NoteEditorNotifier, NoteEditorState>(() => NoteEditorNotifier());
+final noteEditorProvider =
+    NotifierProvider<NoteEditorNotifier, NoteEditorState>(
+      () => NoteEditorNotifier(),
+    );
 
 class NoteEditorState {
   final String noteId;
@@ -17,6 +21,7 @@ class NoteEditorState {
   final String title;
   final String? notebookId;
   final List<dynamic>? contentDelta;
+  final List<String> scriptureRefs;
 
   NoteEditorState({
     required this.noteId,
@@ -25,6 +30,7 @@ class NoteEditorState {
     this.title = '',
     this.notebookId,
     this.contentDelta,
+    this.scriptureRefs = const [],
   });
 
   NoteEditorState copyWith({
@@ -34,6 +40,7 @@ class NoteEditorState {
     String? title,
     String? notebookId,
     List<dynamic>? contentDelta,
+    List<String>? scriptureRefs,
   }) {
     return NoteEditorState(
       noteId: noteId ?? this.noteId,
@@ -42,6 +49,7 @@ class NoteEditorState {
       title: title ?? this.title,
       notebookId: notebookId ?? this.notebookId,
       contentDelta: contentDelta ?? this.contentDelta,
+      scriptureRefs: scriptureRefs ?? this.scriptureRefs,
     );
   }
 }
@@ -65,12 +73,29 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
     _triggerAutosave();
   }
 
+  void addScripture(String reference) {
+    final trimmed = reference.trim();
+    if (trimmed.isNotEmpty && !state.scriptureRefs.contains(trimmed)) {
+      state = state.copyWith(scriptureRefs: [...state.scriptureRefs, trimmed]);
+      _triggerAutosave();
+    }
+  }
+
+  void removeScripture(String reference) {
+    state = state.copyWith(
+      scriptureRefs: state.scriptureRefs.where((r) => r != reference).toList(),
+    );
+    _triggerAutosave();
+  }
+
   void onDocumentChanged(QuillController controller) {
     _lastController = controller;
-    
+
     final newDelta = controller.document.toDelta().toJson();
-    final isContentDifferent = state.contentDelta == null || jsonEncode(state.contentDelta) != jsonEncode(newDelta);
-    
+    final isContentDifferent =
+        state.contentDelta == null ||
+        jsonEncode(state.contentDelta) != jsonEncode(newDelta);
+
     if (isContentDifferent) {
       _triggerAutosave();
     }
@@ -78,7 +103,9 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
 
   void syncContent(QuillController controller) {
     _lastController = controller;
-    state = state.copyWith(contentDelta: controller.document.toDelta().toJson());
+    state = state.copyWith(
+      contentDelta: controller.document.toDelta().toJson(),
+    );
   }
 
   void _triggerAutosave() {
@@ -93,11 +120,13 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
   Future<void> forceSave() async {
     final wasDebounceActive = _debounce?.isActive ?? false;
     if (wasDebounceActive) _debounce?.cancel();
-    
+
     if (_lastController != null) {
       final newDelta = _lastController!.document.toDelta().toJson();
-      final isContentDifferent = state.contentDelta == null || jsonEncode(state.contentDelta) != jsonEncode(newDelta);
-      
+      final isContentDifferent =
+          state.contentDelta == null ||
+          jsonEncode(state.contentDelta) != jsonEncode(newDelta);
+
       if (isContentDifferent || wasDebounceActive) {
         await _saveNoteLocally(_lastController!);
       }
@@ -108,14 +137,20 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
     state = state.copyWith(isSaving: true);
 
     final repo = ref.read(noteRepositoryProvider);
-    
+    final deltaJson = controller.document.toDelta().toJson();
+
+    // Extract inline scripture references and merge with top-level tags
+    final inlineRefs = ScribesQuillScriptureHelper.extractScriptureRefs(deltaJson);
+    final allRefs = <String>{...state.scriptureRefs, ...inlineRefs}.toList();
+
     final contentMap = {
       'title': state.title,
-      'body': controller.document.toDelta().toJson(),
+      'body': deltaJson,
+      'scripture_refs': allRefs,
     };
 
     final jsonContent = jsonEncode(contentMap);
-    
+
     await repo.saveNoteLocally(
       state.noteId,
       jsonContent,
@@ -123,17 +158,13 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
       notebookId: state.notebookId,
     );
 
-    // Cloud sync is handled by the batch sync service (SyncService.pushAll),
-    // NOT per-keystroke. The local save marks the Drift record as
-    // isSynced = false, and the sync service will pick it up on its next
-    // batch push cycle (app backgrounding, manual refresh, or periodic timer).
-
     ref.read(notesListProvider.notifier).refresh();
 
     state = state.copyWith(
       isSaving: false,
       lastSavedAt: DateTime.now(),
-      contentDelta: controller.document.toDelta().toJson(),
+      contentDelta: deltaJson,
+      scriptureRefs: allRefs,
     );
   }
 
@@ -152,14 +183,26 @@ class NoteEditorNotifier extends Notifier<NoteEditorState> {
     state = NoteEditorState(noteId: const Uuid().v4(), notebookId: notebookId);
   }
 
-  void loadNote(String noteId, Map<String, dynamic> content, {String? title, String? notebookId}) {
+  void loadNote(
+    String noteId,
+    Map<String, dynamic> content, {
+    String? title,
+    String? notebookId,
+  }) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _lastController = null;
+    final refs = content['scripture_refs'] != null
+        ? List<String>.from(content['scripture_refs'])
+        : <String>[];
+
     state = NoteEditorState(
       noteId: noteId,
       title: title ?? content['title'] ?? '',
       notebookId: notebookId,
-      contentDelta: content['body'] != null ? List<dynamic>.from(content['body']) : null,
+      contentDelta: content['body'] != null
+          ? List<dynamic>.from(content['body'])
+          : null,
+      scriptureRefs: refs,
     );
   }
 }

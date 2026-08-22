@@ -108,7 +108,7 @@ go run ./cmd/api
 
 ## Project Roadmap
 
-See [docs/scribes_roadmap.md](docs/scribes_roadmap.md) for the full MVP engineering roadmap and sprint tracking.
+See [docs/specs/scribes_roadmap.md](docs/specs/scribes_roadmap.md) for the full MVP engineering roadmap and sprint tracking.
 
 Sprint documentation lives in [`docs/sprints/`](docs/sprints/):
 

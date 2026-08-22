@@ -37,10 +37,18 @@ class BookmarksScreen extends ConsumerWidget {
               ),
             ),
             leading: IconButton(
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+              icon: HugeIcon(
+                icon: HugeIcons.strokeRoundedArrowLeft01,
+                color: colors.primaryText,
+              ),
               onPressed: () => context.pop(),
             ),
-            title: Text('Bookmarks', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+            title: Text(
+              'Bookmarks',
+              style: ScribesTextStyles.displayMd.copyWith(
+                color: colors.primaryText,
+              ),
+            ),
           ),
           savedPostsState.when(
             data: (savedPosts) {
@@ -56,7 +64,10 @@ class BookmarksScreen extends ConsumerWidget {
                 );
               }
               return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 16.0,
+                ),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -64,59 +75,65 @@ class BookmarksScreen extends ConsumerWidget {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.85,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final savedPost = savedPosts[index];
-                      // Simple excerpt extractor
-                      String excerpt = '';
-                      final content = savedPost['content'];
-                      if (content != null && content['ops'] != null) {
-                        for (var op in content['ops']) {
-                          if (op['insert'] is String) {
-                            excerpt += op['insert'];
-                            if (excerpt.length > 100) {
-                              excerpt = '${excerpt.substring(0, 100)}...';
-                              break;
-                            }
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final savedPost = savedPosts[index];
+                    // Simple excerpt extractor
+                    String excerpt = '';
+                    final content = savedPost['content'];
+                    if (content != null && content['ops'] != null) {
+                      for (var op in content['ops']) {
+                        if (op['insert'] is String) {
+                          excerpt += op['insert'];
+                          if (excerpt.length > 100) {
+                            excerpt = '${excerpt.substring(0, 100)}...';
+                            break;
                           }
                         }
                       }
-                      String title = 'Saved Post';
-                      final captionField = savedPost['caption'];
-                      if (captionField is String && captionField.isNotEmpty) {
-                        title = captionField;
-                      } else if (captionField is Map && captionField['Valid'] == true) {
-                        title = captionField['String'] ?? 'Saved Post';
-                      } else if (content != null && content['title'] is String) {
-                        title = content['title'];
-                      }
+                    }
+                    String title = 'Saved Post';
+                    final captionField = savedPost['caption'];
+                    if (captionField is String && captionField.isNotEmpty) {
+                      title = captionField;
+                    } else if (captionField is Map &&
+                        captionField['Valid'] == true) {
+                      title = captionField['String'] ?? 'Saved Post';
+                    } else if (content != null && content['title'] is String) {
+                      title = content['title'];
+                    }
 
-                      return ScribesGridCard(
-                        title: title,
-                        excerpt: excerpt,
-                        date: DateTime.parse(savedPost['created_at']),
-                        isSaved: true,
-                        onSaveToggle: () {
-                          ref.read(savedPostsProvider.notifier).unsavePost(savedPost['post_id']);
-                          ScribesToast.show(context, 'Post unsaved', colors, icon: HugeIcons.strokeRoundedRemove01);
-                        },
-                        onTap: () => context.push('/posts/${savedPost['post_id']}'),
-                      );
-                    },
-                    childCount: savedPosts.length,
-                  ),
+                    return ScribesGridCard(
+                      title: title,
+                      excerpt: excerpt,
+                      date: DateTime.parse(savedPost['created_at']),
+                      isSaved: true,
+                      onSaveToggle: () {
+                        ref
+                            .read(savedPostsProvider.notifier)
+                            .unsavePost(savedPost['post_id']);
+                        ScribesToast.show(
+                          context,
+                          'Post unsaved',
+                          colors,
+                          icon: HugeIcons.strokeRoundedRemove01,
+                        );
+                      },
+                      onTap: () =>
+                          context.push('/posts/${savedPost['post_id']}'),
+                    );
+                  }, childCount: savedPosts.length),
                 ),
               );
             },
             loading: () => SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return const ScribesPostCardSkeleton(showAvatar: false);
-                  },
-                  childCount: 3,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return const ScribesPostCardSkeleton(showAvatar: false);
+                }, childCount: 3),
               ),
             ),
             error: (err, stack) => SliverFillRemaining(

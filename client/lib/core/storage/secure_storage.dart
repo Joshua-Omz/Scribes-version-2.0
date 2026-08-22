@@ -1,6 +1,6 @@
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 part 'secure_storage.g.dart';
 
@@ -46,5 +46,21 @@ class SecureStorage {
 
   Future<String?> getLastRead(String conversationId) async {
     return await _storage.read(key: 'lastRead_$conversationId');
+  }
+
+  static const _guestIdKey = 'guest_author_id';
+
+  Future<String?> getGuestId() async {
+    return await _storage.read(key: _guestIdKey);
+  }
+
+  Future<String> getOrCreateGuestId() async {
+    final existing = await _storage.read(key: _guestIdKey);
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+    final newGuestId = const Uuid().v4();
+    await _storage.write(key: _guestIdKey, value: newGuestId);
+    return newGuestId;
   }
 }

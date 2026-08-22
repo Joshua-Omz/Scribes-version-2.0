@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scribes/features/posts/data/post_repository.dart';
 import 'package:scribes/features/posts/application/post_detail_state.dart';
@@ -19,10 +20,10 @@ class PostDetailNotifier extends _$PostDetailNotifier {
 
   Future<void> loadVersions() async {
     if (state.value == null) return;
-    
+
     final postRepo = ref.read(postRepositoryProvider);
     final versions = await postRepo.getPostVersions(postId);
-    
+
     state = AsyncData(state.value!.copyWith(versions: versions));
   }
 
@@ -31,7 +32,9 @@ class PostDetailNotifier extends _$PostDetailNotifier {
     ref.read(myPostsProvider.notifier).optimisticRemove(postId);
 
     if (state.value?.post != null) {
-      ref.read(userPostsProvider(state.value!.post.authorId).notifier).optimisticRemove(postId);
+      ref
+          .read(userPostsProvider(state.value!.post.authorId).notifier)
+          .optimisticRemove(postId);
     }
 
     // 2. Fire background network call with silent retry
@@ -48,7 +51,9 @@ class PostDetailNotifier extends _$PostDetailNotifier {
       } catch (e) {
         attempts++;
         if (attempts >= 3) {
-          print('[PostDetailNotifier] Failed to delete post in background after 3 attempts: $e');
+          debugPrint(
+            '[PostDetailNotifier] Failed to delete post in background after 3 attempts: $e',
+          );
           // In a full production app, we would revert the optimistic state here,
           // but per user request, we silently retry and then stop on ultimate failure.
           return;

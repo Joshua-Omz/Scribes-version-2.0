@@ -14,7 +14,6 @@ import 'package:scribes/features/posts/presentation/widgets/version_history_shee
 import 'package:scribes/core/widgets/scribes_comment_sheet.dart';
 import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/core/widgets/scribes_scripture_chip.dart';
-import 'package:scribes/core/widgets/scribes_unauth_banner.dart';
 import 'package:scribes/core/widgets/scribes_error_state.dart';
 import 'package:scribes/features/social/application/post_social_providers.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
@@ -24,6 +23,8 @@ import 'package:scribes/core/widgets/scribes_toast.dart';
 import 'package:scribes/core/network/api_exception.dart';
 import 'package:scribes/core/widgets/scribes_empty_state.dart';
 import 'package:scribes/core/widgets/scribes_share_sheet.dart';
+import 'package:scribes/features/export/presentation/export_loading_sheet.dart';
+
 class PostDetailScreen extends ConsumerWidget {
   final String postId;
 
@@ -42,31 +43,63 @@ class PostDetailScreen extends ConsumerWidget {
         backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: HugeIcon(icon: HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
         actions: [
           state.whenOrNull(
-            data: (data) {
-              final isAuthor = isAuthenticated && authState.value?.id == data.post.authorId;
-              if (isAuthor) {
-                return IconButton(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedMoreVertical, color: colors.primaryText),
-                  onPressed: () {
-                    _showPostOptions(context, ref, data.post, colors);
-                  },
-                );
-              }
-              return null;
-            },
-          ) ?? const SizedBox.shrink(),
+                data: (data) {
+                  return IconButton(
+                    icon: HugeIcon(
+                      icon: HugeIcons.strokeRoundedShare01,
+                      color: colors.primaryText,
+                    ),
+                    tooltip: 'Share & Export',
+                    onPressed: () {
+                      ScribesShareSheet.show(
+                        context,
+                        data.post.id,
+                        post: data.post,
+                      );
+                    },
+                  );
+                },
+              ) ??
+              const SizedBox.shrink(),
+          state.whenOrNull(
+                data: (data) {
+                  final isAuthor =
+                      isAuthenticated &&
+                      authState.value?.id == data.post.authorId;
+                  if (isAuthor) {
+                    return IconButton(
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedMoreVertical,
+                        color: colors.primaryText,
+                      ),
+                      onPressed: () {
+                        _showPostOptions(context, ref, data.post, colors);
+                      },
+                    );
+                  }
+                  return null;
+                },
+              ) ??
+              const SizedBox.shrink(),
           IconButton(
-            icon: HugeIcon(icon: HugeIcons.strokeRoundedClock01, color: colors.primaryText),
+            icon: HugeIcon(
+              icon: HugeIcons.strokeRoundedClock01,
+              color: colors.primaryText,
+            ),
             onPressed: () {
               ref.read(postDetailProvider(postId).notifier).loadVersions();
               VersionHistorySheet.show(context, postId);
             },
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: state.when(
@@ -80,15 +113,24 @@ class PostDetailScreen extends ConsumerWidget {
                   Container(
                     width: double.infinity,
                     color: colors.orangeSoft,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        HugeIcon(icon: HugeIcons.strokeRoundedInformationCircle, color: colors.orange, size: 16),
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedInformationCircle,
+                          color: colors.orange,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'This post corrects an original note.',
-                          style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
+                          style: ScribesTextStyles.labelSm.copyWith(
+                            color: colors.orange,
+                          ),
                         ),
                         if (post.correctsPostId != null) ...[
                           const SizedBox(width: 12),
@@ -116,7 +158,9 @@ class PostDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         post.content['title'] ?? 'Untitled',
-                        style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
+                        style: ScribesTextStyles.displayLg.copyWith(
+                          color: colors.primaryText,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       ScribesAuthorHeader(
@@ -138,17 +182,14 @@ class PostDetailScreen extends ConsumerWidget {
                               final refStr = ref.verseEnd != null
                                   ? '${ref.book} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}'
                                   : '${ref.book} ${ref.chapter}:${ref.verseStart}';
-                              return ScribesScriptureChip(
-                                reference: refStr,
-                                onTap: () {},
-                              );
+                              return ScribesScriptureChip(reference: refStr);
                             }).toList(),
                           ),
                         ),
                       const SizedBox(height: 32),
                       const ScribesOrnamentDivider(),
                       const SizedBox(height: 32),
-                      
+
                       Builder(
                         builder: (context) {
                           var bodyData = post.content['body'];
@@ -167,13 +208,17 @@ class PostDetailScreen extends ConsumerWidget {
                           } else {
                             return Text(
                               bodyData?.toString() ?? '',
-                              style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
+                              style: ScribesTextStyles.bodyLg.copyWith(
+                                color: colors.primaryText,
+                              ),
                             );
                           }
                         },
                       ),
 
-                      if ((post.caption != null && post.caption!.isNotEmpty) || (post.sermonSource != null && post.sermonSource!.isNotEmpty))
+                      if ((post.caption != null && post.caption!.isNotEmpty) ||
+                          (post.sermonSource != null &&
+                              post.sermonSource!.isNotEmpty))
                         Container(
                           margin: const EdgeInsets.only(top: 24),
                           padding: const EdgeInsets.all(16),
@@ -184,13 +229,14 @@ class PostDetailScreen extends ConsumerWidget {
                               bottomRight: Radius.circular(8),
                             ),
                             border: Border(
-                              left: BorderSide(color: colors.goldMuted, width: 3),
+                              left: BorderSide(color: colors.border, width: 3),
                             ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (post.caption != null && post.caption!.isNotEmpty)
+                              if (post.caption != null &&
+                                  post.caption!.isNotEmpty)
                                 Text(
                                   post.caption!,
                                   style: ScribesTextStyles.bodyMd.copyWith(
@@ -198,59 +244,102 @@ class PostDetailScreen extends ConsumerWidget {
                                     fontStyle: FontStyle.italic,
                                   ),
                                 ),
-                              if (post.sermonSource != null && post.sermonSource!.isNotEmpty)
+                              if (post.sermonSource != null &&
+                                  post.sermonSource!.isNotEmpty)
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (post.sermonSource!.preacher != null && post.sermonSource!.preacher!.isNotEmpty)
+                                    if (post.sermonSource!.preacher != null &&
+                                        post.sermonSource!.preacher!.isNotEmpty)
                                       Row(
                                         children: [
-                                          HugeIcon(icon: HugeIcons.strokeRoundedUserGroup, size: 14, color: colors.gold),
+                                          HugeIcon(
+                                            icon: HugeIcons
+                                                .strokeRoundedUserGroup,
+                                            size: 14,
+                                            color: colors.primaryText,
+                                          ),
                                           const SizedBox(width: 6),
                                           Text(
                                             'Preacher: ${post.sermonSource!.preacher!}',
-                                            style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                            style: ScribesTextStyles.caption
+                                                .copyWith(
+                                                  color: colors.secondaryText,
+                                                ),
                                           ),
                                         ],
                                       ),
-                                    if (post.sermonSource!.church != null && post.sermonSource!.church!.isNotEmpty)
+                                    if (post.sermonSource!.church != null &&
+                                        post.sermonSource!.church!.isNotEmpty)
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 4.0),
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
                                         child: Row(
                                           children: [
-                                            HugeIcon(icon: HugeIcons.strokeRoundedChurch, size: 14, color: colors.gold),
+                                            HugeIcon(
+                                              icon:
+                                                  HugeIcons.strokeRoundedChurch,
+                                              size: 14,
+                                              color: colors.primaryText,
+                                            ),
                                             const SizedBox(width: 6),
                                             Text(
                                               'Church: ${post.sermonSource!.church!}',
-                                              style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                              style: ScribesTextStyles.caption
+                                                  .copyWith(
+                                                    color: colors.secondaryText,
+                                                  ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    if (post.sermonSource!.series != null && post.sermonSource!.series!.isNotEmpty)
+                                    if (post.sermonSource!.series != null &&
+                                        post.sermonSource!.series!.isNotEmpty)
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 4.0),
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
                                         child: Row(
                                           children: [
-                                            HugeIcon(icon: HugeIcons.strokeRoundedBookOpen01, size: 14, color: colors.gold),
+                                            HugeIcon(
+                                              icon: HugeIcons
+                                                  .strokeRoundedBookOpen01,
+                                              size: 14,
+                                              color: colors.primaryText,
+                                            ),
                                             const SizedBox(width: 6),
                                             Text(
                                               'Series: ${post.sermonSource!.series!}',
-                                              style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                              style: ScribesTextStyles.caption
+                                                  .copyWith(
+                                                    color: colors.secondaryText,
+                                                  ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    if (post.sermonSource!.date != null && post.sermonSource!.date!.isNotEmpty)
+                                    if (post.sermonSource!.date != null &&
+                                        post.sermonSource!.date!.isNotEmpty)
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 4.0),
+                                        padding: const EdgeInsets.only(
+                                          top: 4.0,
+                                        ),
                                         child: Row(
                                           children: [
-                                            HugeIcon(icon: HugeIcons.strokeRoundedCalendar01, size: 14, color: colors.gold),
+                                            HugeIcon(
+                                              icon: HugeIcons
+                                                  .strokeRoundedCalendar01,
+                                              size: 14,
+                                              color: colors.primaryText,
+                                            ),
                                             const SizedBox(width: 6),
                                             Text(
                                               'Date: ${post.sermonSource!.date!}',
-                                              style: ScribesTextStyles.caption.copyWith(color: colors.goldMuted),
+                                              style: ScribesTextStyles.caption
+                                                  .copyWith(
+                                                    color: colors.secondaryText,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -266,13 +355,17 @@ class PostDetailScreen extends ConsumerWidget {
                         Wrap(
                           spacing: 8.0,
                           runSpacing: 4.0,
-                          children: post.tags.map((tag) => Text(
-                            '#$tag',
-                            style: ScribesTextStyles.labelLg.copyWith(
-                              color: colors.goldMuted,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          )).toList(),
+                          children: post.tags
+                              .map(
+                                (tag) => Text(
+                                  '#$tag',
+                                  style: ScribesTextStyles.labelLg.copyWith(
+                                    color: colors.secondaryText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ],
 
@@ -280,37 +373,57 @@ class PostDetailScreen extends ConsumerWidget {
                       // Reaction Bar
                       Consumer(
                         builder: (context, ref, child) {
-                          final reactionsState = ref.watch(postReactionsProvider(postId));
-                          final commentsState = ref.watch(postCommentsProvider(postId));
+                          final reactionsState = ref.watch(
+                            postReactionsProvider(postId),
+                          );
+                          final commentsState = ref.watch(
+                            postCommentsProvider(postId),
+                          );
 
                           final reactionsStateData = reactionsState.value;
                           final reactions = reactionsStateData?.counts ?? [];
-                          final userReaction = (reactionsStateData?.modifiedReaction ?? false) 
-                              ? reactionsStateData?.userReaction 
-                              : null; 
+                          final userReaction =
+                              (reactionsStateData?.modifiedReaction ?? false)
+                              ? reactionsStateData?.userReaction
+                              : null;
                           final comments = commentsState.value ?? [];
-                          
+
                           return ScribesReactionBar(
-                            amenCount: reactions.where((r) => r.type == 'amen').fold(0, (sum, r) => sum + r.count),
-                            insightCount: reactions.where((r) => r.type == 'insightful').fold(0, (sum, r) => sum + r.count),
-                            thoughtProvokingCount: reactions.where((r) => r.type == 'thought_provoking').fold(0, (sum, r) => sum + r.count),
+                            amenCount: reactions
+                                .where((r) => r.type == 'amen')
+                                .fold(0, (sum, r) => sum + r.count),
+                            insightCount: reactions
+                                .where((r) => r.type == 'insightful')
+                                .fold(0, (sum, r) => sum + r.count),
+                            thoughtProvokingCount: reactions
+                                .where((r) => r.type == 'thought_provoking')
+                                .fold(0, (sum, r) => sum + r.count),
                             commentCount: comments.length,
-                            userReactions: userReaction != null ? [userReaction] : [],
+                            userReactions: userReaction != null
+                                ? [userReaction]
+                                : [],
                             onReact: (type) {
                               if (!isAuthenticated) {
                                 context.push('/auth');
                                 return;
                               }
-                              ref.read(postReactionsProvider(postId).notifier).react(type, knownUserReaction: null);
+                              ref
+                                  .read(postReactionsProvider(postId).notifier)
+                                  .react(type, knownUserReaction: null);
                             },
                             onComment: () {
                               if (!isAuthenticated) {
                                 context.push('/auth');
                                 return;
                               }
-                              ScribesCommentSheet.show(context, postId: postId, postAuthorId: post.authorId);
+                              ScribesCommentSheet.show(
+                                context,
+                                postId: postId,
+                                postAuthorId: post.authorId,
+                              );
                             },
-                            onShare: () => ScribesShareSheet.show(context, postId),
+                            onShare: () =>
+                                ScribesShareSheet.show(context, postId),
                           );
                         },
                       ),
@@ -319,7 +432,9 @@ class PostDetailScreen extends ConsumerWidget {
                       // Similar Posts
                       Consumer(
                         builder: (context, ref, child) {
-                          final similarState = ref.watch(similarPostsProvider(postId));
+                          final similarState = ref.watch(
+                            similarPostsProvider(postId),
+                          );
                           return similarState.when(
                             data: (posts) {
                               if (posts.isEmpty) return const SizedBox.shrink();
@@ -328,17 +443,27 @@ class PostDetailScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     'More on this theme',
-                                    style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+                                    style: ScribesTextStyles.displayMd.copyWith(
+                                      color: colors.primaryText,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
-                                  ...posts.map((p) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
-                                    child: ScribesConnectedPostCard(post: p, isFeatured: false),
-                                  )),
+                                  ...posts.map(
+                                    (p) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16.0,
+                                      ),
+                                      child: ScribesConnectedPostCard(
+                                        post: p,
+                                        isFeatured: false,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               );
                             },
-                            loading: () => Center(child: ScribesLoadingIndicator()),
+                            loading: () =>
+                                Center(child: ScribesLoadingIndicator()),
                             error: (e, st) => const SizedBox.shrink(),
                           );
                         },
@@ -368,40 +493,81 @@ class PostDetailScreen extends ConsumerWidget {
           );
         },
       ),
-      bottomNavigationBar: isAuthenticated
-          ? null
-          : ScribesUnauthBanner(
-              onJoinTap: () => context.push('/auth'),
-              onLoginTap: () => context.push('/auth'),
-            ),
     );
   }
 
-  void _showPostOptions(BuildContext context, WidgetRef ref, Post post, dynamic colors) {
+  void _showPostOptions(
+    BuildContext context,
+    WidgetRef ref,
+    Post post,
+    dynamic colors,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: HugeIcon(icon: HugeIcons.strokeRoundedPencilEdit01, color: colors.primaryText),
-                title: Text('Edit Post', style: ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText)),
+                leading: HugeIcon(
+                  icon: HugeIcons.strokeRoundedFile02,
+                  color: colors.gold,
+                ),
+                title: Text(
+                  'Export Manuscript (PDF)',
+                  style: ScribesTextStyles.bodyLg.copyWith(
+                    color: colors.primaryText,
+                  ),
+                ),
+                subtitle: Text(
+                  'Generate illuminated PDF document',
+                  style: ScribesTextStyles.labelSm.copyWith(
+                    color: colors.secondaryText,
+                  ),
+                ),
                 onTap: () {
-                  context.pop();
+                  sheetContext.pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) {
+                      ExportLoadingSheet.show(context, post);
+                    }
+                  });
+                },
+              ),
+              ListTile(
+                leading: HugeIcon(
+                  icon: HugeIcons.strokeRoundedPencilEdit01,
+                  color: colors.primaryText,
+                ),
+                title: Text(
+                  'Edit Post',
+                  style: ScribesTextStyles.bodyLg.copyWith(
+                    color: colors.primaryText,
+                  ),
+                ),
+                onTap: () {
+                  sheetContext.pop();
                   context.push('/posts/${post.id}/edit', extra: post);
                 },
               ),
               ListTile(
-                leading: HugeIcon(icon: HugeIcons.strokeRoundedDelete01, color: colors.orange),
-                title: Text('Delete Post', style: ScribesTextStyles.bodyLg.copyWith(color: colors.orange)),
+                leading: HugeIcon(
+                  icon: HugeIcons.strokeRoundedDelete01,
+                  color: colors.orange,
+                ),
+                title: Text(
+                  'Delete Post',
+                  style: ScribesTextStyles.bodyLg.copyWith(
+                    color: colors.orange,
+                  ),
+                ),
                 onTap: () {
-                  context.pop();
+                  sheetContext.pop();
                   _showDeleteConfirmation(context, ref, post.id, colors);
                 },
               ),
@@ -412,33 +578,63 @@ class PostDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, String postId, dynamic colors) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    String postId,
+    dynamic colors,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: colors.surface,
-          title: Text('Delete Post?', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
-          content: Text('This action cannot be undone. Are you sure you want to delete this post?', style: ScribesTextStyles.bodyLg.copyWith(color: colors.secondaryText)),
+          title: Text(
+            'Delete Post?',
+            style: ScribesTextStyles.displayMd.copyWith(
+              color: colors.primaryText,
+            ),
+          ),
+          content: Text(
+            'This action cannot be undone. Are you sure you want to delete this post?',
+            style: ScribesTextStyles.bodyLg.copyWith(
+              color: colors.secondaryText,
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => context.pop(),
-              child: Text('Cancel', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
+              child: Text(
+                'Cancel',
+                style: ScribesTextStyles.labelLg.copyWith(
+                  color: colors.primaryText,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () {
                 context.pop(); // close dialog
-                
+
                 // 1. Fire optimistic background delete
-                ref.read(postDetailProvider(postId).notifier).optimisticDeletePost();
-                
+                ref
+                    .read(postDetailProvider(postId).notifier)
+                    .optimisticDeletePost();
+
                 // 2. Immediately pop the post detail screen back to feed
                 if (context.mounted) {
-                  ScribesToast.show(context, 'Post deleted', colors, icon: HugeIcons.strokeRoundedDelete01);
+                  ScribesToast.show(
+                    context,
+                    'Post deleted',
+                    colors,
+                    icon: HugeIcons.strokeRoundedDelete01,
+                  );
                   context.pop();
                 }
               },
-              child: Text('Delete', style: ScribesTextStyles.labelLg.copyWith(color: colors.orange)),
+              child: Text(
+                'Delete',
+                style: ScribesTextStyles.labelLg.copyWith(color: colors.orange),
+              ),
             ),
           ],
         );

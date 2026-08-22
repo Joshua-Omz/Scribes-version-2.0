@@ -17,5 +17,6 @@ abstract class Comment with _$Comment {
     @JsonKey(name: 'is_deleted') required bool isDeleted,
   }) = _Comment;
 
-  factory Comment.fromJson(Map<String, dynamic> json) => _$CommentFromJson(json);
+  factory Comment.fromJson(Map<String, dynamic> json) =>
+      _$CommentFromJson(json);
 }

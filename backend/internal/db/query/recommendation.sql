@@ -1,6 +1,7 @@
 -- name: GetRecommendationsByType :many
 SELECT p.id, p.author_id, p.caption, p.content, p.sermon_source, p.visibility, p.is_deleted, p.published_at,
-       u.display_name AS author_name, u.handle AS author_handle, u.is_church AS author_is_church
+       p.cover_image_url, p.post_type,
+       u.display_name AS author_name, u.handle AS author_handle, u.avatar_url AS author_avatar_url, u.is_church AS author_is_church
 FROM post_engagement_scores s
 JOIN posts p ON p.id = s.post_id
 JOIN users u ON u.id = p.author_id
@@ -13,7 +14,8 @@ LIMIT sqlc.arg('limit_count') OFFSET sqlc.arg('offset_count');
 
 -- name: GetSemanticallySimilarPosts :many
 SELECT p.id, p.author_id, p.caption, p.content, p.sermon_source, p.visibility, p.is_deleted, p.published_at,
-       u.display_name AS author_name, u.handle AS author_handle, u.is_church AS author_is_church
+       p.cover_image_url, p.post_type,
+       u.display_name AS author_name, u.handle AS author_handle, u.avatar_url AS author_avatar_url, u.is_church AS author_is_church
 FROM posts p
 JOIN users u ON u.id = p.author_id
 WHERE p.is_deleted = false AND p.visibility = 'public'

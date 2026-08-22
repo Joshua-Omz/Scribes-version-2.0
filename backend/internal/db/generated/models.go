@@ -403,6 +403,42 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type BibleBook struct {
+	ID            uuid.UUID `json:"id"`
+	TranslationID uuid.UUID `json:"translation_id"`
+	Name          string    `json:"name"`
+	ShortName     string    `json:"short_name"`
+	Testament     string    `json:"testament"`
+	BookOrder     int32     `json:"book_order"`
+	ChapterCount  int32     `json:"chapter_count"`
+}
+
+type BibleReadingPosition struct {
+	UserID    uuid.UUID `json:"user_id"`
+	BookID    uuid.UUID `json:"book_id"`
+	Chapter   int32     `json:"chapter"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type BibleTranslation struct {
+	ID              uuid.UUID `json:"id"`
+	Code            string    `json:"code"`
+	Name            string    `json:"name"`
+	Language        string    `json:"language"`
+	AttributionText string    `json:"attribution_text"`
+	Source          string    `json:"source"`
+	IsActive        bool      `json:"is_active"`
+	IsDefault       bool      `json:"is_default"`
+}
+
+type BibleVerse struct {
+	ID      uuid.UUID `json:"id"`
+	BookID  uuid.UUID `json:"book_id"`
+	Chapter int32     `json:"chapter"`
+	Verse   int32     `json:"verse"`
+	Text    string    `json:"text"`
+}
+
 type Comment struct {
 	ID        uuid.UUID   `json:"id"`
 	PostID    uuid.UUID   `json:"post_id"`

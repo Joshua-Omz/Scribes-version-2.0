@@ -5,7 +5,6 @@ part 'message.g.dart';
 
 @freezed
 abstract class MessageRequest with _$MessageRequest {
-
   const factory MessageRequest({
     required String id,
     @JsonKey(name: 'from_user_id') required String fromUserId,
@@ -21,7 +20,6 @@ abstract class MessageRequest with _$MessageRequest {
 
 @freezed
 abstract class Conversation with _$Conversation {
-
   const factory Conversation({
     required String id,
     @JsonKey(name: 'user_a_id') required String userAId,
@@ -40,7 +38,6 @@ abstract class Conversation with _$Conversation {
 
 @freezed
 abstract class Message with _$Message {
-
   const factory Message({
     required String id,
     @JsonKey(name: 'conversation_id') required String conversationId,

@@ -10,21 +10,21 @@ class NotificationNotifier extends _$NotificationNotifier {
   Future<List<NotificationItem>> build() async {
     final repo = ref.read(notificationRepositoryProvider);
     final response = await repo.getNotifications();
-    
+
     // Update the unread count when we fetch the list
     if (response.hasUnread) {
-      // Invalidate hasn't changed it to true because it might already be true, 
+      // Invalidate hasn't changed it to true because it might already be true,
       // but it's good to keep them in sync if we had a way to set the unread provider directly.
       // For now, fetching notifications doesn't clear unread on the server (only reading them does).
     }
-    
+
     return response.notifications;
   }
 
   Future<void> markAllRead() async {
     final repo = ref.read(notificationRepositoryProvider);
     await repo.markAllRead();
-    
+
     // Invalidate both lists and the badge
     ref.invalidateSelf();
     ref.invalidate(hasUnreadNotificationsProvider);
@@ -33,6 +33,7 @@ class NotificationNotifier extends _$NotificationNotifier {
   Future<void> refresh() async {
     ref.invalidateSelf();
   }
+
   Future<void> clearAll() async {
     final repo = ref.read(notificationRepositoryProvider);
     await repo.clearAll();

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:scribes/core/theme/scribes_colors.dart';
 import 'package:scribes/core/theme/theme_provider.dart';
 import 'package:scribes/core/widgets/scribes_avatar.dart';
-import 'package:scribes/core/widgets/scribes_tab_bar.dart';
+import 'package:scribes/core/theme/scribes_text_styles.dart';
 import 'package:scribes/core/widgets/scribes_loading_indicator.dart';
 import 'package:scribes/features/auth/domain/user.dart';
 import 'package:scribes/features/social/application/follow_list_provider.dart';
@@ -36,38 +36,51 @@ class _FollowListScreenState extends ConsumerState<FollowListScreen> {
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
+    return DefaultTabController(
+      length: 2,
+      initialIndex: _selectedIndex,
+      child: Scaffold(
         backgroundColor: colors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.primaryText),
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Connections', style: TextStyle(color: colors.primaryText)),
-      ),
-      body: Column(
-        children: [
-          ScribesTabBar(
-            tabs: const ['Followers', 'Following'],
-            selectedIndex: _selectedIndex,
-            onTabChanged: (index) {
+        appBar: AppBar(
+          backgroundColor: colors.background,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: colors.primaryText),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            'Connections',
+            style: TextStyle(color: colors.primaryText),
+          ),
+          bottom: TabBar(
+            indicatorColor: colors.primaryText,
+            indicatorWeight: 2,
+            labelColor: colors.primaryText,
+            unselectedLabelColor: colors.secondaryText,
+            labelStyle: ScribesTextStyles.labelLg.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+            unselectedLabelStyle: ScribesTextStyles.labelLg.copyWith(
+              fontWeight: FontWeight.w400,
+            ),
+            onTap: (index) {
               setState(() {
                 _selectedIndex = index;
               });
             },
+            tabs: const [
+              Tab(text: 'Followers'),
+              Tab(text: 'Following'),
+            ],
           ),
-          Expanded(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: [
-                _FollowersTab(userId: widget.userId, colors: colors),
-                _FollowingTab(userId: widget.userId, colors: colors),
-              ],
-            ),
-          ),
-        ],
+        ),
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _FollowersTab(userId: widget.userId, colors: colors),
+            _FollowingTab(userId: widget.userId, colors: colors),
+          ],
+        ),
       ),
     );
   }
@@ -99,7 +112,10 @@ class _FollowersTab extends ConsumerWidget {
       },
       loading: () => const Center(child: ScribesLoadingIndicator()),
       error: (error, stack) => Center(
-        child: Text('Failed to load followers', style: TextStyle(color: colors.primaryText)),
+        child: Text(
+          'Failed to load followers',
+          style: TextStyle(color: colors.primaryText),
+        ),
       ),
     );
   }
@@ -131,7 +147,10 @@ class _FollowingTab extends ConsumerWidget {
       },
       loading: () => const Center(child: ScribesLoadingIndicator()),
       error: (error, stack) => Center(
-        child: Text('Failed to load following', style: TextStyle(color: colors.primaryText)),
+        child: Text(
+          'Failed to load following',
+          style: TextStyle(color: colors.primaryText),
+        ),
       ),
     );
   }
@@ -153,7 +172,9 @@ class _UserListTile extends StatelessWidget {
           children: [
             ScribesAvatar(
               imageUrl: user.avatarUrl,
-              authorName: user.displayName.isNotEmpty ? user.displayName : user.handle,
+              authorName: user.displayName.isNotEmpty
+                  ? user.displayName
+                  : user.handle,
               radius: 24,
             ),
             const SizedBox(width: 16),
@@ -162,7 +183,9 @@ class _UserListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.displayName.isNotEmpty ? user.displayName : user.handle,
+                    user.displayName.isNotEmpty
+                        ? user.displayName
+                        : user.handle,
                     style: TextStyle(
                       color: colors.primaryText,
                       fontSize: 16,
@@ -174,10 +197,7 @@ class _UserListTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '@${user.handle}',
-                    style: TextStyle(
-                      color: colors.secondaryText,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: colors.secondaryText, fontSize: 14),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

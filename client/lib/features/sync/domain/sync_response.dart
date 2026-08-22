@@ -19,7 +19,7 @@ class SyncRecord {
   final int serverSequence;
   final DateTime updatedAt;
   final Map<String, dynamic> content;
-  
+
   // Extra fields from backend Pull response
   final String? titleOrCaption;
   final String? parentId;
@@ -39,8 +39,8 @@ class SyncRecord {
       localId: json['id'] ?? '',
       type: json['type'] ?? '',
       serverSequence: json['server_sequence'] ?? 0,
-      updatedAt: json['ts'] != null 
-          ? DateTime.parse(json['ts']) 
+      updatedAt: json['ts'] != null
+          ? DateTime.parse(json['ts'])
           : DateTime.now(),
       content: json['content'] ?? {},
       titleOrCaption: json['title_or_caption'],

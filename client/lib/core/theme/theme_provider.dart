@@ -25,10 +25,12 @@ class ThemeNotifier extends _$ThemeNotifier with WidgetsBindingObserver {
     if (themeString == 'parchment') return ScribesColors.parchment;
     if (themeString == 'silver') return ScribesColors.silver;
     if (themeString == 'night') return ScribesColors.night;
-    
+
     // Default to system theme if not explicitly set
     final brightness = PlatformDispatcher.instance.platformBrightness;
-    return brightness == Brightness.dark ? ScribesColors.night : ScribesColors.silver;
+    return brightness == Brightness.dark
+        ? ScribesColors.night
+        : ScribesColors.silver;
   }
 
   @override
@@ -49,11 +51,11 @@ class ThemeNotifier extends _$ThemeNotifier with WidgetsBindingObserver {
     }
 
     state = theme;
-    
+
     String themeString = 'night';
     if (theme == ScribesColors.parchment) themeString = 'parchment';
     if (theme == ScribesColors.silver) themeString = 'silver';
-    
+
     sharedPrefs.setString(_themeKey, themeString);
   }
 }

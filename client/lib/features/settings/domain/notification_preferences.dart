@@ -12,5 +12,6 @@ abstract class NotificationPreferences with _$NotificationPreferences {
     @JsonKey(name: 'new_follower_alerts') required bool newFollowerAlerts,
   }) = _NotificationPreferences;
 
-  factory NotificationPreferences.fromJson(Map<String, dynamic> json) => _$NotificationPreferencesFromJson(json);
+  factory NotificationPreferences.fromJson(Map<String, dynamic> json) =>
+      _$NotificationPreferencesFromJson(json);
 }

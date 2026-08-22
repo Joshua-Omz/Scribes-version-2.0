@@ -3,7 +3,6 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../compose/application/compose_provider.dart';
@@ -61,7 +60,12 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
             expandedHeight: _isSearchActive ? null : 120,
             centerTitle: !_isSearchActive,
             leading: IconButton(
-              icon: HugeIcon(icon: isSelectionMode ? HugeIcons.strokeRoundedCancel01 : HugeIcons.strokeRoundedArrowLeft01, color: colors.primaryText),
+              icon: HugeIcon(
+                icon: isSelectionMode
+                    ? HugeIcons.strokeRoundedCancel01
+                    : HugeIcons.strokeRoundedArrowLeft01,
+                color: colors.primaryText,
+              ),
               onPressed: () {
                 if (isSelectionMode) {
                   setState(() => _selectedIds.clear());
@@ -82,8 +86,12 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                 : FlexibleSpaceBar(
                     titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
                     title: Text(
-                      isSelectionMode ? '${_selectedIds.length} Selected' : 'Drafts Workspace',
-                      style: ScribesTextStyles.displayLg.copyWith(color: colors.primaryText),
+                      isSelectionMode
+                          ? '${_selectedIds.length} Selected'
+                          : 'Drafts Workspace',
+                      style: ScribesTextStyles.displayLg.copyWith(
+                        color: colors.primaryText,
+                      ),
                     ),
                     background: Stack(
                       children: [
@@ -104,14 +112,20 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     hintText: 'Search drafts...',
                     autofocus: true,
                     isSearchPill: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
                     onChanged: (query) => setState(() => _searchQuery = query),
                   )
                 : null,
             actions: [
               if (!_isSearchActive && !isSelectionMode)
                 IconButton(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedSearch01, color: colors.primaryText),
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedSearch01,
+                    color: colors.primaryText,
+                  ),
                   onPressed: () => setState(() => _isSearchActive = true),
                 ),
               const SizedBox(width: 8),
@@ -123,8 +137,10 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
               if (_searchQuery.trim().isNotEmpty) {
                 final q = _searchQuery.toLowerCase();
                 filteredDrafts = drafts.where((d) {
-                  final title = (d.content['title']?.toString() ?? '').toLowerCase();
-                  final excerpt = (d.content['excerpt']?.toString() ?? '').toLowerCase();
+                  final title = (d.content['title']?.toString() ?? '')
+                      .toLowerCase();
+                  final excerpt = (d.content['excerpt']?.toString() ?? '')
+                      .toLowerCase();
                   return title.contains(q) || excerpt.contains(q);
                 }).toList();
               }
@@ -135,16 +151,28 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        HugeIcon(icon: HugeIcons.strokeRoundedInbox, size: 48, color: colors.goldMuted.withValues(alpha: 0.5)),
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedInbox,
+                          size: 48,
+                          color: colors.goldMuted.withValues(alpha: 0.5),
+                        ),
                         const SizedBox(height: 16),
                         Text(
-                          _searchQuery.isNotEmpty ? 'No matches found.' : 'No drafts yet.',
-                          style: ScribesTextStyles.displayMd.copyWith(color: colors.secondaryText),
+                          _searchQuery.isNotEmpty
+                              ? 'No matches found.'
+                              : 'No drafts yet.',
+                          style: ScribesTextStyles.displayMd.copyWith(
+                            color: colors.secondaryText,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          _searchQuery.isNotEmpty ? 'Try a different search term.' : 'Your works in progress will appear here.',
-                          style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                          _searchQuery.isNotEmpty
+                              ? 'Try a different search term.'
+                              : 'Your works in progress will appear here.',
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.secondaryText,
+                          ),
                         ),
                       ],
                     ),
@@ -161,40 +189,41 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                     crossAxisSpacing: 16,
                     childAspectRatio: 0.8,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final draft = filteredDrafts[index];
-                      String title = 'Untitled Draft';
-                      String excerpt = 'No content';
-                      if (draft.content.containsKey('title') && draft.content['title'].toString().trim().isNotEmpty) {
-                        title = draft.content['title'];
-                      }
-                      if (draft.content.containsKey('excerpt') && draft.content['excerpt'].toString().trim().isNotEmpty) {
-                        excerpt = draft.content['excerpt'];
-                      }
-                      return ScribesGridCard(
-                        title: title,
-                        excerpt: excerpt,
-                        date: draft.updatedAt,
-                        isSelected: _selectedIds.contains(draft.id),
-                        onLongPress: () => _toggleSelection(draft.id),
-                        onTap: () {
-                          if (isSelectionMode) {
-                            _toggleSelection(draft.id);
-                          } else {
-                            ref.read(composeProvider.notifier).loadDraft(
-                              draft.id,
-                              draft.content,
-                              caption: draft.caption,
-                              sermonSource: draft.sermonSource,
-                            );
-                            context.push('/compose');
-                          }
-                        },
-                      );
-                    },
-                    childCount: filteredDrafts.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final draft = filteredDrafts[index];
+                    String title = 'Untitled Draft';
+                    String excerpt = 'No content';
+                    if (draft.content.containsKey('title') &&
+                        draft.content['title'].toString().trim().isNotEmpty) {
+                      title = draft.content['title'];
+                    }
+                    if (draft.content.containsKey('excerpt') &&
+                        draft.content['excerpt'].toString().trim().isNotEmpty) {
+                      excerpt = draft.content['excerpt'];
+                    }
+                    return ScribesGridCard(
+                      title: title,
+                      excerpt: excerpt,
+                      date: draft.updatedAt,
+                      isSelected: _selectedIds.contains(draft.id),
+                      onLongPress: () => _toggleSelection(draft.id),
+                      onTap: () {
+                        if (isSelectionMode) {
+                          _toggleSelection(draft.id);
+                        } else {
+                          ref
+                              .read(composeProvider.notifier)
+                              .loadDraft(
+                                draft.id,
+                                draft.content,
+                                caption: draft.caption,
+                                sermonSource: draft.sermonSource,
+                              );
+                          context.push('/compose');
+                        }
+                      },
+                    );
+                  }, childCount: filteredDrafts.length),
                 ),
               );
             },
@@ -207,26 +236,25 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                   crossAxisSpacing: 16,
                   childAspectRatio: 0.8,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return ScribesShimmer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.surfaceRaised,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return ScribesShimmer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colors.surfaceRaised,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    );
-                  },
-                  childCount: 6,
-                ),
+                    ),
+                  );
+                }, childCount: 6),
               ),
             ),
             error: (err, stack) => SliverFillRemaining(
               child: Center(
                 child: Text(
                   'Failed to load drafts',
-                  style: ScribesTextStyles.bodyMd.copyWith(color: colors.orange),
+                  style: ScribesTextStyles.bodyMd.copyWith(
+                    color: colors.orange,
+                  ),
                 ),
               ),
             ),
@@ -247,8 +275,16 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                 setState(() => _selectedIds.clear());
                 ScribesToast.show(context, 'Deleted $count draft(s)', colors);
               },
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedDelete02, color: colors.surfaceRaised),
-              label: Text('Delete', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
+              icon: HugeIcon(
+                icon: HugeIcons.strokeRoundedDelete02,
+                color: colors.surfaceRaised,
+              ),
+              label: Text(
+                'Delete',
+                style: ScribesTextStyles.labelLg.copyWith(
+                  color: colors.surfaceRaised,
+                ),
+              ),
             )
           : FloatingActionButton.extended(
               heroTag: null,
@@ -259,8 +295,16 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                 ref.read(composeProvider.notifier).reset();
                 context.push('/compose');
               },
-              icon: HugeIcon(icon: HugeIcons.strokeRoundedPlusSign, color: colors.surfaceRaised),
-              label: Text('New Draft', style: ScribesTextStyles.labelLg.copyWith(color: colors.surfaceRaised)),
+              icon: HugeIcon(
+                icon: HugeIcons.strokeRoundedPlusSign,
+                color: colors.surfaceRaised,
+              ),
+              label: Text(
+                'New Draft',
+                style: ScribesTextStyles.labelLg.copyWith(
+                  color: colors.surfaceRaised,
+                ),
+              ),
             ),
     );
   }

@@ -4,7 +4,6 @@ import '../theme/theme_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-
 class ScribesIconButton extends ConsumerWidget {
   final dynamic icon;
   final VoidCallback onPressed;
@@ -24,7 +23,8 @@ class ScribesIconButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
-    final iconColor = color ?? (isSelected ? colors.primaryText : colors.secondaryText);
+    final iconColor =
+        color ?? (isSelected ? colors.primaryText : colors.secondaryText);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(size),
@@ -46,11 +46,7 @@ class ScribesIconButton extends ConsumerWidget {
             highlightColor: colors.gold.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(10.0),
-              child: HugeIcon(
-                icon: icon,
-                size: size,
-                color: iconColor,
-              ),
+              child: HugeIcon(icon: icon, size: size, color: iconColor),
             ),
           ),
         ),

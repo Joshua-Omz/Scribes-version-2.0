@@ -39,9 +39,17 @@ class VersionHistorySheet extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Version History', style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText)),
+                Text(
+                  'Version History',
+                  style: ScribesTextStyles.displayMd.copyWith(
+                    color: colors.primaryText,
+                  ),
+                ),
                 IconButton(
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedCancel01, color: colors.primaryText),
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedCancel01,
+                    color: colors.primaryText,
+                  ),
                   onPressed: () => context.pop(),
                 ),
               ],
@@ -54,19 +62,38 @@ class VersionHistorySheet extends ConsumerWidget {
                 final versions = data.versions;
                 if (versions.isEmpty) {
                   return Center(
-                    child: Text('No previous versions found.', style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText)),
+                    child: Text(
+                      'No previous versions found.',
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.secondaryText,
+                      ),
+                    ),
                   );
                 }
 
                 return ListView.separated(
                   itemCount: versions.length,
-                  separatorBuilder: (context, index) => Divider(color: colors.border, height: 1),
+                  separatorBuilder: (context, index) =>
+                      Divider(color: colors.border, height: 1),
                   itemBuilder: (context, index) {
                     final version = versions[index];
                     return ListTile(
-                      title: Text('Version ${version.versionNumber}', style: ScribesTextStyles.labelLg.copyWith(color: colors.primaryText)),
-                      subtitle: Text('Saved on ${version.snapshottedAt.toLocal().toString().split('.')[0]}', style: ScribesTextStyles.caption.copyWith(color: colors.secondaryText)),
-                      trailing: HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01, color: colors.secondaryText),
+                      title: Text(
+                        'Version ${version.versionNumber}',
+                        style: ScribesTextStyles.labelLg.copyWith(
+                          color: colors.primaryText,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Saved on ${version.snapshottedAt.toLocal().toString().split('.')[0]}',
+                        style: ScribesTextStyles.caption.copyWith(
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                      trailing: HugeIcon(
+                        icon: HugeIcons.strokeRoundedArrowRight01,
+                        color: colors.secondaryText,
+                      ),
                       onTap: () {
                         // TODO: Navigate to diff view or specific version
                       },

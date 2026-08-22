@@ -14,7 +14,7 @@ class IsFollowingUser extends _$IsFollowingUser {
   Future<void> toggleFollow() async {
     final repo = ref.read(socialRepositoryProvider);
     final currentState = state.value ?? false;
-    
+
     // Optimistic update
     state = AsyncData(!currentState);
 

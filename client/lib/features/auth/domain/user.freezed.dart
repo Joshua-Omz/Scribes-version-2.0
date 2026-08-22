@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get email; String get handle;@JsonKey(name: 'display_name') String get displayName;@JsonKey(name: 'bio') String? get bio;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'followers_count') int get followersCount;@JsonKey(name: 'following_count') int get followingCount;@JsonKey(name: 'is_church') bool get isChurch;@JsonKey(name: 'selected_tags') List<String> get selectedTags;
+ String get id; String? get email; String get handle;@JsonKey(name: 'display_name') String get displayName;@JsonKey(name: 'bio') String? get bio;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'created_at') DateTime? get createdAt;@JsonKey(name: 'followers_count') int get followersCount;@JsonKey(name: 'following_count') int get followingCount;@JsonKey(name: 'is_church') bool get isChurch;@JsonKey(name: 'selected_tags') List<String> get selectedTags;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String handle,@JsonKey(name: 'display_name') String displayName,@JsonKey(name: 'bio') String? bio,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'followers_count') int followersCount,@JsonKey(name: 'following_count') int followingCount,@JsonKey(name: 'is_church') bool isChurch,@JsonKey(name: 'selected_tags') List<String> selectedTags
+ String id, String? email, String handle,@JsonKey(name: 'display_name') String displayName,@JsonKey(name: 'bio') String? bio,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'followers_count') int followersCount,@JsonKey(name: 'following_count') int followingCount,@JsonKey(name: 'is_church') bool isChurch,@JsonKey(name: 'selected_tags') List<String> selectedTags
 });
 
 
@@ -65,16 +65,16 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? handle = null,Object? displayName = null,Object? bio = freezed,Object? avatarUrl = freezed,Object? createdAt = null,Object? followersCount = null,Object? followingCount = null,Object? isChurch = null,Object? selectedTags = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = freezed,Object? handle = null,Object? displayName = null,Object? bio = freezed,Object? avatarUrl = freezed,Object? createdAt = freezed,Object? followersCount = null,Object? followingCount = null,Object? isChurch = null,Object? selectedTags = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
-as String,handle: null == handle ? _self.handle : handle // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,handle: null == handle ? _self.handle : handle // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,followersCount: null == followersCount ? _self.followersCount : followersCount // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,followersCount: null == followersCount ? _self.followersCount : followersCount // ignore: cast_nullable_to_non_nullable
 as int,followingCount: null == followingCount ? _self.followingCount : followingCount // ignore: cast_nullable_to_non_nullable
 as int,isChurch: null == isChurch ? _self.isChurch : isChurch // ignore: cast_nullable_to_non_nullable
 as bool,selectedTags: null == selectedTags ? _self.selectedTags : selectedTags // ignore: cast_nullable_to_non_nullable
@@ -163,7 +163,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String handle, @JsonKey(name: 'display_name')  String displayName, @JsonKey(name: 'bio')  String? bio, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount, @JsonKey(name: 'is_church')  bool isChurch, @JsonKey(name: 'selected_tags')  List<String> selectedTags)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? email,  String handle, @JsonKey(name: 'display_name')  String displayName, @JsonKey(name: 'bio')  String? bio, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount, @JsonKey(name: 'is_church')  bool isChurch, @JsonKey(name: 'selected_tags')  List<String> selectedTags)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.email,_that.handle,_that.displayName,_that.bio,_that.avatarUrl,_that.createdAt,_that.followersCount,_that.followingCount,_that.isChurch,_that.selectedTags);case _:
@@ -184,7 +184,7 @@ return $default(_that.id,_that.email,_that.handle,_that.displayName,_that.bio,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String handle, @JsonKey(name: 'display_name')  String displayName, @JsonKey(name: 'bio')  String? bio, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount, @JsonKey(name: 'is_church')  bool isChurch, @JsonKey(name: 'selected_tags')  List<String> selectedTags)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? email,  String handle, @JsonKey(name: 'display_name')  String displayName, @JsonKey(name: 'bio')  String? bio, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount, @JsonKey(name: 'is_church')  bool isChurch, @JsonKey(name: 'selected_tags')  List<String> selectedTags)  $default,) {final _that = this;
 switch (_that) {
 case _User():
 return $default(_that.id,_that.email,_that.handle,_that.displayName,_that.bio,_that.avatarUrl,_that.createdAt,_that.followersCount,_that.followingCount,_that.isChurch,_that.selectedTags);case _:
@@ -204,7 +204,7 @@ return $default(_that.id,_that.email,_that.handle,_that.displayName,_that.bio,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String handle, @JsonKey(name: 'display_name')  String displayName, @JsonKey(name: 'bio')  String? bio, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount, @JsonKey(name: 'is_church')  bool isChurch, @JsonKey(name: 'selected_tags')  List<String> selectedTags)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? email,  String handle, @JsonKey(name: 'display_name')  String displayName, @JsonKey(name: 'bio')  String? bio, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'created_at')  DateTime? createdAt, @JsonKey(name: 'followers_count')  int followersCount, @JsonKey(name: 'following_count')  int followingCount, @JsonKey(name: 'is_church')  bool isChurch, @JsonKey(name: 'selected_tags')  List<String> selectedTags)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.email,_that.handle,_that.displayName,_that.bio,_that.avatarUrl,_that.createdAt,_that.followersCount,_that.followingCount,_that.isChurch,_that.selectedTags);case _:
@@ -219,16 +219,16 @@ return $default(_that.id,_that.email,_that.handle,_that.displayName,_that.bio,_t
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.email, required this.handle, @JsonKey(name: 'display_name') required this.displayName, @JsonKey(name: 'bio') this.bio, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'followers_count') this.followersCount = 0, @JsonKey(name: 'following_count') this.followingCount = 0, @JsonKey(name: 'is_church') this.isChurch = false, @JsonKey(name: 'selected_tags') final  List<String> selectedTags = const []}): _selectedTags = selectedTags;
+  const _User({required this.id, this.email, required this.handle, @JsonKey(name: 'display_name') required this.displayName, @JsonKey(name: 'bio') this.bio, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'followers_count') this.followersCount = 0, @JsonKey(name: 'following_count') this.followingCount = 0, @JsonKey(name: 'is_church') this.isChurch = false, @JsonKey(name: 'selected_tags') final  List<String> selectedTags = const []}): _selectedTags = selectedTags;
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  String id;
-@override final  String email;
+@override final  String? email;
 @override final  String handle;
 @override@JsonKey(name: 'display_name') final  String displayName;
 @override@JsonKey(name: 'bio') final  String? bio;
 @override@JsonKey(name: 'avatar_url') final  String? avatarUrl;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 @override@JsonKey(name: 'followers_count') final  int followersCount;
 @override@JsonKey(name: 'following_count') final  int followingCount;
 @override@JsonKey(name: 'is_church') final  bool isChurch;
@@ -273,7 +273,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String handle,@JsonKey(name: 'display_name') String displayName,@JsonKey(name: 'bio') String? bio,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'followers_count') int followersCount,@JsonKey(name: 'following_count') int followingCount,@JsonKey(name: 'is_church') bool isChurch,@JsonKey(name: 'selected_tags') List<String> selectedTags
+ String id, String? email, String handle,@JsonKey(name: 'display_name') String displayName,@JsonKey(name: 'bio') String? bio,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'created_at') DateTime? createdAt,@JsonKey(name: 'followers_count') int followersCount,@JsonKey(name: 'following_count') int followingCount,@JsonKey(name: 'is_church') bool isChurch,@JsonKey(name: 'selected_tags') List<String> selectedTags
 });
 
 
@@ -290,16 +290,16 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? handle = null,Object? displayName = null,Object? bio = freezed,Object? avatarUrl = freezed,Object? createdAt = null,Object? followersCount = null,Object? followingCount = null,Object? isChurch = null,Object? selectedTags = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = freezed,Object? handle = null,Object? displayName = null,Object? bio = freezed,Object? avatarUrl = freezed,Object? createdAt = freezed,Object? followersCount = null,Object? followingCount = null,Object? isChurch = null,Object? selectedTags = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
-as String,handle: null == handle ? _self.handle : handle // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,handle: null == handle ? _self.handle : handle // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,followersCount: null == followersCount ? _self.followersCount : followersCount // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,followersCount: null == followersCount ? _self.followersCount : followersCount // ignore: cast_nullable_to_non_nullable
 as int,followingCount: null == followingCount ? _self.followingCount : followingCount // ignore: cast_nullable_to_non_nullable
 as int,isChurch: null == isChurch ? _self.isChurch : isChurch // ignore: cast_nullable_to_non_nullable
 as bool,selectedTags: null == selectedTags ? _self._selectedTags : selectedTags // ignore: cast_nullable_to_non_nullable

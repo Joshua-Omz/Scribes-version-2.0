@@ -4,6 +4,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -19,6 +21,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -34,6 +38,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -51,6 +57,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -69,6 +77,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -87,6 +97,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -103,6 +115,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -133,6 +147,8 @@ SELECT
     p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
+    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'thought_provoking')::int AS thought_provoking_count,
     (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id)::int AS comment_count
 FROM posts p
 JOIN users u ON p.author_id = u.id

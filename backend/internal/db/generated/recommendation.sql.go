@@ -16,7 +16,8 @@ import (
 
 const getRecommendationsByType = `-- name: GetRecommendationsByType :many
 SELECT p.id, p.author_id, p.caption, p.content, p.sermon_source, p.visibility, p.is_deleted, p.published_at,
-       u.display_name AS author_name, u.handle AS author_handle, u.is_church AS author_is_church
+       p.cover_image_url, p.post_type,
+       u.display_name AS author_name, u.handle AS author_handle, u.avatar_url AS author_avatar_url, u.is_church AS author_is_church
 FROM post_engagement_scores s
 JOIN posts p ON p.id = s.post_id
 JOIN users u ON u.id = p.author_id
@@ -35,17 +36,20 @@ type GetRecommendationsByTypeParams struct {
 }
 
 type GetRecommendationsByTypeRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Caption        sql.NullString  `json:"caption"`
-	Content        json.RawMessage `json:"content"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	Visibility     PostVisibility  `json:"visibility"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorName     string          `json:"author_name"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorIsChurch bool            `json:"author_is_church"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Caption         sql.NullString  `json:"caption"`
+	Content         json.RawMessage `json:"content"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	Visibility      PostVisibility  `json:"visibility"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorName      string          `json:"author_name"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AuthorIsChurch  bool            `json:"author_is_church"`
 }
 
 func (q *Queries) GetRecommendationsByType(ctx context.Context, arg GetRecommendationsByTypeParams) ([]GetRecommendationsByTypeRow, error) {
@@ -66,8 +70,11 @@ func (q *Queries) GetRecommendationsByType(ctx context.Context, arg GetRecommend
 			&i.Visibility,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorName,
 			&i.AuthorHandle,
+			&i.AuthorAvatarUrl,
 			&i.AuthorIsChurch,
 		); err != nil {
 			return nil, err
@@ -85,7 +92,8 @@ func (q *Queries) GetRecommendationsByType(ctx context.Context, arg GetRecommend
 
 const getSemanticallySimilarPosts = `-- name: GetSemanticallySimilarPosts :many
 SELECT p.id, p.author_id, p.caption, p.content, p.sermon_source, p.visibility, p.is_deleted, p.published_at,
-       u.display_name AS author_name, u.handle AS author_handle, u.is_church AS author_is_church
+       p.cover_image_url, p.post_type,
+       u.display_name AS author_name, u.handle AS author_handle, u.avatar_url AS author_avatar_url, u.is_church AS author_is_church
 FROM posts p
 JOIN users u ON u.id = p.author_id
 WHERE p.is_deleted = false AND p.visibility = 'public'
@@ -101,17 +109,20 @@ type GetSemanticallySimilarPostsParams struct {
 }
 
 type GetSemanticallySimilarPostsRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Caption        sql.NullString  `json:"caption"`
-	Content        json.RawMessage `json:"content"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	Visibility     PostVisibility  `json:"visibility"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	AuthorName     string          `json:"author_name"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorIsChurch bool            `json:"author_is_church"`
+	ID              uuid.UUID       `json:"id"`
+	AuthorID        uuid.UUID       `json:"author_id"`
+	Caption         sql.NullString  `json:"caption"`
+	Content         json.RawMessage `json:"content"`
+	SermonSource    sql.NullString  `json:"sermon_source"`
+	Visibility      PostVisibility  `json:"visibility"`
+	IsDeleted       bool            `json:"is_deleted"`
+	PublishedAt     time.Time       `json:"published_at"`
+	CoverImageUrl   sql.NullString  `json:"cover_image_url"`
+	PostType        PostType        `json:"post_type"`
+	AuthorName      string          `json:"author_name"`
+	AuthorHandle    string          `json:"author_handle"`
+	AuthorAvatarUrl sql.NullString  `json:"author_avatar_url"`
+	AuthorIsChurch  bool            `json:"author_is_church"`
 }
 
 func (q *Queries) GetSemanticallySimilarPosts(ctx context.Context, arg GetSemanticallySimilarPostsParams) ([]GetSemanticallySimilarPostsRow, error) {
@@ -132,8 +143,11 @@ func (q *Queries) GetSemanticallySimilarPosts(ctx context.Context, arg GetSemant
 			&i.Visibility,
 			&i.IsDeleted,
 			&i.PublishedAt,
+			&i.CoverImageUrl,
+			&i.PostType,
 			&i.AuthorName,
 			&i.AuthorHandle,
+			&i.AuthorAvatarUrl,
 			&i.AuthorIsChurch,
 		); err != nil {
 			return nil, err

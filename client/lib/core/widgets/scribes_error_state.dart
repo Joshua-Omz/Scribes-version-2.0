@@ -33,7 +33,8 @@ class ScribesErrorState extends ConsumerWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: colors.orange.withValues(alpha: 0.3)),
               ),
-              child: HugeIcon(icon: HugeIcons.strokeRoundedAlert01,
+              child: HugeIcon(
+                icon: HugeIcons.strokeRoundedAlert01,
                 size: 48,
                 color: colors.orange,
               ),
@@ -41,14 +42,18 @@ class ScribesErrorState extends ConsumerWidget {
             const SizedBox(height: 24),
             Text(
               title,
-              style: ScribesTextStyles.displayMd.copyWith(color: colors.primaryText),
+              style: ScribesTextStyles.displayMd.copyWith(
+                color: colors.primaryText,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+              style: ScribesTextStyles.bodyMd.copyWith(
+                color: colors.secondaryText,
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 32),
@@ -57,7 +62,10 @@ class ScribesErrorState extends ConsumerWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.primaryText,
                   side: BorderSide(color: colors.border),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -65,7 +73,9 @@ class ScribesErrorState extends ConsumerWidget {
                 icon: HugeIcon(icon: HugeIcons.strokeRoundedReload, size: 18),
                 label: Text(
                   'Try Again',
-                  style: ScribesTextStyles.labelLg.copyWith(fontWeight: FontWeight.bold),
+                  style: ScribesTextStyles.labelLg.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

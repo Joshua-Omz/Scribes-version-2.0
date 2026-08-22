@@ -20,7 +20,9 @@ class PendingRequests extends _$PendingRequests {
     final repo = ref.read(messageRepositoryProvider);
     await repo.approveRequest(requestId);
     ref.invalidateSelf();
-    ref.invalidate(conversationsProvider); // Refresh conversations to show the newly approved one
+    ref.invalidate(
+      conversationsProvider,
+    ); // Refresh conversations to show the newly approved one
   }
 
   Future<void> rejectRequest(String requestId) async {
@@ -37,7 +39,7 @@ class ConversationsNotifier extends _$ConversationsNotifier {
   @override
   Stream<List<Conversation>> build() async* {
     final repo = ref.watch(messageRepositoryProvider);
-    
+
     ref.onDispose(() {
       _isDisposed = true;
       _pollingTimer?.cancel();
@@ -46,7 +48,8 @@ class ConversationsNotifier extends _$ConversationsNotifier {
     // Start background sync polling
     _startPolling();
 
-    final user = ref.read(authProvider).value;
+    final authState = ref.watch(authProvider);
+    final user = authState.value;
     if (user == null) return;
 
     // Trigger initial background refresh immediately
@@ -56,7 +59,11 @@ class ConversationsNotifier extends _$ConversationsNotifier {
     await for (final convos in repo.watchConversations(user.id)) {
       _checkNewMessages(convos);
       // Eagerly load the last read states so the global unread badge doesn't assume all are unread.
-      ref.read(lastReadProvider.notifier).loadAll(convos.map((c) => c.id).toList());
+      if (!_isDisposed) {
+        ref
+            .read(lastReadProvider.notifier)
+            .loadAll(convos.map((c) => c.id).toList());
+      }
       yield convos;
     }
   }
@@ -76,7 +83,7 @@ class ConversationsNotifier extends _$ConversationsNotifier {
 
   void _scheduleNextPoll() {
     if (_isDisposed) return;
-    
+
     int baseInterval = 10;
     try {
       final envVal = dotenv.env['INBOX_REFRESH_INTERVAL_SEC'];
@@ -84,16 +91,16 @@ class ConversationsNotifier extends _$ConversationsNotifier {
         baseInterval = int.parse(envVal);
       }
     } catch (_) {}
-    
+
     final int secondsToWait = baseInterval + _currentBackoff;
-    
+
     _pollingTimer?.cancel();
     _pollingTimer = Timer(Duration(seconds: secondsToWait), _poll);
   }
 
   Future<void> _poll() async {
     if (_isDisposed) return;
-    
+
     try {
       final repo = ref.read(messageRepositoryProvider);
       await repo.refreshConversations();
@@ -105,7 +112,7 @@ class ConversationsNotifier extends _$ConversationsNotifier {
         _currentBackoff = (_currentBackoff * 2).clamp(0, _maxBackoff);
       }
     }
-    
+
     _scheduleNextPoll();
   }
 
@@ -125,7 +132,11 @@ class UnreadMessagesCount extends _$UnreadMessagesCount {
   @override
   int build() {
     int count = 0;
-    
+
+    Future.microtask(() async {
+      // App badge logic temporarily disabled pending plugin addition
+    });
+
     // Count pending requests
     final pending = ref.watch(pendingRequestsProvider);
     count += pending.when(
@@ -136,19 +147,16 @@ class UnreadMessagesCount extends _$UnreadMessagesCount {
 
     // Count unread conversations
     final convosAsync = ref.watch(conversationsProvider);
-    final lastReadMap = ref.watch(lastReadProvider);
-    
+
     if (convosAsync is AsyncData) {
       final convos = convosAsync.value ?? [];
       for (final c in convos) {
-        final lastRead = lastReadMap[c.id];
-        // If never read, or lastActive is newer than lastRead
-        if (lastRead == null || c.lastActive.isAfter(lastRead)) {
+        if (c.unreadCount > 0) {
           count++;
         }
       }
     }
-    
+
     return count;
   }
 }

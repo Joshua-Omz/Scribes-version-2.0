@@ -40,7 +40,7 @@ class Posts extends Table {
   TextColumn get coverImageUrl => text().nullable()();
   TextColumn get postType => text().withDefault(const Constant('standard'))();
   DateTimeColumn get publishedAt => dateTime()();
-  
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -120,15 +120,33 @@ class PendingChatMessages extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class PendingReadReceipts extends Table {
+  TextColumn get conversationId => text()();
+  DateTimeColumn get readAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {conversationId};
+}
+
 @DriftDatabase(
-  tables: [Drafts, Posts, SyncMetadata, Notebooks, Notes, Conversations, Messages, PendingChatMessages],
+  tables: [
+    Drafts,
+    Posts,
+    SyncMetadata,
+    Notebooks,
+    Notes,
+    Conversations,
+    Messages,
+    PendingChatMessages,
+    PendingReadReceipts,
+  ],
   daos: [NotesDao, DraftsDao, PostsDao],
 )
 class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(connection.openConnection());
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration {
@@ -184,20 +202,28 @@ class ScribesDatabase extends _$ScribesDatabase {
           await m.addColumn(conversations, conversations.userALastReadAt);
           await m.addColumn(conversations, conversations.userBLastReadAt);
         }
+        if (from < 14) {
+          await m.createTable(pendingReadReceipts);
+        }
       },
     );
   }
 
-  Future<void> clearAllData() async {
+  Future<void> clearAllData({bool preserveUnsynced = true}) async {
     await transaction(() async {
       await delete(conversations).go();
       await delete(messages).go();
-      await delete(drafts).go();
       await delete(posts).go();
-      await delete(notebooks).go();
-      await delete(notes).go();
       await delete(syncMetadata).go();
+      if (preserveUnsynced) {
+        // Only delete synced cloud data, preserving local offline work
+        await (delete(drafts)..where((t) => t.isSynced.equals(true))).go();
+        await (delete(notes)..where((t) => t.isSynced.equals(true))).go();
+      } else {
+        await delete(drafts).go();
+        await delete(notebooks).go();
+        await delete(notes).go();
+      }
     });
   }
 }
-

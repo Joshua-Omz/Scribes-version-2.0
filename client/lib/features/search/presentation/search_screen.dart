@@ -15,18 +15,6 @@ import '../../../core/widgets/scribes_icon_button.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../application/search_notifier.dart';
 
-enum SearchMode { posts, people }
-
-class SearchModeNotifier extends Notifier<SearchMode> {
-  @override
-  SearchMode build() => SearchMode.posts;
-  
-  void setMode(SearchMode mode) => state = mode;
-}
-
-final searchModeProvider =
-    NotifierProvider<SearchModeNotifier, SearchMode>(SearchModeNotifier.new);
-
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
@@ -34,27 +22,32 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen>
+    with SingleTickerProviderStateMixin {
   late final TextEditingController _controller;
-  // A simple manual debounce mechanism
+  late final TabController _tabController;
   DateTime? _lastChange;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
     _lastChange = DateTime.now();
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted && _lastChange != null && DateTime.now().difference(_lastChange!).inMilliseconds >= 400) {
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted &&
+          _lastChange != null &&
+          DateTime.now().difference(_lastChange!).inMilliseconds >= 350) {
         ref.read(searchProvider.notifier).search(query);
       }
     });
@@ -64,7 +57,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final searchState = ref.watch(searchProvider);
-    final searchMode = ref.watch(searchModeProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -74,8 +66,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: HugeIcon(
-              icon: HugeIcons.strokeRoundedArrowLeft01,
-              color: colors.primaryText),
+            icon: HugeIcons.strokeRoundedArrowLeft01,
+            color: colors.primaryText,
+          ),
           onPressed: () => context.pop(),
         ),
         title: ScribesTextField(
@@ -83,34 +76,106 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           hintText: 'Search posts, people...',
           autofocus: true,
           isSearchPill: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 16,
+          ),
           onChanged: _onSearchChanged,
           onSubmitted: (q) => ref.read(searchProvider.notifier).search(q),
         ),
         actions: [
           ScribesIconButton(
             icon: HugeIcons.strokeRoundedBookOpen01,
-            color: searchState.scriptureBook != null ? colors.gold : colors.secondaryText,
+            color: searchState.scriptureBook != null
+                ? colors.gold
+                : colors.secondaryText,
             onPressed: () => _showScriptureFilterSheet(context, ref, colors),
           ),
           const SizedBox(width: 8),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: colors.primaryText,
+          indicatorWeight: 2,
+          labelColor: colors.primaryText,
+          unselectedLabelColor: colors.secondaryText,
+          labelStyle: ScribesTextStyles.labelLg.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          unselectedLabelStyle: ScribesTextStyles.labelLg.copyWith(
+            fontWeight: FontWeight.w400,
+          ),
+          tabs: const [
+            Tab(text: 'Posts'),
+            Tab(text: 'People'),
+          ],
+        ),
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: _buildSearchModeToggle(searchMode, ref, colors),
-          ),
-          Expanded(
-            child: _buildBody(searchState, searchMode, colors),
-          ),
+          _buildPostsTab(searchState, colors),
+          _buildPeopleTab(searchState, colors),
         ],
       ),
     );
   }
 
-  Widget _buildBody(SearchState state, SearchMode mode, dynamic colors) {
+  Widget _buildPostsTab(SearchState state, dynamic colors) {
+    if (state.isLoading) {
+      return const Center(child: ScribesLoadingIndicator());
+    }
+
+    if (state.error != null) {
+      return Center(
+        child: ScribesErrorState(
+          title: 'Search failed',
+          subtitle: state.error!,
+        ),
+      );
+    }
+
+    if (state.query.isEmpty && state.scriptureBook == null) {
+      return Center(
+        child: ScribesEmptyState(
+          icon: HugeIcons.strokeRoundedSearch01,
+          title: 'What are you looking for?',
+          subtitle: 'Search for sacred texts and manuscript reflections.',
+        ),
+      );
+    }
+
+    if (state.posts.isEmpty) {
+      return Center(
+        child: ScribesEmptyState(
+          icon: HugeIcons.strokeRoundedSearch01,
+          title: 'No posts found',
+          subtitle: 'Try adjusting your search terms or scripture filters.',
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      itemCount: state.posts.length,
+      itemBuilder: (context, index) {
+        final post = state.posts[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 8.0,
+          ),
+          child: ScribesConnectedPostCard(
+            post: post,
+            isFeatured: false,
+            isSearchScreen: true,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPeopleTab(SearchState state, dynamic colors) {
     if (state.isLoading) {
       return const Center(child: ScribesLoadingIndicator());
     }
@@ -128,82 +193,38 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       return Center(
         child: ScribesEmptyState(
           icon: HugeIcons.strokeRoundedSearch01,
-          title: 'What are you looking for?',
-          subtitle: 'Search for posts or other scribes.',
+          title: 'Find fellow scribes',
+          subtitle: 'Search for authors, churches, and ministries.',
         ),
       );
     }
 
-    if (mode == SearchMode.posts) {
-      if (state.posts.isEmpty) {
-        return Center(
-          child: ScribesEmptyState(
-            icon: HugeIcons.strokeRoundedSearch01,
-            title: 'No posts found',
-            subtitle: 'Try adjusting your search terms.',
-          ),
-        );
-      }
-      return ListView.builder(
-        itemCount: state.posts.length,
-        itemBuilder: (context, index) {
-          final post = state.posts[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: ScribesConnectedPostCard(
-              post: post, 
-              isFeatured: false,
-              isSearchScreen: true,
-            ),
-          );
-        },
-      );
-    } else {
-      if (state.authors.isEmpty) {
-        return Center(
-          child: ScribesEmptyState(
-            icon: HugeIcons.strokeRoundedUserRemove01,
-            title: 'No scribes found',
-            subtitle: 'Try adjusting your search terms.',
-          ),
-        );
-      }
-      return ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        itemCount: state.authors.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final author = state.authors[index];
-          return ScribesUserCard(
-            user: author,
-            isListTile: true,
-          );
-        },
+    if (state.authors.isEmpty) {
+      return Center(
+        child: ScribesEmptyState(
+          icon: HugeIcons.strokeRoundedUserRemove01,
+          title: 'No scribes found',
+          subtitle: 'Try adjusting your search terms.',
+        ),
       );
     }
-  }
 
-  Widget _buildSearchModeToggle(
-      SearchMode currentMode, WidgetRef ref, dynamic colors) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colors.surfaceRaised,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          _buildToggleItem(
-              'Posts', SearchMode.posts, currentMode, ref, colors),
-          _buildToggleItem(
-              'People', SearchMode.people, currentMode, ref, colors),
-        ],
-      ),
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      itemCount: state.authors.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final author = state.authors[index];
+        return ScribesUserCard(user: author, isListTile: true);
+      },
     );
   }
 
   void _showScriptureFilterSheet(
-      BuildContext context, WidgetRef ref, dynamic colors) {
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
     ScribesScriptureSelector.show(
       context,
       isExplore: true,
@@ -211,41 +232,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       onSelected: (book, chapter, verseStart, verseEnd) {
         ref.read(searchProvider.notifier).setScriptureFilter(book, chapter);
       },
-    );
-  }
-
-  Widget _buildToggleItem(String label, SearchMode value,
-      SearchMode current, WidgetRef ref, dynamic colors) {
-    final isSelected = current == value;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => ref.read(searchModeProvider.notifier).setMode(value),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primaryText : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: ScribesTextStyles.labelLg.copyWith(
-            color: isSelected ? colors.background : colors.secondaryText,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-          ),
-        ),
-      ),
-      ),
     );
   }
 }
