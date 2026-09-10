@@ -1,7 +1,7 @@
-version: "3.9"
 services:
   api:
     build: .
+    restart: unless-stopped
     ports:
       - "${PORT:-8080}:${PORT:-8080}"
     env_file:
@@ -17,6 +17,7 @@ services:
 
   postgres:
     image: pgvector/pgvector:pg16
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
@@ -25,6 +26,17 @@ services:
       POSTGRES_DB: scribes_db
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  landing:
+    build:
+      context: ../landing-page
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
 
 volumes:
   pgdata:
