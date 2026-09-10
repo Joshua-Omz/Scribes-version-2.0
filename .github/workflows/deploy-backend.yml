@@ -1,0 +1,73 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  # ══════════════════════════════════════════════════════════════
+  # STAGE 1: CONTINUOUS INTEGRATION (Test & Verify)
+  # ══════════════════════════════════════════════════════════════
+  test:
+    name: Run Go Build & Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Go runtime
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'backend/go.mod'
+          cache-dependency-path: backend/go.sum
+
+      - name: Download Go dependencies
+        run: go mod download
+
+      - name: Verify API binary builds
+        run: CGO_ENABLED=0 go build -v ./cmd/api
+
+      - name: Run unit tests
+        run: go test -v ./...
+
+  # ══════════════════════════════════════════════════════════════
+  # STAGE 2: CONTINUOUS DEPLOYMENT (Deploy to GCE VM)
+  # ══════════════════════════════════════════════════════════════
+  deploy:
+    name: Deploy to Google Compute Engine
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Execute remote deployment commands via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            echo "🚀 Deployment started on $(hostname)..."
+
+            # Navigate to project repository root and fetch latest commits
+            cd ~/scribes
+            git pull origin main
+
+            # Rebuild and restart backend containers in detached mode
+            cd backend
+            docker compose up -d --build
+
+            # Clean up old unused build cache/layers
+            docker image prune -f
+
+            echo "✅ Scribes backend successfully deployed and running!"
