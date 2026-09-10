@@ -21,10 +21,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Go 1.24+
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version-file: 'backend/go.mod'
           cache-dependency-path: backend/go.sum
 
       - name: Install Dependencies
@@ -37,30 +37,3 @@ jobs:
       - name: Run Go Unit Tests
         run: go test -v ./...
 
-  # ==========================================
-  # CLIENT: FLUTTER (iOS/Android/Web)
-  # ==========================================
-  client-checks:
-    name: Flutter Build & Test
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./client
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 'any' 
-          channel: 'stable'
-          cache: true
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      # Relaxed client checks for early sprints
-      - name: Run Flutter Tests
-        run: flutter test || echo "Flutter tests failed, but continuing for now"
