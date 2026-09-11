@@ -105,11 +105,56 @@ func (ns NullNotifType) Value() (driver.Value, error) {
 	return string(ns.NotifType), nil
 }
 
+type PassagePanelType string
+
+const (
+	PassagePanelTypeText       PassagePanelType = "text"
+	PassagePanelTypeScripture  PassagePanelType = "scripture"
+	PassagePanelTypeReflection PassagePanelType = "reflection"
+	PassagePanelTypeImage      PassagePanelType = "image"
+)
+
+func (e *PassagePanelType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PassagePanelType(s)
+	case string:
+		*e = PassagePanelType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PassagePanelType: %T", src)
+	}
+	return nil
+}
+
+type NullPassagePanelType struct {
+	PassagePanelType PassagePanelType `json:"passage_panel_type"`
+	Valid            bool             `json:"valid"` // Valid is true if PassagePanelType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPassagePanelType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PassagePanelType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PassagePanelType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPassagePanelType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PassagePanelType), nil
+}
+
 type PostType string
 
 const (
-	PostTypeStandard PostType = "standard"
-	PostTypePassage  PostType = "passage"
+	PostTypeStandard   PostType = "standard"
+	PostTypePassage    PostType = "passage"
+	PostTypeReflection PostType = "reflection"
 )
 
 func (e *PostType) Scan(src interface{}) error {
@@ -552,23 +597,36 @@ type NotificationPreference struct {
 	UpdatedAt         sql.NullTime `json:"updated_at"`
 }
 
+type PassagePanel struct {
+	ID                 uuid.UUID             `json:"id"`
+	PostID             uuid.UUID             `json:"post_id"`
+	PanelOrder         int32                 `json:"panel_order"`
+	PanelType          PassagePanelType      `json:"panel_type"`
+	Content            json.RawMessage       `json:"content"`
+	BackgroundImageUrl sql.NullString        `json:"background_image_url"`
+	ScriptureRef       pqtype.NullRawMessage `json:"scripture_ref"`
+	CreatedAt          time.Time             `json:"created_at"`
+}
+
 type Post struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	ServerSequence int64           `json:"server_sequence"`
-	SearchVector   interface{}     `json:"search_vector"`
-	Embedding      interface{}     `json:"embedding"`
-	PostType       PostType        `json:"post_type"`
-	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
+	ID                 uuid.UUID       `json:"id"`
+	AuthorID           uuid.UUID       `json:"author_id"`
+	Content            json.RawMessage `json:"content"`
+	Caption            sql.NullString  `json:"caption"`
+	Visibility         PostVisibility  `json:"visibility"`
+	CurrentVersion     int32           `json:"current_version"`
+	IsCorrection       bool            `json:"is_correction"`
+	CorrectsPostID     uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource       sql.NullString  `json:"sermon_source"`
+	IsDeleted          bool            `json:"is_deleted"`
+	PublishedAt        time.Time       `json:"published_at"`
+	ServerSequence     int64           `json:"server_sequence"`
+	SearchVector       interface{}     `json:"search_vector"`
+	Embedding          interface{}     `json:"embedding"`
+	PostType           PostType        `json:"post_type"`
+	CoverImageUrl      sql.NullString  `json:"cover_image_url"`
+	ReflectionImageUrl sql.NullString  `json:"reflection_image_url"`
+	SoundID            uuid.NullUUID   `json:"sound_id"`
 }
 
 type PostEngagementScore struct {
@@ -634,6 +692,16 @@ type ScriptureRef struct {
 	Chapter    int32         `json:"chapter"`
 	VerseStart int32         `json:"verse_start"`
 	VerseEnd   sql.NullInt32 `json:"verse_end"`
+}
+
+type SoundPool struct {
+	ID              uuid.UUID `json:"id"`
+	Title           string    `json:"title"`
+	Category        string    `json:"category"`
+	AudioUrl        string    `json:"audio_url"`
+	DurationSeconds int32     `json:"duration_seconds"`
+	IsActive        bool      `json:"is_active"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type Tag struct {

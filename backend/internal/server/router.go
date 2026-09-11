@@ -89,6 +89,9 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/bible/:book/:chapter/:verseRange", bibleHandler.GetVerseRange)
 	r.GET("/bible/search", bibleHandler.Search)
 
+	// Public sound pool
+	r.GET("/sounds", postHandler.ListSounds)
+
 	// Protected routes
 	protected := r.Group("/")
 	protected.Use(middleware.ValidateJWT(jwtSecret))

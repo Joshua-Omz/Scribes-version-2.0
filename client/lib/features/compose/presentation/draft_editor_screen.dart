@@ -11,6 +11,9 @@ import '../../../core/widgets/scribes_auto_save_dot.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_scripture_quick_dialog.dart';
+import '../../auth/application/auth_notifier.dart';
+import '../../draft/domain/draft.dart';
+import '../../export/presentation/export_loading_sheet.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../application/compose_provider.dart';
 
@@ -191,6 +194,43 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                             : SaveState.localSaved,
                       ),
                     ),
+                  if (state.postType == 'standard')
+                    IconButton(
+                      tooltip: 'Export Manuscript (PDF)',
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedPrinter,
+                        color: colors.gold,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        final composeState = ref.read(composeProvider);
+                        final user = ref.read(authProvider).value;
+                        final draftDoc = Draft(
+                          id: composeState.draftId,
+                          authorId: user?.id ?? 'guest',
+                          content: {
+                            'title': _titleController.text.trim(),
+                            'body': _controller.document.toDelta().toJson(),
+                            'excerpt': composeState.caption,
+                          },
+                          caption: composeState.caption,
+                          sermonSource: composeState.sermonSource,
+                          scriptureTags: composeState.scriptureRefs
+                              .map((r) =>
+                                  '${r.book} ${r.chapter}:${r.verseStart}${r.verseEnd != null && r.verseEnd != r.verseStart ? "-${r.verseEnd}" : ""}')
+                              .toList(),
+                          postType: composeState.postType,
+                          coverImageUrl: composeState.coverImageUrl,
+                          createdAt: DateTime.now(),
+                          updatedAt: DateTime.now(),
+                        );
+                        ExportLoadingSheet.showForDraft(
+                          context,
+                          draftDoc,
+                          currentUser: user,
+                        );
+                      },
+                    ),
                   TextButton(
                     onPressed: () async {
                       await ref.read(composeProvider.notifier).forceSave();
@@ -240,21 +280,14 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  // Scripture Tag Bar
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      ...composeState.scriptureRefs.map((refObj) {
-                        String refStr =
-                            '${refObj.book} ${refObj.chapter}:${refObj.verseStart}';
-                        if (refObj.verseEnd != null &&
-                            refObj.verseEnd != refObj.verseStart) {
-                          refStr += '-${refObj.verseEnd}';
-                        }
-                        return InkWell(
-                          onTap: () => _showScriptureQuickDialog(refObj),
+                  // Scripture Tag Bar (Single-row horizontal ribbon)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: _openScriptureSelector,
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -262,79 +295,93 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: colors.surfaceRaised,
+                              color: colors.gold.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: colors.goldMuted.withValues(alpha: 0.6),
+                                color: colors.goldMuted.withValues(alpha: 0.4),
+                                style: BorderStyle.solid,
                                 width: 1.0,
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                HugeIcon(
-                                  icon: HugeIcons.strokeRoundedBookOpen01,
-                                  size: 13,
-                                  color: colors.gold,
-                                ),
-                                const SizedBox(width: 5),
+                                Icon(Icons.add, size: 14, color: colors.gold),
+                                const SizedBox(width: 4),
                                 Text(
-                                  refStr,
+                                  'Tag Scripture',
                                   style: ScribesTextStyles.labelSm.copyWith(
                                     color: colors.gold,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                GestureDetector(
-                                  onTap: () => ref
-                                      .read(composeProvider.notifier)
-                                      .removeScriptureRef(refObj),
-                                  child: Icon(
-                                    Icons.close,
-                                    size: 13,
-                                    color: colors.secondaryText,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      }),
-                      InkWell(
-                        onTap: _openScriptureSelector,
-                        borderRadius: BorderRadius.circular(6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.gold.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: colors.goldMuted.withValues(alpha: 0.4),
-                              style: BorderStyle.solid,
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add, size: 14, color: colors.gold),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Tag Scripture',
-                                style: ScribesTextStyles.labelSm.copyWith(
-                                  color: colors.gold,
-                                  fontWeight: FontWeight.w500,
+                        ),
+                        if (composeState.scriptureRefs.isNotEmpty)
+                          const SizedBox(width: 8),
+                        ...composeState.scriptureRefs.map((refObj) {
+                          String refStr =
+                              '${refObj.book} ${refObj.chapter}:${refObj.verseStart}';
+                          if (refObj.verseEnd != null &&
+                              refObj.verseEnd != refObj.verseStart) {
+                            refStr += '-${refObj.verseEnd}';
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: InkWell(
+                              onTap: () => _showScriptureQuickDialog(refObj),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceRaised,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: colors.goldMuted
+                                        .withValues(alpha: 0.6),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    HugeIcon(
+                                      icon: HugeIcons.strokeRoundedBookOpen01,
+                                      size: 13,
+                                      color: colors.gold,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      refStr,
+                                      style: ScribesTextStyles.labelSm.copyWith(
+                                        color: colors.gold,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    GestureDetector(
+                                      onTap: () => ref
+                                          .read(composeProvider.notifier)
+                                          .removeScriptureRef(refObj),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 13,
+                                        color: colors.secondaryText,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
 

@@ -49,7 +49,7 @@ func (h *Handler) Create(c *gin.Context) {
 
 	post, err := h.svc.Create(c.Request.Context(), authorID, input)
 	if err != nil {
-		respond.Error(c, http.StatusInternalServerError, "failed to create post")
+		respond.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -132,6 +132,10 @@ func (h *Handler) Update(c *gin.Context) {
 
 	post, err := h.svc.Update(c.Request.Context(), authorID, postID, input)
 	if err != nil {
+		if errors.Is(err, ErrPostImmutable) {
+			respond.Error(c, http.StatusMethodNotAllowed, "post is immutable and cannot be updated")
+			return
+		}
 		if errors.Is(err, ErrNotFound) {
 			respond.Error(c, http.StatusNotFound, "post not found")
 			return
@@ -140,7 +144,7 @@ func (h *Handler) Update(c *gin.Context) {
 			respond.Error(c, http.StatusForbidden, "unauthorized to modify this post")
 			return
 		}
-		respond.Error(c, http.StatusInternalServerError, "failed to update post")
+		respond.Error(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -319,4 +323,13 @@ func (h *Handler) Export(c *gin.Context) {
 	} else {
 		c.Data(http.StatusOK, "text/plain", exported)
 	}
+}
+
+func (h *Handler) ListSounds(c *gin.Context) {
+	sounds, err := h.svc.ListSounds(c.Request.Context())
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to list sounds")
+		return
+	}
+	respond.JSON(c, http.StatusOK, sounds)
 }

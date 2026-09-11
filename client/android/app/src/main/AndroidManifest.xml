@@ -2,7 +2,7 @@
     <!-- Required for the app to connect to the backend -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="scribes"
+        android:label="Scribes"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

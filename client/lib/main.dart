@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,11 +19,11 @@ void main() async {
   sharedPrefs = await SharedPreferences.getInstance();
 
   try {
+    const webClientId =
+        '773705773175-i6dnlubf2aqcae5j4ltkmlkssf0nnkhq.apps.googleusercontent.com';
     await GoogleSignIn.instance.initialize(
-      clientId:
-          '773705773175-i6dnlubf2aqcae5j4ltkmlkssf0nnkhq.apps.googleusercontent.com',
-      serverClientId:
-          '773705773175-i6dnlubf2aqcae5j4ltkmlkssf0nnkhq.apps.googleusercontent.com',
+      clientId: (kIsWeb || (!kIsWeb && Platform.isIOS)) ? webClientId : null,
+      serverClientId: webClientId,
     );
   } catch (e) {
     debugPrint('Failed to initialize Google SignIn: $e');

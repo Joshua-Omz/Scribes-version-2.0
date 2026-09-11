@@ -13,6 +13,11 @@ class PostRepository {
 
   PostRepository(this._api);
 
+  Future<Post> createPost(Map<String, dynamic> data) async {
+    final res = await _api.createPost(data);
+    return Post.fromJson(res);
+  }
+
   Future<Post> getPost(String id) async {
     final data = await _api.getPost(id);
     return Post.fromJson(data);

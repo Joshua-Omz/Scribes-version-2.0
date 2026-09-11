@@ -5,12 +5,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../auth/application/auth_notifier.dart';
 import '../../compose/application/compose_provider.dart';
+import '../../draft/domain/draft.dart';
+import '../../export/domain/exportable_document.dart';
+import '../../export/presentation/export_loading_sheet.dart';
 import '../application/drafts_list_provider.dart';
 import '../../../core/widgets/scribes_grid_card.dart';
 import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_glass_fab.dart';
 
 class DraftsListScreen extends ConsumerStatefulWidget {
   const DraftsListScreen({super.key});
@@ -206,7 +211,13 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
                       excerpt: excerpt,
                       date: draft.updatedAt,
                       isSelected: _selectedIds.contains(draft.id),
-                      onLongPress: () => _toggleSelection(draft.id),
+                      onLongPress: () {
+                        if (isSelectionMode) {
+                          _toggleSelection(draft.id);
+                        } else {
+                          _showDraftOptions(draft, colors);
+                        }
+                      },
                       onTap: () {
                         if (isSelectionMode) {
                           _toggleSelection(draft.id);
@@ -262,50 +273,170 @@ class _DraftsListScreenState extends ConsumerState<DraftsListScreen> {
         ],
       ),
       floatingActionButton: isSelectionMode
-          ? FloatingActionButton.extended(
-              heroTag: null,
-              backgroundColor: Colors.red.shade400,
-              foregroundColor: colors.surfaceRaised,
-              elevation: 4,
-              onPressed: () {
-                for (final id in _selectedIds) {
-                  ref.read(draftsListProvider.notifier).deleteDraft(id);
-                }
-                final count = _selectedIds.length;
-                setState(() => _selectedIds.clear());
-                ScribesToast.show(context, 'Deleted $count draft(s)', colors);
-              },
-              icon: HugeIcon(
-                icon: HugeIcons.strokeRoundedDelete02,
-                color: colors.surfaceRaised,
-              ),
-              label: Text(
-                'Delete',
-                style: ScribesTextStyles.labelLg.copyWith(
-                  color: colors.surfaceRaised,
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.extended(
+                  heroTag: 'export_selected_drafts',
+                  backgroundColor: colors.surfaceRaised,
+                  foregroundColor: colors.gold,
+                  elevation: 4,
+                  onPressed: () {
+                    final allDrafts = draftsState.value ?? [];
+                    final selectedDrafts = allDrafts
+                        .where((d) =>
+                            _selectedIds.contains(d.id) &&
+                            d.postType == 'standard')
+                        .toList();
+                    if (selectedDrafts.isEmpty) {
+                      ScribesToast.show(
+                        context,
+                        'Only standard drafts can be exported',
+                        colors,
+                      );
+                      return;
+                    }
+                    final user = ref.read(authProvider).value;
+                    final docs = selectedDrafts
+                        .map((d) => DraftExportAdapter(d, currentUser: user))
+                        .toList();
+                    ExportLoadingSheet.showForCompendium(
+                      context,
+                      docs,
+                      title: 'Drafts Collection (${docs.length})',
+                    );
+                  },
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedFile02,
+                    color: colors.gold,
+                  ),
+                  label: Text(
+                    'Export (${_selectedIds.length})',
+                    style: ScribesTextStyles.labelLg.copyWith(
+                      color: colors.primaryText,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                FloatingActionButton.extended(
+                  heroTag: 'delete_selected_drafts',
+                  backgroundColor: Colors.red.shade400,
+                  foregroundColor: colors.surfaceRaised,
+                  elevation: 4,
+                  onPressed: () {
+                    for (final id in _selectedIds) {
+                      ref.read(draftsListProvider.notifier).deleteDraft(id);
+                    }
+                    final count = _selectedIds.length;
+                    setState(() => _selectedIds.clear());
+                    ScribesToast.show(
+                      context,
+                      'Deleted $count draft(s)',
+                      colors,
+                    );
+                  },
+                  icon: HugeIcon(
+                    icon: HugeIcons.strokeRoundedDelete02,
+                    color: colors.surfaceRaised,
+                  ),
+                  label: Text(
+                    'Delete',
+                    style: ScribesTextStyles.labelLg.copyWith(
+                      color: colors.surfaceRaised,
+                    ),
+                  ),
+                ),
+              ],
             )
-          : FloatingActionButton.extended(
-              heroTag: null,
-              backgroundColor: colors.gold,
-              foregroundColor: colors.surfaceRaised,
-              elevation: 4,
-              onPressed: () {
+          : ScribesGlassFab(
+              onTap: () {
                 ref.read(composeProvider.notifier).reset();
                 context.push('/compose');
               },
-              icon: HugeIcon(
-                icon: HugeIcons.strokeRoundedPlusSign,
-                color: colors.surfaceRaised,
-              ),
-              label: Text(
-                'New Draft',
-                style: ScribesTextStyles.labelLg.copyWith(
-                  color: colors.surfaceRaised,
-                ),
-              ),
+              icon: HugeIcons.strokeRoundedPlusSign,
             ),
+    );
+  }
+
+  void _showDraftOptions(Draft draft, dynamic colors) {
+    final user = ref.read(authProvider).value;
+    final isStandard = draft.postType == 'standard';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.surfaceRaised,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedQuillWrite02,
+                color: colors.primaryText,
+              ),
+              title: Text('Edit Draft', style: TextStyle(color: colors.primaryText)),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref.read(composeProvider.notifier).loadDraft(
+                      draft.id,
+                      draft.content,
+                      caption: draft.caption,
+                      sermonSource: draft.sermonSource,
+                    );
+                context.push('/compose');
+              },
+            ),
+            if (isStandard)
+              ListTile(
+                leading: HugeIcon(
+                  icon: HugeIcons.strokeRoundedFile02,
+                  color: colors.gold,
+                ),
+                title: Text(
+                  'Export Manuscript (PDF)',
+                  style: TextStyle(color: colors.gold, fontWeight: FontWeight.w600),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ExportLoadingSheet.showForDraft(
+                    context,
+                    draft,
+                    currentUser: user,
+                  );
+                },
+              ),
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedCheckList,
+                color: colors.secondaryText,
+              ),
+              title: Text('Select Item', style: TextStyle(color: colors.secondaryText)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _toggleSelection(draft.id);
+              },
+            ),
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedDelete02,
+                color: Colors.red.shade400,
+              ),
+              title: Text(
+                'Delete Draft',
+                style: TextStyle(color: Colors.red.shade400),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref.read(draftsListProvider.notifier).deleteDraft(draft.id);
+                ScribesToast.show(context, 'Draft deleted', colors);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

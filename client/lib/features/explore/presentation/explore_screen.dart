@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/scribes_connected_post_card.dart';
-import '../../../core/widgets/scribes_explore_card.dart';
+import '../../../core/widgets/scribes_discover_tile.dart';
 import '../../../core/widgets/scribes_icon_button.dart';
+import '../../../core/widgets/scribes_spotlight_card.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../posts/domain/post.dart';
@@ -29,6 +31,8 @@ class ExploreScreen extends ConsumerStatefulWidget {
 class _ExploreScreenState extends ConsumerState<ExploreScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  String _selectedSpotlightFilter = 'all';
+  String _selectedForYouTag = 'all';
 
   @override
   void initState() {
@@ -55,12 +59,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             SliverAppBar(
               backgroundColor: colors.background,
               surfaceTintColor: Colors.transparent,
-              floating: true,
+              floating: false,
               pinned: true,
               elevation: 0,
-              centerTitle: true,
+              centerTitle: false,
               leading: null,
               title: Text(
+
                 'Explore',
                 style: ScribesTextStyles.displayMd.copyWith(
                   color: colors.primaryText,
@@ -151,6 +156,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return RefreshIndicator(
       onRefresh: () => ref.read(exploreFilteredProvider.notifier).refresh(),
       child: CustomScrollView(
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
         slivers: [
           filteredState.when(
             data: (posts) {
@@ -221,53 +227,82 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildForYouTab(BuildContext context, WidgetRef ref, dynamic colors) {
-    final forYouState = ref.watch(exploreForYouProvider);
-    return RefreshIndicator(
-      onRefresh: () => ref.read(exploreForYouProvider.notifier).refresh(),
-      child: CustomScrollView(
-        slivers: [
-          // Block A: Tags
-          SliverToBoxAdapter(child: _buildTagsSection(context, ref, colors)),
-
-          // Divider
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Divider(color: colors.border),
-            ),
-          ),
-
-          // Block B: Who to Follow
-          SliverToBoxAdapter(child: _buildSuggestedUsersSection(ref, colors)),
-
-          // Divider
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Divider(color: colors.border),
-            ),
-          ),
-
-          // Block C: Posts
-          _buildPostsFeedSliver(
-            forYouState,
-            colors,
-            onLoadMore: () =>
-                ref.read(exploreForYouProvider.notifier).loadMore(),
-            hasMore: ref.read(exploreForYouProvider.notifier).hasMore,
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTagsSection(
+  void _openTopicSelectionModal(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.85,
+        decoration: BoxDecoration(
+          color: colors.background,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(16),
+          ),
+        ),
+        child: TopicSelectionScreen(
+          isModal: true,
+          onContinue: () {
+            Navigator.of(ctx).pop();
+            ref.invalidate(exploreForYouProvider);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForYouFilterChip({
+    required String id,
+    required String label,
+    required dynamic colors,
+  }) {
+    final isSelected = _selectedForYouTag == id;
+    return GestureDetector(
+      onTap: () {
+        if (_selectedForYouTag != id) {
+          setState(() {
+            _selectedForYouTag = id;
+          });
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.gold : colors.surfaceRaised,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? colors.gold
+                : colors.border.withValues(alpha: 0.6),
+            width: 0.6,
+          ),
+        ),
+        child: Text(
+          label,
+          style: ScribesTextStyles.caption.copyWith(
+            color: isSelected ? colors.background : colors.primaryText,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 11.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForYouHeaderAndTopics(
     BuildContext context,
     WidgetRef ref,
     dynamic colors,
@@ -276,117 +311,154 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final selectedTags = user?.selectedTags ?? [];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Your Interests',
-                style: ScribesTextStyles.labelLg.copyWith(
-                  color: colors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  HugeIcon(
+                    icon: HugeIcons.strokeRoundedQuillWrite01,
+                    color: colors.gold,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'PERSONAL CHRONICLE',
+                    style: ScribesTextStyles.caption.copyWith(
+                      color: colors.secondaryText,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
               ),
-              IconButton(
-                icon: HugeIcon(
-                  icon: HugeIcons.strokeRoundedSettings01,
-                  size: 20,
-                  color: colors.secondaryText,
-                ),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (ctx) => Container(
-                      height: MediaQuery.of(ctx).size.height * 0.85,
-                      decoration: BoxDecoration(
-                        color: colors.background,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
+              InkWell(
+                onTap: () => _openTopicSelectionModal(context, ref, colors),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  child: Row(
+                    children: [
+                      HugeIcon(
+                        icon: HugeIcons.strokeRoundedSlidersHorizontal,
+                        color: colors.gold,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Interests',
+                        style: ScribesTextStyles.caption.copyWith(
+                          color: colors.gold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      child: TopicSelectionScreen(
-                        isModal: true,
-                        onContinue: () {
-                          Navigator.of(ctx).pop();
-                          ref.invalidate(exploreForYouProvider);
-                        },
-                      ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           if (selectedTags.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
+            InkWell(
+              onTap: () => _openTopicSelectionModal(context, ref, colors),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: colors.surfaceRaised,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colors.gold.withValues(alpha: 0.3),
+                    width: 0.8,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedPlusSign,
+                      color: colors.gold,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
                     Text(
-                      'No interests selected yet.',
-                      style: ScribesTextStyles.bodyMd.copyWith(
+                      'Choose theological interests...',
+                      style: ScribesTextStyles.labelSm.copyWith(
                         color: colors.secondaryText,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.primaryText,
-                        foregroundColor: colors.background,
-                      ),
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (ctx) => Container(
-                            height: MediaQuery.of(ctx).size.height * 0.85,
-                            decoration: BoxDecoration(
-                              color: colors.background,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(16),
-                              ),
-                            ),
-                            child: TopicSelectionScreen(
-                              isModal: true,
-                              onContinue: () {
-                                Navigator.of(ctx).pop();
-                                ref.invalidate(exploreForYouProvider);
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text('Configure Tags'),
                     ),
                   ],
                 ),
               ),
             )
           else
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: selectedTags.map((tag) {
-                return Chip(
-                  label: Text(tag),
-                  labelStyle: ScribesTextStyles.labelSm.copyWith(
-                    color: colors.primaryText,
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildForYouFilterChip(
+                    id: 'all',
+                    label: 'All',
+                    colors: colors,
                   ),
-                  backgroundColor: colors.surfaceRaised,
-                  side: BorderSide(color: colors.border),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  const SizedBox(width: 6),
+                  ...selectedTags.map((tag) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: _buildForYouFilterChip(
+                        id: tag.toLowerCase(),
+                        label: tag,
+                        colors: colors,
+                      ),
+                    );
+                  }),
+                  GestureDetector(
+                    onTap: () =>
+                        _openTopicSelectionModal(context, ref, colors),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.surfaceRaised.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: colors.border.withValues(alpha: 0.5),
+                          width: 0.6,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedEdit02,
+                            color: colors.secondaryText,
+                            size: 13,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Edit',
+                            style: ScribesTextStyles.caption.copyWith(
+                              color: colors.secondaryText,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                );
-              }).toList(),
+                ],
+              ),
             ),
         ],
       ),
@@ -396,59 +468,331 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   Widget _buildSuggestedUsersSection(WidgetRef ref, dynamic colors) {
     final suggestedUsersState = ref.watch(exploreSuggestedUsersProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            top: 16.0,
-            bottom: 8.0,
-          ),
-          child: Text(
-            'Who to Follow',
-            style: ScribesTextStyles.labelLg.copyWith(
-              color: colors.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 190,
-          child: suggestedUsersState.when(
-            data: (users) {
-              if (users.isEmpty) {
-                return Center(
-                  child: Text(
-                    'No suggestions right now.',
-                    style: ScribesTextStyles.bodyMd.copyWith(
-                      color: colors.secondaryText,
+    return suggestedUsersState.when(
+      data: (users) {
+        if (users.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: Row(
+                  children: [
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedUserCheck01,
+                      color: colors.gold,
+                      size: 15,
                     ),
-                  ),
-                );
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                scrollDirection: Axis.horizontal,
-                itemCount: users.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  return ScribesUserCard(user: users[index]);
-                },
-              );
-            },
-            loading: () => const Center(child: ScribesLoadingIndicator()),
-            error: (e, st) => Center(
-              child: Text(
-                'Could not load suggestions.',
-                style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
+                    const SizedBox(width: 8),
+                    Text(
+                      'FAITHFUL SCRIBES',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Voices to Follow',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText.withValues(alpha: 0.6),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 165,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: users.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    return ScribesUserCard(user: users[index]);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildForYouFeedSliver(
+    AsyncValue<List<Post>> forYouState,
+    dynamic colors,
+  ) {
+    return forYouState.when(
+      data: (allPosts) {
+        if (allPosts.isEmpty) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: ScribesEmptyState(
+                icon: HugeIcons.strokeRoundedBookOpen01,
+                title: 'No manuscripts found',
+                subtitle:
+                    'Check back soon or select more interests to personalize your feed.',
               ),
             ),
+          );
+        }
+
+        final posts = _selectedForYouTag == 'all'
+            ? allPosts
+            : allPosts.where((p) {
+                final tagMatch = p.tags.any(
+                  (t) =>
+                      t.toLowerCase() == _selectedForYouTag.toLowerCase(),
+                );
+                if (tagMatch) return true;
+                final excerpt = p.plainTextBody.toLowerCase();
+                return excerpt.contains(_selectedForYouTag.toLowerCase());
+              }).toList();
+
+        if (posts.isEmpty) {
+          return SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedFilter,
+                      color: colors.secondaryText,
+                      size: 32,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No scrolls tagged with "$_selectedForYouTag"',
+                      style: ScribesTextStyles.bodyMd.copyWith(
+                        color: colors.primaryText,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Try selecting "All" or exploring different topics.',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () =>
+                          setState(() => _selectedForYouTag = 'all'),
+                      child: Text(
+                        'Show All Scrolls',
+                        style: TextStyle(color: colors.gold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        final spotlightCount = posts.length >= 3 ? 3 : 1;
+        final spotlightPosts = posts.take(spotlightCount).toList();
+        final remainingPosts = posts.skip(spotlightCount).toList();
+        final hasMore = ref.read(exploreForYouProvider.notifier).hasMore;
+
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 10.0),
+                    child: Row(
+                      children: [
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedSparkles,
+                          color: colors.gold,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'RECOMMENDED SPOTLIGHT',
+                          style: ScribesTextStyles.caption.copyWith(
+                            color: colors.secondaryText,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Selected for You',
+                          style: ScribesTextStyles.caption.copyWith(
+                            color: colors.secondaryText
+                                .withValues(alpha: 0.6),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 215,
+                    child: ListView.separated(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 16.0),
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: spotlightPosts.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 14),
+                      itemBuilder: (context, index) {
+                        final post = spotlightPosts[index];
+                        return ScribesSpotlightCard(
+                          post: post,
+                          categoryLabel: post.tags.isNotEmpty
+                              ? post.tags.first.toUpperCase()
+                              : 'RECOMMENDED',
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 6.0),
+                child: Row(
+                  children: [
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedBookOpen01,
+                      color: colors.primaryText,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'CURATED CHRONICLES',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Personal Feed',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText
+                            .withValues(alpha: 0.6),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == remainingPosts.length) {
+                      ref.read(exploreForYouProvider.notifier).loadMore();
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.0),
+                        child: Center(child: ScribesLoadingIndicator()),
+                      );
+                    }
+                    final post = remainingPosts[index];
+                    return ScribesDiscoverTile(
+                      post: post,
+                      categoryLabel:
+                          post.tags.isNotEmpty ? post.tags.first : null,
+                    );
+                  },
+                  childCount: remainingPosts.length + (hasMore ? 1 : 0),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => SliverPadding(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: ScribesShimmer(
+                child: Container(
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: colors.surfaceRaised,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            childCount: 5,
           ),
         ),
-        const SizedBox(height: 16),
-      ],
+      ),
+      error: (e, st) => SliverFillRemaining(
+        child: ScribesErrorState(
+          title: 'Could not load your feed',
+          subtitle: e.toString(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForYouTab(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic colors,
+  ) {
+    final forYouState = ref.watch(exploreForYouProvider);
+    return RefreshIndicator(
+      onRefresh: () => ref.read(exploreForYouProvider.notifier).refresh(),
+      child: CustomScrollView(
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
+        slivers: [
+          // 1. Personalized Header & Interactive Topics
+          SliverToBoxAdapter(
+            child: _buildForYouHeaderAndTopics(context, ref, colors),
+          ),
+
+          // 2. Faithful Scribes Section (collapses to 0 if empty/loading)
+          SliverToBoxAdapter(
+            child: _buildSuggestedUsersSection(ref, colors),
+          ),
+
+          // 3. For You Posts Stream (Hero Spotlight + Curated Discovery Tiles)
+          _buildForYouFeedSliver(forYouState, colors),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
+          ),
+        ],
+      ),
     );
   }
 
@@ -463,143 +807,314 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         await ref.read(exploreDiscoverProvider.notifier).refresh();
       },
       child: CustomScrollView(
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
         slivers: [
-          SliverToBoxAdapter(
-            child: _buildRecommendationRow(
-              title: 'Most Insightful',
-              provider: exploreInsightfulProvider,
-              colors: colors,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: _buildRecommendationRow(
-              title: 'Most Prophetic',
-              provider: explorePropheticProvider,
-              colors: colors,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: _buildRecommendationRow(
-              title: 'Most Affirmed',
-              provider: exploreAffirmedProvider,
-              colors: colors,
-            ),
-          ),
+          // 1. Curated Spotlight Header & Filter Chips
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                top: 24.0,
-                bottom: 8.0,
-              ),
-              child: Text(
-                'Recent Discoveries',
-                style: ScribesTextStyles.labelLg.copyWith(
-                  color: colors.secondaryText,
-                  fontWeight: FontWeight.w600,
-                ),
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          HugeIcon(
+                            icon: HugeIcons.strokeRoundedSparkles,
+                            color: colors.gold,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'CURATED SPOTLIGHT',
+                            style: ScribesTextStyles.caption.copyWith(
+                              color: colors.secondaryText,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Theological Index',
+                        style: ScribesTextStyles.caption.copyWith(
+                          color: colors.secondaryText.withValues(alpha: 0.6),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Responsive Filter Chips Row (No horizontal scroll fight)
+                  Row(
+                    children: [
+                      _buildSpotlightFilterChip(
+                        id: 'all',
+                        label: 'Curated',
+                        colors: colors,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildSpotlightFilterChip(
+                        id: 'insightful',
+                        label: 'Insightful',
+                        colors: colors,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildSpotlightFilterChip(
+                        id: 'prophetic',
+                        label: 'Prophetic',
+                        colors: colors,
+                      ),
+                      const SizedBox(width: 6),
+                      _buildSpotlightFilterChip(
+                        id: 'affirmed',
+                        label: 'Affirmed',
+                        colors: colors,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          _buildPostsFeedSliver(
-            discoverState,
-            colors,
-            onLoadMore: () =>
-                ref.read(exploreDiscoverProvider.notifier).loadMore(),
-            hasMore: ref.read(exploreDiscoverProvider.notifier).hasMore,
+
+          // 2. The Single Hero Spotlight Carousel (215px instead of 1200px stack!)
+          SliverToBoxAdapter(
+            child: _buildSpotlightCarousel(ref, colors),
+          ),
+
+          // 3. Section Header for Recent Discoveries
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 6.0),
+              child: Row(
+                children: [
+                  HugeIcon(
+                    icon: HugeIcons.strokeRoundedBookOpen01,
+                    color: colors.primaryText,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'RECENT DISCOVERIES',
+                    style: ScribesTextStyles.caption.copyWith(
+                      color: colors.secondaryText,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Sacred Archive',
+                    style: ScribesTextStyles.caption.copyWith(
+                      color: colors.secondaryText.withValues(alpha: 0.6),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 4. True High-Performance Virtualized Slivers for Discoveries
+          _buildDiscoverTilesFeedSliver(discoverState, colors),
+
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRecommendationRow({
-    required String title,
-    required dynamic provider,
+  Widget _buildSpotlightFilterChip({
+    required String id,
+    required String label,
     required dynamic colors,
   }) {
-    final AsyncValue<List<Post>> state = ref.watch(provider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            left: 16.0,
-            right: 16.0,
-            top: 24.0,
-            bottom: 12.0,
+    final isSelected = _selectedSpotlightFilter == id;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (_selectedSpotlightFilter != id) {
+            setState(() {
+              _selectedSpotlightFilter = id;
+            });
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? colors.gold : colors.surfaceRaised,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? colors.gold : colors.border.withValues(alpha: 0.6),
+              width: 0.6,
+            ),
           ),
           child: Text(
-            title,
-            style: ScribesTextStyles.labelLg.copyWith(
-              color: colors.secondaryText,
-              fontWeight: FontWeight.w600,
+            label,
+            style: ScribesTextStyles.caption.copyWith(
+              color: isSelected ? colors.background : colors.primaryText,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              fontSize: 11.5,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        SizedBox(
-          height: 400,
-          child: state.when(
-            data: (posts) {
-              if (posts.isEmpty) {
-                return Center(
-                  child: Text(
-                    'No posts available.',
-                    style: ScribesTextStyles.bodyMd.copyWith(
-                      color: colors.secondaryText,
-                    ),
-                  ),
-                );
-              }
-              return ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                scrollDirection: Axis.horizontal,
-                itemCount: posts.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 16),
-                itemBuilder: (context, index) {
-                  return SizedBox(
-                    width: 280,
-                    child: ScribesExploreCard(
-                      post: posts[index],
-                      categoryLabel: title == 'Most Insightful'
-                          ? 'Insightful'
-                          : (title == 'Most Prophetic' ||
-                                  title == 'Prophetic of the Times')
-                              ? 'Prophetic'
-                              : 'Affirmed',
-                      onTap: () => context.push('/posts/${posts[index].id}'),
-                    ),
-                  );
-                },
+      ),
+    );
+  }
+
+  Widget _buildSpotlightCarousel(WidgetRef ref, dynamic colors) {
+    AsyncValue<List<Post>> state;
+    String categoryLabel;
+    switch (_selectedSpotlightFilter) {
+      case 'insightful':
+        state = ref.watch(exploreInsightfulProvider);
+        categoryLabel = 'Insightful';
+        break;
+      case 'prophetic':
+        state = ref.watch(explorePropheticProvider);
+        categoryLabel = 'Prophetic';
+        break;
+      case 'affirmed':
+        state = ref.watch(exploreAffirmedProvider);
+        categoryLabel = 'Affirmed';
+        break;
+      case 'all':
+      default:
+        state = ref.watch(exploreInsightfulProvider);
+        categoryLabel = 'Curated';
+        break;
+    }
+
+    return SizedBox(
+      height: 220,
+      child: state.when(
+        data: (posts) {
+          if (posts.isEmpty) {
+            return Center(
+              child: Text(
+                'No spotlight manuscripts available.',
+                style: ScribesTextStyles.bodyMd.copyWith(
+                  color: colors.secondaryText,
+                ),
+              ),
+            );
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            scrollDirection: Axis.horizontal,
+            scrollCacheExtent: const ScrollCacheExtent.pixels(600),
+            itemCount: posts.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 14),
+            itemBuilder: (context, index) {
+              return ScribesSpotlightCard(
+                post: posts[index],
+                categoryLabel: categoryLabel,
               );
             },
-            loading: () => ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              scrollDirection: Axis.horizontal,
-              itemCount: 3,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                return ScribesShimmer(
-                  child: Container(
-                    width: 280,
-                    decoration: BoxDecoration(
-                      color: colors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                );
-              },
-            ),
-            error: (e, st) => Center(
-              child: Text(
-                'Could not load.',
-                style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
+          );
+        },
+        loading: () => ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          scrollDirection: Axis.horizontal,
+          itemCount: 3,
+          separatorBuilder: (context, index) => const SizedBox(width: 14),
+          itemBuilder: (context, index) => ScribesShimmer(
+            child: Container(
+              width: 290,
+              height: 215,
+              decoration: BoxDecoration(
+                color: colors.surfaceRaised,
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
           ),
         ),
-      ],
+        error: (e, st) => Center(
+          child: Text(
+            'Could not load spotlight.',
+            style: ScribesTextStyles.labelSm.copyWith(color: colors.orange),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDiscoverTilesFeedSliver(
+    AsyncValue<List<Post>> discoverState,
+    dynamic colors,
+  ) {
+    return discoverState.when(
+      data: (posts) {
+        if (posts.isEmpty) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: ScribesEmptyState(
+                icon: HugeIcons.strokeRoundedSearch01,
+                title: 'No manuscripts found',
+                subtitle: 'Check back soon for new theological reflections.',
+              ),
+            ),
+          );
+        }
+        final hasMore = ref.read(exploreDiscoverProvider.notifier).hasMore;
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index == posts.length) {
+                  ref.read(exploreDiscoverProvider.notifier).loadMore();
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: Center(child: ScribesLoadingIndicator()),
+                  );
+                }
+                final post = posts[index];
+                return ScribesDiscoverTile(
+                  post: post,
+                  categoryLabel: post.tags.isNotEmpty ? post.tags.first : null,
+                );
+              },
+              childCount: posts.length + (hasMore ? 1 : 0),
+            ),
+          ),
+        );
+      },
+      loading: () => SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              child: ScribesShimmer(
+                child: Container(
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: colors.surfaceRaised,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            childCount: 5,
+          ),
+        ),
+      ),
+      error: (e, st) => SliverFillRemaining(
+        child: ScribesErrorState(
+          title: 'Could not load discoveries',
+          subtitle: e.toString(),
+        ),
+      ),
     );
   }
 
@@ -608,6 +1123,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return RefreshIndicator(
       onRefresh: () => ref.read(exploreChurchesProvider.notifier).refresh(),
       child: CustomScrollView(
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
         slivers: [
           _buildPostsFeedSliver(
             churchesState,
@@ -644,28 +1160,39 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         return SliverPadding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              if (index == posts.length) {
-                onLoadMore();
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(child: ScribesLoadingIndicator()),
-                );
-              }
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (index == posts.length) {
+                  onLoadMore();
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: ScribesLoadingIndicator()),
+                  );
+                }
 
-              final post = posts[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: ScribesConnectedPostCard(
-                  post: post,
-                  isFeatured: false,
-                  isExploreScreen: true,
-                ),
-              );
-            }, childCount: posts.length + (hasMore ? 1 : 0)),
+                final post = posts[index];
+                return Padding(
+                  key: ValueKey(post.id),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  child: ScribesConnectedPostCard(
+                    post: post,
+                    isFeatured: false,
+                    isExploreScreen: true,
+                  ),
+                );
+              },
+              childCount: posts.length + (hasMore ? 1 : 0),
+              findChildIndexCallback: (Key key) {
+                if (key is ValueKey<String>) {
+                  final index = posts.indexWhere((p) => p.id == key.value);
+                  return index != -1 ? index : null;
+                }
+                return null;
+              },
+            ),
           ),
         );
       },

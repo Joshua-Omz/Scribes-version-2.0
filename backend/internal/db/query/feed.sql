@@ -1,7 +1,7 @@
 -- name: GetFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -18,7 +18,7 @@ LIMIT $3;
 -- name: GetExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -35,7 +35,7 @@ LIMIT $3;
 -- name: GetFollowingFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -54,7 +54,7 @@ LIMIT $4;
 -- name: GetExplorePostsByTag :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -74,7 +74,7 @@ LIMIT $4;
 -- name: GetExplorePostsByScripture :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -94,7 +94,7 @@ LIMIT $4;
 -- name: SearchExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -112,7 +112,7 @@ LIMIT $3;
 -- name: GetChurchPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -144,7 +144,7 @@ LIMIT $2;
 -- name: GetForYouPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,

@@ -11,6 +11,9 @@ import '../../../core/widgets/scribes_auto_save_dot.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_scripture_quick_dialog.dart';
+import '../../auth/application/auth_notifier.dart';
+import '../../export/presentation/export_loading_sheet.dart';
+import '../domain/note.dart';
 import '../application/note_editor_provider.dart';
 import '../../compose/application/compose_provider.dart';
 
@@ -204,6 +207,31 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                             : SaveState.localSaved,
                       ),
                     ),
+                  IconButton(
+                    tooltip: 'Export Manuscript (PDF)',
+                    icon: HugeIcon(
+                      icon: HugeIcons.strokeRoundedPrinter,
+                      color: colors.gold,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      final noteState = ref.read(noteEditorProvider);
+                      final user = ref.read(authProvider).value;
+                      final noteDoc = Note(
+                        id: noteState.noteId,
+                        authorId: user?.id ?? 'guest',
+                        content: {'body': _controller.document.toDelta().toJson()},
+                        title: _titleController.text.trim(),
+                        updatedAt: DateTime.now(),
+                        createdAt: DateTime.now(),
+                      );
+                      ExportLoadingSheet.showForNote(
+                        context,
+                        noteDoc,
+                        currentUser: user,
+                      );
+                    },
+                  ),
                   TextButton.icon(
                     onPressed: _promoteToDraft,
                     icon: HugeIcon(
@@ -252,15 +280,14 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     },
                   ),
                   const SizedBox(height: 8),
-                  // Scripture Tag Bar
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      ...noteState.scriptureRefs.map(
-                        (refStr) => InkWell(
-                          onTap: () => _showScriptureQuickDialog(refStr),
+                  // Scripture Tag Bar (Single-row horizontal ribbon)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: _openScriptureSelector,
                           borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -268,79 +295,87 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: colors.surfaceRaised,
+                              color: colors.gold.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: colors.goldMuted.withValues(alpha: 0.6),
+                                color: colors.goldMuted.withValues(alpha: 0.4),
+                                style: BorderStyle.solid,
                                 width: 1.0,
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                HugeIcon(
-                                  icon: HugeIcons.strokeRoundedBookOpen01,
-                                  size: 13,
-                                  color: colors.gold,
-                                ),
-                                const SizedBox(width: 5),
+                                Icon(Icons.add, size: 14, color: colors.gold),
+                                const SizedBox(width: 4),
                                 Text(
-                                  refStr,
+                                  'Tag Scripture',
                                   style: ScribesTextStyles.labelSm.copyWith(
                                     color: colors.gold,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                GestureDetector(
-                                  onTap: () => ref
-                                      .read(noteEditorProvider.notifier)
-                                      .removeScripture(refStr),
-                                  child: Icon(
-                                    Icons.close,
-                                    size: 13,
-                                    color: colors.secondaryText,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      ),
-                      InkWell(
-                        onTap: _openScriptureSelector,
-                        borderRadius: BorderRadius.circular(6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.gold.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: colors.goldMuted.withValues(alpha: 0.4),
-                              style: BorderStyle.solid,
-                              width: 1.0,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add, size: 14, color: colors.gold),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Tag Scripture',
-                                style: ScribesTextStyles.labelSm.copyWith(
-                                  color: colors.gold,
-                                  fontWeight: FontWeight.w500,
+                        if (noteState.scriptureRefs.isNotEmpty)
+                          const SizedBox(width: 8),
+                        ...noteState.scriptureRefs.map(
+                          (refStr) => Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: InkWell(
+                              onTap: () => _showScriptureQuickDialog(refStr),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceRaised,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: colors.goldMuted
+                                        .withValues(alpha: 0.6),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    HugeIcon(
+                                      icon: HugeIcons.strokeRoundedBookOpen01,
+                                      size: 13,
+                                      color: colors.gold,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      refStr,
+                                      style: ScribesTextStyles.labelSm.copyWith(
+                                        color: colors.gold,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    GestureDetector(
+                                      onTap: () => ref
+                                          .read(noteEditorProvider.notifier)
+                                          .removeScripture(refStr),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 13,
+                                        color: colors.secondaryText,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
 

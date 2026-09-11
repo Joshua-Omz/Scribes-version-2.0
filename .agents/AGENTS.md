@@ -33,4 +33,7 @@
 ### Social & Recommendation Invariants
 * **Distinct Recommendation Seeds (Reactions):** Reaction types (`amen`, `insightful`, `thought_provoking`) must NEVER be collapsed or aggregated into a single generic "like" counter in UI components or API payloads. They must remain individually accessible, interactive, and distinct across all feed cards, post tiles, and detail views to preserve telemetry for recommendation materialized views and Discover tab carousels.
 
+### Document Export & Post Type Invariants
+* **Standard Post Exclusivity (Export):** The illuminated PDF manuscript export pipeline is strictly reserved for `standard` posts, standard drafts, and study notes. Never render or trigger the "Export Manuscript (PDF)" option for `passage` (multi-panel interactive deck) or `reflection` (500-character contemplation) post types.
+
 

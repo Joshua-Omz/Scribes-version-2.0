@@ -7,10 +7,10 @@ import 'pdf_theme.dart';
 pw.Widget buildPdfTitleBlock(
   ExportAssetBundle assets,
 ) {
-  final post = assets.post;
+  final doc = assets.document;
   final tokens = PdfThemeTokens.forTheme(assets.activeTheme);
-  final formattedDate = DateFormat('MMMM d, y').format(post.publishedAt);
-  final title = post.content['title'] as String? ?? 'Untitled';
+  final formattedDate = DateFormat('MMMM d, y').format(doc.date);
+  final title = doc.title;
 
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -36,7 +36,29 @@ pw.Widget buildPdfTitleBlock(
         ),
       ],
 
-      // 2. Post Title
+      // Document Type Badge if Draft or Study Note
+      if (doc.documentTypeBadge != 'MANUSCRIPT') ...[
+        pw.Container(
+          margin: const pw.EdgeInsets.only(bottom: 8),
+          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: pw.BoxDecoration(
+            color: tokens.surface,
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+            border: pw.Border.all(color: tokens.goldMuted, width: 0.5),
+          ),
+          child: pw.Text(
+            doc.documentTypeBadge,
+            style: pw.TextStyle(
+              font: assets.dmSansBold,
+              fontSize: 8.5,
+              color: tokens.gold,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ),
+      ],
+
+      // 2. Title
       pw.Text(
         title,
         style: pw.TextStyle(
@@ -52,16 +74,18 @@ pw.Widget buildPdfTitleBlock(
       pw.Row(
         children: [
           pw.Text(
-            post.authorName.isNotEmpty ? post.authorName : '@${post.authorHandle}',
+            doc.authorDisplayName.isNotEmpty
+                ? doc.authorDisplayName
+                : '@${doc.authorHandle}',
             style: pw.TextStyle(
               font: assets.dmSansBold,
               fontSize: 10.5,
               color: tokens.primaryText,
             ),
           ),
-          if (post.authorHandle.isNotEmpty) ...[
+          if (doc.authorHandle.isNotEmpty) ...[
             pw.Text(
-              '  |  @${post.authorHandle}',
+              '  |  @${doc.authorHandle}',
               style: pw.TextStyle(
                 font: assets.dmSansRegular,
                 fontSize: 9.5,
@@ -81,10 +105,10 @@ pw.Widget buildPdfTitleBlock(
       ),
 
       // Sermon Source Info (if applicable)
-      if (post.sermonSource != null && post.sermonSource!.isNotEmpty) ...[
+      if (doc.sermonSource != null && doc.sermonSource!.isNotEmpty) ...[
         pw.SizedBox(height: 6),
         pw.Text(
-          'Sermon: ${post.sermonSource!.displayTitle}',
+          'Sermon: ${doc.sermonSource}',
           style: pw.TextStyle(
             font: assets.cormorantItalic,
             fontSize: 11,
@@ -94,9 +118,9 @@ pw.Widget buildPdfTitleBlock(
       ],
 
       // 4. Scripture Reference Cards
-      if (post.scriptureRefs.isNotEmpty) ...[
+      if (doc.scriptureRefs.isNotEmpty) ...[
         pw.SizedBox(height: 14),
-        ...post.scriptureRefs.map((ref) {
+        ...doc.scriptureRefs.map((ref) {
           final refStr = ref.verseEnd != null && ref.verseEnd != ref.verseStart
               ? '${ref.book} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}'
               : '${ref.book} ${ref.chapter}:${ref.verseStart}';

@@ -25,23 +25,34 @@ class ScribesExploreCard extends ConsumerWidget {
     this.categoryLabel,
   });
 
-  String _extractTitle(Map<String, dynamic> content) {
+  static final Expando<String> _titleCache =
+      Expando<String>('explore_title_cache');
+
+  static String _extractTitle(Post post) {
+    final cached = _titleCache[post];
+    if (cached != null) return cached;
+
+    final content = post.content;
+    String title = 'Untitled';
     if (content['title'] != null &&
         content['title'].toString().trim().isNotEmpty) {
-      return content['title'].toString().trim();
-    }
-    final ops = content['ops'] ?? content['body'];
-    if (ops is List) {
-      for (final op in ops) {
-        if (op is Map && op['insert'] is String) {
-          final text = op['insert'].toString().trim();
-          if (text.isNotEmpty) {
-            return text.split('\n').first;
+      title = content['title'].toString().trim();
+    } else {
+      final ops = content['ops'] ?? content['body'];
+      if (ops is List) {
+        for (final op in ops) {
+          if (op is Map && op['insert'] is String) {
+            final text = op['insert'].toString().trim();
+            if (text.isNotEmpty) {
+              title = text.split('\n').first;
+              break;
+            }
           }
         }
       }
     }
-    return 'Untitled';
+    _titleCache[post] = title;
+    return title;
   }
 
   @override
@@ -51,7 +62,7 @@ class ScribesExploreCard extends ConsumerWidget {
       post,
     );
     final hasImage = displayImageUrl != null && displayImageUrl.isNotEmpty;
-    final title = _extractTitle(post.content);
+    final title = _extractTitle(post);
 
     return GestureDetector(
       onTap: onTap ?? () => context.push('/posts/${post.id}'),
@@ -128,13 +139,10 @@ class ScribesExploreCard extends ConsumerWidget {
                 Positioned(
                   right: -30,
                   bottom: 20,
-                  child: Opacity(
-                    opacity: 0.04,
-                    child: HugeIcon(
-                      icon: HugeIcons.strokeRoundedChurch,
-                      color: colors.primaryText,
-                      size: 200,
-                    ),
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedChurch,
+                    color: colors.primaryText.withValues(alpha: 0.04),
+                    size: 200,
                   ),
                 ),
 

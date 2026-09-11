@@ -56,4 +56,7 @@ class Endpoints {
       '/bible/$book/$chapter/$range';
   static const String bibleSearch = '/bible/search';
   static const String bibleReadingPosition = '/bible/reading-position';
+
+  // Sounds
+  static const String sounds = '/sounds';
 }

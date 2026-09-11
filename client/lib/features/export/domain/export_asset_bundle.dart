@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 import 'package:pdf/widgets.dart' as pw;
-import '../../posts/domain/post.dart';
+import 'exportable_document.dart';
 import '../presentation/pdf/pdf_theme.dart';
 
 class ExportAssetBundle {
-  final Post post;
+  final ExportableDocument document;
   final Uint8List? coverImageBytes;
   final List<Uint8List>? panelImageBytes;
   final Map<String, String>? resolvedVerses;
@@ -17,7 +17,7 @@ class ExportAssetBundle {
   final ScribesTheme activeTheme;
 
   const ExportAssetBundle({
-    required this.post,
+    required this.document,
     this.coverImageBytes,
     this.panelImageBytes,
     this.resolvedVerses,

@@ -5,12 +5,17 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/notifications/presentation/notification_badge.dart';
-import '../../features/messages/application/inbox_providers.dart';
 
 import 'scribes_icon_button.dart';
+import 'scribes_brand_logo.dart';
 
 class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  const ScribesTopAppBar({super.key});
+  final bool showBottomBorder;
+
+  const ScribesTopAppBar({
+    super.key,
+    this.showBottomBorder = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,12 +24,14 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return Container(
       decoration: BoxDecoration(
         color: colors.background,
-        border: Border(
-          bottom: BorderSide(
-            color: colors.border.withValues(alpha: 0.4),
-            width: 0.5,
-          ),
-        ),
+        border: showBottomBorder
+            ? Border(
+                bottom: BorderSide(
+                  color: colors.border.withValues(alpha: 0.4),
+                  width: 0.5,
+                ),
+              )
+            : null,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -53,19 +60,25 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 // Center: Logo and Title
                 Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    const ScribesBrandLogo(
+                      variant: BrandLogoVariant.iconOnly,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
                     Text(
                       'Scribes',
                       style: ScribesTextStyles.displayMd.copyWith(
-                        fontSize: 21,
-                        letterSpacing: 0.3,
+                        fontSize: 22,
+                        letterSpacing: 0.4,
                         color: colors.primaryText,
                       ),
                     ),
                   ],
                 ),
 
-                // Right side: Bible Quick-Open, Inbox & Notifications
+                // Right side: Bible Quick-Open & Notifications
                 Align(
                   alignment: Alignment.centerRight,
                   child: Row(
@@ -73,7 +86,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     children: [
                       // Bible Drawer / Reader shortcut
                       ScribesIconButton(
-                        icon: HugeIcons.strokeRoundedBook02,
+                        icon: HugeIcons.strokeRoundedBook01,
                         onPressed: () {
                           // Navigate to Bible reader or open end drawer
                           final scaffold = Scaffold.maybeOf(context);
@@ -85,51 +98,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         },
                         color: colors.primaryText,
                       ),
-                      const SizedBox(width: 2),
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Consumer(
-                            builder: (context, ref, child) {
-                              final unreadCount = ref.watch(
-                                unreadMessagesCountProvider,
-                              );
-                              if (unreadCount > 0) {
-                                return Positioned(
-                                  right: 4,
-                                  top: 4,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 5,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colors.orange,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: colors.background,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      unreadCount > 9
-                                          ? '9+'
-                                          : unreadCount.toString(),
-                                      style: TextStyle(
-                                        color: colors.background,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 2),
+                      const SizedBox(width: 4),
                       NotificationBadge(
                         child: ScribesIconButton(
                           icon: HugeIcons.strokeRoundedNotification01,

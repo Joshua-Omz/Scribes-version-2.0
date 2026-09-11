@@ -26,8 +26,15 @@ class ScribesImageResolver {
       return trimmed;
     }
 
-    // If it's a local absolute file path that exists on disk
-    if (!trimmed.startsWith('/') || Platform.isAndroid || Platform.isIOS) {
+    // If it's an explicit local absolute file path on device disk (e.g. local cropped draft)
+    final isExplicitLocalPath = trimmed.startsWith('/data/') ||
+        trimmed.startsWith('/storage/') ||
+        trimmed.startsWith('/var/') ||
+        trimmed.startsWith('/private/') ||
+        trimmed.startsWith('C:\\') ||
+        trimmed.startsWith('D:\\') ||
+        trimmed.startsWith('/Users/');
+    if (isExplicitLocalPath) {
       final file = File(trimmed);
       if (file.existsSync()) {
         return 'file://$trimmed';
@@ -43,11 +50,31 @@ class ScribesImageResolver {
     return '$cleanBase$cleanPath';
   }
 
-  /// Hierarchically extracts the first available image URL from a Post.
+  static final Map<String, String> _idImageCache = {};
+
+  /// Hierarchically extracts the first available image URL from a Post (memoized by post.id).
   static String? extractFirstImageUrl(Post post) {
-    // 1. Direct top-level cover image on the Post model
+    final cached = _idImageCache[post.id];
+    if (cached != null) {
+      return cached.isEmpty ? null : cached;
+    }
+
+    final resolved = _extractFirstImageUrlInternal(post);
+    if (_idImageCache.length > 1000) {
+      _idImageCache.clear();
+    }
+    _idImageCache[post.id] = resolved ?? '';
+    return resolved;
+  }
+
+  static String? _extractFirstImageUrlInternal(Post post) {
+    // 1. Direct top-level cover image or reflection image on the Post model
     if (post.coverImageUrl != null && post.coverImageUrl!.trim().isNotEmpty) {
       final resolved = resolveUrl(post.coverImageUrl);
+      if (resolved != null && resolved.isNotEmpty) return resolved;
+    }
+    if (post.reflectionImageUrl != null && post.reflectionImageUrl!.trim().isNotEmpty) {
+      final resolved = resolveUrl(post.reflectionImageUrl);
       if (resolved != null && resolved.isNotEmpty) return resolved;
     }
 
@@ -169,6 +196,20 @@ class ScribesImageResolver {
             if (resolved != null) return resolved;
           }
         }
+      }
+    }
+
+    // 5b. Inspect typed post.panels
+    for (final panel in post.panels) {
+      if (panel.backgroundImageUrl != null &&
+          panel.backgroundImageUrl!.trim().isNotEmpty) {
+        final resolved = resolveUrl(panel.backgroundImageUrl);
+        if (resolved != null) return resolved;
+      }
+      final imgUrl = panel.content['image_url'] ?? panel.content['imageUrl'];
+      if (imgUrl != null) {
+        final resolved = resolveUrl(imgUrl.toString());
+        if (resolved != null) return resolved;
       }
     }
 

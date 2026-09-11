@@ -3,6 +3,8 @@ import 'sermon_source.dart';
 import 'scripture_ref.dart';
 import 'dart:convert';
 
+import '../../passage/domain/passage_models.dart';
+
 part 'post.freezed.dart';
 part 'post.g.dart';
 
@@ -66,6 +68,10 @@ abstract class Post with _$Post {
     @Default([]) List<String> tags,
     @JsonKey(name: 'is_deleted') required bool isDeleted,
     @JsonKey(name: 'cover_image_url') String? coverImageUrl,
+    @JsonKey(name: 'reflection_image_url') String? reflectionImageUrl,
+    @JsonKey(name: 'sound_id') String? soundId,
+    SoundTrack? sound,
+    @Default([]) List<PassagePanel> panels,
     @JsonKey(name: 'post_type') @Default('standard') String postType,
     @JsonKey(name: 'published_at') required DateTime publishedAt,
 
@@ -84,4 +90,47 @@ abstract class Post with _$Post {
   }) = _Post;
 
   factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
+}
+
+extension PostX on Post {
+  /// Safely extracts the plain text body from Delta ops, JSON strings, or excerpts.
+  String get plainTextBody {
+    if (content['excerpt'] != null &&
+        content['excerpt'].toString().trim().isNotEmpty) {
+      return content['excerpt'].toString().trim();
+    }
+    final bodyData = content['body'];
+    if (bodyData is String) {
+      if (bodyData.trim().isNotEmpty) {
+        try {
+          final decoded = jsonDecode(bodyData);
+          if (decoded is List) {
+            final text = _extractTextFromDeltaList(decoded);
+            if (text.isNotEmpty) return text;
+          }
+        } catch (_) {}
+        return bodyData.trim();
+      }
+    } else if (bodyData is List) {
+      final text = _extractTextFromDeltaList(bodyData);
+      if (text.isNotEmpty) return text;
+    } else if (bodyData is Map && bodyData['ops'] is List) {
+      final text = _extractTextFromDeltaList(bodyData['ops'] as List);
+      if (text.isNotEmpty) return text;
+    }
+    return '';
+  }
+
+  static String _extractTextFromDeltaList(List<dynamic> ops) {
+    final buffer = StringBuffer();
+    for (final op in ops) {
+      if (op is Map && op.containsKey('insert')) {
+        final insert = op['insert'];
+        if (insert is String) {
+          buffer.write(insert);
+        }
+      }
+    }
+    return buffer.toString().trim();
+  }
 }

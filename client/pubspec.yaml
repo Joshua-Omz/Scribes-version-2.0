@@ -1,5 +1,5 @@
 name: scribes
-description: "A new Flutter project."
+description: "Scribes — A biblical writing & publishing platform. The Word is made flesh."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -67,6 +67,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   pdf: ^3.11.1
   printing: ^5.13.3
+  just_audio: ^0.9.46
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -89,7 +90,7 @@ flutter_native_splash:
   color: "#F5F0E8"
   image: "assets/scribes.png"
   color_dark: "#0A0A0A"
-  image_dark: "assets/scribes.png"
+  image_dark: "assets/scribes_dark.png"
   android: true
   ios: false
 
@@ -98,6 +99,8 @@ flutter_launcher_icons:
   ios: false
   image_path: "assets/scribes.png"
   min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/branding/scribes_emblem_foreground.png"
   remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the

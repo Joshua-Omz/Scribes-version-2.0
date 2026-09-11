@@ -73,26 +73,30 @@ func (r *Repository) enrichPosts(ctx context.Context, posts []FeedPost) error {
 }
 
 type FeedPost struct {
-	ID              uuid.UUID                       `json:"id"`
-	AuthorID        uuid.UUID                       `json:"author_id"`
-	Content         json.RawMessage                 `json:"content"`
-	Caption         *string                         `json:"caption"`
-	Visibility      generated.PostVisibility        `json:"visibility"`
-	CurrentVersion  int32                           `json:"current_version"`
-	IsCorrection    bool                            `json:"is_correction"`
-	CorrectsPostID  *uuid.UUID                      `json:"corrects_post_id"`
-	SermonSource    *string                         `json:"sermon_source"`
-	IsDeleted       bool                            `json:"is_deleted"`
-	PublishedAt     time.Time                       `json:"published_at"`
-	AuthorHandle    string                          `json:"author_handle"`
-	AuthorName      string                          `json:"author_name"`
-	CoverImageUrl   *string                         `json:"cover_image_url,omitempty"`
-	PostType        generated.PostType              `json:"post_type"`
-	AuthorAvatarUrl *string                         `json:"author_avatar_url,omitempty"`
-	ScriptureRefs   []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
-	Tags            []string                        `json:"tags,omitempty"`
-	AmenCount       int32                           `json:"amen_count"`
-	CommentCount    int32                           `json:"comment_count"`
+	ID                    uuid.UUID                       `json:"id"`
+	AuthorID              uuid.UUID                       `json:"author_id"`
+	Content               json.RawMessage                 `json:"content"`
+	Caption               *string                         `json:"caption"`
+	Visibility            generated.PostVisibility        `json:"visibility"`
+	CurrentVersion        int32                           `json:"current_version"`
+	IsCorrection          bool                            `json:"is_correction"`
+	CorrectsPostID        *uuid.UUID                      `json:"corrects_post_id"`
+	SermonSource          *string                         `json:"sermon_source"`
+	IsDeleted             bool                            `json:"is_deleted"`
+	PublishedAt           time.Time                       `json:"published_at"`
+	AuthorHandle          string                          `json:"author_handle"`
+	AuthorName            string                          `json:"author_name"`
+	CoverImageUrl         *string                         `json:"cover_image_url,omitempty"`
+	ReflectionImageUrl    *string                         `json:"reflection_image_url,omitempty"`
+	SoundID               *uuid.UUID                      `json:"sound_id,omitempty"`
+	PostType              generated.PostType              `json:"post_type"`
+	AuthorAvatarUrl       *string                         `json:"author_avatar_url,omitempty"`
+	ScriptureRefs         []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
+	Tags                  []string                        `json:"tags,omitempty"`
+	AmenCount             int32                           `json:"amen_count"`
+	InsightCount          int32                           `json:"insight_count"`
+	ThoughtProvokingCount int32                           `json:"thought_provoking_count"`
+	CommentCount          int32                           `json:"comment_count"`
 }
 
 func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
@@ -129,6 +133,18 @@ func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -136,8 +152,10 @@ func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
@@ -174,6 +192,18 @@ func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -181,8 +211,10 @@ func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 
@@ -220,6 +252,18 @@ func mapExplorePost(row generated.GetExplorePostsRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -227,8 +271,10 @@ func mapExplorePost(row generated.GetExplorePostsRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 
@@ -266,6 +312,18 @@ func mapExploreTagPost(row generated.GetExplorePostsByTagRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -273,8 +331,10 @@ func mapExploreTagPost(row generated.GetExplorePostsByTagRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 
@@ -312,6 +372,18 @@ func mapExploreScripturePost(row generated.GetExplorePostsByScriptureRow) FeedPo
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -319,8 +391,10 @@ func mapExploreScripturePost(row generated.GetExplorePostsByScriptureRow) FeedPo
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 
@@ -358,6 +432,18 @@ func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -365,8 +451,10 @@ func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 
@@ -404,6 +492,18 @@ func mapChurchPost(row generated.GetChurchPostsRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -411,8 +511,10 @@ func mapChurchPost(row generated.GetChurchPostsRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 
@@ -450,6 +552,18 @@ func mapForYouPost(row generated.GetForYouPostsRow) FeedPost {
 			}
 			return nil
 		}(),
+		ReflectionImageUrl: func() *string {
+			if row.ReflectionImageUrl.Valid {
+				return &row.ReflectionImageUrl.String
+			}
+			return nil
+		}(),
+		SoundID: func() *uuid.UUID {
+			if row.SoundID.Valid {
+				return &row.SoundID.UUID
+			}
+			return nil
+		}(),
 		PostType: row.PostType,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
@@ -457,8 +571,10 @@ func mapForYouPost(row generated.GetForYouPostsRow) FeedPost {
 			}
 			return nil
 		}(),
-		AmenCount:      row.AmenCount,
-		CommentCount:   row.CommentCount,
+		AmenCount:             row.AmenCount,
+		InsightCount:          row.InsightCount,
+		ThoughtProvokingCount: row.ThoughtProvokingCount,
+		CommentCount:          row.CommentCount,
 	}
 }
 

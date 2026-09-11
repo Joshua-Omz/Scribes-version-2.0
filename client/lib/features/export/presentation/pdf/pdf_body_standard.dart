@@ -14,7 +14,7 @@ List<pw.Widget> buildPdfStandardBody(ExportAssetBundle assets) {
   widgets.add(buildPdfTitleBlock(assets));
 
   // 2. Parse Delta and render structured PDF widgets
-  final content = assets.post.content;
+  final content = assets.document.bodyContent;
   final deltaOps = _extractDeltaOps(content);
 
   final bodyWidgets = deltaToPdfWidgets(

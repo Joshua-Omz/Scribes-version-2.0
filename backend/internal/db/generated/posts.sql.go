@@ -72,7 +72,7 @@ INSERT INTO posts (
     post_type
 ) VALUES (
     $1, $2, $3, $4, $5, true, $6, $7, $8
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
 `
 
 type CreateCorrectionPostParams struct {
@@ -115,6 +115,8 @@ func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrection
 		&i.Embedding,
 		&i.PostType,
 		&i.CoverImageUrl,
+		&i.ReflectionImageUrl,
+		&i.SoundID,
 	)
 	return i, err
 }
@@ -127,20 +129,24 @@ INSERT INTO posts (
     visibility,
     sermon_source,
     cover_image_url,
+    reflection_image_url,
+    sound_id,
     post_type
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
 `
 
 type CreatePostParams struct {
-	AuthorID      uuid.UUID       `json:"author_id"`
-	Content       json.RawMessage `json:"content"`
-	Caption       sql.NullString  `json:"caption"`
-	Visibility    PostVisibility  `json:"visibility"`
-	SermonSource  sql.NullString  `json:"sermon_source"`
-	CoverImageUrl sql.NullString  `json:"cover_image_url"`
-	PostType      PostType        `json:"post_type"`
+	AuthorID           uuid.UUID       `json:"author_id"`
+	Content            json.RawMessage `json:"content"`
+	Caption            sql.NullString  `json:"caption"`
+	Visibility         PostVisibility  `json:"visibility"`
+	SermonSource       sql.NullString  `json:"sermon_source"`
+	CoverImageUrl      sql.NullString  `json:"cover_image_url"`
+	ReflectionImageUrl sql.NullString  `json:"reflection_image_url"`
+	SoundID            uuid.NullUUID   `json:"sound_id"`
+	PostType           PostType        `json:"post_type"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
@@ -151,6 +157,8 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		arg.Visibility,
 		arg.SermonSource,
 		arg.CoverImageUrl,
+		arg.ReflectionImageUrl,
+		arg.SoundID,
 		arg.PostType,
 	)
 	var i Post
@@ -171,6 +179,8 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.Embedding,
 		&i.PostType,
 		&i.CoverImageUrl,
+		&i.ReflectionImageUrl,
+		&i.SoundID,
 	)
 	return i, err
 }
@@ -192,31 +202,39 @@ func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, u.handle AS author_handle, u.display_name AS author_name 
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, p.reflection_image_url, p.sound_id, u.handle AS author_handle, u.display_name AS author_name,
+       s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
 FROM posts p
 JOIN users u ON p.author_id = u.id
+LEFT JOIN sound_pool s ON p.sound_id = s.id
 WHERE p.id = $1 AND p.is_deleted = false LIMIT 1
 `
 
 type GetPostByIDRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	ServerSequence int64           `json:"server_sequence"`
-	SearchVector   interface{}     `json:"search_vector"`
-	Embedding      interface{}     `json:"embedding"`
-	PostType       PostType        `json:"post_type"`
-	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID                   uuid.UUID       `json:"id"`
+	AuthorID             uuid.UUID       `json:"author_id"`
+	Content              json.RawMessage `json:"content"`
+	Caption              sql.NullString  `json:"caption"`
+	Visibility           PostVisibility  `json:"visibility"`
+	CurrentVersion       int32           `json:"current_version"`
+	IsCorrection         bool            `json:"is_correction"`
+	CorrectsPostID       uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource         sql.NullString  `json:"sermon_source"`
+	IsDeleted            bool            `json:"is_deleted"`
+	PublishedAt          time.Time       `json:"published_at"`
+	ServerSequence       int64           `json:"server_sequence"`
+	SearchVector         interface{}     `json:"search_vector"`
+	Embedding            interface{}     `json:"embedding"`
+	PostType             PostType        `json:"post_type"`
+	CoverImageUrl        sql.NullString  `json:"cover_image_url"`
+	ReflectionImageUrl   sql.NullString  `json:"reflection_image_url"`
+	SoundID              uuid.NullUUID   `json:"sound_id"`
+	AuthorHandle         string          `json:"author_handle"`
+	AuthorName           string          `json:"author_name"`
+	SoundTitle           sql.NullString  `json:"sound_title"`
+	SoundCategory        sql.NullString  `json:"sound_category"`
+	SoundAudioUrl        sql.NullString  `json:"sound_audio_url"`
+	SoundDurationSeconds sql.NullInt32   `json:"sound_duration_seconds"`
 }
 
 func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (GetPostByIDRow, error) {
@@ -239,8 +257,14 @@ func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (GetPostByIDRow
 		&i.Embedding,
 		&i.PostType,
 		&i.CoverImageUrl,
+		&i.ReflectionImageUrl,
+		&i.SoundID,
 		&i.AuthorHandle,
 		&i.AuthorName,
+		&i.SoundTitle,
+		&i.SoundCategory,
+		&i.SoundAudioUrl,
+		&i.SoundDurationSeconds,
 	)
 	return i, err
 }
@@ -332,32 +356,40 @@ func (q *Queries) GetScriptureRefsForPosts(ctx context.Context, dollar_1 []uuid.
 }
 
 const listPostsByAuthor = `-- name: ListPostsByAuthor :many
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, u.handle AS author_handle, u.display_name AS author_name 
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, p.reflection_image_url, p.sound_id, u.handle AS author_handle, u.display_name AS author_name,
+       s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
 FROM posts p
 JOIN users u ON p.author_id = u.id
+LEFT JOIN sound_pool s ON p.sound_id = s.id
 WHERE p.author_id = $1 AND p.is_deleted = false
 ORDER BY p.published_at DESC
 `
 
 type ListPostsByAuthorRow struct {
-	ID             uuid.UUID       `json:"id"`
-	AuthorID       uuid.UUID       `json:"author_id"`
-	Content        json.RawMessage `json:"content"`
-	Caption        sql.NullString  `json:"caption"`
-	Visibility     PostVisibility  `json:"visibility"`
-	CurrentVersion int32           `json:"current_version"`
-	IsCorrection   bool            `json:"is_correction"`
-	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
-	SermonSource   sql.NullString  `json:"sermon_source"`
-	IsDeleted      bool            `json:"is_deleted"`
-	PublishedAt    time.Time       `json:"published_at"`
-	ServerSequence int64           `json:"server_sequence"`
-	SearchVector   interface{}     `json:"search_vector"`
-	Embedding      interface{}     `json:"embedding"`
-	PostType       PostType        `json:"post_type"`
-	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
-	AuthorHandle   string          `json:"author_handle"`
-	AuthorName     string          `json:"author_name"`
+	ID                   uuid.UUID       `json:"id"`
+	AuthorID             uuid.UUID       `json:"author_id"`
+	Content              json.RawMessage `json:"content"`
+	Caption              sql.NullString  `json:"caption"`
+	Visibility           PostVisibility  `json:"visibility"`
+	CurrentVersion       int32           `json:"current_version"`
+	IsCorrection         bool            `json:"is_correction"`
+	CorrectsPostID       uuid.NullUUID   `json:"corrects_post_id"`
+	SermonSource         sql.NullString  `json:"sermon_source"`
+	IsDeleted            bool            `json:"is_deleted"`
+	PublishedAt          time.Time       `json:"published_at"`
+	ServerSequence       int64           `json:"server_sequence"`
+	SearchVector         interface{}     `json:"search_vector"`
+	Embedding            interface{}     `json:"embedding"`
+	PostType             PostType        `json:"post_type"`
+	CoverImageUrl        sql.NullString  `json:"cover_image_url"`
+	ReflectionImageUrl   sql.NullString  `json:"reflection_image_url"`
+	SoundID              uuid.NullUUID   `json:"sound_id"`
+	AuthorHandle         string          `json:"author_handle"`
+	AuthorName           string          `json:"author_name"`
+	SoundTitle           sql.NullString  `json:"sound_title"`
+	SoundCategory        sql.NullString  `json:"sound_category"`
+	SoundAudioUrl        sql.NullString  `json:"sound_audio_url"`
+	SoundDurationSeconds sql.NullInt32   `json:"sound_duration_seconds"`
 }
 
 func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]ListPostsByAuthorRow, error) {
@@ -386,8 +418,14 @@ func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]
 			&i.Embedding,
 			&i.PostType,
 			&i.CoverImageUrl,
+			&i.ReflectionImageUrl,
+			&i.SoundID,
 			&i.AuthorHandle,
 			&i.AuthorName,
+			&i.SoundTitle,
+			&i.SoundCategory,
+			&i.SoundAudioUrl,
+			&i.SoundDurationSeconds,
 		); err != nil {
 			return nil, err
 		}
@@ -409,7 +447,7 @@ SET content = $2,
     current_version = current_version + 1,
     cover_image_url = $5
 WHERE id = $1 AND author_id = $4 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
 `
 
 type RevisePostParams struct {
@@ -446,6 +484,8 @@ func (q *Queries) RevisePost(ctx context.Context, arg RevisePostParams) (Post, e
 		&i.Embedding,
 		&i.PostType,
 		&i.CoverImageUrl,
+		&i.ReflectionImageUrl,
+		&i.SoundID,
 	)
 	return i, err
 }
@@ -459,7 +499,7 @@ SET content = $2,
     current_version = $6,
     cover_image_url = $8
 WHERE id = $1 AND author_id = $7 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
 `
 
 type UpdatePostParams struct {
@@ -502,6 +542,8 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.Embedding,
 		&i.PostType,
 		&i.CoverImageUrl,
+		&i.ReflectionImageUrl,
+		&i.SoundID,
 	)
 	return i, err
 }

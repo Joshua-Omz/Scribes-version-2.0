@@ -18,6 +18,7 @@ import '../application/compose_provider.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_image_resolver.dart';
 import '../../search/data/search_repository.dart';
+import '../../../core/theme/scribes_quill_scripture_helper.dart';
 
 class PublishMetadataScreen extends ConsumerStatefulWidget {
   const PublishMetadataScreen({super.key});
@@ -31,6 +32,33 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
   final TextEditingController _tagController = TextEditingController();
   final FocusNode _tagFocusNode = FocusNode();
   bool _isUploadingCover = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final composeState = ref.read(composeProvider);
+      if (composeState.contentDelta != null) {
+        final inlineRefs = ScribesQuillScriptureHelper.extractScriptureRefs(
+          composeState.contentDelta,
+        );
+        for (final refStr in inlineRefs) {
+          final parsed = ScriptureRef.tryParse(refStr);
+          if (parsed != null &&
+              !composeState.scriptureRefs.any(
+                (r) =>
+                    r.book.toLowerCase() == parsed.book.toLowerCase() &&
+                    r.chapter == parsed.chapter &&
+                    r.verseStart == parsed.verseStart,
+              )) {
+            if (ref.read(composeProvider).scriptureRefs.length < 3) {
+              ref.read(composeProvider.notifier).addScriptureRef(parsed);
+            }
+          }
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -133,35 +161,25 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                           context.push('/auth');
                           return;
                         }
-                        // Optimistically fire the publish operation
-                        ref
-                            .read(composeProvider.notifier)
-                            .publishToCloud()
-                            .catchError((err) {
-                              if (context.mounted) {
-                                ScribesToast.show(
-                                  context,
-                                  'Error publishing: $err',
-                                  colors,
-                                  isError: true,
-                                );
-                              }
-                            });
 
-                        // Immediately show the success toast
+                        // 1. Immediately show celebratory feedback
                         ScribesToast.show(
                           context,
-                          'Post published!',
+                          'Post published to the scroll!',
                           colors,
                           icon: HugeIcons.strokeRoundedCheckmarkBadge01,
                         );
 
-                        // Wait 2 seconds before routing to the feed screen
-                        Future.delayed(const Duration(seconds: 2), () {
-                          if (context.mounted) {
-                            context.go('/');
-                          }
-                        });
+                        // 2. Immediate zero-latency navigation to Home feed
+                        context.go('/');
+
+                        // 3. Fire the background publish pipeline
+                        ref
+                            .read(composeProvider.notifier)
+                            .publishToCloud()
+                            .catchError((err) {
+                              debugPrint('Background publish error: $err');
+                            });
                       },
                       child: Text(
                         'Publish',
@@ -210,7 +228,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
 
       if (croppedFile == null) return;
 
-      // 1. Set local cropped file path immediately for zero-latency preview
+      // 1. Set local cropped file path immediately for zero-latency instant preview
       ref
           .read(composeProvider.notifier)
           .updateMetadata(coverImageUrl: croppedFile.path);
@@ -225,32 +243,26 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
         mimeType = 'image/webp';
       }
 
-      try {
-        final uploadedUrl = await mediaApi.uploadImage(
-          File(croppedFile.path),
-          mimeType,
-        );
-
-        ref
-            .read(composeProvider.notifier)
-            .updateMetadata(coverImageUrl: uploadedUrl);
-
-        if (mounted) {
-          ScribesToast.show(context, 'Cover image added!', colors);
-        }
-      } catch (e) {
-        // If remote upload fails, retain local image path so preview works seamlessly
-        if (mounted) {
-          ScribesToast.show(
-            context,
-            'Cover image set locally ($e)',
-            colors,
-            isError: false,
-          );
-        }
+      // Background asynchronous upload without freezing UI
+      mediaApi
+          .uploadImage(File(croppedFile.path), mimeType)
+          .then((uploadedUrl) {
+            if (mounted) {
+              ref
+                  .read(composeProvider.notifier)
+                  .updateMetadata(coverImageUrl: uploadedUrl);
+              setState(() => _isUploadingCover = false);
+            }
+          })
+          .catchError((e) {
+            if (mounted) {
+              setState(() => _isUploadingCover = false);
+            }
+          });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isUploadingCover = false);
       }
-    } finally {
-      if (mounted) setState(() => _isUploadingCover = false);
     }
   }
 
@@ -374,118 +386,45 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Post Type Selection
-                    Text(
-                      'Post Type',
-                      style: ScribesTextStyles.labelSm.copyWith(
-                        color: colors.secondaryText,
-                        letterSpacing: 1.2,
-                      ),
+                    // Cover Image Selection
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Cover Image',
+                              style: ScribesTextStyles.labelSm.copyWith(
+                                color: colors.secondaryText,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '(Optional)',
+                              style: ScribesTextStyles.caption.copyWith(
+                                color: colors.secondaryText.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (composeState.coverImageUrl != null)
+                          TextButton(
+                            onPressed: _removeCoverImage,
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(0, 0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              'Remove',
+                              style: ScribesTextStyles.labelSm.copyWith(
+                                color: colors.orange,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: colors.surface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: colors.border),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => ref
-                                  .read(composeProvider.notifier)
-                                  .updateMetadata(postType: 'standard'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: composeState.postType == 'standard'
-                                      ? colors.gold.withValues(alpha: 0.1)
-                                      : Colors.transparent,
-                                  borderRadius: const BorderRadius.horizontal(
-                                    left: Radius.circular(8),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'Standard',
-                                    style: ScribesTextStyles.labelLg.copyWith(
-                                      color: composeState.postType == 'standard'
-                                          ? colors.gold
-                                          : colors.secondaryText,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Container(width: 1, height: 24, color: colors.border),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => ref
-                                  .read(composeProvider.notifier)
-                                  .updateMetadata(postType: 'passage'),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: composeState.postType == 'passage'
-                                      ? colors.gold.withValues(alpha: 0.1)
-                                      : Colors.transparent,
-                                  borderRadius: const BorderRadius.horizontal(
-                                    right: Radius.circular(8),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'Passage',
-                                    style: ScribesTextStyles.labelLg.copyWith(
-                                      color: composeState.postType == 'passage'
-                                          ? colors.gold
-                                          : colors.secondaryText,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Cover Image Selection (Standard posts only)
-                    if (composeState.postType == 'standard') ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Cover Image',
-                            style: ScribesTextStyles.labelSm.copyWith(
-                              color: colors.secondaryText,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          if (composeState.coverImageUrl != null)
-                            TextButton(
-                              onPressed: _removeCoverImage,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: const Size(0, 0),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                'Remove',
-                                style: ScribesTextStyles.labelSm.copyWith(
-                                  color: colors.orange,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: _isUploadingCover
@@ -604,7 +543,6 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                    ],
 
                     // Scripture Tags Section
                     Row(

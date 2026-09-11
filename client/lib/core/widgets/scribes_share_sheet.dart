@@ -48,10 +48,10 @@ class ScribesShareSheet extends ConsumerWidget {
       }
     }
 
-    if (targetPost != null) {
+    if (targetPost != null && targetPost.postType == 'standard') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (parentContext.mounted) {
-          ExportLoadingSheet.show(parentContext, targetPost!);
+          ExportLoadingSheet.showForPost(parentContext, targetPost!);
         }
       });
     }
@@ -60,6 +60,7 @@ class ScribesShareSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
+    final isStandardPost = post == null || post!.postType == 'standard';
 
     return Material(
       color: colors.surface,
@@ -88,28 +89,29 @@ class ScribesShareSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            ListTile(
-              leading: HugeIcon(
-                icon: HugeIcons.strokeRoundedFile02,
-                color: colors.gold,
-                size: 24,
-              ),
-              title: Text(
-                'Export Manuscript (PDF)',
-                style: ScribesTextStyles.bodyLg.copyWith(
-                  color: colors.primaryText,
-                  fontWeight: FontWeight.w600,
+            if (isStandardPost)
+              ListTile(
+                leading: HugeIcon(
+                  icon: HugeIcons.strokeRoundedFile02,
+                  color: colors.gold,
+                  size: 24,
                 ),
-              ),
-              subtitle: Text(
-                'Illuminated PDF with scripture and theme styling',
-                style: ScribesTextStyles.labelSm.copyWith(
-                  color: colors.secondaryText,
+                title: Text(
+                  'Export Manuscript (PDF)',
+                  style: ScribesTextStyles.bodyLg.copyWith(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
+                subtitle: Text(
+                  'Illuminated PDF with scripture and theme styling',
+                  style: ScribesTextStyles.labelSm.copyWith(
+                    color: colors.secondaryText,
+                  ),
+                ),
+                onTap: () => _exportAsPdf(context, ref),
+                contentPadding: EdgeInsets.zero,
               ),
-              onTap: () => _exportAsPdf(context, ref),
-              contentPadding: EdgeInsets.zero,
-            ),
             ListTile(
               leading: HugeIcon(
                 icon: HugeIcons.strokeRoundedLink01,

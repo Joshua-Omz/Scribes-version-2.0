@@ -5,10 +5,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
+import '../../auth/application/auth_notifier.dart';
+import '../../export/domain/exportable_document.dart';
+import '../../export/presentation/export_loading_sheet.dart';
+import '../../notes/domain/note.dart';
 import '../application/notes_list_provider.dart';
 import '../application/note_editor_provider.dart';
 import '../../../core/widgets/scribes_grid_card.dart';
+import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_text_field.dart';
+import '../../../core/widgets/scribes_bottom_nav.dart';
 
 class NotesListScreen extends ConsumerStatefulWidget {
   const NotesListScreen({super.key});
@@ -30,6 +36,12 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    ref.read(shellFabOverrideProvider.notifier).clear();
+    super.dispose();
+  }
+
   void _toggleSelection(String id) {
     setState(() {
       if (_selectedIds.contains(id)) {
@@ -38,6 +50,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
         _selectedIds.add(id);
       }
     });
+    _updateShellFab();
   }
 
   @override
@@ -67,6 +80,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
               onPressed: () {
                 if (isSelectionMode) {
                   setState(() => _selectedIds.clear());
+                  _updateShellFab();
                 } else if (_isSearchActive) {
                   setState(() {
                     _isSearchActive = false;
@@ -221,7 +235,13 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                       excerpt: snippet,
                       date: note.updatedAt,
                       isSelected: _selectedIds.contains(note.id),
-                      onLongPress: () => _toggleSelection(note.id),
+                      onLongPress: () {
+                        if (isSelectionMode) {
+                          _toggleSelection(note.id);
+                        } else {
+                          _showNoteOptions(note, colors);
+                        }
+                      },
                       onTap: () {
                         if (isSelectionMode) {
                           _toggleSelection(note.id);
@@ -258,44 +278,172 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
           ),
         ],
       ),
-      floatingActionButton: isSelectionMode
-          ? FloatingActionButton.extended(
-              heroTag: null,
-              backgroundColor: Colors.red.shade400,
-              foregroundColor: colors.surfaceRaised,
-              onPressed: () {
-                for (final id in _selectedIds) {
-                  ref.read(notesListProvider.notifier).deleteNote(id);
-                }
-                final count = _selectedIds.length;
-                setState(() => _selectedIds.clear());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Deleted $count note(s)')),
-                );
-              },
-              icon: HugeIcon(
-                icon: HugeIcons.strokeRoundedDelete02,
-                color: colors.surfaceRaised,
+    );
+  }
+
+  void _updateShellFab() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_selectedIds.isEmpty) {
+        ref.read(shellFabOverrideProvider.notifier).clear();
+      } else {
+        ref.read(shellFabOverrideProvider.notifier).set(_buildSelectionActions());
+      }
+    });
+  }
+
+  Widget _buildSelectionActions() {
+    final colors = ref.read(themeProvider);
+    final notesAsync = ref.read(notesListProvider);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FloatingActionButton.extended(
+          heroTag: 'export_selected_notes',
+          backgroundColor: colors.surfaceRaised,
+          foregroundColor: colors.gold,
+          elevation: 4,
+          onPressed: () {
+            final allNotes = notesAsync.value ?? [];
+            final selectedNotes = allNotes
+                .where((n) => _selectedIds.contains(n.id))
+                .toList();
+            if (selectedNotes.isEmpty) return;
+            final user = ref.read(authProvider).value;
+            final docs = selectedNotes
+                .map((n) => NoteExportAdapter(n, currentUser: user))
+                .toList();
+            ExportLoadingSheet.showForCompendium(
+              context,
+              docs,
+              title: 'Study Notes Compendium (${docs.length})',
+            );
+          },
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedFile02,
+            color: colors.gold,
+          ),
+          label: Text(
+            'Export (${_selectedIds.length})',
+            style: ScribesTextStyles.labelLg.copyWith(
+              color: colors.primaryText,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        FloatingActionButton.extended(
+          heroTag: 'delete_selected_notes',
+          backgroundColor: Colors.red.shade400,
+          foregroundColor: colors.surfaceRaised,
+          elevation: 4,
+          onPressed: () {
+            for (final id in _selectedIds) {
+              ref.read(notesListProvider.notifier).deleteNote(id);
+            }
+            final count = _selectedIds.length;
+            setState(() {
+              _selectedIds.clear();
+            });
+            _updateShellFab();
+            ScribesToast.show(
+              context,
+              'Deleted $count note(s)',
+              colors,
+            );
+          },
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedDelete02,
+            color: colors.surfaceRaised,
+          ),
+          label: Text(
+            'Delete',
+            style: ScribesTextStyles.labelLg.copyWith(
+              color: colors.surfaceRaised,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showNoteOptions(Note note, dynamic colors) {
+    final user = ref.read(authProvider).value;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.surfaceRaised,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedQuillWrite02,
+                color: colors.primaryText,
               ),
-              label: Text(
-                'Delete',
-                style: ScribesTextStyles.labelLg.copyWith(
-                  color: colors.surfaceRaised,
-                ),
-              ),
-            )
-          : FloatingActionButton(
-              heroTag: null,
-              backgroundColor: colors.gold,
-              child: HugeIcon(
-                icon: HugeIcons.strokeRoundedPlusSign,
-                color: colors.surfaceRaised,
-              ),
-              onPressed: () {
-                ref.read(noteEditorProvider.notifier).reset();
+              title: Text('Edit Note', style: TextStyle(color: colors.primaryText)),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref.read(noteEditorProvider.notifier).loadNote(
+                      note.id,
+                      note.content,
+                      title: note.title,
+                      notebookId: note.notebookId,
+                    );
                 context.push('/notes/edit');
               },
             ),
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedFile02,
+                color: colors.gold,
+              ),
+              title: Text(
+                'Export Manuscript (PDF)',
+                style: TextStyle(color: colors.gold, fontWeight: FontWeight.w600),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                ExportLoadingSheet.showForNote(
+                  context,
+                  note,
+                  currentUser: user,
+                );
+              },
+            ),
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedCheckList,
+                color: colors.secondaryText,
+              ),
+              title: Text('Select Item', style: TextStyle(color: colors.secondaryText)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _toggleSelection(note.id);
+              },
+            ),
+            ListTile(
+              leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedDelete02,
+                color: Colors.red.shade400,
+              ),
+              title: Text(
+                'Delete Note',
+                style: TextStyle(color: Colors.red.shade400),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                ref.read(notesListProvider.notifier).deleteNote(note.id);
+                ScribesToast.show(context, 'Note deleted', colors);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

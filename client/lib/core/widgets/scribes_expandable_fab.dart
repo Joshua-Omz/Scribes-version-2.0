@@ -1,9 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/compose/application/compose_provider.dart';
+import '../../features/compose/presentation/compose_type_sheet.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'scribes_bounce_button.dart';
@@ -103,8 +102,7 @@ class _ScribesExpandableFabState extends ConsumerState<ScribesExpandableFab>
                 label: 'Create Post',
                 icon: HugeIcons.strokeRoundedPencilEdit02,
                 onTap: () {
-                  ref.read(composeProvider.notifier).reset();
-                  context.push('/compose');
+                  ComposeTypeSheet.show(context);
                 },
                 index: 0,
               ),
@@ -117,51 +115,42 @@ class _ScribesExpandableFabState extends ConsumerState<ScribesExpandableFab>
           child: Container(
             width: 56,
             height: 56,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(18)),
-            child: ClipRRect(
+            decoration: BoxDecoration(
+              color: colors.surfaceRaised.withValues(alpha: 0.96),
               borderRadius: BorderRadius.circular(18),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: colors.glassBlur,
-                  sigmaY: colors.glassBlur,
+              border: Border.all(
+                color: colors.gold.withValues(alpha: 0.75),
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, anim) => RotationTransition(
+                  turns: child.key == const ValueKey('close')
+                      ? Tween<double>(
+                          begin: -0.25,
+                          end: 0.0,
+                        ).animate(anim)
+                      : Tween<double>(
+                          begin: 0.25,
+                          end: 0.0,
+                        ).animate(anim),
+                  child: FadeTransition(opacity: anim, child: child),
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: colors.glassFill,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: colors.goldEdge, width: 1.5),
-                  ),
-                  child: Center(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      transitionBuilder: (child, anim) => RotationTransition(
-                        turns: child.key == const ValueKey('close')
-                            ? Tween<double>(
-                                begin: -0.25,
-                                end: 0.0,
-                              ).animate(anim)
-                            : Tween<double>(
-                                begin: 0.25,
-                                end: 0.0,
-                              ).animate(anim),
-                        child: FadeTransition(opacity: anim, child: child),
+                child: _isOpen
+                    ? HugeIcon(
+                        key: const ValueKey('close'),
+                        icon: HugeIcons.strokeRoundedCancel01,
+                        color: colors.gold,
+                        size: 24,
+                      )
+                    : HugeIcon(
+                        key: const ValueKey('open'),
+                        icon: HugeIcons.strokeRoundedQuillWrite01,
+                        color: colors.gold,
+                        size: 24,
                       ),
-                      child: _isOpen
-                          ? HugeIcon(
-                              key: const ValueKey('close'),
-                              icon: HugeIcons.strokeRoundedCancel01,
-                              color: colors.primaryText,
-                              size: 26,
-                            )
-                          : HugeIcon(
-                              key: const ValueKey('open'),
-                              icon: HugeIcons.strokeRoundedQuillWrite01,
-                              color: colors.primaryText,
-                              size: 26,
-                            ),
-                    ),
-                  ),
-                ),
               ),
             ),
           ),
@@ -199,30 +188,24 @@ class _ScribesExpandableFabState extends ConsumerState<ScribesExpandableFab>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: colors.glassBlur,
-                    sigmaY: colors.glassBlur,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.surfaceRaised.withValues(alpha: 0.96),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: colors.gold.withValues(alpha: 0.4),
+                    width: 1.0,
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.glassFill,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: colors.border, width: 1.0),
-                    ),
-                    child: Text(
-                      label,
-                      style: ScribesTextStyles.labelLg.copyWith(
-                        color: colors.primaryText,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                ),
+                child: Text(
+                  label,
+                  style: ScribesTextStyles.labelLg.copyWith(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -236,29 +219,18 @@ class _ScribesExpandableFabState extends ConsumerState<ScribesExpandableFab>
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
+                    color: colors.surfaceRaised.withValues(alpha: 0.96),
                     borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: colors.gold.withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: colors.glassBlur,
-                        sigmaY: colors.glassBlur,
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.glassFill,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: colors.border, width: 1.0),
-                        ),
-                        child: Center(
-                          child: HugeIcon(
-                            icon: icon,
-                            color: colors.primaryText,
-                            size: 20,
-                          ),
-                        ),
-                      ),
+                  child: Center(
+                    child: HugeIcon(
+                      icon: icon,
+                      color: colors.gold,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -271,3 +243,4 @@ class _ScribesExpandableFabState extends ConsumerState<ScribesExpandableFab>
     );
   }
 }
+

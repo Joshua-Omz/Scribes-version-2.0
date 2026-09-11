@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'scribes_brand_logo.dart';
 
 class ScribesEmptyState extends ConsumerWidget {
   final dynamic icon;
@@ -10,14 +11,16 @@ class ScribesEmptyState extends ConsumerWidget {
   final String subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final bool useBrandMark;
 
   const ScribesEmptyState({
     super.key,
-    required this.icon,
+    this.icon,
     required this.title,
     required this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.useBrandMark = false,
   });
 
   @override
@@ -35,9 +38,18 @@ class ScribesEmptyState extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: colors.surfaceRaised,
                 shape: BoxShape.circle,
-                border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+                border: Border.all(
+                  color: (useBrandMark || icon == null)
+                      ? colors.gold.withValues(alpha: 0.3)
+                      : colors.border.withValues(alpha: 0.5),
+                ),
               ),
-              child: HugeIcon(icon: icon, size: 48, color: colors.goldMuted),
+              child: (useBrandMark || icon == null)
+                  ? const ScribesBrandLogo(
+                      variant: BrandLogoVariant.iconOnly,
+                      size: 46,
+                    )
+                  : HugeIcon(icon: icon, size: 48, color: colors.goldMuted),
             ),
             const SizedBox(height: 24),
             Text(

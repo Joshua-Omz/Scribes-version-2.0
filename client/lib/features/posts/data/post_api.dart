@@ -13,6 +13,11 @@ class PostApi {
 
   PostApi(this._dio);
 
+  Future<Map<String, dynamic>> createPost(Map<String, dynamic> data) async {
+    final response = await _dio.post(Endpoints.posts, data: data);
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> getPost(String id) async {
     final response = await _dio.get('${Endpoints.posts}/$id');
     final data = response.data;

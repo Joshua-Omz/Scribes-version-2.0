@@ -15,6 +15,7 @@ import '../../features/posts/presentation/post_detail_screen.dart';
 import '../../features/compose/presentation/draft_editor_screen.dart';
 import '../../features/compose/presentation/draft_preview_screen.dart';
 import '../../features/compose/presentation/publish_metadata_screen.dart';
+import '../../features/compose/presentation/reflection_composer.dart';
 import '../../features/posts/presentation/revise_post_screen.dart';
 import '../../features/posts/domain/post.dart';
 import '../../features/draft/presentation/drafts_list_screen.dart';
@@ -34,6 +35,8 @@ import '../../features/settings/presentation/email_password_screen.dart';
 import '../../features/settings/presentation/notifications_settings_screen.dart';
 import '../../features/social/presentation/bookmarks_screen.dart';
 import '../../features/bible/presentation/bible_drawer.dart';
+import '../../features/compose/presentation/passage_composer.dart';
+import '../../features/passage/presentation/passage_viewer_screen.dart';
 import '../widgets/scribes_bottom_nav.dart';
 import 'transitions.dart';
 
@@ -72,6 +75,8 @@ GoRouter appRouter(Ref ref) {
         '/notes',
         '/notes/edit',
         '/compose',
+        '/compose/reflection',
+        '/compose/passage',
         '/compose/preview',
         '/compose/publish',
         '/drafts',
@@ -79,6 +84,7 @@ GoRouter appRouter(Ref ref) {
       final isPublicRoute =
           publicRoutes.contains(state.matchedLocation) ||
           state.matchedLocation.startsWith('/posts/') ||
+          state.matchedLocation.startsWith('/passage/') ||
           state.matchedLocation.startsWith('/users/');
 
       // Redirect away from splash once auth state is resolved
@@ -240,6 +246,22 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
+        path: '/compose/reflection',
+        pageBuilder: (context, state) => buildPageWithSlideUpTransition(
+          context: context,
+          state: state,
+          child: const ReflectionComposerScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/compose/passage',
+        pageBuilder: (context, state) => buildPageWithSlideUpTransition(
+          context: context,
+          state: state,
+          child: const PassageComposerScreen(),
+        ),
+      ),
+      GoRoute(
         path: '/compose/preview',
         pageBuilder: (context, state) => buildPageWithSlideRightTransition(
           context: context,
@@ -262,6 +284,17 @@ GoRouter appRouter(Ref ref) {
           state: state,
           child: const PublishMetadataScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/passage/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return buildPageWithSlideRightTransition(
+            context: context,
+            state: state,
+            child: PassageViewerScreen(postId: id),
+          );
+        },
       ),
       GoRoute(
         path: '/posts/:id',

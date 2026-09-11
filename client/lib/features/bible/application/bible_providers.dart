@@ -171,3 +171,53 @@ final bibleNavigationProvider =
     NotifierProvider<BibleNavigationNotifier, BibleNavigationState>(
       BibleNavigationNotifier.new,
     );
+
+class BibleReaderSettings {
+  final double fontSize;
+  final bool isSerif;
+  final bool isVerseByVerse;
+  final double lineSpacing;
+
+  const BibleReaderSettings({
+    this.fontSize = 22.0,
+    this.isSerif = true,
+    this.isVerseByVerse = false,
+    this.lineSpacing = 1.9,
+  });
+
+  BibleReaderSettings copyWith({
+    double? fontSize,
+    bool? isSerif,
+    bool? isVerseByVerse,
+    double? lineSpacing,
+  }) {
+    return BibleReaderSettings(
+      fontSize: fontSize ?? this.fontSize,
+      isSerif: isSerif ?? this.isSerif,
+      isVerseByVerse: isVerseByVerse ?? this.isVerseByVerse,
+      lineSpacing: lineSpacing ?? this.lineSpacing,
+    );
+  }
+}
+
+class BibleReaderSettingsNotifier extends Notifier<BibleReaderSettings> {
+  @override
+  BibleReaderSettings build() => const BibleReaderSettings();
+
+  void setFontSize(double size) {
+    state = state.copyWith(fontSize: size.clamp(16.0, 30.0));
+  }
+
+  void toggleFontFamily() {
+    state = state.copyWith(isSerif: !state.isSerif);
+  }
+
+  void toggleLayout() {
+    state = state.copyWith(isVerseByVerse: !state.isVerseByVerse);
+  }
+}
+
+final bibleReaderSettingsProvider =
+    NotifierProvider<BibleReaderSettingsNotifier, BibleReaderSettings>(
+      BibleReaderSettingsNotifier.new,
+    );

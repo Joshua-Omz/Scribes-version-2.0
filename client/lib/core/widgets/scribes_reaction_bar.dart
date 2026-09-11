@@ -74,17 +74,7 @@ class ScribesReactionBar extends ConsumerWidget {
             color: colors.primaryText,
             colors: colors,
           ),
-          if (onShare != null) ...[
-            const SizedBox(width: 12),
-            _ReactionChip(
-              icon: HugeIcons.strokeRoundedShare01,
-              label: 'Share',
-              count: '',
-              onTap: onShare!,
-              color: colors.primaryText,
-              colors: colors,
-            ),
-          ],
+        
         ],
       ),
     );

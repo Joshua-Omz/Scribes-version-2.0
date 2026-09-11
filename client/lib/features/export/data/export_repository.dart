@@ -6,10 +6,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../../bible/data/bible_repository.dart';
-import '../../posts/domain/post.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/widgets/scribes_image_resolver.dart';
 import '../domain/export_asset_bundle.dart';
+import '../domain/exportable_document.dart';
 import '../presentation/pdf/pdf_theme.dart';
 
 final exportRepositoryProvider = Provider<ExportRepository>((ref) {
@@ -25,12 +24,12 @@ class ExportRepository {
   ExportRepository(this._dio, this._bibleRepository);
 
   Future<ExportAssetBundle> gatherAssets(
-    Post post,
+    ExportableDocument document,
     ScribesTheme theme,
   ) async {
     // 1. Fetch Cover Image Bytes
     Uint8List? coverBytes;
-    final imageUrl = ScribesImageResolver.extractFirstImageUrl(post);
+    final imageUrl = document.coverImageUrl;
     if (imageUrl != null && imageUrl.isNotEmpty) {
       coverBytes = await _fetchImageBytes(imageUrl);
     }
@@ -40,7 +39,7 @@ class ExportRepository {
 
     // 3. Resolve Scripture Reference Verses
     final resolvedVerses = <String, String>{};
-    for (final ref in post.scriptureRefs) {
+    for (final ref in document.scriptureRefs) {
       final rangeStr = ref.verseEnd != null && ref.verseEnd != ref.verseStart
           ? '${ref.verseStart}-${ref.verseEnd}'
           : '${ref.verseStart}';
@@ -81,7 +80,7 @@ class ExportRepository {
     }
 
     return ExportAssetBundle(
-      post: post,
+      document: document,
       coverImageBytes: coverBytes,
       resolvedVerses: resolvedVerses,
       watermarkBytes: watermarkBytes,
@@ -96,8 +95,11 @@ class ExportRepository {
 
   Future<Uint8List?> _fetchImageBytes(String url) async {
     try {
-      if (url.startsWith('file://')) {
-        final file = File(url.replaceFirst('file://', ''));
+      if (url.startsWith('file://') || url.startsWith('/')) {
+        final filePath = url.startsWith('file://')
+            ? url.replaceFirst('file://', '')
+            : url;
+        final file = File(filePath);
         if (file.existsSync()) {
           return await file.readAsBytes();
         }

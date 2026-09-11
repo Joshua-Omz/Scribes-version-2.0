@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../draft/data/draft_repository.dart';
 import '../../draft/application/drafts_list_provider.dart';
+import '../../feed/application/feed_notifier.dart';
+import '../../../core/network/media_api.dart';
 import '../../posts/domain/sermon_source.dart';
 import '../../posts/domain/scripture_ref.dart';
 import '../../../core/theme/scribes_quill_scripture_helper.dart';
@@ -229,6 +232,27 @@ class ComposeNotifier extends Notifier<ComposeState> {
   }
 
   Future<void> publishToCloud() async {
+    // 1. If cover image is a local file, upload it in background first
+    if (state.coverImageUrl != null &&
+        !state.coverImageUrl!.startsWith('http://') &&
+        !state.coverImageUrl!.startsWith('https://')) {
+      try {
+        final filePath = state.coverImageUrl!.replaceFirst('file://', '');
+        final file = File(filePath);
+        if (file.existsSync()) {
+          final mediaApi = ref.read(mediaApiProvider);
+          String mimeType = 'image/jpeg';
+          if (filePath.toLowerCase().endsWith('.png')) {
+            mimeType = 'image/png';
+          } else if (filePath.toLowerCase().endsWith('.webp')) {
+            mimeType = 'image/webp';
+          }
+          final remoteUrl = await mediaApi.uploadImage(file, mimeType);
+          state = state.copyWith(coverImageUrl: remoteUrl);
+        }
+      } catch (_) {}
+    }
+
     await forceSave();
     final repo = ref.read(draftRepositoryProvider);
     await repo.publishDraft(
@@ -236,6 +260,10 @@ class ComposeNotifier extends Notifier<ComposeState> {
       tags: state.tags,
       scriptureRefs: state.scriptureRefs,
     );
+
+    ref.invalidate(feedProvider);
+    ref.invalidate(followingFeedProvider);
+    ref.read(draftsListProvider.notifier).refresh();
   }
 
   void clearCoverImage() {
@@ -269,6 +297,42 @@ class ComposeNotifier extends Notifier<ComposeState> {
   }) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _lastController = null;
+
+    final List<ScriptureRef> loadedRefs = [];
+    if (content['scripture_refs'] is List) {
+      for (final item in content['scripture_refs']) {
+        if (item is Map) {
+          try {
+            loadedRefs.add(
+              ScriptureRef.fromJson(Map<String, dynamic>.from(item)),
+            );
+          } catch (_) {}
+        }
+      }
+    }
+
+    final bodyDelta = content['body'] != null
+        ? List<dynamic>.from(content['body'])
+        : null;
+
+    // Auto-parse any inline scripture tags from editor level content
+    if (bodyDelta != null) {
+      final inlineRefs =
+          ScribesQuillScriptureHelper.extractScriptureRefs(bodyDelta);
+      for (final refStr in inlineRefs) {
+        final parsed = ScriptureRef.tryParse(refStr);
+        if (parsed != null &&
+            !loadedRefs.any(
+              (r) =>
+                  r.book.toLowerCase() == parsed.book.toLowerCase() &&
+                  r.chapter == parsed.chapter &&
+                  r.verseStart == parsed.verseStart,
+            )) {
+          loadedRefs.add(parsed);
+        }
+      }
+    }
+
     state = ComposeState(
       draftId: draftId,
       title: content['title'] ?? '',
@@ -279,9 +343,8 @@ class ComposeNotifier extends Notifier<ComposeState> {
       tags: content['tags'] != null
           ? List<String>.from(content['tags'])
           : const [],
-      contentDelta: content['body'] != null
-          ? List<dynamic>.from(content['body'])
-          : null,
+      scriptureRefs: loadedRefs,
+      contentDelta: bodyDelta,
     );
   }
 }

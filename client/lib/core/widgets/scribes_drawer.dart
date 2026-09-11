@@ -7,7 +7,9 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 import '../../features/auth/application/auth_notifier.dart';
+import '../../features/messages/application/inbox_providers.dart';
 import 'scribes_author_header.dart';
+import 'scribes_brand_logo.dart';
 
 class ScribesDrawer extends ConsumerWidget {
   const ScribesDrawer({super.key});
@@ -35,7 +37,12 @@ class ScribesDrawer extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
+                  const ScribesBrandLogo(
+                    variant: BrandLogoVariant.horizontal,
+                    size: 24,
+                  ),
+                  const SizedBox(height: 18),
                   if (user != null)
                     ScribesAuthorHeader(
                       authorName: user.displayName,
@@ -100,6 +107,22 @@ class ScribesDrawer extends ConsumerWidget {
 
             // Menu Items
             if (user != null) ...[
+              Consumer(
+                builder: (context, ref, _) {
+                  final unreadCount = ref.watch(unreadMessagesCountProvider);
+                  return _buildMenuItem(
+                    context: context,
+                    colors: colors,
+                    icon: HugeIcons.strokeRoundedChatAdd,
+                    title: 'Messages',
+                    badgeCount: unreadCount,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/inbox');
+                    },
+                  );
+                },
+              ),
               _buildMenuItem(
                 context: context,
                 colors: colors,
@@ -161,7 +184,19 @@ class ScribesDrawer extends ConsumerWidget {
                   ref.read(authProvider.notifier).logout();
                 },
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                'THE WORD IS MADE FLESH',
+                style: ScribesTextStyles.caption.copyWith(
+                  letterSpacing: 2.0,
+                  color: colors.secondaryText.withValues(alpha: 0.4),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -176,6 +211,7 @@ class ScribesDrawer extends ConsumerWidget {
     required VoidCallback onTap,
     Color? textColor,
     Color? iconColor,
+    int? badgeCount,
   }) {
     return ListTile(
       leading: HugeIcon(
@@ -190,6 +226,23 @@ class ScribesDrawer extends ConsumerWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
+      trailing: (badgeCount != null && badgeCount > 0)
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: colors.orange,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                badgeCount > 9 ? '9+' : badgeCount.toString(),
+                style: TextStyle(
+                  color: colors.background,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24.0),
       onTap: onTap,
     );

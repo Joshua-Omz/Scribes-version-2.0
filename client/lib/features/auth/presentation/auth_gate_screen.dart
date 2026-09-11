@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -15,6 +14,7 @@ import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_text_field.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_ornament_divider.dart';
+import '../../../core/widgets/scribes_brand_logo.dart';
 import '../application/auth_notifier.dart';
 import '../domain/user.dart';
 
@@ -294,14 +294,9 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                               ],
                             ),
                             alignment: Alignment.center,
-                            child: SvgPicture.asset(
-                              'assets/logo.svg',
-                              width: 38,
-                              height: 38,
-                              colorFilter: ColorFilter.mode(
-                                colors.gold,
-                                BlendMode.srcIn,
-                              ),
+                            child: const ScribesBrandLogo(
+                              variant: BrandLogoVariant.iconOnly,
+                              size: 38,
                             ),
                           ),
                         ],

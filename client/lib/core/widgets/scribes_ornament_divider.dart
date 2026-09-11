@@ -20,14 +20,11 @@ class ScribesOrnamentDivider extends ConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Opacity(
-            opacity: 0.2,
-            child: HugeIcon(
-              icon: HugeIcons
-                  .strokeRoundedDiamond01, // Geometric medallion ornament
-              color: colors.gold,
-              size: 16,
-            ),
+          child: HugeIcon(
+            icon: HugeIcons
+                .strokeRoundedDiamond01, // Geometric medallion ornament
+            color: colors.gold.withValues(alpha: 0.2),
+            size: 16,
           ),
         ),
         Expanded(

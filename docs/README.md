@@ -61,6 +61,10 @@ docs/
 ---
 
 ## 6. Engineering Guides & Deep Dives (`docs/guides/`)
+* [how_passage_and_ambient_sound_work.md](file:///docs/guides/how_passage_and_ambient_sound_work.md) — Multi-panel devotional deck architecture, continuous ambient audio looping, and immutability rules.
+* [how_post_types_work.md](file:///docs/guides/how_post_types_work.md) — Architectural comparison of Standard, Reflection, and Passage post types.
+* [how_media_and_cover_pipeline_works.md](file:///docs/guides/how_media_and_cover_pipeline_works.md) — Presigned R2 uploads, cover image cropper, and draft serialization.
+* [how_feed_and_post_cards_work.md](file:///docs/guides/how_feed_and_post_cards_work.md) — Feed card rendering, N+1 query prevention, and Riverpod selectors.
 * [how_export_works.md](file:///docs/guides/how_export_works.md) — Deep dive into PDF generation, canvas watermarking, and font embedding.
 * [how_images_work.md](file:///docs/guides/how_images_work.md) — Image caching, decoding, pre-rasterization, and memory management.
 * [how_search_and_recommendations_work.md](file:///docs/guides/how_search_and_recommendations_work.md) — Conceptual foundations: semantic search, RRF rank fusion, and engagement velocity.

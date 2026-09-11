@@ -16,8 +16,9 @@ import (
 )
 
 var (
-	ErrNotFound     = errors.New("post not found")
-	ErrUnauthorized = errors.New("unauthorized to access this post")
+	ErrNotFound      = errors.New("post not found")
+	ErrUnauthorized  = errors.New("unauthorized to access this post")
+	ErrPostImmutable = errors.New("post is immutable and cannot be updated")
 )
 
 type ScriptureRefPayload struct {
@@ -27,15 +28,25 @@ type ScriptureRefPayload struct {
 	VerseEnd   *int32 `json:"verse_end,omitempty"`
 }
 
+type PassagePanelInput struct {
+	PanelType          string          `json:"panel_type" binding:"required"`
+	Content            json.RawMessage `json:"content"`
+	BackgroundImageURL *string         `json:"background_image_url,omitempty"`
+	ScriptureRef       json.RawMessage `json:"scripture_ref,omitempty"`
+}
+
 type CreateInput struct {
-	Content       json.RawMessage       `json:"content" binding:"required"`
-	Caption       *string               `json:"caption,omitempty"`
-	Visibility    *string               `json:"visibility,omitempty"`
-	SermonSource  *string               `json:"sermon_source,omitempty"`
-	Tags          []string              `json:"tags,omitempty"`
-	ScriptureRefs []ScriptureRefPayload `json:"scripture_refs,omitempty"`
-	CoverImageUrl *string               `json:"cover_image_url,omitempty"`
-	PostType      string                `json:"post_type,omitempty"`
+	Content            json.RawMessage       `json:"content"`
+	Caption            *string               `json:"caption,omitempty"`
+	Visibility         *string               `json:"visibility,omitempty"`
+	SermonSource       *string               `json:"sermon_source,omitempty"`
+	Tags               []string              `json:"tags,omitempty"`
+	ScriptureRefs      []ScriptureRefPayload `json:"scripture_refs,omitempty"`
+	CoverImageUrl      *string               `json:"cover_image_url,omitempty"`
+	ReflectionImageUrl *string               `json:"reflection_image_url,omitempty"`
+	SoundID            *uuid.UUID            `json:"sound_id,omitempty"`
+	Panels             []PassagePanelInput   `json:"panels,omitempty"`
+	PostType           string                `json:"post_type,omitempty"`
 }
 
 type Service struct {
@@ -44,6 +55,10 @@ type Service struct {
 
 func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
+}
+
+func (s *Service) ListSounds(ctx context.Context) ([]SoundTrack, error) {
+	return s.repo.ListActiveSounds(ctx)
 }
 
 func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateInput) (Post, error) {
@@ -55,55 +70,95 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 
 	postType := "standard"
 	if input.PostType != "" {
-		postType = input.PostType
+		postType = strings.ToLower(input.PostType)
 	}
 
-	p, err := s.repo.CreatePost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, input.CoverImageUrl, postType)
-	if err != nil {
-		return Post{}, err
+	if len(input.Content) == 0 {
+		input.Content = json.RawMessage("{}")
 	}
 
-	if len(input.Tags) > 0 {
-		if len(input.Tags) > 8 {
-			return Post{}, errors.New("maximum of 8 tags allowed")
+	// Post type specific validations per contract
+	if postType == "reflection" {
+		plainText, _ := quill.ToPlainText(input.Content)
+		if len([]rune(strings.TrimSpace(plainText))) > 500 {
+			return Post{}, errors.New("reflection body exceeds 500 character limit")
 		}
-		err = s.repo.SetPostTags(ctx, p.ID, input.Tags)
-		if err != nil {
-			return Post{}, err
+		if input.CoverImageUrl != nil && *input.CoverImageUrl != "" {
+			return Post{}, errors.New("cover_image_url is not allowed on reflection posts; use reflection_image_url")
 		}
-		p.Tags, _ = s.repo.GetPostTags(ctx, p.ID)
+		if len(input.ScriptureRefs) > 1 {
+			return Post{}, errors.New("reflection posts may have at most 1 scripture tag")
+		}
+	} else if postType == "passage" {
+		if input.CoverImageUrl != nil && *input.CoverImageUrl != "" {
+			return Post{}, errors.New("cover_image_url is not allowed on passage posts; use panel media")
+		}
+		if input.ReflectionImageUrl != nil && *input.ReflectionImageUrl != "" {
+			return Post{}, errors.New("reflection_image_url is not allowed on passage posts")
+		}
+		if len(input.Panels) < 2 || len(input.Panels) > 12 {
+			return Post{}, errors.New("passage posts must contain between 2 and 12 panels")
+		}
 	} else {
-		p.Tags = []string{}
+		// Standard post
+		if input.ReflectionImageUrl != nil && *input.ReflectionImageUrl != "" {
+			return Post{}, errors.New("reflection_image_url is only allowed on reflection posts")
+		}
+		if len(input.ScriptureRefs) < 2 || len(input.ScriptureRefs) > 3 {
+			return Post{}, errors.New("standard posts must provide between 2 and 3 scripture tags")
+		}
 	}
 
-	if len(input.ScriptureRefs) > 0 {
-		if len(input.ScriptureRefs) > 3 || len(input.ScriptureRefs) < 2 {
-			return Post{}, errors.New("must provide between 2 and 3 scripture tags")
+	// Tag count validation (before any DB work)
+	if len(input.Tags) > 8 {
+		return Post{}, errors.New("maximum of 8 tags allowed")
+	}
+
+	// Build scripture ref params
+	var refsParams []generated.AddScriptureRefParams
+	for _, ref := range input.ScriptureRefs {
+		var ve sql.NullInt32
+		if ref.VerseEnd != nil {
+			ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
 		}
-		var refsParams []generated.AddScriptureRefParams
-		for _, ref := range input.ScriptureRefs {
-			var ve sql.NullInt32
-			if ref.VerseEnd != nil {
-				ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
+		refsParams = append(refsParams, generated.AddScriptureRefParams{
+			Book:       ref.Book,
+			Chapter:    ref.Chapter,
+			VerseStart: ref.VerseStart,
+			VerseEnd:   ve,
+		})
+	}
+
+	// Build passage panels
+	var panels []PassagePanel
+	if postType == "passage" && len(input.Panels) > 0 {
+		panels = make([]PassagePanel, len(input.Panels))
+		for i, panelInput := range input.Panels {
+			panels[i] = PassagePanel{
+				PanelOrder:         int32(i),
+				PanelType:          panelInput.PanelType,
+				Content:            panelInput.Content,
+				BackgroundImageURL: panelInput.BackgroundImageURL,
+				ScriptureRef:       panelInput.ScriptureRef,
 			}
-			refsParams = append(refsParams, generated.AddScriptureRefParams{
-				Book:       ref.Book,
-				Chapter:    ref.Chapter,
-				VerseStart: ref.VerseStart,
-				VerseEnd:   ve,
-			})
 		}
-		err = s.repo.SetScriptureRefs(ctx, p.ID, refsParams)
-		if err != nil {
-			return Post{}, err
-		}
-		p.ScriptureRefs, _ = s.repo.GetScriptureRefs(ctx, p.ID)
-	} else {
-		// Enforce validation if required
-		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
 	}
 
-	return p, nil
+	// Single atomic transaction — all writes succeed or all roll back
+	return s.repo.CreatePostTx(ctx, CreatePostTxParams{
+		AuthorID:           authorID,
+		Content:            input.Content,
+		Caption:            input.Caption,
+		Visibility:         visibility,
+		SermonSource:       input.SermonSource,
+		CoverImageUrl:      input.CoverImageUrl,
+		ReflectionImageUrl: input.ReflectionImageUrl,
+		SoundID:            input.SoundID,
+		PostType:           postType,
+		Tags:               input.Tags,
+		ScriptureRefs:      refsParams,
+		Panels:             panels,
+	})
 }
 
 func (s *Service) Get(ctx context.Context, id uuid.UUID) (Post, error) {
@@ -139,61 +194,57 @@ func (s *Service) Update(ctx context.Context, authorID, id uuid.UUID, input Crea
 		return Post{}, err
 	}
 
+	if existing.PostType == "passage" || existing.PostType == "reflection" {
+		return Post{}, ErrPostImmutable
+	}
+
 	// Default to existing visibility if not provided
 	visibility := existing.Visibility
 	if input.Visibility != nil {
 		visibility = *input.Visibility
 	}
 
-	updatedPost, err := s.repo.UpdatePost(ctx, id, authorID, input.Content, input.Caption, visibility, input.SermonSource, existing.CurrentVersion, input.CoverImageUrl)
-	if err != nil {
-		return Post{}, err
-	}
-
-	if len(input.ScriptureRefs) > 0 {
-		if len(input.ScriptureRefs) > 3 || len(input.ScriptureRefs) < 2 {
-			return Post{}, errors.New("must provide between 2 and 3 scripture tags")
-		}
-		var refsParams []generated.AddScriptureRefParams
-		for _, ref := range input.ScriptureRefs {
-			var ve sql.NullInt32
-			if ref.VerseEnd != nil {
-				ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
-			}
-			refsParams = append(refsParams, generated.AddScriptureRefParams{
-				Book:       ref.Book,
-				Chapter:    ref.Chapter,
-				VerseStart: ref.VerseStart,
-				VerseEnd:   ve,
-			})
-		}
-		err = s.repo.SetScriptureRefs(ctx, updatedPost.ID, refsParams)
-		if err != nil {
-			return Post{}, err
-		}
-		updatedPost.ScriptureRefs, _ = s.repo.GetScriptureRefs(ctx, updatedPost.ID)
-	} else {
+	// Validate scripture refs (required for standard post updates)
+	if len(input.ScriptureRefs) < 2 || len(input.ScriptureRefs) > 3 {
 		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
 	}
-
-	if len(input.Tags) > 0 {
-		if len(input.Tags) > 8 {
-			return Post{}, errors.New("maximum of 8 tags allowed")
-		}
-		err = s.repo.SetPostTags(ctx, updatedPost.ID, input.Tags)
-		if err != nil {
-			return Post{}, err
-		}
-		updatedPost.Tags, _ = s.repo.GetPostTags(ctx, updatedPost.ID)
-	} else {
-		err = s.repo.SetPostTags(ctx, updatedPost.ID, []string{})
-		if err != nil {
-			return Post{}, err
-		}
-		updatedPost.Tags = []string{}
+	if len(input.Tags) > 8 {
+		return Post{}, errors.New("maximum of 8 tags allowed")
 	}
 
-	return updatedPost, nil
+	var refsParams []generated.AddScriptureRefParams
+	for _, ref := range input.ScriptureRefs {
+		var ve sql.NullInt32
+		if ref.VerseEnd != nil {
+			ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
+		}
+		refsParams = append(refsParams, generated.AddScriptureRefParams{
+			Book:       ref.Book,
+			Chapter:    ref.Chapter,
+			VerseStart: ref.VerseStart,
+			VerseEnd:   ve,
+		})
+	}
+
+	// Normalise nil tags to empty slice so ClearPostTags runs inside the tx
+	tags := input.Tags
+	if tags == nil {
+		tags = []string{}
+	}
+
+	// Single atomic transaction
+	return s.repo.UpdatePostTx(ctx, UpdatePostTxParams{
+		PostID:         id,
+		AuthorID:       authorID,
+		Content:        input.Content,
+		Caption:        input.Caption,
+		Visibility:     visibility,
+		SermonSource:   input.SermonSource,
+		CurrentVersion: existing.CurrentVersion,
+		CoverImageUrl:  input.CoverImageUrl,
+		Tags:           tags,
+		ScriptureRefs:  refsParams,
+	})
 }
 
 func (s *Service) Delete(ctx context.Context, authorID, id uuid.UUID) error {
@@ -217,29 +268,27 @@ func (s *Service) Revise(ctx context.Context, authorID, id uuid.UUID, input Revi
 		return Post{}, err
 	}
 
-	updatedPost, err := s.repo.RevisePost(ctx, id, authorID, existing.Content, existing.CurrentVersion, input.Content, input.Caption, input.CoverImageUrl)
-	if err != nil {
-		return Post{}, err
+	if len(input.Tags) > 8 {
+		return Post{}, errors.New("maximum of 8 tags allowed")
 	}
 
-	if len(input.Tags) > 0 {
-		if len(input.Tags) > 8 {
-			return Post{}, errors.New("maximum of 8 tags allowed")
-		}
-		err = s.repo.SetPostTags(ctx, updatedPost.ID, input.Tags)
-		if err != nil {
-			return Post{}, err
-		}
-		updatedPost.Tags, _ = s.repo.GetPostTags(ctx, updatedPost.ID)
-	} else {
-		err = s.repo.SetPostTags(ctx, updatedPost.ID, []string{})
-		if err != nil {
-			return Post{}, err
-		}
-		updatedPost.Tags = []string{}
+	// Normalise nil tags to empty slice so ClearPostTags runs inside the tx
+	tags := input.Tags
+	if tags == nil {
+		tags = []string{}
 	}
 
-	return updatedPost, nil
+	// Single atomic transaction — snapshot + update + tags
+	return s.repo.RevisePostTx(ctx, RevisePostTxParams{
+		PostID:         id,
+		AuthorID:       authorID,
+		CurrentContent: existing.Content,
+		CurrentVersion: existing.CurrentVersion,
+		NewContent:     input.Content,
+		NewCaption:     input.Caption,
+		CoverImageUrl:  input.CoverImageUrl,
+		Tags:           tags,
+	})
 }
 
 func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID uuid.UUID, input CreateInput) (Post, error) {
@@ -259,51 +308,41 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 		visibility = *input.Visibility
 	}
 
-	p, err := s.repo.CreateCorrectionPost(ctx, authorID, input.Content, input.Caption, visibility, input.SermonSource, correctsPostID, input.CoverImageUrl, postType)
-	if err != nil {
-		return Post{}, err
-	}
-
-	if len(input.Tags) > 0 {
-		if len(input.Tags) > 8 {
-			return Post{}, errors.New("maximum of 8 tags allowed")
-		}
-		err = s.repo.SetPostTags(ctx, p.ID, input.Tags)
-		if err != nil {
-			return Post{}, err
-		}
-		p.Tags, _ = s.repo.GetPostTags(ctx, p.ID)
-	} else {
-		p.Tags = []string{}
-	}
-
-	if len(input.ScriptureRefs) > 0 {
-		if len(input.ScriptureRefs) > 3 || len(input.ScriptureRefs) < 2 {
-			return Post{}, errors.New("must provide between 2 and 3 scripture tags")
-		}
-		var refsParams []generated.AddScriptureRefParams
-		for _, ref := range input.ScriptureRefs {
-			var ve sql.NullInt32
-			if ref.VerseEnd != nil {
-				ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
-			}
-			refsParams = append(refsParams, generated.AddScriptureRefParams{
-				Book:       ref.Book,
-				Chapter:    ref.Chapter,
-				VerseStart: ref.VerseStart,
-				VerseEnd:   ve,
-			})
-		}
-		err = s.repo.SetScriptureRefs(ctx, p.ID, refsParams)
-		if err != nil {
-			return Post{}, err
-		}
-		p.ScriptureRefs, _ = s.repo.GetScriptureRefs(ctx, p.ID)
-	} else {
+	// Validate scripture refs (required for corrections)
+	if len(input.ScriptureRefs) < 2 || len(input.ScriptureRefs) > 3 {
 		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
 	}
+	if len(input.Tags) > 8 {
+		return Post{}, errors.New("maximum of 8 tags allowed")
+	}
 
-	return p, nil
+	var refsParams []generated.AddScriptureRefParams
+	for _, ref := range input.ScriptureRefs {
+		var ve sql.NullInt32
+		if ref.VerseEnd != nil {
+			ve = sql.NullInt32{Int32: *ref.VerseEnd, Valid: true}
+		}
+		refsParams = append(refsParams, generated.AddScriptureRefParams{
+			Book:       ref.Book,
+			Chapter:    ref.Chapter,
+			VerseStart: ref.VerseStart,
+			VerseEnd:   ve,
+		})
+	}
+
+	// Single atomic transaction
+	return s.repo.CreateCorrectionPostTx(ctx, CreateCorrectionPostTxParams{
+		AuthorID:       authorID,
+		Content:        input.Content,
+		Caption:        input.Caption,
+		Visibility:     visibility,
+		SermonSource:   input.SermonSource,
+		CorrectsPostID: correctsPostID,
+		CoverImageUrl:  input.CoverImageUrl,
+		PostType:       postType,
+		Tags:           input.Tags,
+		ScriptureRefs:  refsParams,
+	})
 }
 
 func (s *Service) ListVersions(ctx context.Context, id uuid.UUID) ([]PostVersion, error) {

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/widgets/scribes_brand_logo.dart';
 import '../../../core/widgets/scribes_ornament_divider.dart';
 
 /// Purely visual splash screen.
@@ -29,11 +28,9 @@ class SplashScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              'assets/logo.svg',
-              width: 120,
-              height: 120,
-              colorFilter: ColorFilter.mode(colors.gold, BlendMode.srcIn),
+            const ScribesBrandLogo(
+              variant: BrandLogoVariant.stacked,
+              size: 110,
             ),
             const SizedBox(height: 24),
             const Padding(

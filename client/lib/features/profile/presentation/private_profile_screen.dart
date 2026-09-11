@@ -161,6 +161,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen>
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
                 decoration: BoxDecoration(
+                  
                   gradient: RadialGradient(
                     center: Alignment.topCenter,
                     radius: 1.5,
@@ -437,6 +438,9 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen>
                   );
                 },
               ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100),
+            ),
           ],
         ),
       ),

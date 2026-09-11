@@ -13,14 +13,11 @@ import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_drawer.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
-import '../../../core/widgets/scribes_expandable_fab.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
 import '../../../core/widgets/scribes_post_card_skeleton.dart';
 import '../../../core/widgets/scribes_top_app_bar.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../application/feed_notifier.dart';
-import 'widgets/feed_scripture_banner.dart';
-import 'widgets/feed_topic_chips.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -33,8 +30,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final ValueNotifier<bool> _isFabVisible = ValueNotifier<bool>(true);
-  String _selectedTopic = 'All';
 
   @override
   void initState() {
@@ -45,7 +40,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _isFabVisible.dispose();
     super.dispose();
   }
 
@@ -59,33 +53,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       key: _scaffoldKey,
       backgroundColor: colors.background,
       drawer: const ScribesDrawer(),
-      floatingActionButton: ValueListenableBuilder<bool>(
-        valueListenable: _isFabVisible,
-        builder: (context, isVisible, child) => AnimatedSlide(
-          duration: const Duration(milliseconds: 250),
-          offset: isVisible ? Offset.zero : const Offset(0, 2),
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 250),
-            opacity: isVisible ? 1.0 : 0.0,
-            child: const ScribesExpandableFab(),
-          ),
-        ),
-      ),
       body: Column(
         children: [
           Expanded(
             child: NotificationListener<UserScrollNotification>(
               onNotification: (notification) {
-                if (notification.direction == ScrollDirection.forward) {
-                  if (!_isFabVisible.value) {
-                    _isFabVisible.value = true;
-                    ref.read(bottomNavVisibilityProvider.notifier).show();
-                  }
-                } else if (notification.direction == ScrollDirection.reverse) {
-                  if (_isFabVisible.value) {
-                    _isFabVisible.value = false;
-                    ref.read(bottomNavVisibilityProvider.notifier).hide();
-                  }
+                final navNotifier =
+                    ref.read(bottomNavVisibilityProvider.notifier);
+                if (notification.direction == ScrollDirection.reverse) {
+                  navNotifier.hide();
+                } else if (notification.direction == ScrollDirection.forward) {
+                  navNotifier.show();
                 }
                 return false;
               },
@@ -93,13 +71,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   SliverAppBar(
                     automaticallyImplyLeading: false,
-                    floating: false,
+                    floating: true,
                     pinned: true,
                     elevation: 0,
                     backgroundColor: colors.background,
                     toolbarHeight: 56,
                     titleSpacing: 0,
-                    title: const ScribesTopAppBar(),
+                    title: const ScribesTopAppBar(showBottomBorder: false),
                     bottom: PreferredSize(
                       preferredSize: const Size.fromHeight(48),
                       child: Container(
@@ -201,7 +179,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       onRefresh: () => ref.read(followingFeedProvider.notifier).refresh(),
       child: CustomScrollView(
         key: const PageStorageKey<String>('followingTab'),
-        scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
         slivers: [
           // Daily Scripture Banner & Stories
           /*const SliverToBoxAdapter(
@@ -247,7 +225,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                       (ref.read(followingFeedProvider.notifier).hasMore
                           ? 1
                           : 0),
-                  addAutomaticKeepAlives: true,
+                  findChildIndexCallback: (Key key) {
+                    if (key is ValueKey<String>) {
+                      final index = posts.indexWhere((p) => p.id == key.value);
+                      return index != -1 ? index : null;
+                    }
+                    return null;
+                  },
+                  addAutomaticKeepAlives: false,
                   addRepaintBoundaries: true,
                 ),
               );
@@ -262,6 +247,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
               ),
             ),
           ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
+          ),
         ],
       ),
     );
@@ -273,34 +261,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
       onRefresh: () => ref.read(feedProvider.notifier).refresh(),
       child: CustomScrollView(
         key: const PageStorageKey<String>('seekTab'),
-        scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
         slivers: [
-          // Daily Contemplation + Topic Filter Chips
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FeedScriptureBanner(
-                  verseText:
-                      'Trust in the LORD with all your heart and lean not on your own understanding.',
-                  reference: 'Proverbs 3:5',
-                  book: 'Proverbs',
-                  chapter: 3,
-                ),
-                FeedTopicChips(
-                  selectedTopic: _selectedTopic,
-                  onSelectTopic: (topic) {
-                    setState(() => _selectedTopic = topic);
-                    if (topic != 'All') {
-                      context.push('/search?q=${Uri.encodeComponent(topic)}');
-                    }
-                  },
-                ),
-                SizedBox(height: 8),
-              ],
-            ),
-          ),
-
           feedState.when(
             data: (posts) {
               if (posts.isEmpty) {
@@ -331,7 +293,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                   childCount:
                       posts.length +
                       (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
-                  addAutomaticKeepAlives: true,
+                  findChildIndexCallback: (Key key) {
+                    if (key is ValueKey<String>) {
+                      final index = posts.indexWhere((p) => p.id == key.value);
+                      return index != -1 ? index : null;
+                    }
+                    return null;
+                  },
+                  addAutomaticKeepAlives: false,
                   addRepaintBoundaries: true,
                 ),
               );
@@ -344,6 +313,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 onRetry: () => ref.read(feedProvider.notifier).refresh(),
               ),
             ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
           ),
         ],
       ),

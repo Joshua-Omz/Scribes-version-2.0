@@ -79,7 +79,7 @@ class ScribesPostCard extends ConsumerStatefulWidget {
 }
 
 class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
-  bool _isExpanded = true; // Default to open as requested
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -116,13 +116,10 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
               if (widget.isFeatured)
                 Align(
                   alignment: Alignment.topLeft,
-                  child: Opacity(
-                    opacity: 0.16,
-                    child: HugeIcon(
-                      icon: HugeIcons.strokeRoundedSparkles,
-                      color: colors.gold,
-                      size: 24,
-                    ),
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedSparkles,
+                    color: colors.gold.withValues(alpha: 0.16),
+                    size: 24,
                   ),
                 ),
               Row(
@@ -190,7 +187,7 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                           child: ScribesImageResolver.buildImage(
                             imageUrl: widget.coverImageUrl,
                             fit: BoxFit.cover,
-                            memCacheWidth: 800,
+                            memCacheWidth: 720,
                             placeholder: (context, url) => Container(
                               color: colors.surfaceRaised,
                             ),
@@ -217,8 +214,10 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                           ),
                         ),
 
-                        // Floating Badge in Bottom-Left (Passage or Featured indicator)
-                        if (widget.postType == 'passage' || widget.isFeatured)
+                        // Floating Badge in Bottom-Left (Passage, Reflection, or Featured indicator)
+                        if (widget.postType == 'passage' ||
+                            widget.postType == 'reflection' ||
+                            widget.isFeatured)
                           Positioned(
                             left: 12,
                             bottom: 12,
@@ -240,7 +239,9 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                               child: Text(
                                 widget.postType == 'passage'
                                     ? 'Passage'
-                                    : 'Featured',
+                                    : widget.postType == 'reflection'
+                                        ? 'Reflection'
+                                        : 'Featured',
                                 style: ScribesTextStyles.caption.copyWith(
                                   color: colors.gold,
                                   fontWeight: FontWeight.bold,
@@ -257,26 +258,42 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
 
               // 2. Title & Body Excerpt
               const SizedBox(height: 14),
-              Text(
-                widget.title,
-                style: ScribesTextStyles.displayMd.copyWith(
-                  color: colors.primaryText,
-                  fontSize: widget.isSearchScreen ? 20 : 24,
-                  height: widget.isSearchScreen ? 1.1 : 1.2,
-                ),
-                maxLines: widget.isSearchScreen ? 1 : 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (!widget.isSearchScreen) ...[
-                const SizedBox(height: 10),
+              if (widget.postType == 'reflection') ...[
                 Text(
-                  widget.bodyExcerpt,
+                  widget.bodyExcerpt.isNotEmpty
+                      ? widget.bodyExcerpt
+                      : widget.title,
                   style: ScribesTextStyles.bodyLg.copyWith(
-                    color: colors.secondaryText,
+                    color: colors.primaryText,
+                    fontSize: 17,
+                    height: 1.55,
                   ),
-                  maxLines: 4,
+                  maxLines: 6,
                   overflow: TextOverflow.ellipsis,
                 ),
+              ] else ...[
+                if (widget.title.isNotEmpty && widget.title != 'Untitled')
+                  Text(
+                    widget.title,
+                    style: ScribesTextStyles.displayMd.copyWith(
+                      color: colors.primaryText,
+                      fontSize: widget.isSearchScreen ? 20 : 24,
+                      height: widget.isSearchScreen ? 1.1 : 1.2,
+                    ),
+                    maxLines: widget.isSearchScreen ? 1 : 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                if (!widget.isSearchScreen && widget.bodyExcerpt.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.bodyExcerpt,
+                    style: ScribesTextStyles.bodyLg.copyWith(
+                      color: colors.secondaryText,
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ],
 
               // 3. Scripture Chips & Tags
@@ -383,79 +400,59 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                 const SizedBox(height: 16),
                 const ScribesOrnamentDivider(),
                 const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // 1. Amen (Fire)
-                    _buildCompactAction(
-                      icon: widget.userReactionType == 'amen'
-                          ? HugeIcons.strokeRoundedSparkles
-                          : HugeIcons.strokeRoundedFire,
-                      label: widget.amenCount > 0 ? '${widget.amenCount}' : '',
-                      isSelected: widget.userReactionType == 'amen',
-                      selectedColor: colors.gold,
-                      defaultColor: colors.secondaryText,
-                      onTap: () => widget.onReact?.call('amen'),
-                    ),
+                RepaintBoundary(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // 1. Amen (Fire)
+                      _buildCompactAction(
+                        icon: widget.userReactionType == 'amen'
+                            ? HugeIcons.strokeRoundedSparkles
+                            : HugeIcons.strokeRoundedFire,
+                        label: widget.amenCount > 0 ? '${widget.amenCount}' : '',
+                        isSelected: widget.userReactionType == 'amen',
+                        selectedColor: colors.gold,
+                        defaultColor: colors.secondaryText,
+                        onTap: () => widget.onReact?.call('amen'),
+                      ),
 
-                    // 2. Insight (Idea)
-                    _buildCompactAction(
-                      icon: HugeIcons.strokeRoundedIdea01,
-                      label: widget.insightCount > 0
-                          ? '${widget.insightCount}'
-                          : '',
-                      isSelected: widget.userReactionType == 'insightful',
-                      selectedColor: colors.gold,
-                      defaultColor: colors.secondaryText,
-                      onTap: () => widget.onReact?.call('insightful'),
-                    ),
+                      // 2. Insight (Idea)
+                      _buildCompactAction(
+                        icon: HugeIcons.strokeRoundedIdea01,
+                        label: widget.insightCount > 0
+                            ? '${widget.insightCount}'
+                            : '',
+                        isSelected: widget.userReactionType == 'insightful',
+                        selectedColor: colors.gold,
+                        defaultColor: colors.secondaryText,
+                        onTap: () => widget.onReact?.call('insightful'),
+                      ),
 
-                    // 3. Deep / Thought-provoking (Diamond)
-                    _buildCompactAction(
-                      icon: HugeIcons.strokeRoundedDiamond01,
-                      label: widget.thoughtProvokingCount > 0
-                          ? '${widget.thoughtProvokingCount}'
-                          : '',
-                      isSelected: widget.userReactionType == 'thought_provoking',
-                      selectedColor: colors.gold,
-                      defaultColor: colors.secondaryText,
-                      onTap: () => widget.onReact?.call('thought_provoking'),
-                    ),
+                      // 3. Deep / Thought-provoking (Diamond)
+                      _buildCompactAction(
+                        icon: HugeIcons.strokeRoundedDiamond01,
+                        label: widget.thoughtProvokingCount > 0
+                            ? '${widget.thoughtProvokingCount}'
+                            : '',
+                        isSelected: widget.userReactionType == 'thought_provoking',
+                        selectedColor: colors.gold,
+                        defaultColor: colors.secondaryText,
+                        onTap: () => widget.onReact?.call('thought_provoking'),
+                      ),
 
-                    // 4. Comments (Bubble Chat)
-                    _buildCompactAction(
-                      icon: HugeIcons.strokeRoundedBubbleChat,
-                      label: widget.commentCount > 0
-                          ? '${widget.commentCount}'
-                          : '',
-                      isSelected: false,
-                      selectedColor: colors.gold,
-                      defaultColor: colors.secondaryText,
-                      onTap: widget.onComment,
-                    ),
-
-                    // 5. Bookmark / Save
-                    _buildCompactAction(
-                      icon: widget.isSaved
-                          ? HugeIcons.strokeRoundedBookmark02
-                          : HugeIcons.strokeRoundedBookmark01,
-                      label: '',
-                      isSelected: widget.isSaved,
-                      selectedColor: colors.gold,
-                      defaultColor: colors.secondaryText,
-                      onTap: widget.onSaveToggle,
-                    ),
-
-                    // 6. Share
-                    _buildCompactAction(
-                      icon: HugeIcons.strokeRoundedShare01,
-                      label: '',
-                      isSelected: false,
-                      selectedColor: colors.gold,
-                      defaultColor: colors.secondaryText,
-                      onTap: widget.onShare,
-                    ),
-                  ],
+                      // 4. Comments (Bubble Chat)
+                      _buildCompactAction(
+                        icon: HugeIcons.strokeRoundedBubbleChat,
+                        label: widget.commentCount > 0
+                            ? '${widget.commentCount}'
+                            : '',
+                        isSelected: false,
+                        selectedColor: colors.gold,
+                        defaultColor: colors.secondaryText,
+                        onTap: widget.onComment,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ],

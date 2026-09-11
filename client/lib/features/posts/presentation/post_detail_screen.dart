@@ -4,6 +4,7 @@ import 'package:scribes/core/widgets/scribes_connected_post_card.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scribes/core/theme/scribes_text_styles.dart';
+import 'package:scribes/core/theme/scribes_radius.dart';
 import 'package:scribes/core/theme/theme_provider.dart';
 import 'package:scribes/features/posts/application/post_detail_provider.dart';
 import 'package:scribes/core/widgets/scribes_ornament_divider.dart';
@@ -23,6 +24,7 @@ import 'package:scribes/core/widgets/scribes_toast.dart';
 import 'package:scribes/core/network/api_exception.dart';
 import 'package:scribes/core/widgets/scribes_empty_state.dart';
 import 'package:scribes/core/widgets/scribes_share_sheet.dart';
+import 'package:scribes/core/widgets/scribes_image_resolver.dart';
 import 'package:scribes/features/export/presentation/export_loading_sheet.dart';
 
 class PostDetailScreen extends ConsumerWidget {
@@ -156,13 +158,15 @@ class PostDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        post.content['title'] ?? 'Untitled',
-                        style: ScribesTextStyles.displayLg.copyWith(
-                          color: colors.primaryText,
+                      if (post.postType != 'reflection') ...[
+                        Text(
+                          post.content['title'] ?? 'Untitled',
+                          style: ScribesTextStyles.displayLg.copyWith(
+                            color: colors.primaryText,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                      ],
                       ScribesAuthorHeader(
                         authorName: post.authorName,
                         authorHandle: post.authorHandle,
@@ -186,35 +190,144 @@ class PostDetailScreen extends ConsumerWidget {
                             }).toList(),
                           ),
                         ),
-                      const SizedBox(height: 32),
-                      const ScribesOrnamentDivider(),
-                      const SizedBox(height: 32),
+                      if (post.postType != 'reflection') ...[
+                        const SizedBox(height: 32),
+                        const ScribesOrnamentDivider(),
+                        const SizedBox(height: 32),
+                      ] else ...[
+                        const SizedBox(height: 20),
+                      ],
 
-                      Builder(
-                        builder: (context) {
-                          var bodyData = post.content['body'];
-                          List<dynamic>? richContent;
-                          if (bodyData is List) {
-                            richContent = bodyData;
-                          } else if (bodyData is String) {
-                            try {
-                              final decoded = jsonDecode(bodyData);
-                              if (decoded is List) richContent = decoded;
-                            } catch (_) {}
-                          }
-
-                          if (richContent != null) {
-                            return PostRichText(content: richContent);
-                          } else {
-                            return Text(
-                              bodyData?.toString() ?? '',
-                              style: ScribesTextStyles.bodyLg.copyWith(
-                                color: colors.primaryText,
+                      if (post.postType == 'passage') ...[
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.symmetric(vertical: 24),
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceRaised,
+                            borderRadius:
+                                BorderRadius.circular(ScribesRadius.card),
+                            border: Border.all(
+                              color: colors.gold.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: colors.gold.withValues(alpha: 0.12),
+                                ),
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedLayers01,
+                                  color: colors.gold,
+                                  size: 32,
+                                ),
                               ),
-                            );
-                          }
-                        },
-                      ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Interactive Passage Deck',
+                                style: ScribesTextStyles.displayMd.copyWith(
+                                  color: colors.primaryText,
+                                  fontSize: 22,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'This is an immersive, multi-panel devotional experience with ambient audio and illuminated scripture reflections.',
+                                textAlign: TextAlign.center,
+                                style: ScribesTextStyles.bodyMd.copyWith(
+                                  color: colors.secondaryText,
+                                  height: 1.4,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colors.gold,
+                                  foregroundColor: colors.surfaceRaised,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      ScribesRadius.button,
+                                    ),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  context.push('/passage/${post.id}');
+                                },
+                                icon: const HugeIcon(
+                                  icon: HugeIcons.strokeRoundedBookOpen01,
+                                  color: Colors.black,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  'Launch Passage Deck',
+                                  style: ScribesTextStyles.labelLg.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else
+                        Builder(
+                          builder: (context) {
+                            var bodyData = post.content['body'];
+                            List<dynamic>? richContent;
+                            if (bodyData is List) {
+                              richContent = bodyData;
+                            } else if (bodyData is String) {
+                              try {
+                                final decoded = jsonDecode(bodyData);
+                                if (decoded is List) richContent = decoded;
+                              } catch (_) {}
+                            }
+
+                            if (richContent != null) {
+                              return PostRichText(content: richContent);
+                            } else {
+                              return Text(
+                                post.plainTextBody.isNotEmpty
+                                    ? post.plainTextBody
+                                    : (bodyData?.toString() ?? ''),
+                                style: post.postType == 'reflection'
+                                    ? ScribesTextStyles.bodyLg.copyWith(
+                                        color: colors.primaryText,
+                                        fontSize: 18,
+                                        height: 1.6,
+                                      )
+                                    : ScribesTextStyles.bodyLg.copyWith(
+                                        color: colors.primaryText,
+                                      ),
+                              );
+                            }
+                          },
+                        ),
+
+                      if (post.reflectionImageUrl != null ||
+                          (post.postType == 'reflection' &&
+                              ScribesImageResolver.extractFirstImageUrl(post) !=
+                                  null)) ...[
+                        const SizedBox(height: 20),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: ScribesImageResolver.buildImage(
+                            imageUrl: post.reflectionImageUrl ??
+                                ScribesImageResolver.extractFirstImageUrl(post),
+                            fit: BoxFit.cover,
+                            memCacheWidth: 1000,
+                          ),
+                        ),
+                      ],
 
                       if ((post.caption != null && post.caption!.isNotEmpty) ||
                           (post.sermonSource != null &&
@@ -513,48 +626,50 @@ class PostDetailScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: HugeIcon(
-                  icon: HugeIcons.strokeRoundedFile02,
-                  color: colors.gold,
+              if (post.postType == 'standard') ...[
+                ListTile(
+                  leading: HugeIcon(
+                    icon: HugeIcons.strokeRoundedFile02,
+                    color: colors.gold,
+                  ),
+                  title: Text(
+                    'Export Manuscript (PDF)',
+                    style: ScribesTextStyles.bodyLg.copyWith(
+                      color: colors.primaryText,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Generate illuminated PDF document',
+                    style: ScribesTextStyles.labelSm.copyWith(
+                      color: colors.secondaryText,
+                    ),
+                  ),
+                  onTap: () {
+                    sheetContext.pop();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        ExportLoadingSheet.show(context, post);
+                      }
+                    });
+                  },
                 ),
-                title: Text(
-                  'Export Manuscript (PDF)',
-                  style: ScribesTextStyles.bodyLg.copyWith(
+                ListTile(
+                  leading: HugeIcon(
+                    icon: HugeIcons.strokeRoundedPencilEdit01,
                     color: colors.primaryText,
                   ),
-                ),
-                subtitle: Text(
-                  'Generate illuminated PDF document',
-                  style: ScribesTextStyles.labelSm.copyWith(
-                    color: colors.secondaryText,
+                  title: Text(
+                    'Edit Post',
+                    style: ScribesTextStyles.bodyLg.copyWith(
+                      color: colors.primaryText,
+                    ),
                   ),
+                  onTap: () {
+                    sheetContext.pop();
+                    context.push('/posts/${post.id}/edit', extra: post);
+                  },
                 ),
-                onTap: () {
-                  sheetContext.pop();
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (context.mounted) {
-                      ExportLoadingSheet.show(context, post);
-                    }
-                  });
-                },
-              ),
-              ListTile(
-                leading: HugeIcon(
-                  icon: HugeIcons.strokeRoundedPencilEdit01,
-                  color: colors.primaryText,
-                ),
-                title: Text(
-                  'Edit Post',
-                  style: ScribesTextStyles.bodyLg.copyWith(
-                    color: colors.primaryText,
-                  ),
-                ),
-                onTap: () {
-                  sheetContext.pop();
-                  context.push('/posts/${post.id}/edit', extra: post);
-                },
-              ),
+              ],
               ListTile(
                 leading: HugeIcon(
                   icon: HugeIcons.strokeRoundedDelete01,

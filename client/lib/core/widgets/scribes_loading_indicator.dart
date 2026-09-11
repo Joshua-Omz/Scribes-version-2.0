@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
+import 'scribes_brand_logo.dart';
 
 class ScribesLoadingIndicator extends ConsumerStatefulWidget {
   final double size;
@@ -56,8 +56,8 @@ class _ScribesLoadingIndicatorState
           scale: _scaleAnimation.value,
           child: Opacity(
             opacity: _opacityAnimation.value,
-            child: HugeIcon(
-              icon: HugeIcons.strokeRoundedDiamond01, // The scribes ornament
+            child: ScribesBrandLogo(
+              variant: BrandLogoVariant.iconOnly,
               size: widget.size,
               color: colors.gold,
             ),

@@ -26,6 +26,16 @@ _Post _$PostFromJson(Map<String, dynamic> json) => _Post(
       const [],
   isDeleted: json['is_deleted'] as bool,
   coverImageUrl: json['cover_image_url'] as String?,
+  reflectionImageUrl: json['reflection_image_url'] as String?,
+  soundId: json['sound_id'] as String?,
+  sound: json['sound'] == null
+      ? null
+      : SoundTrack.fromJson(json['sound'] as Map<String, dynamic>),
+  panels:
+      (json['panels'] as List<dynamic>?)
+          ?.map((e) => PassagePanel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
   postType: json['post_type'] as String? ?? 'standard',
   publishedAt: DateTime.parse(json['published_at'] as String),
   authorHandle: json['author_handle'] as String,
@@ -52,6 +62,10 @@ Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
   'tags': instance.tags,
   'is_deleted': instance.isDeleted,
   'cover_image_url': instance.coverImageUrl,
+  'reflection_image_url': instance.reflectionImageUrl,
+  'sound_id': instance.soundId,
+  'sound': instance.sound,
+  'panels': instance.panels,
   'post_type': instance.postType,
   'published_at': instance.publishedAt.toIso8601String(),
   'author_handle': instance.authorHandle,

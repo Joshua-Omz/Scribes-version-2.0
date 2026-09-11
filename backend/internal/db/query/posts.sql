@@ -6,21 +6,27 @@ INSERT INTO posts (
     visibility,
     sermon_source,
     cover_image_url,
+    reflection_image_url,
+    sound_id,
     post_type
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 ) RETURNING *;
 
 -- name: GetPostByID :one
-SELECT p.*, u.handle AS author_handle, u.display_name AS author_name 
+SELECT p.*, u.handle AS author_handle, u.display_name AS author_name,
+       s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
 FROM posts p
 JOIN users u ON p.author_id = u.id
+LEFT JOIN sound_pool s ON p.sound_id = s.id
 WHERE p.id = $1 AND p.is_deleted = false LIMIT 1;
 
 -- name: ListPostsByAuthor :many
-SELECT p.*, u.handle AS author_handle, u.display_name AS author_name 
+SELECT p.*, u.handle AS author_handle, u.display_name AS author_name,
+       s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
 FROM posts p
 JOIN users u ON p.author_id = u.id
+LEFT JOIN sound_pool s ON p.sound_id = s.id
 WHERE p.author_id = $1 AND p.is_deleted = false
 ORDER BY p.published_at DESC;
 
