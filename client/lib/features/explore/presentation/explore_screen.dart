@@ -3,6 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:scribes/core/widgets/scribes_user_card.dart';
+import 'package:scribes/features/auth/application/auth_notifier.dart';
 
 import '../../../core/widgets/scribes_connected_post_card.dart';
 import '../../../core/widgets/scribes_discover_tile.dart';
@@ -17,8 +19,8 @@ import '../../../core/widgets/scribes_shimmer.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
-import '../../../core/widgets/scribes_user_card.dart';
-import '../../auth/application/auth_notifier.dart';
+import '../../../core/theme/scribes_colors.dart';
+import '../../../core/widgets/scribes_bottom_nav.dart';
 import 'topic_selection_screen.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -28,22 +30,50 @@ class ExploreScreen extends ConsumerStatefulWidget {
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends ConsumerState<ExploreScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ExploreScreenState extends ConsumerState<ExploreScreen> {
+  int _selectedSection = 0; // 0: For You, 1: Discover, 2: Churches
   String _selectedSpotlightFilter = 'all';
   String _selectedForYouTag = 'all';
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Widget _buildSectionChip(int index, String label, ScribesColors colors) {
+    final isSelected = _selectedSection == index;
+    return GestureDetector(
+      onTap: () {
+        if (_selectedSection != index) {
+          setState(() => _selectedSection = index);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.glassFill : colors.surfaceRaised,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? colors.goldEdge
+                : colors.border.withValues(alpha: 0.5),
+            width: isSelected ? 1.2 : 0.6,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: colors.gold.withValues(alpha: 0.12),
+                    blurRadius: 8,
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: ScribesTextStyles.labelLg.copyWith(
+            color: isSelected ? colors.primaryText : colors.secondaryText,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 12.5,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -53,6 +83,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     return Scaffold(
       backgroundColor: colors.background,
+      bottomNavigationBar: const ScribesBottomNav(currentIndex: 1),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -64,17 +95,46 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               elevation: 0,
               centerTitle: false,
               leading: null,
-              title: Text(
-
-                'Explore',
-                style: ScribesTextStyles.displayMd.copyWith(
-                  color: colors.primaryText,
+              title: InkWell(
+                onTap: () => context.push('/search'),
+                borderRadius: BorderRadius.circular(22),
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceRaised,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: colors.border.withValues(alpha: 0.6),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      HugeIcon(
+                        icon: HugeIcons.strokeRoundedSearch01,
+                        color: colors.secondaryText,
+                        size: 17,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Search posts, scriptures, authors...',
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.secondaryText,
+                            fontSize: 12.5,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               actions: [
                 if (scriptureFilter != null)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: ActionChip(
                       label: Text(
                         '${scriptureFilter.book} ${scriptureFilter.chapter ?? ''}'
@@ -88,63 +148,70 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       avatar: HugeIcon(
                         icon: HugeIcons.strokeRoundedCancel01,
                         color: colors.primaryText,
-                        size: 16,
+                        size: 14,
                       ),
                       backgroundColor: colors.surfaceRaised,
-                      labelStyle: ScribesTextStyles.labelLg.copyWith(
+                      labelStyle: ScribesTextStyles.labelSm.copyWith(
                         color: colors.primaryText,
                       ),
-                      side: BorderSide.none,
+                      side: BorderSide(color: colors.goldEdge, width: 0.8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   ),
-                ScribesIconButton(
-                  icon: HugeIcons.strokeRoundedSearch01,
-                  color: colors.secondaryText,
-                  onPressed: () => context.push('/search'),
-                ),
-                const SizedBox(width: 8),
-                ScribesIconButton(
-                  icon: HugeIcons.strokeRoundedBookOpen01,
-                  color: colors.secondaryText,
-                  onPressed: () =>
-                      _showScriptureFilterSheet(context, ref, colors),
+                Tooltip(
+                  message: 'Filter by Scripture',
+                  child: ScribesIconButton(
+                    icon: HugeIcons.strokeRoundedBookOpen01,
+                    color: scriptureFilter != null
+                        ? colors.gold
+                        : colors.secondaryText,
+                    onPressed: () =>
+                        _showScriptureFilterSheet(context, ref, colors),
+                  ),
                 ),
                 const SizedBox(width: 8),
               ],
               bottom: scriptureFilter == null
-                  ? TabBar(
-                      controller: _tabController,
-                      indicatorColor: colors.primaryText,
-                      indicatorWeight: 2,
-                      labelColor: colors.primaryText,
-                      unselectedLabelColor: colors.secondaryText,
-                      labelStyle: ScribesTextStyles.labelLg.copyWith(
-                        fontWeight: FontWeight.w600,
+                  ? PreferredSize(
+                      preferredSize: const Size.fromHeight(46),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        alignment: Alignment.centerLeft,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildSectionChip(0, 'For You', colors),
+                              const SizedBox(width: 8),
+                              _buildSectionChip(1, 'Discover', colors),
+                              const SizedBox(width: 8),
+                              _buildSectionChip(2, 'Churches', colors),
+                            ],
+                          ),
+                        ),
                       ),
-                      unselectedLabelStyle: ScribesTextStyles.labelLg.copyWith(
-                        fontWeight: FontWeight.w400,
-                      ),
-                      tabs: const [
-                        Tab(text: 'For You'),
-                        Tab(text: 'Discover'),
-                        Tab(text: 'Churches'),
-                      ],
                     )
                   : null,
             ),
           ];
         },
         body: scriptureFilter == null
-            ? TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildForYouTab(context, ref, colors),
-                  _buildDiscoverTab(ref, colors),
-                  _buildChurchesTab(ref, colors),
-                ],
+            ? AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: KeyedSubtree(
+                  key: ValueKey(_selectedSection),
+                  child: switch (_selectedSection) {
+                    0 => _buildForYouTab(context, ref, colors),
+                    1 => _buildDiscoverTab(ref, colors),
+                    2 => _buildChurchesTab(ref, colors),
+                    _ => _buildForYouTab(context, ref, colors),
+                  },
+                ),
               )
             : _buildFilteredTab(ref, colors),
       ),
@@ -281,19 +348,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold : colors.surfaceRaised,
+          color: isSelected ? colors.glassFill : colors.surfaceRaised,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? colors.gold
+                ? colors.goldEdge
                 : colors.border.withValues(alpha: 0.6),
-            width: 0.6,
+            width: isSelected ? 1.2 : 0.6,
           ),
         ),
         child: Text(
           label,
           style: ScribesTextStyles.caption.copyWith(
-            color: isSelected ? colors.background : colors.primaryText,
+            color: colors.primaryText,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             fontSize: 11.5,
           ),
@@ -529,7 +596,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (e, st) => const SizedBox.shrink(),
     );
   }
 

@@ -9,7 +9,6 @@ import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_colors.dart';
 import 'scribes_shimmer.dart';
 import 'scribes_text_field.dart';
-import 'scribes_toast.dart';
 import 'scribes_avatar.dart';
 import 'scribes_empty_state.dart';
 import '../../features/social/application/post_social_providers.dart';
@@ -17,10 +16,7 @@ import '../../features/social/application/user_lookup_provider.dart';
 import '../../features/social/domain/comment.dart';
 import '../../features/social/domain/comment_author.dart';
 import '../../features/auth/application/auth_notifier.dart';
-import '../../features/messages/presentation/widgets/dm_request_modal.dart';
-import '../../features/messages/data/message_repository.dart';
-import '../../features/messages/application/inbox_providers.dart';
-import 'package:go_router/go_router.dart';
+
 
 class ScribesCommentSheet extends ConsumerStatefulWidget {
   final String postId;
@@ -233,122 +229,10 @@ class _ScribesCommentSheetState extends ConsumerState<ScribesCommentSheet> {
                         .hideComment(comment.id);
                   },
                 ),
-
-              _buildActionTile(
-                colors: colors,
-                icon: HugeIcons.strokeRoundedMail01,
-                label: 'Reply via DM',
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showReplyViaDMDialog(context, comment, colors);
-                },
-              ),
-
               const SizedBox(height: 8),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showReplyViaDMDialog(
-    BuildContext context,
-    Comment comment,
-    ScribesColors colors,
-  ) {
-    final controller = TextEditingController(
-      text: 'Replying to your comment: "${comment.body}"\n\n',
-    );
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surface,
-        title: Text(
-          'Reply via DM',
-          style: ScribesTextStyles.displayMd.copyWith(
-            color: colors.primaryText,
-            fontSize: 20,
-          ),
-        ),
-        content: ScribesTextField(
-          controller: controller,
-          maxLines: 4,
-          minLines: 4,
-          hintText: 'Type your message...',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: colors.secondaryText),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.gold,
-              elevation: 0,
-            ),
-            onPressed: () async {
-              final text = controller.text.trim();
-              if (text.isNotEmpty) {
-                Navigator.pop(ctx);
-                try {
-                  final conversations = await ref.read(
-                    conversationsProvider.future,
-                  );
-                  final existing = conversations
-                      .where(
-                        (c) =>
-                            c.userAId == comment.authorId ||
-                            c.userBId == comment.authorId,
-                      )
-                      .firstOrNull;
-
-                  if (existing != null) {
-                    final currentUserId = ref.read(authProvider).value?.id;
-                    if (currentUserId != null) {
-                      await ref
-                          .read(messageRepositoryProvider)
-                          .sendMessage(existing.id, text, currentUserId);
-                      if (context.mounted) {
-                        ScribesToast.show(
-                          context,
-                          'Message sent',
-                          colors,
-                          icon: HugeIcons.strokeRoundedCheckmarkBadge01,
-                        );
-                      }
-                    }
-                  } else {
-                    await ref
-                        .read(messageRepositoryProvider)
-                        .sendRequest(comment.authorId, text);
-                    if (context.mounted) {
-                      ScribesToast.show(
-                        context,
-                        'Message request sent',
-                        colors,
-                        icon: HugeIcons.strokeRoundedCheckmarkBadge01,
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScribesToast.show(
-                      context,
-                      'Failed to send message',
-                      colors,
-                      icon: HugeIcons.strokeRoundedAlert01,
-                    );
-                  }
-                }
-              }
-            },
-            child: const Text('Send', style: TextStyle(color: Colors.white)),
-          ),
-        ],
       ),
     );
   }
@@ -711,97 +595,6 @@ class _CommentTile extends ConsumerWidget {
                   style: ScribesTextStyles.bodyMd.copyWith(
                     color: colors.primaryText,
                   ),
-                ),
-                const SizedBox(height: 8),
-                // Actions row
-                Row(
-                  children: [
-                    // Reply button (placeholder logic for now)
-                    InkWell(
-                      onTap: () {
-                        // TODO: trigger reply
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4.0,
-                          vertical: 2.0,
-                        ),
-                        child: Text(
-                          'Reply',
-                          style: ScribesTextStyles.labelLg.copyWith(
-                            color: colors.secondaryText,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Message button
-                    Consumer(
-                      builder: (context, ref, child) {
-                        final currentUserId = ref.watch(authProvider).value?.id;
-                        if (currentUserId == comment.authorId) {
-                          return const SizedBox.shrink(); // Can't message self
-                        }
-                        return InkWell(
-                          onTap: () async {
-                            final conversations = await ref.read(
-                              conversationsProvider.future,
-                            );
-                            final existing = conversations
-                                .where(
-                                  (c) =>
-                                      c.userAId == comment.authorId ||
-                                      c.userBId == comment.authorId,
-                                )
-                                .firstOrNull;
-                            if (!context.mounted) return;
-                            if (existing != null) {
-                              Navigator.of(context).pop();
-                              context.push('/conversation/${existing.id}');
-                            } else {
-                              try {
-                                final repo = ref.read(
-                                  messageRepositoryProvider,
-                                );
-                                final conv = await repo
-                                    .getOrCreateDirectConversation(
-                                      comment.authorId,
-                                    );
-                                if (!context.mounted) return;
-                                Navigator.of(context).pop();
-                                context.push('/conversation/${conv.id}');
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                DmRequestModal.show(context, comment.authorId);
-                              }
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4.0,
-                              vertical: 2.0,
-                            ),
-                            child: Row(
-                              children: [
-                                HugeIcon(
-                                  icon: HugeIcons.strokeRoundedMail01,
-                                  size: 14,
-                                  color: colors.secondaryText,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Message',
-                                  style: ScribesTextStyles.labelLg.copyWith(
-                                    color: colors.secondaryText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
                 ),
               ],
             ),

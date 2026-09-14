@@ -28,8 +28,6 @@ import '../../features/notes/presentation/note_editor_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 
 import '../../features/notifications/presentation/notification_screen.dart';
-import '../../features/messages/presentation/inbox_screen.dart';
-import '../../features/messages/presentation/conversation_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/settings/presentation/email_password_screen.dart';
 import '../../features/settings/presentation/notifications_settings_screen.dart';
@@ -37,7 +35,6 @@ import '../../features/social/presentation/bookmarks_screen.dart';
 import '../../features/bible/presentation/bible_drawer.dart';
 import '../../features/compose/presentation/passage_composer.dart';
 import '../../features/passage/presentation/passage_viewer_screen.dart';
-import '../widgets/scribes_bottom_nav.dart';
 import 'transitions.dart';
 
 part 'app_router.g.dart';
@@ -135,59 +132,19 @@ GoRouter appRouter(Ref ref) {
 
       return null;
     },
+    // Dedicated page routes — no shell, each screen owns its own Scaffold + bottom nav
     routes: [
-      StatefulShellRoute(
-        navigatorContainerBuilder: (context, navigationShell, children) {
-          return ScaffoldWithNavBar(
-            navigationShell: navigationShell,
-            children: children,
-          );
-        },
-        builder: (context, state, navigationShell) {
-          return navigationShell;
-        },
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/',
-                builder: (context, state) => const FeedScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/explore',
-                builder: (context, state) => const ExploreScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/inbox',
-                builder: (context, state) => const InboxScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/notes',
-                builder: (context, state) => const NotesListScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/profile',
-                builder: (context, state) => const PrivateProfileScreen(),
-              ),
-            ],
-          ),
-        ],
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const FeedScreen(),
+      ),
+      GoRoute(
+        path: '/explore',
+        builder: (context, state) => const ExploreScreen(),
+      ),
+      GoRoute(
+        path: '/notes',
+        builder: (context, state) => const NotesListScreen(),
       ),
       GoRoute(
         path: '/splash',
@@ -322,11 +279,7 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/profile',
-        pageBuilder: (context, state) => buildPageWithSlideRightTransition(
-          context: context,
-          state: state,
-          child: const PrivateProfileScreen(),
-        ),
+        builder: (context, state) => const PrivateProfileScreen(),
         routes: [
           GoRoute(
             path: 'edit',
@@ -421,17 +374,6 @@ GoRouter appRouter(Ref ref) {
           state: state,
           child: const DraftsListScreen(),
         ),
-      ),
-      GoRoute(
-        path: '/conversation/:id',
-        pageBuilder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return buildPageWithSlideRightTransition(
-            context: context,
-            state: state,
-            child: ConversationScreen(conversationId: id),
-          );
-        },
       ),
     ],
   );

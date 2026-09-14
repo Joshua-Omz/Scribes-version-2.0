@@ -38,7 +38,6 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
 
   @override
   void dispose() {
-    ref.read(shellFabOverrideProvider.notifier).clear();
     super.dispose();
   }
 
@@ -50,7 +49,6 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
         _selectedIds.add(id);
       }
     });
-    _updateShellFab();
   }
 
   @override
@@ -61,6 +59,27 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
 
     return Scaffold(
       backgroundColor: colors.background,
+      floatingActionButton: isSelectionMode
+          ? _buildSelectionActions(colors)
+          : FloatingActionButton(
+              heroTag: 'add_note_fab',
+              backgroundColor: colors.surfaceRaised,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: colors.goldEdge, width: 1.2),
+              ),
+              onPressed: () {
+                ref.read(noteEditorProvider.notifier).reset();
+                context.push('/notes/edit');
+              },
+              child: HugeIcon(
+                icon: HugeIcons.strokeRoundedQuillWrite02,
+                color: colors.gold,
+                size: 24,
+              ),
+            ),
+      bottomNavigationBar: const ScribesBottomNav(currentIndex: 3),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -80,7 +99,6 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
               onPressed: () {
                 if (isSelectionMode) {
                   setState(() => _selectedIds.clear());
-                  _updateShellFab();
                 } else if (_isSearchActive) {
                   setState(() {
                     _isSearchActive = false;
@@ -281,19 +299,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
     );
   }
 
-  void _updateShellFab() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (_selectedIds.isEmpty) {
-        ref.read(shellFabOverrideProvider.notifier).clear();
-      } else {
-        ref.read(shellFabOverrideProvider.notifier).set(_buildSelectionActions());
-      }
-    });
-  }
-
-  Widget _buildSelectionActions() {
-    final colors = ref.read(themeProvider);
+  Widget _buildSelectionActions(dynamic colors) {
     final notesAsync = ref.read(notesListProvider);
 
     return Row(
@@ -304,6 +310,10 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
           backgroundColor: colors.surfaceRaised,
           foregroundColor: colors.gold,
           elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: colors.goldEdge, width: 1.0),
+          ),
           onPressed: () {
             final allNotes = notesAsync.value ?? [];
             final selectedNotes = allNotes
@@ -345,12 +355,7 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
             setState(() {
               _selectedIds.clear();
             });
-            _updateShellFab();
-            ScribesToast.show(
-              context,
-              'Deleted $count note(s)',
-              colors,
-            );
+            ScribesToast.show(context, 'Deleted $count note(s)', colors);
           },
           icon: HugeIcon(
             icon: HugeIcons.strokeRoundedDelete02,
@@ -385,10 +390,15 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                 icon: HugeIcons.strokeRoundedQuillWrite02,
                 color: colors.primaryText,
               ),
-              title: Text('Edit Note', style: TextStyle(color: colors.primaryText)),
+              title: Text(
+                'Edit Note',
+                style: TextStyle(color: colors.primaryText),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
-                ref.read(noteEditorProvider.notifier).loadNote(
+                ref
+                    .read(noteEditorProvider.notifier)
+                    .loadNote(
                       note.id,
                       note.content,
                       title: note.title,
@@ -404,7 +414,10 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
               ),
               title: Text(
                 'Export Manuscript (PDF)',
-                style: TextStyle(color: colors.gold, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: colors.gold,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               onTap: () {
                 Navigator.pop(ctx);
@@ -420,7 +433,10 @@ class _NotesListScreenState extends ConsumerState<NotesListScreen> {
                 icon: HugeIcons.strokeRoundedCheckList,
                 color: colors.secondaryText,
               ),
-              title: Text('Select Item', style: TextStyle(color: colors.secondaryText)),
+              title: Text(
+                'Select Item',
+                style: TextStyle(color: colors.secondaryText),
+              ),
               onTap: () {
                 Navigator.pop(ctx);
                 _toggleSelection(note.id);

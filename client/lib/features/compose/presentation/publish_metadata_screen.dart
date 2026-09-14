@@ -137,13 +137,12 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.gold,
-                        foregroundColor: colors.surfaceRaised,
+                    Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.primaryText,
+                        side: BorderSide(color: colors.goldEdge, width: 1.2),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

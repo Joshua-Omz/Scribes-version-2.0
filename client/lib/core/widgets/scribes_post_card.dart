@@ -4,6 +4,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
+import '../theme/scribes_colors.dart';
 import 'scribes_scripture_chip.dart';
 import '../../features/posts/domain/scripture_ref.dart';
 
@@ -11,7 +12,7 @@ import 'scribes_ornament_divider.dart';
 import 'scribes_author_header.dart';
 import 'scribes_image_resolver.dart';
 
-class ScribesPostCard extends ConsumerStatefulWidget {
+class ScribesPostCard extends ConsumerWidget {
   final String title;
   final String bodyExcerpt;
   final String authorName;
@@ -75,117 +76,112 @@ class ScribesPostCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ScribesPostCard> createState() => _ScribesPostCardState();
-}
-
-class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = ref.watch(themeProvider);
     final hasEmbeddedContent =
-        (widget.caption != null && widget.caption!.isNotEmpty) ||
-        (widget.sermonSource != null && widget.sermonSource!.isNotEmpty);
+        (caption != null && caption!.isNotEmpty) ||
+        (sermonSource != null && sermonSource!.isNotEmpty);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: widget.onTap ?? () {},
+      onTap: onTap ?? () {},
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: EdgeInsets.symmetric(
-          horizontal: widget.isExploreScreen ? 16 : 10,
-          vertical: widget.isExploreScreen ? 16 : 10,
+          horizontal: isExploreScreen ? 16 : 10,
+          vertical: isExploreScreen ? 16 : 10,
         ),
-          decoration: widget.isExploreScreen
-              ? BoxDecoration(
-                  color: colors.surfaceRaised.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: colors.border.withValues(alpha: 0.5),
-                  ),
-                )
-              : BoxDecoration(
-                  color: colors
-                      .background, // Match screen background for flat look
+        decoration: isExploreScreen
+            ? BoxDecoration(
+                color: colors.surfaceRaised.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: colors.border.withValues(alpha: 0.5),
                 ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.isFeatured)
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: HugeIcon(
-                    icon: HugeIcons.strokeRoundedSparkles,
-                    color: colors.gold.withValues(alpha: 0.16),
-                    size: 24,
-                  ),
-                ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: ScribesAuthorHeader(
-                      authorName: widget.authorName,
-                      authorHandle: widget.authorHandle,
-                      avatarUrl: widget.authorAvatarUrl,
-                      publishedAt: widget.publishedAt,
-                      isCorrection: widget.isCorrection,
-                      onTap: widget.onAuthorTap ?? () {},
-                    ),
-                  ),
-                  if (widget.onShare != null)
-                    IconButton(
-                      onPressed: widget.onShare,
-                      icon: Container(
-                        padding: const EdgeInsets.all(6),
-                        child: HugeIcon(
-                          icon: HugeIcons.strokeRoundedShare01,
-                          color: colors.secondaryText,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  if (widget.onSaveToggle != null)
-                    IconButton(
-                      onPressed: widget.onSaveToggle,
-                      icon: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: widget.isSaved
-                              ? colors.gold
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(
-                            ScribesRadius.button,
-                          ),
-                        ),
-                        child: HugeIcon(
-                          icon: HugeIcons.strokeRoundedBookmark01,
-                          color: widget.isSaved
-                              ? colors.surface
-                              : colors.secondaryText,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                ],
+              )
+            : BoxDecoration(
+                color: colors.background,
               ),
-              // 1. Cover Image Media Preview (Hybrid Magazine Style with Scrim & Floating Badge)
-              if (!widget.isSearchScreen &&
-                  widget.coverImageUrl != null &&
-                  widget.coverImageUrl!.trim().isNotEmpty) ...[
-                const SizedBox(height: 14),
-                ClipRRect(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isFeatured)
+              Align(
+                alignment: Alignment.topLeft,
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedSparkles,
+                  color: colors.gold.withValues(alpha: 0.16),
+                  size: 24,
+                ),
+              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: ScribesAuthorHeader(
+                    authorName: authorName,
+                    authorHandle: authorHandle,
+                    avatarUrl: authorAvatarUrl,
+                    publishedAt: publishedAt,
+                    isCorrection: isCorrection,
+                    onTap: onAuthorTap ?? () {},
+                  ),
+                ),
+                if (onShare != null)
+                  IconButton(
+                    onPressed: onShare,
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      child: HugeIcon(
+                        icon: HugeIcons.strokeRoundedShare01,
+                        color: colors.secondaryText,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                if (onSaveToggle != null)
+                  IconButton(
+                    onPressed: onSaveToggle,
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isSaved ? colors.glassFill : Colors.transparent,
+                        borderRadius: BorderRadius.circular(
+                          ScribesRadius.button,
+                        ),
+                        border: isSaved
+                            ? Border.all(color: colors.goldEdge, width: 1.0)
+                            : null,
+                      ),
+                      child: HugeIcon(
+                        icon: isSaved
+                            ? HugeIcons.strokeRoundedBookmark02
+                            : HugeIcons.strokeRoundedBookmark01,
+                        color: isSaved
+                            ? colors.gold
+                            : colors.secondaryText,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            // 1. Cover Image Media Preview (Hybrid Magazine Style with Scrim & Floating Badge)
+            if (!isSearchScreen &&
+                coverImageUrl != null &&
+                coverImageUrl!.trim().isNotEmpty) ...[
+              const SizedBox(height: 14),
+              RepaintBoundary(
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(ScribesRadius.card),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Stack(
                       children: [
-                        // Background Cached Network Image
                         Positioned.fill(
                           child: ScribesImageResolver.buildImage(
-                            imageUrl: widget.coverImageUrl,
+                            imageUrl: coverImageUrl!,
                             fit: BoxFit.cover,
                             memCacheWidth: 720,
                             placeholder: (context, url) => Container(
@@ -215,9 +211,9 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                         ),
 
                         // Floating Badge in Bottom-Left (Passage, Reflection, or Featured indicator)
-                        if (widget.postType == 'passage' ||
-                            widget.postType == 'reflection' ||
-                            widget.isFeatured)
+                        if (postType == 'passage' ||
+                            postType == 'reflection' ||
+                            isFeatured)
                           Positioned(
                             left: 12,
                             bottom: 12,
@@ -232,14 +228,14 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                                   ScribesRadius.chip,
                                 ),
                                 border: Border.all(
-                                  color: colors.gold.withValues(alpha: 0.5),
-                                  width: 0.5,
+                                  color: colors.goldEdge,
+                                  width: 0.8,
                                 ),
                               ),
                               child: Text(
-                                widget.postType == 'passage'
+                                postType == 'passage'
                                     ? 'Passage'
-                                    : widget.postType == 'reflection'
+                                    : postType == 'reflection'
                                         ? 'Reflection'
                                         : 'Featured',
                                 style: ScribesTextStyles.caption.copyWith(
@@ -254,211 +250,147 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
                     ),
                   ),
                 ),
-              ],
+              ),
+            ],
 
-              // 2. Title & Body Excerpt
-              const SizedBox(height: 14),
-              if (widget.postType == 'reflection') ...[
-                Text(
-                  widget.bodyExcerpt.isNotEmpty
-                      ? widget.bodyExcerpt
-                      : widget.title,
-                  style: ScribesTextStyles.bodyLg.copyWith(
-                    color: colors.primaryText,
-                    fontSize: 17,
-                    height: 1.55,
-                  ),
-                  maxLines: 6,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ] else ...[
-                if (widget.title.isNotEmpty && widget.title != 'Untitled')
-                  Text(
-                    widget.title,
-                    style: ScribesTextStyles.displayMd.copyWith(
-                      color: colors.primaryText,
-                      fontSize: widget.isSearchScreen ? 20 : 24,
-                      height: widget.isSearchScreen ? 1.1 : 1.2,
-                    ),
-                    maxLines: widget.isSearchScreen ? 1 : 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                if (!widget.isSearchScreen && widget.bodyExcerpt.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    widget.bodyExcerpt,
-                    style: ScribesTextStyles.bodyLg.copyWith(
-                      color: colors.secondaryText,
-                    ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
+            // 2. Title & Body Excerpt
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: ScribesTextStyles.displayMd.copyWith(
+                color: colors.primaryText,
+                height: 1.15,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              bodyExcerpt,
+              style: ScribesTextStyles.bodyMd.copyWith(
+                color: colors.secondaryText,
+                height: 1.5,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
 
-              // 3. Scripture Chips & Tags
-              if (widget.scriptureRefs.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12.0),
-                  child: Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: widget.scriptureRefs.map((ref) {
-                      final refStr = ref.verseEnd != null
-                          ? '${ref.book} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}'
-                          : '${ref.book} ${ref.chapter}:${ref.verseStart}';
-                      return ScribesScriptureChip(reference: refStr);
-                    }).toList(),
-                  ),
-                ),
-              if (widget.tags.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: widget.scriptureRefs.isNotEmpty ? 8.0 : 12.0,
-                  ),
-                  child: Wrap(
-                    spacing: 6.0,
-                    runSpacing: 6.0,
-                    children: widget.tags
-                        .map(
-                          (tag) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colors.surfaceRaised,
-                              borderRadius: BorderRadius.circular(
-                                ScribesRadius.chip,
-                              ),
-                              border: Border.all(
-                                color: colors.border.withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: Text(
-                              '#$tag',
-                              style: ScribesTextStyles.labelSm.copyWith(
-                                color: colors.secondaryText,
-                                fontWeight: FontWeight.w600,
-                              ),
+            // 3. Scripture Chips & Tags
+            if (scriptureRefs.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: scriptureRefs.map((ref) {
+                  final refStr = ref.verseEnd != null
+                      ? '${ref.book} ${ref.chapter}:${ref.verseStart}-${ref.verseEnd}'
+                      : '${ref.book} ${ref.chapter}:${ref.verseStart}';
+                  return ScribesScriptureChip(reference: refStr);
+                }).toList(),
+              ),
+            ],
+
+            if (tags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: tags
+                      .map(
+                        (tag) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceRaised,
+                            borderRadius: BorderRadius.circular(
+                              ScribesRadius.chip,
                             ),
                           ),
-                        )
-                        .toList(),
-                  ),
-                ),
-
-              // 4. Embedded References (Sermon Source / Caption)
-              if (!widget.isSearchScreen && hasEmbeddedContent) ...[
-                const SizedBox(height: 16),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _isExpanded = !_isExpanded;
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(4),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 4.0,
-                        horizontal: 2.0,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          HugeIcon(
-                            icon: _isExpanded
-                                ? HugeIcons.strokeRoundedArrowUp01
-                                : HugeIcons.strokeRoundedArrowDown01,
-                            color: colors.secondaryText,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _isExpanded ? 'Hide references' : 'Show references',
+                          child: Text(
+                            '#$tag',
                             style: ScribesTextStyles.labelSm.copyWith(
                               color: colors.secondaryText,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
+                      )
+                      .toList(),
                 ),
-                if (_isExpanded)
-                  _EmbeddedContentBox(
-                    caption: widget.caption,
-                    sermonSource: widget.sermonSource,
-                    colors: colors,
-                  ),
-              ],
+              ),
 
-              // 5. Sacred Ornament Divider & Compact 6-Action Row
-              if (!widget.isExploreScreen) ...[
-                const SizedBox(height: 16),
-                const ScribesOrnamentDivider(),
-                const SizedBox(height: 12),
-                RepaintBoundary(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // 1. Amen (Fire)
-                      _buildCompactAction(
-                        icon: widget.userReactionType == 'amen'
-                            ? HugeIcons.strokeRoundedSparkles
-                            : HugeIcons.strokeRoundedFire,
-                        label: widget.amenCount > 0 ? '${widget.amenCount}' : '',
-                        isSelected: widget.userReactionType == 'amen',
-                        selectedColor: colors.gold,
-                        defaultColor: colors.secondaryText,
-                        onTap: () => widget.onReact?.call('amen'),
-                      ),
-
-                      // 2. Insight (Idea)
-                      _buildCompactAction(
-                        icon: HugeIcons.strokeRoundedIdea01,
-                        label: widget.insightCount > 0
-                            ? '${widget.insightCount}'
-                            : '',
-                        isSelected: widget.userReactionType == 'insightful',
-                        selectedColor: colors.gold,
-                        defaultColor: colors.secondaryText,
-                        onTap: () => widget.onReact?.call('insightful'),
-                      ),
-
-                      // 3. Deep / Thought-provoking (Diamond)
-                      _buildCompactAction(
-                        icon: HugeIcons.strokeRoundedDiamond01,
-                        label: widget.thoughtProvokingCount > 0
-                            ? '${widget.thoughtProvokingCount}'
-                            : '',
-                        isSelected: widget.userReactionType == 'thought_provoking',
-                        selectedColor: colors.gold,
-                        defaultColor: colors.secondaryText,
-                        onTap: () => widget.onReact?.call('thought_provoking'),
-                      ),
-
-                      // 4. Comments (Bubble Chat)
-                      _buildCompactAction(
-                        icon: HugeIcons.strokeRoundedBubbleChat,
-                        label: widget.commentCount > 0
-                            ? '${widget.commentCount}'
-                            : '',
-                        isSelected: false,
-                        selectedColor: colors.gold,
-                        defaultColor: colors.secondaryText,
-                        onTap: widget.onComment,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            // 4. Embedded References (Sermon Source / Caption)
+            if (!isSearchScreen && hasEmbeddedContent) ...[
+              const SizedBox(height: 16),
+              _ExpandableReferencesSection(
+                caption: caption,
+                sermonSource: sermonSource,
+                colors: colors,
+              ),
             ],
-          ),
+
+            // 5. Sacred Ornament Divider & Compact 6-Action Row
+            if (!isExploreScreen) ...[
+              const SizedBox(height: 16),
+              const ScribesOrnamentDivider(),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 1. Amen (Fire)
+                  _buildCompactAction(
+                    icon: userReactionType == 'amen'
+                        ? HugeIcons.strokeRoundedSparkles
+                        : HugeIcons.strokeRoundedFire,
+                    label: amenCount > 0 ? '$amenCount' : '',
+                    isSelected: userReactionType == 'amen',
+                    selectedColor: colors.gold,
+                    defaultColor: colors.secondaryText,
+                    onTap: () => onReact?.call('amen'),
+                  ),
+
+                  // 2. Insight (Idea)
+                  _buildCompactAction(
+                    icon: HugeIcons.strokeRoundedIdea01,
+                    label: insightCount > 0 ? '$insightCount' : '',
+                    isSelected: userReactionType == 'insightful',
+                    selectedColor: colors.gold,
+                    defaultColor: colors.secondaryText,
+                    onTap: () => onReact?.call('insightful'),
+                  ),
+
+                  // 3. Deep / Thought-provoking (Diamond)
+                  _buildCompactAction(
+                    icon: HugeIcons.strokeRoundedDiamond01,
+                    label: thoughtProvokingCount > 0
+                        ? '$thoughtProvokingCount'
+                        : '',
+                    isSelected: userReactionType == 'thought_provoking',
+                    selectedColor: colors.gold,
+                    defaultColor: colors.secondaryText,
+                    onTap: () => onReact?.call('thought_provoking'),
+                  ),
+
+                  // 4. Comments (Bubble Chat)
+                  _buildCompactAction(
+                    icon: HugeIcons.strokeRoundedBubbleChat,
+                    label: commentCount > 0 ? '$commentCount' : '',
+                    isSelected: false,
+                    selectedColor: colors.gold,
+                    defaultColor: colors.secondaryText,
+                    onTap: onComment,
+                  ),
+                ],
+              ),
+            ],
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildCompactAction({
@@ -501,10 +433,82 @@ class _ScribesPostCardState extends ConsumerState<ScribesPostCard> {
   }
 }
 
+class _ExpandableReferencesSection extends StatefulWidget {
+  final String? caption;
+  final String? sermonSource;
+  final ScribesColors colors;
+
+  const _ExpandableReferencesSection({
+    required this.caption,
+    required this.sermonSource,
+    required this.colors,
+  });
+
+  @override
+  State<_ExpandableReferencesSection> createState() =>
+      _ExpandableReferencesSectionState();
+}
+
+class _ExpandableReferencesSectionState
+    extends State<_ExpandableReferencesSection> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 4.0,
+                horizontal: 2.0,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HugeIcon(
+                    icon: _isExpanded
+                        ? HugeIcons.strokeRoundedArrowUp01
+                        : HugeIcons.strokeRoundedArrowDown01,
+                    color: widget.colors.secondaryText,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isExpanded ? 'Hide references' : 'Show references',
+                    style: ScribesTextStyles.labelSm.copyWith(
+                      color: widget.colors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (_isExpanded)
+          _EmbeddedContentBox(
+            caption: widget.caption,
+            sermonSource: widget.sermonSource,
+            colors: widget.colors,
+          ),
+      ],
+    );
+  }
+}
+
 class _EmbeddedContentBox extends StatelessWidget {
   final String? caption;
   final String? sermonSource;
-  final dynamic colors;
+  final ScribesColors colors;
 
   const _EmbeddedContentBox({
     this.caption,
@@ -518,7 +522,7 @@ class _EmbeddedContentBox extends StatelessWidget {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.only(left: 16, top: 12, bottom: 12, right: 16),
       decoration: BoxDecoration(
-        color: colors.background, // Offset from surface
+        color: colors.background,
         borderRadius: const BorderRadius.only(
           topRight: Radius.circular(8),
           bottomRight: Radius.circular(8),

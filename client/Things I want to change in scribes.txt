@@ -1,0 +1,32 @@
+Things I want to change in scribes before moving to the next stage :
+
+1.instead of using a shelled index to navigate via bottom navbar , I would like to use the bottom navbar to navigate via building a dedicated page  for each navigation on the bottom bar all for the sake of performance ( to stop the stuttering  on screen ) I still don't know if its the cause for the stuttering 
+
+2.Glassmorphic design in critical places (the bottom navbar ) the scripture sheet dialog replace all gold/ orange flat full button to a glassmorphic design with gold outline like the scribes toast to differentiate between 
+
+
+
+3. Redisigning the scribes divider ornament using the logo design skill to generate a cherubim wing for the ornament instead 
+
+4. major change in the color taxonomy of scribes , the gold will only ever serve as an outline and never a flat color choice for buttons 
+
+5.increase size of the scribes logo in the app bar
+
+6.passage card design for the feed should be changes to Instagram style carousel scroll with the audio playing in the background without having to tap on it , tapping on it to see full details
+
+7. remove every access point of dm , hide the feature completely 
+
+8. successful sign in should navigate to feed screen 
+
+9. no more widget build tab method for follow and seek , feed screen will have a single page dedicated to showing feeds of following post and other post merged in the same feed 
+
+10.NOtelist screen will have its own fab to add note
+
+11. scribes scripture quick dialog will be scrollable to curb overflowing pixel
+
+12 . explore screen three tab section will no longer use three tabs to navigate ( because the ui design doent look appealing) instead it will use chips to  push the child screens foryou discover and churches   ( I need your opinion on this )
+the app bar for expore screen shoul also look more mordernistics , the icons there look out of place , and the users wont know they can also search posts with scripture tags , please point that out intelligently in the search screen 
+
+13. give suggestions for better ui design for any screen you think needs a rework
+
+we are no longer using list side drawers , suggest something else

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/widgets/scribes_avatar.dart';
+import '../../../core/widgets/scribes_bottom_nav.dart';
 
 import '../../auth/application/auth_notifier.dart';
 import 'package:scribes/features/social/application/saved_posts_provider.dart';
@@ -66,6 +67,7 @@ class _PrivateProfileScreenState extends ConsumerState<PrivateProfileScreen>
 
     return Scaffold(
       backgroundColor: colors.background,
+      bottomNavigationBar: const ScribesBottomNav(currentIndex: 4),
       body: RefreshIndicator(
         color: colors.gold,
         backgroundColor: colors.surfaceRaised,

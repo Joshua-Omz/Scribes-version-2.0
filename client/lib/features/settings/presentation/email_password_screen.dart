@@ -253,13 +253,12 @@ class _EmailPasswordScreenState extends ConsumerState<EmailPasswordScreen> {
   ) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colors.gold,
-          foregroundColor: colors.background,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.primaryText,
+          side: BorderSide(color: colors.goldEdge, width: 1.2),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          elevation: 0,
         ),
         onPressed: isLoading ? null : onPressed,
         child: isLoading

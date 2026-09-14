@@ -226,12 +226,11 @@ class _ReflectionComposerScreenState
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.gold,
-                      foregroundColor: colors.surfaceRaised,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.primaryText,
+                      side: BorderSide(color: colors.goldEdge, width: 1.2),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(ScribesRadius.button),
                       ),

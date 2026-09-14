@@ -245,10 +245,10 @@ class PostDetailScreen extends ConsumerWidget {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colors.gold,
-                                  foregroundColor: colors.surfaceRaised,
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: colors.primaryText,
+                                  side: BorderSide(color: colors.goldEdge, width: 1.2),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
                                     vertical: 14,

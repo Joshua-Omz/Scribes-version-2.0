@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/theme_provider.dart';
 
@@ -19,12 +18,17 @@ class ScribesOrnamentDivider extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: HugeIcon(
-            icon: HugeIcons
-                .strokeRoundedDiamond01, // Geometric medallion ornament
-            color: colors.gold.withValues(alpha: 0.2),
-            size: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Image.asset(
+            'assets/branding/cherubim_wings.png',
+            width: 48,
+            height: 18,
+            fit: BoxFit.contain,
+            cacheWidth: 96,
+            color: colors.gold.withValues(alpha: 0.18),
+            colorBlendMode: BlendMode.srcIn,
+            filterQuality: FilterQuality.low,
+            excludeFromSemantics: true,
           ),
         ),
         Expanded(

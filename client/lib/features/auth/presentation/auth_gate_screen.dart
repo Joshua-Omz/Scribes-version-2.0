@@ -177,11 +177,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
           return;
         }
 
-        if (context.canPop()) {
-          context.pop();
-        } else {
-          context.go('/');
-        }
+        context.go('/');
       }
 
       if (next is AsyncError) {
@@ -274,31 +270,12 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                               ),
                             ),
                           ),
-                          // Illuminated glass seal
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: colors.surfaceRaised,
-                              border: Border.all(
-                                color: colors.gold.withValues(alpha: 0.4),
-                                width: 1.2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colors.gold.withValues(alpha: 0.12),
-                                  blurRadius: 18,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            alignment: Alignment.center,
-                            child: const ScribesBrandLogo(
+                          
+                       ScribesBrandLogo(
                               variant: BrandLogoVariant.iconOnly,
-                              size: 38,
+                              size: 50,
                             ),
-                          ),
+                       
                         ],
                       ),
                     ),
@@ -343,11 +320,11 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 3),
                           Text(
                             _isLogin
-                                ? 'Sign in to access your sacred notes, library, and reflections.'
-                                : 'Create your scribe profile to write, meditate, and share insight.',
+                                ? 'Welcome Back'
+                                : 'Join Us to Follow him ',
                             style: ScribesTextStyles.bodyMd.copyWith(
                               color: colors.secondaryText,
                             ),
@@ -715,13 +692,11 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                     const SizedBox(height: 28),
 
                     // Primary Sacred CTA Button
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.gold,
-                        foregroundColor: colors.background,
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.primaryText,
+                        side: BorderSide(color: colors.goldEdge, width: 1.2),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 2,
-                        shadowColor: colors.gold.withValues(alpha: 0.3),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             ScribesRadius.button + 2,

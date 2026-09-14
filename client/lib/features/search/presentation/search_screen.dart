@@ -73,7 +73,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ),
         title: ScribesTextField(
           controller: _controller,
-          hintText: 'Search posts, people...',
+          hintText: 'Search posts, scriptures, or tags...',
           autofocus: true,
           isSearchPill: true,
           contentPadding: const EdgeInsets.symmetric(
@@ -84,12 +84,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           onSubmitted: (q) => ref.read(searchProvider.notifier).search(q),
         ),
         actions: [
-          ScribesIconButton(
-            icon: HugeIcons.strokeRoundedBookOpen01,
-            color: searchState.scriptureBook != null
-                ? colors.gold
-                : colors.secondaryText,
-            onPressed: () => _showScriptureFilterSheet(context, ref, colors),
+          Tooltip(
+            message: 'Filter by Scripture',
+            child: ScribesIconButton(
+              icon: HugeIcons.strokeRoundedBookOpen01,
+              color: searchState.scriptureBook != null
+                  ? colors.gold
+                  : colors.secondaryText,
+              onPressed: () => _showScriptureFilterSheet(context, ref, colors),
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -137,10 +140,48 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (state.query.isEmpty && state.scriptureBook == null) {
       return Center(
-        child: ScribesEmptyState(
-          icon: HugeIcons.strokeRoundedSearch01,
-          title: 'What are you looking for?',
-          subtitle: 'Search for sacred texts and manuscript reflections.',
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: colors.glassFill,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.goldEdge, width: 1.0),
+                ),
+                child: Center(
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedBookOpen01,
+                    color: colors.gold,
+                    size: 26,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Explore Sacred Writings',
+                style: ScribesTextStyles.displayMd.copyWith(
+                  color: colors.primaryText,
+                  fontSize: 22,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Search by title, topics, authors, or scripture tags (e.g. "John 3:16", "Romans 8").\n\nTip: Tap the book icon in the top right to filter posts by specific biblical books and chapters.',
+                style: ScribesTextStyles.bodyMd.copyWith(
+                  color: colors.secondaryText,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }

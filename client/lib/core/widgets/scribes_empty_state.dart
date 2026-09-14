@@ -72,14 +72,15 @@ class ScribesEmptyState extends ConsumerWidget {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.gold,
-                  foregroundColor: colors.surface,
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: colors.primaryText,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: colors.goldEdge, width: 1.2),
                   ),
                   elevation: 0,
                 ),
