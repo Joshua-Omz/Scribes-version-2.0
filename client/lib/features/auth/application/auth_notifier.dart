@@ -5,7 +5,6 @@ import 'package:drift/drift.dart';
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
 import '../../sync/application/sync_service.dart';
-import '../../messages/data/message_repository.dart';
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart';
 import '../../../core/storage/secure_storage.dart';
@@ -88,10 +87,6 @@ class AuthNotifier extends _$AuthNotifier {
         if (userId != null) {
           // Initialize network connectivity listener
           ref.read(networkSyncProvider);
-
-          final messageRepo = ref.read(messageRepositoryProvider);
-          await messageRepo.flushOfflineQueue(userId);
-          await messageRepo.syncMissedMessages();
         }
       } catch (e) {
         debugPrint('Background sync failed: $e');

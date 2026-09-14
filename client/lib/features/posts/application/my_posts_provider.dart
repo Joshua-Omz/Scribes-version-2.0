@@ -22,8 +22,9 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     return _fetchMyPosts();
   }
 
+  /// Primary ground truth: Remote API.
+  /// Falls back to local SQLite DB only when offline/network error occurs.
   Future<List<Post>> _fetchMyPosts() async {
-    final db = ref.watch(databaseProvider);
     final user = ref.watch(authProvider).value;
     if (user == null) return [];
 
@@ -31,9 +32,33 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
       final repo = ref.read(postRepositoryProvider);
       final apiPosts = await repo.listMyPosts();
 
-      if (apiPosts.isNotEmpty) {
+      final activePosts = apiPosts.where((p) => !p.isDeleted).toList();
+
+      // Synchronize SQLite cache in background for offline durability
+      unawaited(_syncLocalDb(activePosts, user.id));
+
+      // Return remote ground truth directly — no reliance on stale local DB
+      return activePosts;
+    } catch (e) {
+      debugPrint("[MyPostsNotifier] API unavailable ($e). Falling back to local cache.");
+      return _getCachedPosts(user.id);
+    }
+  }
+
+  Future<void> _syncLocalDb(List<Post> activePosts, String userId) async {
+    try {
+      final db = ref.read(databaseProvider);
+      final activeIds = activePosts.map((p) => p.id).toSet();
+
+      // Prune deleted or unlisted posts from local database
+      await (db.delete(db.posts)
+            ..where((t) => t.authorId.equals(userId) & t.id.isNotIn(activeIds)))
+          .go();
+
+      // Upsert current active posts
+      if (activePosts.isNotEmpty) {
         await db.batch((batch) {
-          for (final post in apiPosts) {
+          for (final post in activePosts) {
             batch.insert(
               db.posts,
               PostsCompanion(
@@ -66,68 +91,73 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
         });
       }
     } catch (e) {
-      // Ignore API errors, fallback to local DB
-      debugPrint("Error fetching my posts from API: $e");
+      debugPrint("[MyPostsNotifier] Error syncing local database: $e");
     }
+  }
 
-    final localPosts =
-        await (db.select(db.posts)..where(
-              (t) => t.authorId.equals(user.id) & t.isDeleted.equals(false),
-            ))
-            .get();
+  Future<List<Post>> _getCachedPosts(String userId) async {
+    try {
+      final db = ref.read(databaseProvider);
+      final localPosts = await (db.select(db.posts)
+            ..where((t) => t.authorId.equals(userId) & t.isDeleted.equals(false)))
+          .get();
 
-    return localPosts.map((row) {
-      Map<String, dynamic> decodedContent = {
-        'title': 'Untitled',
-        'body': '',
-        'excerpt': '',
-      };
-      try {
-        final decoded = jsonDecode(row.content);
-        if (decoded is Map<String, dynamic>) {
-          decodedContent = decoded;
-        }
-      } catch (_) {}
-
-      SermonSource? decodedSermon;
-      if (row.sermonSource != null) {
+      return localPosts.map((row) {
+        Map<String, dynamic> decodedContent = {
+          'title': 'Untitled',
+          'body': '',
+          'excerpt': '',
+        };
         try {
-          final decoded = jsonDecode(row.sermonSource!);
+          final decoded = jsonDecode(row.content);
           if (decoded is Map<String, dynamic>) {
-            decodedSermon = SermonSource.fromJson(decoded);
+            decodedContent = decoded;
           }
         } catch (_) {}
-      }
 
-      List<ScriptureRef> decodedRefs = [];
-      if (row.scriptureTags != null) {
-        try {
-          final decoded = jsonDecode(row.scriptureTags!);
-          if (decoded is List) {
-            decodedRefs = decoded
-                .map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>))
-                .toList();
-          }
-        } catch (_) {}
-      }
+        SermonSource? decodedSermon;
+        if (row.sermonSource != null) {
+          try {
+            final decoded = jsonDecode(row.sermonSource!);
+            if (decoded is Map<String, dynamic>) {
+              decodedSermon = SermonSource.fromJson(decoded);
+            }
+          } catch (_) {}
+        }
 
-      return Post(
-        id: row.id,
-        authorId: row.authorId,
-        authorHandle: row.authorHandle,
-        authorName: row.authorName,
-        content: decodedContent,
-        caption: row.caption,
-        visibility: row.visibility,
-        currentVersion: row.currentVersion,
-        isCorrection: row.isCorrection,
-        correctsPostId: row.correctsPostId,
-        sermonSource: decodedSermon,
-        scriptureRefs: decodedRefs,
-        isDeleted: row.isDeleted,
-        publishedAt: row.publishedAt,
-      );
-    }).toList();
+        List<ScriptureRef> decodedRefs = [];
+        if (row.scriptureTags != null) {
+          try {
+            final decoded = jsonDecode(row.scriptureTags!);
+            if (decoded is List) {
+              decodedRefs = decoded
+                  .map((e) => ScriptureRef.fromJson(e as Map<String, dynamic>))
+                  .toList();
+            }
+          } catch (_) {}
+        }
+
+        return Post(
+          id: row.id,
+          authorId: row.authorId,
+          authorHandle: row.authorHandle,
+          authorName: row.authorName,
+          content: decodedContent,
+          caption: row.caption,
+          visibility: row.visibility,
+          currentVersion: row.currentVersion,
+          isCorrection: row.isCorrection,
+          correctsPostId: row.correctsPostId,
+          sermonSource: decodedSermon,
+          scriptureRefs: decodedRefs,
+          isDeleted: row.isDeleted,
+          publishedAt: row.publishedAt,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint("[MyPostsNotifier] Failed to read local cache: $e");
+      return [];
+    }
   }
 
   Future<void> refresh() async {
@@ -140,23 +170,30 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
       final currentList = state.value!;
       state = AsyncData(currentList.where((p) => p.id != postId).toList());
     }
+
+    // Immediately purge from local SQLite table so it never resurrects
+    try {
+      final db = ref.read(databaseProvider);
+      unawaited(
+        (db.delete(db.posts)..where((t) => t.id.equals(postId))).go(),
+      );
+    } catch (e) {
+      debugPrint("[MyPostsNotifier] Failed to purge post $postId from local db: $e");
+    }
   }
 
   Future<void> deletePost(String id) async {
-    final db = ref.read(databaseProvider);
+    // 1. Optimistically remove from state & local storage
+    optimisticRemove(id);
+
+    // 2. Perform remote deletion
     try {
       final repo = ref.read(postRepositoryProvider);
       await repo.deletePost(id);
-
-      // Update local db to mark as deleted
-      await (db.update(db.posts)..where((t) => t.id.equals(id))).write(
-        const PostsCompanion(isDeleted: Value(true)),
-      );
-
-      // Refresh the state
-      await refresh();
     } catch (e) {
-      debugPrint("Error deleting post: $e");
+      debugPrint("[MyPostsNotifier] Error deleting post: $e");
+      // Restore server ground truth if remote request failed
+      await refresh();
       throw Exception('Failed to delete post: $e');
     }
   }

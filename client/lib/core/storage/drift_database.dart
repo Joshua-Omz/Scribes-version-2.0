@@ -79,55 +79,6 @@ class SyncMetadata extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-class Conversations extends Table {
-  TextColumn get id => text()();
-  TextColumn get userAId => text()();
-  TextColumn get userBId => text()();
-  BoolColumn get blocked => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get lastActive => dateTime()();
-  BoolColumn get isHidden => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get userALastReadAt => dateTime().nullable()();
-  DateTimeColumn get userBLastReadAt => dateTime().nullable()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-class Messages extends Table {
-  TextColumn get id => text()();
-  TextColumn get conversationId => text()();
-  TextColumn get senderId => text()();
-  TextColumn get body => text()();
-  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get sentAt => dateTime()();
-  TextColumn get replyToId => text().nullable()();
-  DateTimeColumn get editedAt => dateTime().nullable()();
-  TextColumn get status => text().withDefault(const Constant('sent'))();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-class PendingChatMessages extends Table {
-  TextColumn get id => text()();
-  TextColumn get conversationId => text()();
-  TextColumn get body => text()();
-  TextColumn get replyToId => text().nullable()();
-  DateTimeColumn get createdAt => dateTime()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-class PendingReadReceipts extends Table {
-  TextColumn get conversationId => text()();
-  DateTimeColumn get readAt => dateTime()();
-
-  @override
-  Set<Column> get primaryKey => {conversationId};
-}
-
 @DriftDatabase(
   tables: [
     Drafts,
@@ -135,10 +86,6 @@ class PendingReadReceipts extends Table {
     SyncMetadata,
     Notebooks,
     Notes,
-    Conversations,
-    Messages,
-    PendingChatMessages,
-    PendingReadReceipts,
   ],
   daos: [NotesDao, DraftsDao, PostsDao],
 )
@@ -170,20 +117,6 @@ class ScribesDatabase extends _$ScribesDatabase {
         if (from < 5) {
           // categoryIds removed
         }
-        if (from < 6) {
-          await m.createTable(conversations);
-          await m.createTable(messages);
-        }
-        if (from < 7) {
-          await m.addColumn(messages, messages.replyToId);
-          await m.addColumn(messages, messages.editedAt);
-        }
-        if (from < 8) {
-          await m.addColumn(messages, messages.status);
-        }
-        if (from < 9) {
-          await m.addColumn(conversations, conversations.isHidden);
-        }
         if (from < 10) {
           await m.addColumn(drafts, drafts.serverSequence);
           await m.addColumn(drafts, drafts.localOnly);
@@ -191,19 +124,9 @@ class ScribesDatabase extends _$ScribesDatabase {
           await m.addColumn(notes, notes.serverSequence);
           await m.addColumn(notes, notes.localOnly);
         }
-        if (from < 11) {
-          await m.createTable(pendingChatMessages);
-        }
         if (from < 12) {
           await m.addColumn(posts, posts.coverImageUrl);
           await m.addColumn(posts, posts.postType);
-        }
-        if (from < 13) {
-          await m.addColumn(conversations, conversations.userALastReadAt);
-          await m.addColumn(conversations, conversations.userBLastReadAt);
-        }
-        if (from < 14) {
-          await m.createTable(pendingReadReceipts);
         }
       },
     );
@@ -211,8 +134,6 @@ class ScribesDatabase extends _$ScribesDatabase {
 
   Future<void> clearAllData({bool preserveUnsynced = true}) async {
     await transaction(() async {
-      await delete(conversations).go();
-      await delete(messages).go();
       await delete(posts).go();
       await delete(syncMetadata).go();
       if (preserveUnsynced) {

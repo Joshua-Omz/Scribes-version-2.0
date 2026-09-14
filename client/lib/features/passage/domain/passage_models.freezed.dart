@@ -290,7 +290,7 @@ as int,
 /// @nodoc
 mixin _$PassagePanel {
 
- String get id;@JsonKey(name: 'post_id') String get postId;@JsonKey(name: 'panel_order') int get panelOrder;@JsonKey(name: 'panel_type') String get panelType; Map<String, dynamic> get content;@JsonKey(name: 'background_image_url') String? get backgroundImageUrl;@JsonKey(name: 'scripture_ref') Map<String, dynamic>? get scriptureRef;
+ String get id;@JsonKey(name: 'post_id') String get postId;@JsonKey(name: 'panel_order') int get panelOrder;@JsonKey(name: 'panel_type') String get panelType;@JsonKey(fromJson: _panelContentFromJson) Map<String, dynamic> get content;@JsonKey(name: 'background_image_url') String? get backgroundImageUrl;@JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson) Map<String, dynamic>? get scriptureRef;
 /// Create a copy of PassagePanel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -323,7 +323,7 @@ abstract mixin class $PassagePanelCopyWith<$Res>  {
   factory $PassagePanelCopyWith(PassagePanel value, $Res Function(PassagePanel) _then) = _$PassagePanelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'panel_order') int panelOrder,@JsonKey(name: 'panel_type') String panelType, Map<String, dynamic> content,@JsonKey(name: 'background_image_url') String? backgroundImageUrl,@JsonKey(name: 'scripture_ref') Map<String, dynamic>? scriptureRef
+ String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'panel_order') int panelOrder,@JsonKey(name: 'panel_type') String panelType,@JsonKey(fromJson: _panelContentFromJson) Map<String, dynamic> content,@JsonKey(name: 'background_image_url') String? backgroundImageUrl,@JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson) Map<String, dynamic>? scriptureRef
 });
 
 
@@ -434,7 +434,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'panel_order')  int panelOrder, @JsonKey(name: 'panel_type')  String panelType,  Map<String, dynamic> content, @JsonKey(name: 'background_image_url')  String? backgroundImageUrl, @JsonKey(name: 'scripture_ref')  Map<String, dynamic>? scriptureRef)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'panel_order')  int panelOrder, @JsonKey(name: 'panel_type')  String panelType, @JsonKey(fromJson: _panelContentFromJson)  Map<String, dynamic> content, @JsonKey(name: 'background_image_url')  String? backgroundImageUrl, @JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson)  Map<String, dynamic>? scriptureRef)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PassagePanel() when $default != null:
 return $default(_that.id,_that.postId,_that.panelOrder,_that.panelType,_that.content,_that.backgroundImageUrl,_that.scriptureRef);case _:
@@ -455,7 +455,7 @@ return $default(_that.id,_that.postId,_that.panelOrder,_that.panelType,_that.con
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'panel_order')  int panelOrder, @JsonKey(name: 'panel_type')  String panelType,  Map<String, dynamic> content, @JsonKey(name: 'background_image_url')  String? backgroundImageUrl, @JsonKey(name: 'scripture_ref')  Map<String, dynamic>? scriptureRef)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'panel_order')  int panelOrder, @JsonKey(name: 'panel_type')  String panelType, @JsonKey(fromJson: _panelContentFromJson)  Map<String, dynamic> content, @JsonKey(name: 'background_image_url')  String? backgroundImageUrl, @JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson)  Map<String, dynamic>? scriptureRef)  $default,) {final _that = this;
 switch (_that) {
 case _PassagePanel():
 return $default(_that.id,_that.postId,_that.panelOrder,_that.panelType,_that.content,_that.backgroundImageUrl,_that.scriptureRef);case _:
@@ -475,7 +475,7 @@ return $default(_that.id,_that.postId,_that.panelOrder,_that.panelType,_that.con
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'panel_order')  int panelOrder, @JsonKey(name: 'panel_type')  String panelType,  Map<String, dynamic> content, @JsonKey(name: 'background_image_url')  String? backgroundImageUrl, @JsonKey(name: 'scripture_ref')  Map<String, dynamic>? scriptureRef)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'post_id')  String postId, @JsonKey(name: 'panel_order')  int panelOrder, @JsonKey(name: 'panel_type')  String panelType, @JsonKey(fromJson: _panelContentFromJson)  Map<String, dynamic> content, @JsonKey(name: 'background_image_url')  String? backgroundImageUrl, @JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson)  Map<String, dynamic>? scriptureRef)?  $default,) {final _that = this;
 switch (_that) {
 case _PassagePanel() when $default != null:
 return $default(_that.id,_that.postId,_that.panelOrder,_that.panelType,_that.content,_that.backgroundImageUrl,_that.scriptureRef);case _:
@@ -490,7 +490,7 @@ return $default(_that.id,_that.postId,_that.panelOrder,_that.panelType,_that.con
 @JsonSerializable()
 
 class _PassagePanel implements PassagePanel {
-  const _PassagePanel({this.id = '', @JsonKey(name: 'post_id') this.postId = '', @JsonKey(name: 'panel_order') this.panelOrder = 0, @JsonKey(name: 'panel_type') required this.panelType, final  Map<String, dynamic> content = const {}, @JsonKey(name: 'background_image_url') this.backgroundImageUrl, @JsonKey(name: 'scripture_ref') final  Map<String, dynamic>? scriptureRef}): _content = content,_scriptureRef = scriptureRef;
+  const _PassagePanel({this.id = '', @JsonKey(name: 'post_id') this.postId = '', @JsonKey(name: 'panel_order') this.panelOrder = 0, @JsonKey(name: 'panel_type') required this.panelType, @JsonKey(fromJson: _panelContentFromJson) final  Map<String, dynamic> content = const {}, @JsonKey(name: 'background_image_url') this.backgroundImageUrl, @JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson) final  Map<String, dynamic>? scriptureRef}): _content = content,_scriptureRef = scriptureRef;
   factory _PassagePanel.fromJson(Map<String, dynamic> json) => _$PassagePanelFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -498,7 +498,7 @@ class _PassagePanel implements PassagePanel {
 @override@JsonKey(name: 'panel_order') final  int panelOrder;
 @override@JsonKey(name: 'panel_type') final  String panelType;
  final  Map<String, dynamic> _content;
-@override@JsonKey() Map<String, dynamic> get content {
+@override@JsonKey(fromJson: _panelContentFromJson) Map<String, dynamic> get content {
   if (_content is EqualUnmodifiableMapView) return _content;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_content);
@@ -506,7 +506,7 @@ class _PassagePanel implements PassagePanel {
 
 @override@JsonKey(name: 'background_image_url') final  String? backgroundImageUrl;
  final  Map<String, dynamic>? _scriptureRef;
-@override@JsonKey(name: 'scripture_ref') Map<String, dynamic>? get scriptureRef {
+@override@JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson) Map<String, dynamic>? get scriptureRef {
   final value = _scriptureRef;
   if (value == null) return null;
   if (_scriptureRef is EqualUnmodifiableMapView) return _scriptureRef;
@@ -548,7 +548,7 @@ abstract mixin class _$PassagePanelCopyWith<$Res> implements $PassagePanelCopyWi
   factory _$PassagePanelCopyWith(_PassagePanel value, $Res Function(_PassagePanel) _then) = __$PassagePanelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'panel_order') int panelOrder,@JsonKey(name: 'panel_type') String panelType, Map<String, dynamic> content,@JsonKey(name: 'background_image_url') String? backgroundImageUrl,@JsonKey(name: 'scripture_ref') Map<String, dynamic>? scriptureRef
+ String id,@JsonKey(name: 'post_id') String postId,@JsonKey(name: 'panel_order') int panelOrder,@JsonKey(name: 'panel_type') String panelType,@JsonKey(fromJson: _panelContentFromJson) Map<String, dynamic> content,@JsonKey(name: 'background_image_url') String? backgroundImageUrl,@JsonKey(name: 'scripture_ref', fromJson: _panelScriptureRefFromJson) Map<String, dynamic>? scriptureRef
 });
 
 

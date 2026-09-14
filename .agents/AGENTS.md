@@ -5,10 +5,8 @@
 * **Offline Syncing (Sync/Client):** Do not fire individual REST requests (e.g., per-keystroke) to sync offline-first data. Batch offline mutations locally and send them via a dedicated bulk `/sync/push` endpoint. The protocol MUST implement BOTH pull (`GET /sync`) and push (`POST /sync/push`). Server sequence must ALWAYS be server-assigned via `nextval('global_sequence')`, never by the client.
 * **Admin Role Guard (Security):** All admin routes must be grouped in an `/admin` route group and guarded with `middleware.RequireRole("super_admin")`. Never mount admin handlers to the standard `protected` group.
 
-### Chat & DM Architecture Invariants
-* **Offline Outbound (Dedicated Queue):** Outbound chat messages sent while offline must NOT be pushed into the generic `PendingRecord` sync engine. They must use a dedicated local queue (e.g., `PendingChatMessages` in Drift) and be flushed immediately upon reconnection via REST or WebSocket to preserve strict chat ordering.
-* **Offline Inbound (Gap-Filling Sync):** Never rely solely on SSE/WebSockets for message delivery guarantees. Clients must perform a bulk "gap-filling" REST fetch (`GET /dm/sync?since=<timestamp>`) upon every connection/reconnection to retrieve messages missed while offline.
-* **Unread State Tracking:** Do NOT track read state on individual messages (no `read_at` on the `messages` table). Track read state at the conversation level (`user_a_last_read_at` and `user_b_last_read_at` on `conversations`) to keep inbox unread count queries highly efficient.
+### Chat & DM Architecture Invariants (Decommissioned)
+* **Decommissioned from Scope:** Direct messaging, chat, and conversation polling have been shut down and removed from the active project scope. No background polling or sync routines may call conversation or DM endpoints.
 
 ### Feed & List Performance Invariants
 * **N+1 Query Prevention (UI/Backend):** Never fetch metadata (like reaction counts or comment counts) per item when displaying lists or feeds. The backend must aggregate these counts using `LEFT JOIN` or subqueries directly in PostgreSQL and return them in the main JSON payload (`amenCount`, `commentCount`). The Flutter UI must consume these directly without firing separate HTTP requests.

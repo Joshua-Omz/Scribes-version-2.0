@@ -7,10 +7,12 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_colors.dart';
 import '../../features/auth/application/auth_notifier.dart';
-import '../../features/notifications/presentation/notification_badge.dart';
-import 'scribes_icon_button.dart';
+import '../../features/notifications/application/notification_provider.dart';
 import 'scribes_brand_logo.dart';
 
+/// Modernized, liturgical top app bar for the Scribes Feed.
+/// Replaces heavy bubble-ring icon buttons with sleek, borderless,
+/// perfectly-proportioned icon actions and a centered brandmark.
 class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final bool showBottomBorder;
 
@@ -26,74 +28,101 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     return Container(
       decoration: BoxDecoration(
         color: colors.background,
-        border: showBottomBorder
-            ? Border(
-                bottom: BorderSide(
-                  color: colors.border.withValues(alpha: 0.4),
-                  width: 0.5,
-                ),
-              )
-            : null,
+        border: Border(
+          bottom: BorderSide(
+            color: colors.border.withValues(alpha: showBottomBorder ? 0.35 : 0.18),
+            width: 0.5,
+          ),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Left side: Menu Sheet trigger (replaces hamburger drawer)
+      child: SizedBox(
+        height: kToolbarHeight,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+                // 1. Left side: Clean Menu Action
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: ScribesIconButton(
+                  child: _AppBarIconButton(
                     icon: HugeIcons.strokeRoundedMenu01,
-                    onPressed: () => _showMenuSheet(context, ref, colors),
                     color: colors.primaryText,
+                    tooltip: 'Menu',
+                    onPressed: () => _showMenuSheet(context, ref, colors),
                   ),
                 ),
 
-                // Center: Logo and Title (bigger)
+                // 2. Center: Mathematically Centered Logo & Monastic Title
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const ScribesBrandLogo(
                       variant: BrandLogoVariant.iconOnly,
-                      size: 30,
+                      size: 26,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Scribes',
                       style: ScribesTextStyles.displayMd.copyWith(
-                        fontSize: 26,
-                        letterSpacing: 0.4,
+                        fontSize: 23,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.6,
                         color: colors.primaryText,
                       ),
                     ),
                   ],
                 ),
 
-                // Right side: Bible Quick-Open & Notifications
+                // 3. Right side: Bible Reader Shortcut & Notifications
                 Align(
                   alignment: Alignment.centerRight,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Bible Drawer / Reader shortcut
-                      ScribesIconButton(
+                      _AppBarIconButton(
                         icon: HugeIcons.strokeRoundedBook01,
-                        onPressed: () {
-                          context.push('/bible');
-                        },
                         color: colors.primaryText,
+                        tooltip: 'Bible',
+                        onPressed: () => context.push('/bible'),
                       ),
-                      const SizedBox(width: 4),
-                      NotificationBadge(
-                        child: ScribesIconButton(
-                          icon: HugeIcons.strokeRoundedNotification01,
-                          onPressed: () {
-                            context.push('/notifications');
-                          },
-                          color: colors.primaryText,
-                        ),
+                      const SizedBox(width: 2),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final hasUnread =
+                              ref.watch(hasUnreadNotificationsProvider).value ==
+                                  true;
+                          return Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.center,
+                            children: [
+                              _AppBarIconButton(
+                                icon: HugeIcons.strokeRoundedNotification01,
+                                color: colors.primaryText,
+                                tooltip: 'Notifications',
+                                onPressed: () => context.push('/notifications'),
+                              ),
+                              if (hasUnread)
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: Container(
+                                    width: 7.5,
+                                    height: 7.5,
+                                    decoration: BoxDecoration(
+                                      color: colors.gold,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: colors.background,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -101,10 +130,15 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
               ],
             ),
           ),
-        );
+        ),
+      );
   }
 
-  void _showMenuSheet(BuildContext context, WidgetRef ref, ScribesColors colors) {
+  void _showMenuSheet(
+    BuildContext context,
+    WidgetRef ref,
+    ScribesColors colors,
+  ) {
     final authState = ref.read(authProvider);
     final user = authState.value;
 
@@ -122,7 +156,8 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           child: Container(
             decoration: BoxDecoration(
               color: colors.glassFill,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
               border: Border(
                 top: BorderSide(color: colors.goldEdge, width: 0.8),
               ),
@@ -275,4 +310,53 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+/// Borderless, lightweight icon button designed specifically for top bars.
+/// Eliminates heavy circular borders while providing responsive tactile touch feedback.
+class _AppBarIconButton extends StatelessWidget {
+  final dynamic icon;
+  final VoidCallback onPressed;
+  final Color color;
+  final String? tooltip;
+
+  const _AppBarIconButton({
+    required this.icon,
+    required this.onPressed,
+    required this.color,
+    this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final button = Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        splashColor: color.withValues(alpha: 0.12),
+        highlightColor: color.withValues(alpha: 0.06),
+        child: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          child: HugeIcon(
+            icon: icon,
+            size: 22.0,
+            color: color,
+          ),
+        ),
+      ),
+    );
+
+    if (tooltip != null) {
+      return Tooltip(
+        message: tooltip!,
+        child: button,
+      );
+    }
+    return button;
+  }
 }

@@ -18,7 +18,6 @@ import (
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
 	"scribes-api/internal/media"
-	"scribes-api/internal/message"
 	"scribes-api/internal/note"
 	"scribes-api/internal/notification"
 	"scribes-api/internal/post"
@@ -89,10 +88,6 @@ func main() {
 	feedSvc := feed.NewService(feedRepo)
 	feedHandler := feed.NewHandler(feedSvc)
 
-	messageRepo := message.NewRepository(queries, db)
-	messageSvc := message.NewService(messageRepo, notificationSvc)
-	messageHandler := message.NewHandler(messageSvc)
-
 	adminRepo := admin.NewRepository(queries, db)
 	adminSvc := admin.NewService(adminRepo)
 	adminHandler := admin.NewHandler(adminSvc)
@@ -123,7 +118,7 @@ func main() {
 	bibleSvc := bible.NewService(bibleRepo)
 	bibleHandler := bible.NewHandler(bibleSvc)
 
-	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, messageHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, mediaHandler, bibleHandler, cfg.JWTSecret)
+	router := server.NewRouter(authHandler, noteHandler, draftHandler, postHandler, syncHandler, socialHandler, feedHandler, notificationHandler, adminHandler, tagHandler, searchHandler, recommendationHandler, mediaHandler, bibleHandler, cfg.JWTSecret)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,

@@ -1,7 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:scribes/features/messages/data/message_repository.dart';
 import 'package:scribes/features/auth/application/auth_notifier.dart';
+import 'package:scribes/features/sync/application/sync_service.dart';
 
 final networkSyncProvider = Provider<NetworkSyncNotifier>((ref) {
   return NetworkSyncNotifier(ref);
@@ -28,13 +28,8 @@ class NetworkSyncNotifier {
   Future<void> _handleReconnection() async {
     final user = _ref.read(authProvider).value;
     if (user != null) {
-      final messageRepo = _ref.read(messageRepositoryProvider);
-
-      // 1. Flush outbound offline queue
-      await messageRepo.flushOfflineQueue(user.id);
-
-      // 2. Perform gap-filling sync for inbound missed messages
-      await messageRepo.syncMissedMessages();
+      final syncService = _ref.read(syncServiceProvider);
+      await syncService.sync(authorId: user.id);
     }
   }
 }

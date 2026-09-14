@@ -7,7 +7,6 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 import '../../features/auth/application/auth_notifier.dart';
-import '../../features/messages/application/inbox_providers.dart';
 import 'scribes_author_header.dart';
 import 'scribes_brand_logo.dart';
 
@@ -107,22 +106,6 @@ class ScribesDrawer extends ConsumerWidget {
 
             // Menu Items
             if (user != null) ...[
-              Consumer(
-                builder: (context, ref, _) {
-                  final unreadCount = ref.watch(unreadMessagesCountProvider);
-                  return _buildMenuItem(
-                    context: context,
-                    colors: colors,
-                    icon: HugeIcons.strokeRoundedChatAdd,
-                    title: 'Messages',
-                    badgeCount: unreadCount,
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.push('/inbox');
-                    },
-                  );
-                },
-              ),
               _buildMenuItem(
                 context: context,
                 colors: colors,

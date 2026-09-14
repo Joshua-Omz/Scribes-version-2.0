@@ -9,7 +9,6 @@ import (
 	"scribes-api/internal/draft"
 	"scribes-api/internal/feed"
 	"scribes-api/internal/media"
-	"scribes-api/internal/message"
 	"scribes-api/internal/middleware"
 	"scribes-api/internal/note"
 	"scribes-api/internal/notification"
@@ -37,7 +36,7 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
-func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, messageHandler *message.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, mediaHandler *media.Handler, bibleHandler *bible.Handler, jwtSecret string) *gin.Engine {
+func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandler *draft.Handler, postHandler *post.Handler, syncHandler *sync.Handler, socialHandler *social.Handler, feedHandler *feed.Handler, notificationHandler *notification.Handler, adminHandler *admin.Handler, tagHandler *tag.Handler, searchHandler *search.Handler, recommendationHandler *recommendation.Handler, mediaHandler *media.Handler, bibleHandler *bible.Handler, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 	r.Use(corsMiddleware())
 	r.GET("/health", func(c *gin.Context) {
@@ -154,24 +153,6 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		protected.POST("/posts/:id/save", socialHandler.SavePost)
 		protected.DELETE("/posts/:id/save", socialHandler.UnsavePost)
 		protected.GET("/saved", socialHandler.ListSavedPosts)
-
-		// Direct Messaging endpoints
-		protected.POST("/message-requests", messageHandler.SendRequest)
-		protected.GET("/message-requests", messageHandler.GetPendingRequests)
-		protected.POST("/message-requests/:id/approve", messageHandler.ApproveRequest)
-		protected.POST("/message-requests/:id/reject", messageHandler.RejectRequest)
-
-		protected.GET("/contacts/search", messageHandler.SearchContacts)
-		protected.GET("/conversations", messageHandler.GetConversations)
-		protected.POST("/conversations/direct", messageHandler.DirectConversation)
-		protected.GET("/conversations/:id/messages", messageHandler.GetMessages)
-		protected.GET("/conversations/:id/stream", messageHandler.StreamMessages)
-		protected.POST("/conversations/:id/messages", messageHandler.SendMessage)
-		protected.PATCH("/conversations/:id/messages/:msg_id", messageHandler.UpdateMessage)
-		protected.POST("/conversations/:id/read", messageHandler.ReadConversation)
-		protected.POST("/conversations/:id/block", messageHandler.BlockConversation)
-		protected.DELETE("/messages/:id", messageHandler.SoftDeleteMessage)
-		protected.GET("/dm/sync", messageHandler.SyncMissedMessages)
 
 		// Notification endpoints
 		protected.GET("/notifications", notificationHandler.GetNotifications)

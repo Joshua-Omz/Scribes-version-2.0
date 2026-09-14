@@ -255,6 +255,7 @@ class ScribesImageResolver {
       return Image.file(
         file,
         fit: fit,
+        cacheWidth: memCacheWidth,
         errorBuilder: (context, error, stackTrace) =>
             fallback ?? const SizedBox.shrink(),
       );

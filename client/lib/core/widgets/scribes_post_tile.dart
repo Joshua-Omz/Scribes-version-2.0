@@ -9,7 +9,7 @@ import '../../features/posts/domain/post.dart';
 import '../../features/social/application/post_social_providers.dart';
 import '../../features/social/application/saved_posts_provider.dart';
 import '../../features/auth/application/auth_notifier.dart';
-import 'scribes_avatar.dart';
+import 'scribes_avatar.dart'; 
 import 'scribes_image_resolver.dart';
 import 'scribes_comment_sheet.dart';
 import 'scribes_share_sheet.dart';

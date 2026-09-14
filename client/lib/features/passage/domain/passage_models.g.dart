@@ -29,7 +29,9 @@ _PassagePanel _$PassagePanelFromJson(Map<String, dynamic> json) =>
       postId: json['post_id'] as String? ?? '',
       panelOrder: (json['panel_order'] as num?)?.toInt() ?? 0,
       panelType: json['panel_type'] as String,
-      content: _panelContentFromJson(json['content']),
+      content: json['content'] == null
+          ? const {}
+          : _panelContentFromJson(json['content']),
       backgroundImageUrl: json['background_image_url'] as String?,
       scriptureRef: _panelScriptureRefFromJson(json['scripture_ref']),
     );

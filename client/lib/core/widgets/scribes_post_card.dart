@@ -172,9 +172,11 @@ class ScribesPostCard extends ConsumerWidget {
                 coverImageUrl != null &&
                 coverImageUrl!.trim().isNotEmpty) ...[
               const SizedBox(height: 14),
-              RepaintBoundary(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(ScribesRadius.card),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(ScribesRadius.card),
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxHeight: 220),
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Stack(
@@ -183,7 +185,7 @@ class ScribesPostCard extends ConsumerWidget {
                           child: ScribesImageResolver.buildImage(
                             imageUrl: coverImageUrl!,
                             fit: BoxFit.cover,
-                            memCacheWidth: 720,
+                            memCacheWidth: 800,
                             placeholder: (context, url) => Container(
                               color: colors.surfaceRaised,
                             ),
