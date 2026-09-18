@@ -22,6 +22,33 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
+func (r *Repository) GetTranslations(ctx context.Context) ([]Translation, error) {
+	query := `
+		SELECT id, code, name, language, attribution_text, source, is_active, is_default
+		FROM bible_translations
+		WHERE is_active = true
+		ORDER BY is_default DESC, name ASC
+	`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var translations []Translation
+	for rows.Next() {
+		var t Translation
+		if err := rows.Scan(&t.ID, &t.Code, &t.Name, &t.Language, &t.AttributionText, &t.Source, &t.IsActive, &t.IsDefault); err != nil {
+			return nil, err
+		}
+		translations = append(translations, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return translations, nil
+}
+
 func (r *Repository) GetBooks(ctx context.Context, translationCode string) ([]Book, error) {
 	if translationCode == "" {
 		translationCode = "BSB"

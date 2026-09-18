@@ -312,11 +312,17 @@ class _PassageViewerScreenState extends ConsumerState<PassageViewerScreen> {
             // Background image if present
             if (bgUrl != null && bgUrl.isNotEmpty) ...[
               Positioned.fill(
-                child: ScribesImageResolver.buildImage(
-                  imageUrl: bgUrl,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 800,
-                ),
+                child: Builder(builder: (context) {
+                  final size = MediaQuery.sizeOf(context);
+                  final cacheW = ScribesImageResolver.computeCacheWidth(context, size.width);
+                  final cacheH = ScribesImageResolver.computeCacheHeight(context, size.height);
+                  return ScribesImageResolver.buildImage(
+                    imageUrl: bgUrl,
+                    fit: BoxFit.cover,
+                    memCacheWidth: cacheW,
+                    memCacheHeight: cacheH,
+                  );
+                }),
               ),
               Positioned.fill(
                 child: Container(
@@ -579,7 +585,7 @@ class _PassageViewerScreenState extends ConsumerState<PassageViewerScreen> {
                     'Deep',
                     post.thoughtProvokingCount,
                     'thought_provoking',
-                    HugeIcons.strokeRoundedDiamond01,
+                    HugeIcons.strokeRoundedDroplet,
                     colors,
                   ),
                 ],

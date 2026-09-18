@@ -75,3 +75,24 @@ abstract class PassagePanel with _$PassagePanel {
       _$PassagePanelFromJson(json);
 }
 
+extension PassagePanelX on PassagePanel {
+  String? get effectiveImageUrl {
+    if (backgroundImageUrl != null && backgroundImageUrl!.trim().isNotEmpty) {
+      return backgroundImageUrl!.trim();
+    }
+    for (final key in [
+      'image_url',
+      'imageUrl',
+      'url',
+      'media_url',
+      'background_image_url',
+    ]) {
+      final val = content[key];
+      if (val != null && val.toString().trim().isNotEmpty) {
+        return val.toString().trim();
+      }
+    }
+    return null;
+  }
+}
+

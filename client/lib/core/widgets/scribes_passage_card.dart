@@ -12,6 +12,7 @@ import 'scribes_image_resolver.dart';
 import 'scribes_scripture_chip.dart';
 import 'scribes_ornament_divider.dart';
 import '../../features/posts/domain/post.dart';
+import '../../features/posts/data/post_repository.dart';
 import '../../features/passage/domain/passage_models.dart';
 
 /// Presentation card specifically tailored for multi-panel Passage Decks.
@@ -57,11 +58,17 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
   late final PageController _pageController;
   int _currentPage = 0;
   final ScribesAudioPlayer _audioPlayer = ScribesAudioPlayer.instance;
+  List<PassagePanel>? _hydratedPanels;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+
+    // If panels are not included in the feed payload, asynchronously hydrate them
+    if (widget.post.panels.isEmpty && widget.post.postType == 'passage') {
+      _hydratePanels();
+    }
 
     // Auto-play ambient audio if present in the post
     final audioUrl = widget.post.sound?.audioUrl;
@@ -70,6 +77,18 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
         _audioPlayer.playLoop(audioUrl);
       });
     }
+  }
+
+  Future<void> _hydratePanels() async {
+    try {
+      final repo = ref.read(postRepositoryProvider);
+      final fullPost = await repo.getPost(widget.post.id);
+      if (mounted && fullPost.panels.isNotEmpty) {
+        setState(() {
+          _hydratedPanels = fullPost.panels;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -89,13 +108,13 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
 
     final title = widget.post.content['title']?.toString().trim().isNotEmpty == true
         ? widget.post.content['title'].toString().trim()
-        : 'Devotional Passage';
+        : 'Title';
 
     final excerpt = widget.post.plainTextBody.isNotEmpty
         ? widget.post.plainTextBody
         : (widget.post.content['excerpt']?.toString().trim() ?? '');
 
-    final panels = widget.post.panels;
+    final panels = _hydratedPanels ?? widget.post.panels;
     final totalPanels = panels.isNotEmpty ? panels.length : 1;
     final hasAudio = widget.post.sound != null || widget.post.soundId != null;
 
@@ -387,7 +406,7 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
                     colors,
                     label: 'Ponder',
                     type: 'thought_provoking',
-                    icon: HugeIcons.strokeRoundedDiamond01,
+                    icon: HugeIcons.strokeRoundedDroplet,
                     count: widget.thoughtProvokingCount,
                     isSelected: widget.userReactionType == 'thought_provoking',
                   ),
@@ -438,24 +457,34 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
     int index,
     ScribesColors colors,
   ) {
-    final bgUrl = panel.backgroundImageUrl;
+    final bgUrl = panel.effectiveImageUrl ?? panel.backgroundImageUrl;
     final text = panel.content['text']?.toString() ??
         panel.content['body']?.toString() ??
         panel.content['quote']?.toString() ??
         '';
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background image or solid surface
-          if (bgUrl != null && bgUrl.isNotEmpty)
-            ScribesImageResolver.buildImage(
-              imageUrl: bgUrl,
-              fit: BoxFit.cover,
-              memCacheWidth: 800,
-            )
+    return Builder(builder: (context) {
+      final panelWidth = MediaQuery.sizeOf(context).width - 32; // 16px padding each side
+      final cacheW = ScribesImageResolver.computeCacheWidth(context, panelWidth);
+
+      return GestureDetector(
+        onTap: widget.onTap,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background image or solid surface
+            if (bgUrl != null && bgUrl.isNotEmpty)
+              ScribesImageResolver.buildImage(
+                imageUrl: bgUrl,
+                fit: BoxFit.cover,
+                memCacheWidth: cacheW,
+                placeholder: (context, url) => Container(
+                  color: colors.surfaceRaised,
+                ),
+                fallback: Container(
+                  color: colors.surfaceRaised,
+                ),
+              )
           else
             Container(
               decoration: BoxDecoration(
@@ -534,48 +563,72 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
             ),
           ),
         ],
-      ),
-    );
+          ),
+        );
+      });
   }
 
   Widget _buildFallbackSlide(ScribesColors colors) {
     final previewImageUrl = ScribesImageResolver.extractFirstImageUrl(widget.post);
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (previewImageUrl != null)
-            ScribesImageResolver.buildImage(
-              imageUrl: previewImageUrl,
-              fit: BoxFit.cover,
-              memCacheWidth: 800,
-            )
-          else
-            Container(color: colors.surfaceRaised),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.3),
-                  Colors.black.withValues(alpha: 0.7),
-                ],
+    return Builder(builder: (context) {
+      final panelWidth = MediaQuery.sizeOf(context).width - 32;
+      final cacheW = ScribesImageResolver.computeCacheWidth(context, panelWidth);
+
+      return GestureDetector(
+        onTap: widget.onTap,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (previewImageUrl != null && previewImageUrl.isNotEmpty)
+              ScribesImageResolver.buildImage(
+                imageUrl: previewImageUrl,
+                fit: BoxFit.cover,
+                memCacheWidth: cacheW,
+                placeholder: (context, url) => Container(
+                  color: colors.surfaceRaised,
+                ),
+                fallback: Container(
+                  color: colors.surfaceRaised,
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colors.surfaceRaised,
+                      colors.surface,
+                    ],
+                  ),
+                ),
+              ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.black.withValues(alpha: 0.65),
+                  ],
+                ),
               ),
             ),
-          ),
-          Center(
-            child: HugeIcon(
-              icon: HugeIcons.strokeRoundedLayers01,
-              color: colors.gold,
-              size: 36,
-            ),
-          ),
-        ],
-      ),
-    );
+            if (previewImageUrl == null || previewImageUrl.isEmpty)
+              Center(
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedLayers01,
+                  color: colors.gold,
+                  size: 36,
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildReactionButton(

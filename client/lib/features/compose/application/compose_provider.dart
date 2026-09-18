@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:uuid/uuid.dart';
@@ -27,6 +28,7 @@ class ComposeState {
   final List<dynamic>? contentDelta;
   final List<String> tags;
   final List<ScriptureRef> scriptureRefs;
+  final List<ScriptureRef> publishScriptureRefs;
   final String postType;
   final String? coverImageUrl;
 
@@ -40,6 +42,7 @@ class ComposeState {
     this.contentDelta,
     this.tags = const [],
     this.scriptureRefs = const [],
+    this.publishScriptureRefs = const [],
     this.postType = 'standard',
     this.coverImageUrl,
   });
@@ -54,6 +57,7 @@ class ComposeState {
     List<dynamic>? contentDelta,
     List<String>? tags,
     List<ScriptureRef>? scriptureRefs,
+    List<ScriptureRef>? publishScriptureRefs,
     String? postType,
     String? coverImageUrl,
   }) {
@@ -67,6 +71,8 @@ class ComposeState {
       contentDelta: contentDelta ?? this.contentDelta,
       tags: tags ?? this.tags,
       scriptureRefs: scriptureRefs ?? this.scriptureRefs,
+      publishScriptureRefs:
+          publishScriptureRefs ?? this.publishScriptureRefs,
       postType: postType ?? this.postType,
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
     );
@@ -128,7 +134,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
   }
 
   void addScriptureRef(ScriptureRef ref) {
-    if (state.scriptureRefs.length >= 3) return;
+    if (state.scriptureRefs.contains(ref)) return;
     state = state.copyWith(scriptureRefs: [...state.scriptureRefs, ref]);
     _triggerAutosave();
   }
@@ -136,6 +142,30 @@ class ComposeNotifier extends Notifier<ComposeState> {
   void removeScriptureRef(ScriptureRef ref) {
     state = state.copyWith(
       scriptureRefs: state.scriptureRefs.where((r) => r != ref).toList(),
+    );
+    _triggerAutosave();
+  }
+
+  void setPublishScriptureRefs(List<ScriptureRef> refs) {
+    state = state.copyWith(
+      publishScriptureRefs: refs.take(3).toList(),
+    );
+    _triggerAutosave();
+  }
+
+  void addPublishScriptureRef(ScriptureRef ref) {
+    if (state.publishScriptureRefs.length >= 3) return;
+    if (state.publishScriptureRefs.contains(ref)) return;
+    state = state.copyWith(
+      publishScriptureRefs: [...state.publishScriptureRefs, ref],
+    );
+    _triggerAutosave();
+  }
+
+  void removePublishScriptureRef(ScriptureRef ref) {
+    state = state.copyWith(
+      publishScriptureRefs:
+          state.publishScriptureRefs.where((r) => r != ref).toList(),
     );
     _triggerAutosave();
   }
@@ -155,31 +185,40 @@ class ComposeNotifier extends Notifier<ComposeState> {
   void _triggerAutosave() {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(seconds: 3), () {
-      if (_lastController != null) {
-        _saveDraftLocally(_lastController!);
-      }
+      _saveDraftLocally(_lastController);
     });
   }
 
   Future<void> forceSave() async {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    if (_lastController != null) {
-      await _saveDraftLocally(_lastController!);
-    }
+    await _saveDraftLocally(_lastController);
   }
 
-  Future<void> _saveDraftLocally(QuillController controller) async {
+  Future<void> _saveDraftLocally([QuillController? controller]) async {
     state = state.copyWith(isSaving: true);
 
     final repo = ref.read(draftRepositoryProvider);
 
-    // Construct Sprint 5 standard JSON format
-    final plainText = controller.document.toPlainText();
+    List<dynamic>? deltaJson =
+        controller?.document.toDelta().toJson() ?? state.contentDelta;
+    deltaJson ??= [];
+
+    String plainText = '';
+    if (controller != null) {
+      plainText = controller.document.toPlainText();
+    } else {
+      final buf = StringBuffer();
+      for (final op in deltaJson) {
+        if (op is Map && op['insert'] is String) {
+          buf.write(op['insert']);
+        }
+      }
+      plainText = buf.toString();
+    }
+
     final excerptText = plainText.length > 100
         ? '${plainText.substring(0, 100)}...'
         : plainText;
-
-    final deltaJson = controller.document.toDelta().toJson();
 
     final contentMap = {
       'title': state.title,
@@ -189,7 +228,10 @@ class ComposeNotifier extends Notifier<ComposeState> {
       'post_type': state.postType,
       'caption': state.caption,
       'tags': state.tags,
-      'scripture_refs': state.scriptureRefs.map((ref) => ref.toJson()).toList(),
+      'scripture_refs':
+          state.scriptureRefs.map((ref) => ref.toJson()).toList(),
+      'publish_scripture_refs':
+          state.publishScriptureRefs.take(3).map((ref) => ref.toJson()).toList(),
     };
 
     final jsonContent = jsonEncode(contentMap);
@@ -200,7 +242,8 @@ class ComposeNotifier extends Notifier<ComposeState> {
     }
 
     // Extract inline scripture references and merge with top-level tags
-    final inlineRefs = ScribesQuillScriptureHelper.extractScriptureRefs(deltaJson);
+    final inlineRefs =
+        ScribesQuillScriptureHelper.extractScriptureRefs(deltaJson);
     final List<String> scriptureTags = state.scriptureRefs.map((r) {
       if (r.verseEnd != null && r.verseEnd != r.verseStart) {
         return '${r.book} ${r.chapter}:${r.verseStart}-${r.verseEnd}';
@@ -227,7 +270,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
     state = state.copyWith(
       isSaving: false,
       lastSavedAt: DateTime.now(),
-      contentDelta: controller.document.toDelta().toJson(),
+      contentDelta: deltaJson,
     );
   }
 
@@ -250,15 +293,21 @@ class ComposeNotifier extends Notifier<ComposeState> {
           final remoteUrl = await mediaApi.uploadImage(file, mimeType);
           state = state.copyWith(coverImageUrl: remoteUrl);
         }
-      } catch (_) {}
+      } catch (err) {
+        debugPrint('[ComposeNotifier] Failed to upload local cover image: $err');
+      }
     }
 
     await forceSave();
     final repo = ref.read(draftRepositoryProvider);
+    final effectivePublishRefs = state.publishScriptureRefs.isNotEmpty
+        ? state.publishScriptureRefs
+        : state.scriptureRefs.take(3).toList();
+
     await repo.publishDraft(
       state.draftId,
       tags: state.tags,
-      scriptureRefs: state.scriptureRefs,
+      scriptureRefs: effectivePublishRefs.take(3).toList(),
     );
 
     ref.invalidate(feedProvider);
@@ -277,6 +326,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
       contentDelta: state.contentDelta,
       tags: state.tags,
       scriptureRefs: state.scriptureRefs,
+      publishScriptureRefs: state.publishScriptureRefs,
       postType: state.postType,
       coverImageUrl: null,
     );
@@ -304,6 +354,19 @@ class ComposeNotifier extends Notifier<ComposeState> {
         if (item is Map) {
           try {
             loadedRefs.add(
+              ScriptureRef.fromJson(Map<String, dynamic>.from(item)),
+            );
+          } catch (_) {}
+        }
+      }
+    }
+
+    final List<ScriptureRef> loadedPublishRefs = [];
+    if (content['publish_scripture_refs'] is List) {
+      for (final item in content['publish_scripture_refs']) {
+        if (item is Map) {
+          try {
+            loadedPublishRefs.add(
               ScriptureRef.fromJson(Map<String, dynamic>.from(item)),
             );
           } catch (_) {}
@@ -344,6 +407,7 @@ class ComposeNotifier extends Notifier<ComposeState> {
           ? List<String>.from(content['tags'])
           : const [],
       scriptureRefs: loadedRefs,
+      publishScriptureRefs: loadedPublishRefs.take(3).toList(),
       contentDelta: bodyDelta,
     );
   }

@@ -32,6 +32,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
     final colors = ref.watch(themeProvider);
     final isAuthenticated = ref.watch(
       authProvider.select((state) => state.value != null),
@@ -187,7 +188,8 @@ class ScribesConnectedPostCard extends ConsumerWidget {
               authorHandle: post.authorHandle,
               authorAvatarUrl: post.authorAvatarUrl,
               publishedAt: post.publishedAt,
-              imageUrl: ScribesImageResolver.extractFirstImageUrl(post),
+              imageUrl: post.reflectionImageUrl ??
+                  ScribesImageResolver.extractFirstImageUrl(post),
               scriptureRefs: post.scriptureRefs,
               tags: post.tags,
               amenCount: amenCount,
@@ -232,7 +234,8 @@ class ScribesConnectedPostCard extends ConsumerWidget {
               isCorrection: post.isCorrection,
               publishedAt: post.publishedAt,
               postType: post.postType,
-              coverImageUrl: ScribesImageResolver.extractFirstImageUrl(post),
+              coverImageUrl: post.coverImageUrl ??
+                  ScribesImageResolver.extractFirstImageUrl(post),
               scriptureRefs: post.scriptureRefs,
               tags: post.tags,
               isFeatured: isFeatured,

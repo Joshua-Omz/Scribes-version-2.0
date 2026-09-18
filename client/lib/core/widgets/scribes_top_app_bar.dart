@@ -196,8 +196,18 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     _buildMenuItem(
                       context: ctx,
                       colors: colors,
-                      icon: HugeIcons.strokeRoundedFolder01,
-                      title: 'Workspace',
+                      icon: HugeIcons.strokeRoundedBookOpen01,
+                      title: 'Study Notes',
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.push('/notes');
+                      },
+                    ),
+                    _buildMenuItem(
+                      context: ctx,
+                      colors: colors,
+                      icon: HugeIcons.strokeRoundedFileEdit,
+                      title: 'Manuscript Drafts',
                       onTap: () {
                         Navigator.pop(ctx);
                         context.push('/drafts');

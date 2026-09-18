@@ -83,6 +83,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 	r.GET("/posts/:id/similar", recommendationHandler.GetSimilarPosts)
 
 	// Public Bible endpoints — strictly no auth required per contract
+	r.GET("/bible/translations", bibleHandler.GetTranslations)
 	r.GET("/bible/books", bibleHandler.GetBooks)
 	r.GET("/bible/:book/:chapter", bibleHandler.GetChapter)
 	r.GET("/bible/:book/:chapter/:verseRange", bibleHandler.GetVerseRange)

@@ -15,6 +15,11 @@ late SharedPreferences sharedPrefs;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Enlarge Flutter's in-memory decoded image cache to prevent cache thrashing & re-decode lag during scroll
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 250 << 20; // 250 MB
+  PaintingBinding.instance.imageCache.maximumSize = 1500;
+
   await dotenv.load(fileName: ".env");
   sharedPrefs = await SharedPreferences.getInstance();
 

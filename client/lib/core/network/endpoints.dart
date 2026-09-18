@@ -49,6 +49,7 @@ class Endpoints {
   static const String mediaUploadConfirm = '/media/upload/confirm';
 
   // Bible
+  static const String bibleTranslations = '/bible/translations';
   static const String bibleBooks = '/bible/books';
   static String bibleChapter(String book, int chapter) =>
       '/bible/$book/$chapter';

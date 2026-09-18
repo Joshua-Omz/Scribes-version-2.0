@@ -38,23 +38,27 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final composeState = ref.read(composeProvider);
-      if (composeState.contentDelta != null) {
-        final inlineRefs = ScribesQuillScriptureHelper.extractScriptureRefs(
-          composeState.contentDelta,
-        );
-        for (final refStr in inlineRefs) {
-          final parsed = ScriptureRef.tryParse(refStr);
-          if (parsed != null &&
-              !composeState.scriptureRefs.any(
-                (r) =>
+      if (composeState.publishScriptureRefs.isEmpty) {
+        final List<ScriptureRef> candidates = [...composeState.scriptureRefs];
+        if (composeState.contentDelta != null) {
+          final inlineRefs = ScribesQuillScriptureHelper.extractScriptureRefs(
+            composeState.contentDelta,
+          );
+          for (final refStr in inlineRefs) {
+            final parsed = ScriptureRef.tryParse(refStr);
+            if (parsed != null &&
+                !candidates.any((r) =>
                     r.book.toLowerCase() == parsed.book.toLowerCase() &&
                     r.chapter == parsed.chapter &&
-                    r.verseStart == parsed.verseStart,
-              )) {
-            if (ref.read(composeProvider).scriptureRefs.length < 3) {
-              ref.read(composeProvider.notifier).addScriptureRef(parsed);
+                    r.verseStart == parsed.verseStart)) {
+              candidates.add(parsed);
             }
           }
+        }
+        if (candidates.isNotEmpty) {
+          ref.read(composeProvider.notifier).setPublishScriptureRefs(
+                candidates.take(3).toList(),
+              );
         }
       }
     });
@@ -256,11 +260,23 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
           .catchError((e) {
             if (mounted) {
               setState(() => _isUploadingCover = false);
+              ScribesToast.show(
+                context,
+                'Failed to upload cover image: $e',
+                colors,
+                isError: true,
+              );
             }
           });
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() => _isUploadingCover = false);
+        ScribesToast.show(
+          context,
+          'Failed to pick cover image: $e',
+          colors,
+          isError: true,
+        );
       }
     }
   }
@@ -273,6 +289,8 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
     final composeState = ref.watch(composeProvider);
+    final previewRefs = composeState.publishScriptureRefs.take(3).toList();
+    final canAddMore = previewRefs.length < 3;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -313,6 +331,14 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                   'Post body cannot be empty.',
                   colors,
                   isError: true,
+                );
+                return;
+              }
+              if (_isUploadingCover) {
+                ScribesToast.show(
+                  context,
+                  'Please wait for cover image to finish uploading...',
+                  colors,
                 );
                 return;
               }
@@ -551,7 +577,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Scripture Tags',
+                              'Scripture Tags (${previewRefs.length}/3)',
                               style: ScribesTextStyles.labelSm.copyWith(
                                 color: colors.secondaryText,
                                 letterSpacing: 1.2,
@@ -559,7 +585,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Add 2 to 3 scripture references.',
+                              'Choose up to 3 anchor references for your post.',
                               style: ScribesTextStyles.caption.copyWith(
                                 color: colors.secondaryText.withValues(
                                   alpha: 0.7,
@@ -568,7 +594,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             ),
                           ],
                         ),
-                        if (composeState.scriptureRefs.length < 3)
+                        if (canAddMore)
                           TextButton.icon(
                             icon: HugeIcon(
                               icon: HugeIcons.strokeRoundedPlusSign,
@@ -587,11 +613,11 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    if (composeState.scriptureRefs.isNotEmpty)
+                    if (previewRefs.isNotEmpty)
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 8.0,
-                        children: composeState.scriptureRefs.map((refData) {
+                        children: previewRefs.map((refData) {
                           final refStr = refData.verseEnd != null
                               ? '${refData.book} ${refData.chapter}:${refData.verseStart}-${refData.verseEnd}'
                               : '${refData.book} ${refData.chapter}:${refData.verseStart}';
@@ -604,7 +630,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                             ),
                             onDeleted: () => ref
                                 .read(composeProvider.notifier)
-                                .removeScriptureRef(refData),
+                                .removePublishScriptureRef(refData),
                             backgroundColor: colors.surfaceRaised,
                             deleteIconColor: colors.secondaryText,
                             side: BorderSide(color: colors.border),
@@ -627,7 +653,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Add up to 8 tags to help others find your post (e.g. grace, prophecy).',
+                      'Add tags to help others find your post (e.g. grace, prophecy).',
                       style: ScribesTextStyles.caption.copyWith(
                         color: colors.secondaryText.withValues(alpha: 0.7),
                       ),
@@ -967,6 +993,17 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
     WidgetRef ref,
     dynamic colors,
   ) {
+    final currentCount = ref.read(composeProvider).publishScriptureRefs.length;
+    if (currentCount >= 3) {
+      ScribesToast.show(
+        context,
+        'Maximum 3 scripture tags allowed for post metadata.',
+        colors,
+        isError: true,
+      );
+      return;
+    }
+
     ScribesScriptureSelector.show(
       context,
       colors: colors,
@@ -974,7 +1011,7 @@ class _PublishMetadataScreenState extends ConsumerState<PublishMetadataScreen> {
         if (chapter != null && verseStart != null) {
           ref
               .read(composeProvider.notifier)
-              .addScriptureRef(
+              .addPublishScriptureRef(
                 ScriptureRef(
                   book: book,
                   chapter: chapter,

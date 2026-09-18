@@ -8,7 +8,7 @@ import '../theme/scribes_colors.dart';
 import 'scribes_scripture_chip.dart';
 import '../../features/posts/domain/scripture_ref.dart';
 
-import 'scribes_ornament_divider.dart';
+import 'package:go_router/go_router.dart';
 import 'scribes_author_header.dart';
 import 'scribes_image_resolver.dart';
 
@@ -170,90 +170,103 @@ class ScribesPostCard extends ConsumerWidget {
             // 1. Cover Image Media Preview (Hybrid Magazine Style with Scrim & Floating Badge)
             if (!isSearchScreen &&
                 coverImageUrl != null &&
-                coverImageUrl!.trim().isNotEmpty) ...[
-              const SizedBox(height: 14),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(ScribesRadius.card),
-                child: Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(maxHeight: 220),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: ScribesImageResolver.buildImage(
-                            imageUrl: coverImageUrl!,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 800,
-                            placeholder: (context, url) => Container(
-                              color: colors.surfaceRaised,
-                            ),
-                            fallback: Container(
-                              color: colors.surfaceRaised,
-                            ),
-                          ),
-                        ),
+                coverImageUrl!.trim().isNotEmpty)
+              Builder(builder: (context) {
+                // Compute explicit dimensions once — avoids LayoutBuilder overhead per item.
+                final screenWidth = MediaQuery.sizeOf(context).width;
+                final horizontalPad = isExploreScreen ? 32.0 : 20.0;
+                final imageWidth = screenWidth - horizontalPad;
+                final imageHeight = (imageWidth * 9.0 / 16.0).clamp(0.0, 220.0);
+                final cacheW = ScribesImageResolver.computeCacheWidth(
+                  context,
+                  imageWidth,
+                  maxPixels: 720,
+                );
 
-                        // Bottom gradient scrim for visual depth and badge readability
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.65),
-                                ],
-                                stops: const [0.55, 1.0],
+                return Padding(
+                  padding: const EdgeInsets.only(top: 14),
+                  child: RepaintBoundary(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(ScribesRadius.card),
+                      child: SizedBox(
+                        width: imageWidth,
+                        height: imageHeight,
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: ScribesImageResolver.buildImage(
+                                imageUrl: coverImageUrl!,
+                                fit: BoxFit.cover,
+                                memCacheWidth: cacheW,
+                                placeholder: (context, url) => ColoredBox(
+                                  color: colors.surfaceRaised,
+                                ),
+                                fallback: ColoredBox(
+                                  color: colors.surfaceRaised,
+                                ),
                               ),
                             ),
-                          ),
-                        ),
 
-                        // Floating Badge in Bottom-Left (Passage, Reflection, or Featured indicator)
-                        if (postType == 'passage' ||
-                            postType == 'reflection' ||
-                            isFeatured)
-                          Positioned(
-                            left: 12,
-                            bottom: 12,
+                          // Bottom gradient scrim for visual depth and badge readability
+                          Positioned.fill(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
                               decoration: BoxDecoration(
-                                color: colors.background.withValues(alpha: 0.85),
-                                borderRadius: BorderRadius.circular(
-                                  ScribesRadius.chip,
-                                ),
-                                border: Border.all(
-                                  color: colors.goldEdge,
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Text(
-                                postType == 'passage'
-                                    ? 'Passage'
-                                    : postType == 'reflection'
-                                        ? 'Reflection'
-                                        : 'Featured',
-                                style: ScribesTextStyles.caption.copyWith(
-                                  color: colors.gold,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.65),
+                                  ],
+                                  stops: const [0.55, 1.0],
                                 ),
                               ),
                             ),
                           ),
-                      ],
+
+                          // Floating Badge in Bottom-Left (Passage, Reflection, or Featured indicator)
+                          if (postType == 'passage' ||
+                              postType == 'reflection' ||
+                              isFeatured)
+                            Positioned(
+                              left: 12,
+                              bottom: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.background.withValues(alpha: 0.85),
+                                  borderRadius: BorderRadius.circular(
+                                    ScribesRadius.chip,
+                                  ),
+                                  border: Border.all(
+                                    color: colors.goldEdge,
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  postType == 'passage'
+                                      ? 'Passage'
+                                      : postType == 'reflection'
+                                          ? 'Reflection'
+                                          : 'Featured',
+                                  style: ScribesTextStyles.caption.copyWith(
+                                    color: colors.gold,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              );
+            }),
 
             // 2. Title & Body Excerpt
             const SizedBox(height: 14),
@@ -301,22 +314,29 @@ class ScribesPostCard extends ConsumerWidget {
                   runSpacing: 4,
                   children: tags
                       .map(
-                        (tag) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.surfaceRaised,
-                            borderRadius: BorderRadius.circular(
-                              ScribesRadius.chip,
+                        (tag) => GestureDetector(
+                          onTap: () => context.push('/tags/$tag'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
                             ),
-                          ),
-                          child: Text(
-                            '#$tag',
-                            style: ScribesTextStyles.labelSm.copyWith(
-                              color: colors.secondaryText,
-                              fontWeight: FontWeight.w600,
+                            decoration: BoxDecoration(
+                              color: colors.surfaceRaised,
+                              borderRadius: BorderRadius.circular(
+                                ScribesRadius.chip,
+                              ),
+                              border: Border.all(
+                                color: colors.border.withValues(alpha: 0.5),
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: ScribesTextStyles.labelSm.copyWith(
+                                color: colors.secondaryText,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -327,7 +347,7 @@ class ScribesPostCard extends ConsumerWidget {
 
             // 4. Embedded References (Sermon Source / Caption)
             if (!isSearchScreen && hasEmbeddedContent) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               _ExpandableReferencesSection(
                 caption: caption,
                 sermonSource: sermonSource,
@@ -335,11 +355,9 @@ class ScribesPostCard extends ConsumerWidget {
               ),
             ],
 
-            // 5. Sacred Ornament Divider & Compact 6-Action Row
+            // 5. Compact Reaction Row (Cleaned up: unnecessary divider removed)
             if (!isExploreScreen) ...[
-              const SizedBox(height: 16),
-              const ScribesOrnamentDivider(),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -365,9 +383,9 @@ class ScribesPostCard extends ConsumerWidget {
                     onTap: () => onReact?.call('insightful'),
                   ),
 
-                  // 3. Deep / Thought-provoking (Diamond)
+                  // 3. Deep / Thought-provoking (Droplet)
                   _buildCompactAction(
-                    icon: HugeIcons.strokeRoundedDiamond01,
+                    icon: HugeIcons.strokeRoundedDroplet,
                     label: thoughtProvokingCount > 0
                         ? '$thoughtProvokingCount'
                         : '',
@@ -408,22 +426,22 @@ class ScribesPostCard extends ConsumerWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             HugeIcon(
               icon: icon,
-              size: 16,
+              size: 20,
               color: color,
             ),
             if (label.isNotEmpty) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               Text(
                 label,
                 style: ScribesTextStyles.caption.copyWith(
                   color: color,
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 ),
               ),

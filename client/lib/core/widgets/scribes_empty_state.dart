@@ -29,12 +29,12 @@ class ScribesEmptyState extends ConsumerWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 48.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: colors.surfaceRaised,
                 shape: BoxShape.circle,
@@ -47,11 +47,11 @@ class ScribesEmptyState extends ConsumerWidget {
               child: (useBrandMark || icon == null)
                   ? const ScribesBrandLogo(
                       variant: BrandLogoVariant.iconOnly,
-                      size: 46,
+                      size: 40,
                     )
-                  : HugeIcon(icon: icon, size: 48, color: colors.goldMuted),
+                  : HugeIcon(icon: icon, size: 38, color: colors.goldMuted),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text(
               title,
               style: ScribesTextStyles.displayMd.copyWith(

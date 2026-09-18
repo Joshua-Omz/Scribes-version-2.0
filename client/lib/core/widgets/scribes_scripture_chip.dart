@@ -124,13 +124,25 @@ class _ScribesScriptureChipState extends ConsumerState<ScribesScriptureChip> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
-                      child: Text(
-                        'Berean Standard Bible, public domain',
-                        style: ScribesTextStyles.caption.copyWith(
-                          color: colors.secondaryText,
-                          fontSize: 10,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          final translationsAsync = ref.watch(bibleTranslationsProvider);
+                          final attribution = translationsAsync.maybeWhen(
+                            data: (translations) {
+                              final match = translations.where((t) => t.code == result.translation).firstOrNull;
+                              return match?.attributionText ?? '${result.translation}, public domain';
+                            },
+                            orElse: () => '${result.translation}, public domain',
+                          );
+                          return Text(
+                            attribution,
+                            style: ScribesTextStyles.caption.copyWith(
+                              color: colors.secondaryText,
+                              fontSize: 10,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
                       ),
                     ),
                     GestureDetector(

@@ -280,35 +280,35 @@ class ScribesPostTile extends ConsumerWidget {
 
                       // Cover Image (Twitter-style embedded media box)
                       if (hasImage) ...[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            height: 180,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: colors.surfaceRaised,
-                              border: Border.all(
-                                color: colors.border.withValues(alpha: 0.5),
-                                width: 0.5,
-                              ),
-                            ),
-                            child: ScribesImageResolver.buildImage(
-                              imageUrl: displayImageUrl,
-                              memCacheWidth: 800,
-                              fit: BoxFit.cover,
-                              placeholder: (ctx, url) => Container(
+                        Builder(builder: (context) {
+                          const displayH = 180.0;
+                          final displayW = MediaQuery.sizeOf(context).width - 32; // approximate padding
+                          final cacheW = ScribesImageResolver.computeCacheWidth(context, displayW);
+
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              height: displayH,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
                                 color: colors.surfaceRaised,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: colors.gold,
-                                  ),
+                                border: Border.all(
+                                  color: colors.border.withValues(alpha: 0.5),
+                                  width: 0.5,
                                 ),
                               ),
-                              fallback: Container(color: colors.surfaceRaised),
+                              child: ScribesImageResolver.buildImage(
+                                imageUrl: displayImageUrl,
+                                memCacheWidth: cacheW,
+                                fit: BoxFit.cover,
+                                placeholder: (ctx, url) => Container(
+                                  color: colors.surfaceRaised,
+                                ),
+                                fallback: Container(color: colors.surfaceRaised),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        }),
                         const SizedBox(height: 10),
                       ],
 
@@ -364,7 +364,7 @@ class ScribesPostTile extends ConsumerWidget {
 
                           // 3. Deep / Thought-provoking button
                           _buildActionButton(
-                            icon: HugeIcons.strokeRoundedDiamond01,
+                            icon: HugeIcons.strokeRoundedDroplet,
                             label: thoughtProvokingCount > 0
                                 ? '$thoughtProvokingCount'
                                 : '',

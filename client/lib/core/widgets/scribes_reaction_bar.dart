@@ -57,7 +57,7 @@ class ScribesReactionBar extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           _ReactionChip(
-            icon: HugeIcons.strokeRoundedDiamond01,
+            icon: HugeIcons.strokeRoundedDroplet,
             label: 'Deep',
             count: thoughtProvokingCount.toString(),
             onTap: () => onReact('thought_provoking'),

@@ -94,7 +94,7 @@ class _PostRichTextState extends State<PostRichText> {
           paragraph: DefaultTextBlockStyle(
             ScribesTextStyles.bodyLg.copyWith(color: colors.primaryText),
             const HorizontalSpacing(0, 0),
-            const VerticalSpacing(0, 0),
+            const VerticalSpacing(2, 10),
             const VerticalSpacing(0, 0),
             null,
           ),
@@ -104,7 +104,7 @@ class _PostRichTextState extends State<PostRichText> {
               fontStyle: FontStyle.italic,
             ),
             const HorizontalSpacing(16, 16),
-            const VerticalSpacing(0, 0),
+            const VerticalSpacing(8, 10),
             const VerticalSpacing(0, 0),
             BoxDecoration(
               border: Border(left: BorderSide(color: colors.gold, width: 4)),

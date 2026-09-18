@@ -113,7 +113,7 @@ class ScribesUserCard extends ConsumerWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 140,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: colors.surfaceRaised,
           borderRadius: BorderRadius.circular(12),
@@ -126,31 +126,34 @@ class ScribesUserCard extends ConsumerWidget {
             ScribesAvatar(
               authorName: user.displayName,
               imageUrl: user.avatarUrl,
-              radius: 28,
+              radius: 24,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               user.displayName,
               style: ScribesTextStyles.labelLg.copyWith(
                 color: colors.primaryText,
+                fontSize: 13,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 2),
             Text(
               '@${user.handle}',
               style: ScribesTextStyles.labelSm.copyWith(
                 color: colors.secondaryText,
+                fontSize: 11,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
-              height: 32,
+              height: 30,
               child: isFollowingState.when(
                 data: (isFollowing) => OutlinedButton(
                   style: OutlinedButton.styleFrom(

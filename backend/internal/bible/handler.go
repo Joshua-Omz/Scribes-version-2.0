@@ -20,6 +20,19 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// GET /bible/translations
+func (h *Handler) GetTranslations(c *gin.Context) {
+	translations, err := h.service.GetTranslations(c.Request.Context())
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "Failed to retrieve translations")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, gin.H{
+		"translations": translations,
+	})
+}
+
 // GET /bible/books
 func (h *Handler) GetBooks(c *gin.Context) {
 	translation := c.DefaultQuery("translation", "BSB")

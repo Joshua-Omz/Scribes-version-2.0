@@ -223,23 +223,25 @@ class ScribesDiscoverTile extends ConsumerWidget {
                   child: SizedBox(
                     width: 76,
                     height: 76,
-                    child: ScribesImageResolver.buildImage(
-                      imageUrl: displayImageUrl,
-                      memCacheWidth: 250,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: colors.surfaceRaised,
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: colors.surfaceRaised,
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          size: 18,
-                          color: colors.secondaryText,
+                    child: RepaintBoundary(
+                      child: ScribesImageResolver.buildImage(
+                        imageUrl: displayImageUrl,
+                        memCacheWidth: 280,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => ColoredBox(
+                          color: colors.surfaceRaised,
                         ),
-                      ),
-                      fallback: Container(
-                        color: colors.surfaceRaised,
+                        errorWidget: (context, url, error) => ColoredBox(
+                          color: colors.surfaceRaised,
+                          child: Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 18,
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                        fallback: ColoredBox(
+                          color: colors.surfaceRaised,
+                        ),
                       ),
                     ),
                   ),

@@ -29,86 +29,106 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
-    final authState = ref.watch(authProvider);
-    final isAuth = authState.value != null;
+    final isAuth = ref.watch(
+      authProvider.select((state) => state.value != null),
+    );
     final feedState = ref.watch(feedProvider);
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(feedProvider.notifier).refresh(),
-        child: CustomScrollView(
-          key: const PageStorageKey<String>('unifiedFeed'),
-          scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
-          slivers: [
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              floating: true,
-              pinned: false,
-              snap: true,
-              elevation: 0,
-              backgroundColor: colors.background,
-              toolbarHeight: 56,
-              titleSpacing: 0,
-              title: const ScribesTopAppBar(showBottomBorder: false),
-            ),
-            feedState.when(
-              data: (posts) {
-                if (posts.isEmpty) {
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: isAuth
-                        ? _buildEmptyState(context, colors)
-                        : _buildGuestEmptyState(context, colors),
-                  );
-                }
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == posts.length) {
-                        if (ref.read(feedProvider.notifier).hasMore) {
-                          ref.read(feedProvider.notifier).loadMore();
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          // Trigger pagination safely outside of build phase without calling setState
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 800) {
+            final notifier = ref.read(feedProvider.notifier);
+            final currentState = ref.read(feedProvider);
+            if (notifier.hasMore &&
+                !currentState.isLoading &&
+                !currentState.isRefreshing) {
+              notifier.loadMore();
+            }
+          }
+          return false;
+        },
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(feedProvider.notifier).refresh(),
+          child: CustomScrollView(
+            key: const PageStorageKey<String>('unifiedFeed'),
+            scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
+            slivers: [
+              // Pinned, non-floating app bar maintains constant geometry,
+              // preventing viewport relayout invalidation on every scroll delta.
+              SliverAppBar(
+                automaticallyImplyLeading: false,
+                floating: false,
+                pinned: true,
+                snap: false,
+                elevation: 0,
+                backgroundColor: colors.background,
+                toolbarHeight: 56,
+                titleSpacing: 0,
+                title: const ScribesTopAppBar(showBottomBorder: false),
+              ),
+              feedState.when(
+                data: (posts) {
+                  if (posts.isEmpty) {
+                    return SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: isAuth
+                          ? _buildEmptyState(context, colors)
+                          : _buildGuestEmptyState(context, colors),
+                    );
+                  }
+
+                  // O(1) key-to-index lookup table for delegate diffing
+                  final postIndexMap = {
+                    for (var i = 0; i < posts.length; i++) posts[i].id: i,
+                  };
+                  final hasMore = ref.read(feedProvider.notifier).hasMore;
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == posts.length) {
                           return const Padding(
                             padding: EdgeInsets.all(16.0),
                             child: Center(child: ScribesLoadingIndicator()),
                           );
                         }
-                        return const SizedBox.shrink();
-                      }
-                      return ScribesConnectedPostCard(
-                        key: ValueKey(posts[index].id),
-                        post: posts[index],
-                        isFeatured: index == 0,
-                      );
-                    },
-                    childCount: posts.length +
-                        (ref.read(feedProvider.notifier).hasMore ? 1 : 0),
-                    findChildIndexCallback: (Key key) {
-                      if (key is ValueKey<String>) {
-                        final index =
-                            posts.indexWhere((p) => p.id == key.value);
-                        return index != -1 ? index : null;
-                      }
-                      return null;
-                    },
-                    addAutomaticKeepAlives: false,
-                    addRepaintBoundaries: true,
+                        final post = posts[index];
+                        return ScribesConnectedPostCard(
+                          key: ValueKey(post.id),
+                          post: post,
+                          isFeatured: index == 0,
+                        );
+                      },
+                      childCount: posts.length + (hasMore ? 1 : 0),
+                      findChildIndexCallback: (Key key) {
+                        if (key is ValueKey<String>) {
+                          return postIndexMap[key.value];
+                        }
+                        return null;
+                      },
+                      addAutomaticKeepAlives: false,
+                      addRepaintBoundaries: true,
+                    ),
+                  );
+                },
+                loading: () => _buildShimmer(colors),
+                error: (e, st) => SliverFillRemaining(
+                  child: ScribesErrorState(
+                    title: 'Could not load sanctuary feed',
+                    subtitle: e.toString(),
+                    onRetry: () => ref.read(feedProvider.notifier).refresh(),
                   ),
-                );
-              },
-              loading: () => _buildShimmer(colors),
-              error: (e, st) => SliverFillRemaining(
-                child: ScribesErrorState(
-                  title: 'Could not load sanctuary feed',
-                  subtitle: e.toString(),
-                  onRetry: () => ref.read(feedProvider.notifier).refresh(),
                 ),
               ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 24),
-            ),
-          ],
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 24),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const ScribesBottomNav(currentIndex: 0),

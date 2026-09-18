@@ -56,18 +56,19 @@ class DraftPreviewScreen extends ConsumerWidget {
       ),
       body: Container(
         color: colors.background,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 state.title.isNotEmpty ? state.title : 'Untitled',
-                style: ScribesTextStyles.displayXl.copyWith(
+                style: ScribesTextStyles.displayLg.copyWith(
                   color: colors.primaryText,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               if (state.contentDelta != null)
                 PostRichText(content: state.contentDelta!)
               else
@@ -77,7 +78,7 @@ class DraftPreviewScreen extends ConsumerWidget {
                     color: colors.secondaryText,
                   ),
                 ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
             ],
           ),
         ),

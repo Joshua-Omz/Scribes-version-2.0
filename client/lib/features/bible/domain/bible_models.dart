@@ -1,3 +1,35 @@
+class BibleTranslation {
+  final String id;
+  final String code;
+  final String name;
+  final String language;
+  final String attributionText;
+  final String source;
+  final bool isDefault;
+
+  const BibleTranslation({
+    required this.id,
+    required this.code,
+    required this.name,
+    required this.language,
+    required this.attributionText,
+    required this.source,
+    required this.isDefault,
+  });
+
+  factory BibleTranslation.fromJson(Map<String, dynamic> json) {
+    return BibleTranslation(
+      id: json['id'] as String? ?? '',
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      language: json['language'] as String? ?? 'en',
+      attributionText: json['attribution_text'] as String? ?? '',
+      source: json['source'] as String? ?? 'self_hosted',
+      isDefault: json['is_default'] as bool? ?? false,
+    );
+  }
+}
+
 class BibleBook {
   final String id;
   final String name;

@@ -3,9 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/bible_repository.dart';
 import '../domain/bible_models.dart';
 
+class SelectedTranslationNotifier extends Notifier<String> {
+  @override
+  String build() => 'BSB';
+
+  void setTranslation(String translation) {
+    state = translation;
+  }
+}
+
+final selectedTranslationProvider = NotifierProvider<SelectedTranslationNotifier, String>(SelectedTranslationNotifier.new);
+final bibleTranslationsProvider = FutureProvider<List<BibleTranslation>>((ref) async {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.getTranslations();
+});
+
 final bibleBooksProvider = FutureProvider<List<BibleBook>>((ref) async {
   final repo = ref.watch(bibleRepositoryProvider);
-  return repo.getBooks();
+  final translation = ref.watch(selectedTranslationProvider);
+  return repo.getBooks(translation: translation);
 });
 
 class BibleChapterQuery {
@@ -29,7 +45,8 @@ class BibleChapterQuery {
 final bibleChapterProvider =
     FutureProvider.family<BibleChapter, BibleChapterQuery>((ref, query) async {
       final repo = ref.watch(bibleRepositoryProvider);
-      return repo.getChapter(query.book, query.chapter);
+      final translation = ref.watch(selectedTranslationProvider);
+      return repo.getChapter(query.book, query.chapter, translation: translation);
     });
 
 final verseLookupProvider = FutureProvider.family<VerseRangeResult, String>((
@@ -37,6 +54,7 @@ final verseLookupProvider = FutureProvider.family<VerseRangeResult, String>((
   refStr,
 ) async {
   final repo = ref.watch(bibleRepositoryProvider);
+  final translation = ref.watch(selectedTranslationProvider);
 
   // Parse ref string e.g. "Genesis 1:1-3" or "Romans 8:28" or "1 Corinthians 13:4-8"
   final match = RegExp(
@@ -50,7 +68,7 @@ final verseLookupProvider = FutureProvider.family<VerseRangeResult, String>((
   final chapter = int.parse(match.group(2)!);
   final range = match.group(3)!;
 
-  return repo.getVerseRange(book, chapter, range);
+  return repo.getVerseRange(book, chapter, range, translation: translation);
 });
 
 final bibleReadingPositionProvider = FutureProvider<BibleReadingPosition?>((

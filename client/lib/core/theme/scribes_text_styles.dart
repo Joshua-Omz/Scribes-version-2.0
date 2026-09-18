@@ -24,13 +24,13 @@ class ScribesTextStyles {
   static final bodyLg = GoogleFonts.dmSans(
     fontSize: 17,
     fontWeight: FontWeight.w400,
-    height: 1.15,
+    height: 1.75,
   );
 
   static final bodyMd = GoogleFonts.dmSans(
     fontSize: 15,
     fontWeight: FontWeight.w400,
-    height: 1.15,
+    height: 1.70,
   );
 
   static final labelLg = GoogleFonts.dmSans(

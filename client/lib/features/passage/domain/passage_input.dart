@@ -71,6 +71,21 @@ class CreatePassageInput {
       }
     }
 
+    String? firstImageUrl;
+    for (final p in panels) {
+      if (p.backgroundImageUrl != null && p.backgroundImageUrl!.trim().isNotEmpty) {
+        firstImageUrl = p.backgroundImageUrl!.trim();
+        break;
+      }
+      final img = p.content['image_url'] ?? p.content['imageUrl'] ?? p.content['url'];
+      if (img != null && img.toString().trim().isNotEmpty) {
+        firstImageUrl = img.toString().trim();
+        break;
+      }
+    }
+
+    final panelPayloads = panels.map((p) => p.toPayload()).toList();
+
     return {
       'post_type': 'passage',
       'content': {
@@ -79,8 +94,11 @@ class CreatePassageInput {
           {'insert': '$resolvedTitle\n'}
         ],
         'excerpt': excerpt,
+        'image_url': ?firstImageUrl,
+        'cover_image_url': ?firstImageUrl,
+        'panels': panelPayloads,
       },
-      'panels': panels.map((p) => p.toPayload()).toList(),
+      'panels': panelPayloads,
       if (sound != null) 'sound_id': sound!.id,
       'visibility': 'public',
     };

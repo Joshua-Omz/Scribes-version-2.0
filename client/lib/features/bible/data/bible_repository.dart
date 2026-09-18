@@ -20,6 +20,11 @@ class BibleRepository {
 
   BibleRepository(this._api, this._local);
 
+  Future<List<BibleTranslation>> getTranslations() async {
+    // Translations list is always fetched from the network for now
+    return _api.getTranslations();
+  }
+
   /// Reading — always local and instant for BSB, never touches the network
   Future<List<BibleBook>> getBooks({String translation = 'BSB'}) async {
     if (translation.toUpperCase() == 'BSB') {

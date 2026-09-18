@@ -17,6 +17,10 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
+func (s *Service) GetTranslations(ctx context.Context) ([]Translation, error) {
+	return s.repo.GetTranslations(ctx)
+}
+
 func (s *Service) GetBooks(ctx context.Context, translationCode string) ([]Book, error) {
 	return s.repo.GetBooks(ctx, translationCode)
 }

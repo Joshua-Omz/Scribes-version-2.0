@@ -273,7 +273,7 @@ class _AuthGateScreenState extends ConsumerState<AuthGateScreen> {
                           
                        ScribesBrandLogo(
                               variant: BrandLogoVariant.iconOnly,
-                              size: 50,
+                              size: 70,
                             ),
                        
                         ],

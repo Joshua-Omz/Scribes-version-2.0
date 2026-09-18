@@ -15,6 +15,15 @@ class BibleApi {
 
   BibleApi(this._dio);
 
+  Future<List<BibleTranslation>> getTranslations() async {
+    final response = await _dio.get(Endpoints.bibleTranslations);
+    final data = response.data as Map<String, dynamic>;
+    final list = data['translations'] as List<dynamic>? ?? [];
+    return list
+        .map((e) => BibleTranslation.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<List<BibleBook>> getBooks({String translation = 'BSB'}) async {
     final response = await _dio.get(
       Endpoints.bibleBooks,

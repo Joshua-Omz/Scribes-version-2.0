@@ -18,6 +18,7 @@ import '../../features/compose/presentation/publish_metadata_screen.dart';
 import '../../features/compose/presentation/reflection_composer.dart';
 import '../../features/posts/presentation/revise_post_screen.dart';
 import '../../features/posts/domain/post.dart';
+import '../../features/posts/domain/scripture_ref.dart';
 import '../../features/draft/presentation/drafts_list_screen.dart';
 import '../../features/profile/presentation/private_profile_screen.dart';
 import '../../features/profile/presentation/public_profile_screen.dart';
@@ -35,6 +36,7 @@ import '../../features/social/presentation/bookmarks_screen.dart';
 import '../../features/bible/presentation/bible_drawer.dart';
 import '../../features/compose/presentation/passage_composer.dart';
 import '../../features/passage/presentation/passage_viewer_screen.dart';
+import '../../features/explore/presentation/tag_posts_screen.dart';
 import 'transitions.dart';
 
 part 'app_router.g.dart';
@@ -82,6 +84,7 @@ GoRouter appRouter(Ref ref) {
           publicRoutes.contains(state.matchedLocation) ||
           state.matchedLocation.startsWith('/posts/') ||
           state.matchedLocation.startsWith('/passage/') ||
+          state.matchedLocation.startsWith('/tags/') ||
           state.matchedLocation.startsWith('/users/');
 
       // Redirect away from splash once auth state is resolved
@@ -207,7 +210,9 @@ GoRouter appRouter(Ref ref) {
         pageBuilder: (context, state) => buildPageWithSlideUpTransition(
           context: context,
           state: state,
-          child: const ReflectionComposerScreen(),
+          child: ReflectionComposerScreen(
+            prefilledScriptureRef: state.extra as ScriptureRef?,
+          ),
         ),
       ),
       GoRoute(
@@ -374,6 +379,17 @@ GoRouter appRouter(Ref ref) {
           state: state,
           child: const DraftsListScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/tags/:tag',
+        pageBuilder: (context, state) {
+          final tag = state.pathParameters['tag']!;
+          return buildPageWithSlideRightTransition(
+            context: context,
+            state: state,
+            child: TagPostsScreen(tag: tag),
+          );
+        },
       ),
     ],
   );

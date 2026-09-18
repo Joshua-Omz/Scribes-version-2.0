@@ -242,26 +242,41 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               return SliverPadding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    if (index == posts.length) {
-                      ref.read(exploreFilteredProvider.notifier).loadMore();
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.0),
-                        child: ScribesLoadingIndicator(),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == posts.length) {
+                        ref.read(exploreFilteredProvider.notifier).loadMore();
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          child: ScribesLoadingIndicator(),
+                        );
+                      }
+                      return Padding(
+                        key: ValueKey(posts[index].id),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: RepaintBoundary(
+                          child: ScribesConnectedPostCard(
+                            post: posts[index],
+                            isFeatured: false,
+                            isExploreScreen: true,
+                          ),
+                        ),
                       );
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      child: ScribesConnectedPostCard(
-                        post: posts[index],
-                        isFeatured: false,
-                        isExploreScreen: true,
-                      ),
-                    );
-                  }, childCount: posts.length + (hasMore ? 1 : 0)),
+                    },
+                    childCount: posts.length + (hasMore ? 1 : 0),
+                    findChildIndexCallback: (Key key) {
+                      if (key is ValueKey<String>) {
+                        final index = posts.indexWhere((p) => p.id == key.value);
+                        return index != -1 ? index : null;
+                      }
+                      return null;
+                    },
+                    addAutomaticKeepAlives: true,
+                    addRepaintBoundaries: true,
+                  ),
                 ),
               );
             },
@@ -578,7 +593,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
               ),
               SizedBox(
-                height: 165,
+                height: 175,
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   scrollDirection: Axis.horizontal,
@@ -608,6 +623,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       data: (allPosts) {
         if (allPosts.isEmpty) {
           return const SliverFillRemaining(
+            hasScrollBody: false,
             child: Center(
               child: ScribesEmptyState(
                 icon: HugeIcons.strokeRoundedBookOpen01,
@@ -1244,10 +1260,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     horizontal: 16.0,
                     vertical: 8.0,
                   ),
-                  child: ScribesConnectedPostCard(
-                    post: post,
-                    isFeatured: false,
-                    isExploreScreen: true,
+                  child: RepaintBoundary(
+                    child: ScribesConnectedPostCard(
+                      post: post,
+                      isFeatured: false,
+                      isExploreScreen: true,
+                    ),
                   ),
                 );
               },
@@ -1259,6 +1277,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 }
                 return null;
               },
+              addAutomaticKeepAlives: true,
+              addRepaintBoundaries: true,
             ),
           ),
         );

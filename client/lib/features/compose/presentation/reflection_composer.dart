@@ -22,7 +22,9 @@ import '../../feed/application/feed_notifier.dart';
 /// Lightweight, modern, immutable Reflection Composer.
 /// Scribes Source of Truth: docs/contracts/reflection_type_post.md
 class ReflectionComposerScreen extends ConsumerStatefulWidget {
-  const ReflectionComposerScreen({super.key});
+  final ScriptureRef? prefilledScriptureRef;
+
+  const ReflectionComposerScreen({super.key, this.prefilledScriptureRef});
 
   @override
   ConsumerState<ReflectionComposerScreen> createState() =>
@@ -45,6 +47,14 @@ class _ReflectionComposerScreenState
   @override
   void initState() {
     super.initState();
+    if (widget.prefilledScriptureRef != null) {
+      _attachedScripture = widget.prefilledScriptureRef;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _bodyFocus.requestFocus();
+        }
+      });
+    }
     _bodyController.addListener(() {
       setState(() {});
     });

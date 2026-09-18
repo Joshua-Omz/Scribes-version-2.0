@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../storage/scribes_cache_manager.dart';
 import '../../features/posts/domain/post.dart';
+import '../../features/passage/domain/passage_models.dart';
 
 class ScribesImageResolver {
   /// Normalizes and resolves any image URL (absolute, relative, or local file).
@@ -35,10 +36,7 @@ class ScribesImageResolver {
         trimmed.startsWith('D:\\') ||
         trimmed.startsWith('/Users/');
     if (isExplicitLocalPath) {
-      final file = File(trimmed);
-      if (file.existsSync()) {
-        return 'file://$trimmed';
-      }
+      return 'file://$trimmed';
     }
 
     // Relative backend path (e.g. /media/uploads/..., uploads/...)
@@ -201,14 +199,9 @@ class ScribesImageResolver {
 
     // 5b. Inspect typed post.panels
     for (final panel in post.panels) {
-      if (panel.backgroundImageUrl != null &&
-          panel.backgroundImageUrl!.trim().isNotEmpty) {
-        final resolved = resolveUrl(panel.backgroundImageUrl);
-        if (resolved != null) return resolved;
-      }
-      final imgUrl = panel.content['image_url'] ?? panel.content['imageUrl'];
-      if (imgUrl != null) {
-        final resolved = resolveUrl(imgUrl.toString());
+      final img = panel.effectiveImageUrl;
+      if (img != null && img.trim().isNotEmpty) {
+        final resolved = resolveUrl(img);
         if (resolved != null) return resolved;
       }
     }
@@ -235,11 +228,36 @@ class ScribesImageResolver {
     return null;
   }
 
+  /// Computes the optimal memCacheWidth for an image displayed at [displayWidth] logical pixels.
+  /// Multiplies by the device pixel ratio for sharpness, capped at [maxPixels] to prevent
+  /// excessive memory usage on ultra-high-DPI tablets.
+  static int computeCacheWidth(BuildContext context, double displayWidth, {int maxPixels = 800}) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    return (displayWidth * dpr).toInt().clamp(1, maxPixels);
+  }
+
+  /// Computes the optimal memCacheHeight for an image displayed at [displayHeight] logical pixels.
+  static int computeCacheHeight(BuildContext context, double displayHeight, {int maxPixels = 600}) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    return (displayHeight * dpr).toInt().clamp(1, maxPixels);
+  }
+
   /// Builds a robust image widget supporting local files, cached remote assets, and fallback.
+  ///
+  /// Important for Cropping vs Stretching:
+  /// When using [BoxFit.cover], specify ONLY ONE dimension (e.g. [memCacheWidth] for horizontal cards,
+  /// or [memCacheHeight] for vertical cards). This allows Flutter's codec to preserve the image's natural
+  /// aspect ratio and cleanly crop the overflowing edges. Specifying BOTH [memCacheWidth] and
+  /// [memCacheHeight] simultaneously forces an exact rectangular scale at decode time, which squashes
+  /// or stretches images whose native aspect ratio differs from that constraint.
   static Widget buildImage({
     required String? imageUrl,
     BoxFit fit = BoxFit.cover,
     int? memCacheWidth = 800,
+    int? memCacheHeight,
+    Duration fadeInDuration = Duration.zero,
+    Duration fadeOutDuration = Duration.zero,
+    Duration placeholderFadeInDuration = Duration.zero,
     Widget Function(BuildContext, String)? placeholder,
     Widget Function(BuildContext, String, dynamic)? errorWidget,
     Widget? fallback,
@@ -256,8 +274,11 @@ class ScribesImageResolver {
         file,
         fit: fit,
         cacheWidth: memCacheWidth,
-        errorBuilder: (context, error, stackTrace) =>
-            fallback ?? const SizedBox.shrink(),
+        cacheHeight: memCacheHeight,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('[ScribesImageResolver] Failed to load local file $filePath: $error');
+          return fallback ?? const SizedBox.shrink();
+        },
       );
     }
 
@@ -266,10 +287,18 @@ class ScribesImageResolver {
       cacheManager: ScribesCacheManager.instance,
       httpHeaders: const {'ngrok-skip-browser-warning': 'true'},
       memCacheWidth: memCacheWidth,
+      memCacheHeight: memCacheHeight,
       fit: fit,
+      useOldImageOnUrlChange: true,
+      fadeInDuration: fadeInDuration,
+      fadeOutDuration: fadeOutDuration,
+      placeholderFadeInDuration: placeholderFadeInDuration,
       placeholder: placeholder,
       errorWidget: errorWidget ??
-          (context, url, error) => fallback ?? const SizedBox.shrink(),
+          (context, url, error) {
+            debugPrint('[ScribesImageResolver] Failed to load remote image $url: $error');
+            return fallback ?? const SizedBox.shrink();
+          },
     );
   }
 }

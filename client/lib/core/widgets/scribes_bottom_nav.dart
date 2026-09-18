@@ -8,6 +8,7 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_colors.dart';
 import '../theme/scribes_text_styles.dart';
 import 'scribes_bounce_button.dart';
+import 'scribes_notes_branch_sheet.dart';
 import '../../features/compose/presentation/compose_type_sheet.dart';
 
 class BottomNavVisibilityNotifier extends Notifier<bool> {
@@ -40,8 +41,14 @@ class ScribesBottomNav extends ConsumerWidget {
       return;
     }
 
+    if (index == 3) {
+      // Notes branches into Study Notes or Manuscript Drafts
+      ScribesNotesBranchSheet.show(context);
+      return;
+    }
+
     // Navigate to the corresponding route
-    final routes = {0: '/', 1: '/explore', 3: '/notes', 4: '/profile'};
+    final routes = {0: '/', 1: '/explore', 4: '/profile'};
     final target = routes[index];
     if (target != null) {
       context.go(target);

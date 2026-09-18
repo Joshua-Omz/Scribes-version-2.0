@@ -83,10 +83,10 @@ class ScribesExploreCard extends ConsumerWidget {
                 Positioned.fill(
                   child: ScribesImageResolver.buildImage(
                     imageUrl: displayImageUrl,
-                    memCacheWidth: 800,
+                    memCacheHeight: 800,
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
-                        Container(color: colors.surfaceRaised),
+                        ColoredBox(color: colors.surfaceRaised),
                     errorWidget: (context, url, error) => Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(

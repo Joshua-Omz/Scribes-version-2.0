@@ -89,7 +89,32 @@ abstract class Post with _$Post {
     @JsonKey(name: 'comment_count') @Default(0) int commentCount,
   }) = _Post;
 
-  factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
+  factory Post.fromJson(Map<String, dynamic> json) {
+    // If top-level panels is empty, check if content contains embedded panels
+    if (json['panels'] == null ||
+        (json['panels'] is List && (json['panels'] as List).isEmpty)) {
+      final content = json['content'];
+      if (content is Map &&
+          content['panels'] is List &&
+          (content['panels'] as List).isNotEmpty) {
+        final mutableJson = Map<String, dynamic>.from(json);
+        mutableJson['panels'] = content['panels'];
+        return _$PostFromJson(mutableJson);
+      } else if (content is String && content.contains('panels')) {
+        try {
+          final decoded = jsonDecode(content);
+          if (decoded is Map &&
+              decoded['panels'] is List &&
+              (decoded['panels'] as List).isNotEmpty) {
+            final mutableJson = Map<String, dynamic>.from(json);
+            mutableJson['panels'] = decoded['panels'];
+            return _$PostFromJson(mutableJson);
+          }
+        } catch (_) {}
+      }
+    }
+    return _$PostFromJson(json);
+  }
 }
 
 extension PostX on Post {
