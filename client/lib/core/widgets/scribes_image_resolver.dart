@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
+import 'file_image_loader.dart';
 
 import '../storage/scribes_cache_manager.dart';
 import '../../features/posts/domain/post.dart';
@@ -269,16 +270,12 @@ class ScribesImageResolver {
 
     if (resolved.startsWith('file://')) {
       final filePath = resolved.replaceFirst('file://', '');
-      final file = File(filePath);
-      return Image.file(
-        file,
+      return buildFileImage(
+        filePath: filePath,
         fit: fit,
-        cacheWidth: memCacheWidth,
-        cacheHeight: memCacheHeight,
-        errorBuilder: (context, error, stackTrace) {
-          debugPrint('[ScribesImageResolver] Failed to load local file $filePath: $error');
-          return fallback ?? const SizedBox.shrink();
-        },
+        memCacheWidth: memCacheWidth,
+        memCacheHeight: memCacheHeight,
+        fallback: fallback,
       );
     }
 

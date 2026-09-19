@@ -7,10 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/scribes_quill_scripture_helper.dart';
+import '../../../core/theme/scribes_quill_auto_number_rule.dart';
 import '../../../core/widgets/scribes_auto_save_dot.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_scripture_quick_dialog.dart';
+import '../../../core/widgets/scribes_quill_toolbar.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../../draft/domain/draft.dart';
 import '../../export/presentation/export_loading_sheet.dart';
@@ -37,15 +39,24 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
     final state = ref.read(composeProvider);
     _titleController = TextEditingController(text: state.title);
 
-    if (state.contentDelta != null) {
-      final doc = Document.fromJson(state.contentDelta!);
-      _controller = QuillController(
-        document: doc,
-        selection: const TextSelection.collapsed(offset: 0),
-      );
+    Document doc;
+    if (state.contentDelta != null && state.contentDelta!.isNotEmpty) {
+      try {
+        doc = Document.fromJson(state.contentDelta!);
+      } catch (err) {
+        debugPrint(
+          '[DraftEditor] Invalid delta: $err. Falling back to basic document.',
+        );
+        doc = Document();
+      }
     } else {
-      _controller = QuillController.basic();
+      doc = Document();
     }
+
+    _controller = QuillController(
+      document: doc,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
     _controller.addListener(_onDocumentChanged);
   }
 
@@ -460,6 +471,9 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
                       focusNode: _focusNode,
                       scrollController: _scrollController,
                       config: QuillEditorConfig(
+                        spaceShortcutEvents: standardSpaceShorcutEvents,
+                        characterShortcutEvents: standardCharactersShortcutEvents,
+                        onKeyPressed: (event, node) => handleAutoNumberOnEnter(event, _controller),
                         customStyleBuilder: (Attribute attribute) {
                           if (attribute.key == 'scripture') {
                             return ScribesQuillScriptureHelper
@@ -504,133 +518,114 @@ class _DraftEditorScreenState extends ConsumerState<DraftEditorScreen> {
             ),
           ),
           Divider(height: 1, thickness: 1, color: colors.border),
-          QuillSimpleToolbar(
+          ScribesQuillToolbar(
             controller: _controller,
-            config: QuillSimpleToolbarConfig(
-              showDividers: true,
-              multiRowsDisplay: false,
-              color: colors.surfaceRaised,
-              showAlignmentButtons: false,
-              showFontFamily: false,
-              showFontSize: false,
-              showBackgroundColorButton: false,
-              showColorButton: false,
-              showStrikeThrough: false,
-              showInlineCode: false,
-              showClearFormat: false,
-              customButtons: [
-                QuillToolbarCustomButtonOptions(
-                  icon: HugeIcon(
-                    icon: HugeIcons.strokeRoundedBookOpen01,
-                    size: 18,
-                    color: colors.gold,
-                  ),
-                  tooltip: 'Tag as Scripture',
-                  onPressed: () {
-                    final selection = _controller.selection;
-                    if (!selection.isCollapsed) {
-                      ScribesScriptureSelector.show(
-                        context,
-                        colors: colors,
-                        onSelected: (book, chapter, verseStart, verseEnd) {
-                          String refStr = book;
-                          if (chapter != null) {
-                            refStr += ' $chapter';
-                            if (verseStart != null) {
-                              refStr += ':$verseStart';
-                              if (verseEnd != null && verseEnd != verseStart) {
-                                refStr += '-$verseEnd';
-                              }
-                            }
-                          }
-                          ScribesQuillScriptureHelper.applyScriptureAttribute(
-                            _controller,
-                            refStr,
-                          );
-                          if (chapter != null && verseStart != null) {
-                            ref
-                                .read(composeProvider.notifier)
-                                .addScriptureRef(
-                                  ScriptureRef(
-                                    book: book,
-                                    chapter: chapter,
-                                    verseStart: verseStart,
-                                    verseEnd: verseEnd,
-                                  ),
-                                );
-                          }
-                          ScribesToast.show(
-                            context,
-                            'Tagged as Scripture: $refStr',
-                            colors,
-                            icon: HugeIcons.strokeRoundedBookOpen01,
-                          );
-                        },
-                      );
-                    } else {
-                      ScribesScriptureSelector.show(
-                        context,
-                        colors: colors,
-                        onSelected: (book, chapter, verseStart, verseEnd) {
-                          String refStr = book;
-                          if (chapter != null) {
-                            refStr += ' $chapter';
-                            if (verseStart != null) {
-                              refStr += ':$verseStart';
-                              if (verseEnd != null && verseEnd != verseStart) {
-                                refStr += '-$verseEnd';
-                              }
-                            }
-                          }
-                          final offset = _controller.selection.baseOffset >= 0
-                              ? _controller.selection.baseOffset
-                              : _controller.document.length - 1;
-                          _controller.document.insert(offset, refStr);
-                          _controller.updateSelection(
-                            TextSelection(
-                              baseOffset: offset,
-                              extentOffset: offset + refStr.length,
-                            ),
-                            ChangeSource.local,
-                          );
-                          ScribesQuillScriptureHelper.applyScriptureAttribute(
-                            _controller,
-                            refStr,
-                          );
-                          _controller.updateSelection(
-                            TextSelection.collapsed(
-                              offset: offset + refStr.length,
-                            ),
-                            ChangeSource.local,
-                          );
-                          if (chapter != null && verseStart != null) {
-                            ref
-                                .read(composeProvider.notifier)
-                                .addScriptureRef(
-                                  ScriptureRef(
-                                    book: book,
-                                    chapter: chapter,
-                                    verseStart: verseStart,
-                                    verseEnd: verseEnd,
-                                  ),
-                                );
-                          }
-                          ScribesToast.show(
-                            context,
-                            'Inserted Scripture: $refStr',
-                            colors,
-                            icon: HugeIcons.strokeRoundedBookOpen01,
-                          );
-                        },
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
+            onTagScripture: _handleToolbarTagScripture,
+            colors: colors,
           ),
         ],
       ),
     );
+  }
+
+  void _handleToolbarTagScripture() {
+    final colors = ref.read(themeProvider);
+    final selection = _controller.selection;
+    if (!selection.isCollapsed) {
+      ScribesScriptureSelector.show(
+        context,
+        colors: colors,
+        onSelected: (book, chapter, verseStart, verseEnd) {
+          String refStr = book;
+          if (chapter != null) {
+            refStr += ' $chapter';
+            if (verseStart != null) {
+              refStr += ':$verseStart';
+              if (verseEnd != null && verseEnd != verseStart) {
+                refStr += '-$verseEnd';
+              }
+            }
+          }
+          ScribesQuillScriptureHelper.applyScriptureAttribute(
+            _controller,
+            refStr,
+          );
+          if (chapter != null && verseStart != null) {
+            ref
+                .read(composeProvider.notifier)
+                .addScriptureRef(
+                  ScriptureRef(
+                    book: book,
+                    chapter: chapter,
+                    verseStart: verseStart,
+                    verseEnd: verseEnd,
+                  ),
+                );
+          }
+          ScribesToast.show(
+            context,
+            'Tagged as Scripture: $refStr',
+            colors,
+            icon: HugeIcons.strokeRoundedBookOpen01,
+          );
+        },
+      );
+    } else {
+      ScribesScriptureSelector.show(
+        context,
+        colors: colors,
+        onSelected: (book, chapter, verseStart, verseEnd) {
+          String refStr = book;
+          if (chapter != null) {
+            refStr += ' $chapter';
+            if (verseStart != null) {
+              refStr += ':$verseStart';
+              if (verseEnd != null && verseEnd != verseStart) {
+                refStr += '-$verseEnd';
+              }
+            }
+          }
+          final offset = _controller.selection.baseOffset >= 0
+              ? _controller.selection.baseOffset
+              : _controller.document.length - 1;
+          _controller.document.insert(offset, refStr);
+          _controller.updateSelection(
+            TextSelection(
+              baseOffset: offset,
+              extentOffset: offset + refStr.length,
+            ),
+            ChangeSource.local,
+          );
+          ScribesQuillScriptureHelper.applyScriptureAttribute(
+            _controller,
+            refStr,
+          );
+          _controller.updateSelection(
+            TextSelection.collapsed(
+              offset: offset + refStr.length,
+            ),
+            ChangeSource.local,
+          );
+          if (chapter != null && verseStart != null) {
+            ref
+                .read(composeProvider.notifier)
+                .addScriptureRef(
+                  ScriptureRef(
+                    book: book,
+                    chapter: chapter,
+                    verseStart: verseStart,
+                    verseEnd: verseEnd,
+                  ),
+                );
+          }
+          ScribesToast.show(
+            context,
+            'Inserted Scripture: $refStr',
+            colors,
+            icon: HugeIcons.strokeRoundedBookOpen01,
+          );
+        },
+      );
+    }
   }
 }

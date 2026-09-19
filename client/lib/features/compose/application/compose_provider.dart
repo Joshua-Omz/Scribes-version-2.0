@@ -172,7 +172,15 @@ class ComposeNotifier extends Notifier<ComposeState> {
 
   void onDocumentChanged(QuillController controller) {
     _lastController = controller;
-    _triggerAutosave();
+
+    final newDelta = controller.document.toDelta().toJson();
+    final isContentDifferent =
+        state.contentDelta == null ||
+        jsonEncode(state.contentDelta) != jsonEncode(newDelta);
+
+    if (isContentDifferent) {
+      _triggerAutosave();
+    }
   }
 
   void syncContent(QuillController controller) {
@@ -195,10 +203,6 @@ class ComposeNotifier extends Notifier<ComposeState> {
   }
 
   Future<void> _saveDraftLocally([QuillController? controller]) async {
-    state = state.copyWith(isSaving: true);
-
-    final repo = ref.read(draftRepositoryProvider);
-
     List<dynamic>? deltaJson =
         controller?.document.toDelta().toJson() ?? state.contentDelta;
     deltaJson ??= [];
@@ -215,6 +219,20 @@ class ComposeNotifier extends Notifier<ComposeState> {
       }
       plainText = buf.toString();
     }
+
+    // Do not save completely empty drafts triggered by focus/selection toggles
+    if (state.title.trim().isEmpty &&
+        plainText.trim().isEmpty &&
+        state.caption.trim().isEmpty &&
+        state.tags.isEmpty &&
+        state.scriptureRefs.isEmpty) {
+      state = state.copyWith(isSaving: false);
+      return;
+    }
+
+    state = state.copyWith(isSaving: true);
+
+    final repo = ref.read(draftRepositoryProvider);
 
     final excerptText = plainText.length > 100
         ? '${plainText.substring(0, 100)}...'

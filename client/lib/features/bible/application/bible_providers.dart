@@ -1,14 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:scribes/main.dart';
 import '../data/bible_repository.dart';
 import '../domain/bible_models.dart';
 
+const _kBibleTranslationKey = 'scribes_bible_selected_translation';
+
 class SelectedTranslationNotifier extends Notifier<String> {
   @override
-  String build() => 'BSB';
+  String build() {
+    return sharedPrefs.getString(_kBibleTranslationKey) ?? 'BSB';
+  }
 
   void setTranslation(String translation) {
     state = translation;
+    sharedPrefs.setString(_kBibleTranslationKey, translation);
   }
 }
 
@@ -218,20 +224,49 @@ class BibleReaderSettings {
   }
 }
 
+const _kBibleFontSizeKey = 'scribes_bible_font_size';
+const _kBibleIsSerifKey = 'scribes_bible_is_serif';
+const _kBibleIsVerseByVerseKey = 'scribes_bible_is_verse_by_verse';
+const _kBibleLineSpacingKey = 'scribes_bible_line_spacing';
+
 class BibleReaderSettingsNotifier extends Notifier<BibleReaderSettings> {
   @override
-  BibleReaderSettings build() => const BibleReaderSettings();
+  BibleReaderSettings build() {
+    final fontSize = sharedPrefs.getDouble(_kBibleFontSizeKey) ?? 22.0;
+    final isSerif = sharedPrefs.getBool(_kBibleIsSerifKey) ?? true;
+    final isVerseByVerse =
+        sharedPrefs.getBool(_kBibleIsVerseByVerseKey) ?? false;
+    final lineSpacing = sharedPrefs.getDouble(_kBibleLineSpacingKey) ?? 1.9;
+
+    return BibleReaderSettings(
+      fontSize: fontSize,
+      isSerif: isSerif,
+      isVerseByVerse: isVerseByVerse,
+      lineSpacing: lineSpacing,
+    );
+  }
 
   void setFontSize(double size) {
-    state = state.copyWith(fontSize: size.clamp(16.0, 30.0));
+    final clamped = size.clamp(16.0, 30.0);
+    state = state.copyWith(fontSize: clamped);
+    sharedPrefs.setDouble(_kBibleFontSizeKey, clamped);
   }
 
   void toggleFontFamily() {
-    state = state.copyWith(isSerif: !state.isSerif);
+    final next = !state.isSerif;
+    state = state.copyWith(isSerif: next);
+    sharedPrefs.setBool(_kBibleIsSerifKey, next);
   }
 
   void toggleLayout() {
-    state = state.copyWith(isVerseByVerse: !state.isVerseByVerse);
+    final next = !state.isVerseByVerse;
+    state = state.copyWith(isVerseByVerse: next);
+    sharedPrefs.setBool(_kBibleIsVerseByVerseKey, next);
+  }
+
+  void setLineSpacing(double spacing) {
+    state = state.copyWith(lineSpacing: spacing);
+    sharedPrefs.setDouble(_kBibleLineSpacingKey, spacing);
   }
 }
 

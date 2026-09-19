@@ -775,12 +775,14 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
             height: lineHeight,
             letterSpacing: 0.35,
             color: colors.primaryText,
+            fontWeight: FontWeight.w400,
           )
         : GoogleFonts.dmSans(
             fontSize: fontSize,
             height: lineHeight,
             letterSpacing: 0.1,
             color: colors.primaryText,
+            fontWeight: FontWeight.w500,
           );
 
     return Column(

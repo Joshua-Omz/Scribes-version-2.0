@@ -1,5 +1,4 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,8 +25,9 @@ void main() async {
   try {
     const webClientId =
         '773705773175-i6dnlubf2aqcae5j4ltkmlkssf0nnkhq.apps.googleusercontent.com';
+    final isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
     await GoogleSignIn.instance.initialize(
-      clientId: (kIsWeb || (!kIsWeb && Platform.isIOS)) ? webClientId : null,
+      clientId: (kIsWeb || isIOS) ? webClientId : null,
       serverClientId: webClientId,
     );
   } catch (e) {

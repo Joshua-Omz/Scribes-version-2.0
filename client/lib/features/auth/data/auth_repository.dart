@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/storage/secure_storage.dart';
@@ -38,7 +39,9 @@ class AuthRepository {
     final token = response['token'] as String;
     await _storage.saveToken(token);
 
-    return User.fromJson(response['user'] as Map<String, dynamic>);
+    final user = User.fromJson(response['user'] as Map<String, dynamic>);
+    await _storage.saveUser(jsonEncode(user.toJson()));
+    return user;
   }
 
   Future<User> login({required String email, required String password}) async {
@@ -47,7 +50,9 @@ class AuthRepository {
     final token = response['token'] as String;
     await _storage.saveToken(token);
 
-    return User.fromJson(response['user'] as Map<String, dynamic>);
+    final user = User.fromJson(response['user'] as Map<String, dynamic>);
+    await _storage.saveUser(jsonEncode(user.toJson()));
+    return user;
   }
 
   Future<User> loginWithGoogle(String idToken) async {
@@ -56,16 +61,32 @@ class AuthRepository {
     final token = response['token'] as String;
     await _storage.saveToken(token);
 
-    return User.fromJson(response['user'] as Map<String, dynamic>);
+    final user = User.fromJson(response['user'] as Map<String, dynamic>);
+    await _storage.saveUser(jsonEncode(user.toJson()));
+    return user;
   }
 
   Future<User> getMe() async {
     final response = await _api.getMe();
-    return User.fromJson(response);
+    final user = User.fromJson(response);
+    await _storage.saveUser(jsonEncode(user.toJson()));
+    return user;
+  }
+
+  Future<User?> getCachedUser() async {
+    final raw = await _storage.getCachedUser();
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return User.fromJson(decoded);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> logout() async {
     await _storage.deleteToken();
+    await _storage.deleteCachedUser();
   }
 
   Future<bool> hasToken() async {
@@ -87,12 +108,16 @@ class AuthRepository {
       isChurch: isChurch,
       avatarUrl: avatarUrl,
     );
-    return User.fromJson(response);
+    final user = User.fromJson(response);
+    await _storage.saveUser(jsonEncode(user.toJson()));
+    return user;
   }
 
   Future<User> updateTags(List<String> tags) async {
     final response = await _api.updateTags(tags);
-    return User.fromJson(response);
+    final user = User.fromJson(response);
+    await _storage.saveUser(jsonEncode(user.toJson()));
+    return user;
   }
 
   Future<void> updateEmail({

@@ -16,22 +16,28 @@ class PostRichText extends StatefulWidget {
 
 class _PostRichTextState extends State<PostRichText> {
   late final QuillController _controller;
+  late final FocusNode _focusNode;
   String? _lastTappedRef;
   DateTime? _lastTapTime;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode(canRequestFocus: false);
     Document document;
     try {
-      document = Document.fromJson(widget.content);
+      if (widget.content.isNotEmpty) {
+        document = Document.fromJson(widget.content);
+      } else {
+        document = Document();
+      }
     } catch (_) {
       document = Document();
     }
 
     _controller = QuillController(
       document: document,
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: const TextSelection.collapsed(offset: -1),
       readOnly: true,
     );
     _controller.addListener(_onSelectionChanged);
@@ -42,7 +48,11 @@ class _PostRichTextState extends State<PostRichText> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.content != widget.content) {
       try {
-        _controller.document = Document.fromJson(widget.content);
+        if (widget.content.isNotEmpty) {
+          _controller.document = Document.fromJson(widget.content);
+        } else {
+          _controller.document = Document();
+        }
       } catch (_) {}
     }
   }
@@ -51,6 +61,7 @@ class _PostRichTextState extends State<PostRichText> {
   void dispose() {
     _controller.removeListener(_onSelectionChanged);
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -79,11 +90,15 @@ class _PostRichTextState extends State<PostRichText> {
 
     return QuillEditor.basic(
       controller: _controller,
+      focusNode: _focusNode,
       config: QuillEditorConfig(
         scrollable: false,
         autoFocus: false,
         expands: false,
         padding: EdgeInsets.zero,
+        showCursor: false,
+        enableSelectionToolbar: false,
+        readOnlyMouseCursor: SystemMouseCursors.basic,
         customStyleBuilder: (Attribute attribute) {
           if (attribute.key == 'scripture') {
             return ScribesQuillScriptureHelper.buildScriptureTextStyle(colors);

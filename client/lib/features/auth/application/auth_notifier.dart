@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:drift/drift.dart';
+import 'package:dio/dio.dart';
 
 import '../data/auth_repository.dart';
 import '../domain/user.dart';
@@ -9,6 +10,7 @@ import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/network/network_sync_notifier.dart';
+import '../../../core/network/api_exception.dart';
 
 part 'auth_notifier.g.dart';
 
@@ -31,10 +33,44 @@ class AuthNotifier extends _$AuthNotifier {
       _triggerSync(user.id);
       return user;
     } catch (e) {
-      // If fetching the profile fails (e.g., token expired/invalid on server),
-      // we might want to log out or just return null.
-      // For now, if /me fails, we assume we're not authenticated.
-      await repo.logout();
+      // Check if this error is an explicit 401 or 403 (unauthorized / token invalid)
+      bool isUnauthorized = false;
+      if (e is DioException) {
+        final statusCode = e.response?.statusCode;
+        if (statusCode == 401 || statusCode == 403) {
+          isUnauthorized = true;
+        } else if (e.error is ApiException) {
+          final apiStatus = (e.error as ApiException).statusCode;
+          if (apiStatus == 401 || apiStatus == 403) {
+            isUnauthorized = true;
+          }
+        }
+      } else if (e is ApiException) {
+        if (e.statusCode == 401 || e.statusCode == 403) {
+          isUnauthorized = true;
+        }
+      }
+
+      if (isUnauthorized) {
+        debugPrint('[AuthNotifier] Token invalid or expired (401/403). Logging out.');
+        await repo.logout();
+        return null;
+      }
+
+      // Network unreachable, offline, timeout, socket error:
+      // Preserve session and restore the cached user profile!
+      final cachedUser = await repo.getCachedUser();
+      if (cachedUser != null) {
+        debugPrint(
+          '[AuthNotifier] Network unreachable; restored cached user ${cachedUser.handle}.',
+        );
+        await _claimGuestRecords(cachedUser.id);
+        return cachedUser;
+      }
+
+      debugPrint(
+        '[AuthNotifier] Network unavailable and no cached profile found. Preserving token.',
+      );
       return null;
     }
   }

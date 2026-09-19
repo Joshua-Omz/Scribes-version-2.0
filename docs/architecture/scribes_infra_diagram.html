@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scribes High-Level Infrastructure Map</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg: #090a0d;
+      --card-bg: #12141a;
+      --card-hover: #191c24;
+      --border-color: #262935;
+      --gold: #d4a359;
+      --gold-muted: #8c6b32;
+      --blue: #38bdf8;
+      --green: #34d399;
+      --purple: #a78bfa;
+      --orange: #fb923c;
+    }
+    body {
+      background-color: var(--bg);
+      color: #f1f5f9;
+      user-select: none;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .canvas-grid {
+      background-size: 32px 32px;
+      background-image: 
+        radial-gradient(circle, #222634 1px, transparent 1px);
+    }
+    .node-card {
+      transition: all 0.15s ease-out;
+    }
+    .node-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 163, 89, 0.15);
+      border-color: rgba(212, 163, 89, 0.4);
+    }
+    .tier-header {
+      letter-spacing: 0.12em;
+    }
+    /* Scrollbar styling for drawer */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #12141a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b3040;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col antialiased">
+
+  <!-- Top Navigation / Control Bar -->
+  <header class="h-14 bg-[#0e1017] border-b border-[#212532] px-4 flex items-center justify-between z-30 shrink-0 shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4a359] to-[#8c6b32] flex items-center justify-center shadow-md shadow-[#d4a359]/20 font-bold text-black text-sm">
+        Sc
+      </div>
+      <div>
+        <h1 class="text-sm font-semibold tracking-wide text-slate-100 flex items-center gap-2">
+          Scribes System Architecture
+          <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v2.0 / v3.0 Media</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">Interactive Infrastructure Map · Go Backend ➔ Transport Bridge ➔ Flutter Client</p>
+      </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <input id="searchInput" type="text" placeholder="Search components (e.g. pgvector, Drift, SSE)..." 
+               class="w-64 bg-[#161922] border border-[#2b3040] text-xs rounded-lg px-3 py-1.5 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#d4a359] transition-colors" />
+      </div>
+
+      <div class="flex items-center bg-[#161922] p-1 rounded-lg border border-[#2b3040] text-xs">
+        <button onclick="filterTier('all')" class="tier-filter-btn px-2.5 py-1 rounded text-slate-300 font-medium hover:text-white bg-[#222736] text-white" data-tier="all">All Tiers</button>
+        <button onclick="filterTier('backend')" class="tier-filter-btn px-2.5 py-1 rounded text-slate-400 font-medium hover:text-white" data-tier="backend">Backend</button>
+        <button onclick="filterTier('bridge')" class="tier-filter-btn px-2.5 py-1 rounded text-slate-400 font-medium hover:text-white" data-tier="bridge">Bridge</button>
+        <button onclick="filterTier('frontend')" class="tier-filter-btn px-2.5 py-1 rounded text-slate-400 font-medium hover:text-white" data-tier="frontend">Frontend</button>
+      </div>
+
+      <!-- Zoom and Reset Buttons -->
+      <div class="flex items-center gap-1 bg-[#161922] p-1 rounded-lg border border-[#2b3040]">
+        <button onclick="zoomBy(0.15)" title="Zoom In" class="w-7 h-7 flex items-center justify-center rounded text-slate-300 hover:bg-[#222736] hover:text-white font-bold text-base transition-colors">+</button>
+        <button onclick="zoomBy(-0.15)" title="Zoom Out" class="w-7 h-7 flex items-center justify-center rounded text-slate-300 hover:bg-[#222736] hover:text-white font-bold text-base transition-colors">-</button>
+        <button onclick="resetZoom()" title="Reset View" class="px-2 h-7 flex items-center justify-center rounded text-slate-300 hover:bg-[#222736] hover:text-white text-xs font-medium transition-colors">Reset</button>
+        <span id="zoomLevel" class="text-[11px] font-mono text-slate-400 px-2">100%</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport Area -->
+  <div class="flex-1 relative overflow-hidden canvas-grid" id="viewport">
+    
+    <!-- Floating Quick Instructions -->
+    <div class="absolute bottom-4 left-4 z-20 bg-[#0e1017]/90 backdrop-blur border border-[#262b3b] rounded-lg px-3 py-2 text-[11px] text-slate-400 flex items-center gap-3 shadow-xl pointer-events-none">
+      <span class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 bg-[#1a1f2c] border border-[#2c3345] rounded text-slate-300">Scroll</kbd> Zoom</span>
+      <span class="text-slate-600">•</span>
+      <span class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 bg-[#1a1f2c] border border-[#2c3345] rounded text-slate-300">Click + Drag</kbd> Pan Canvas</span>
+      <span class="text-slate-600">•</span>
+      <span class="flex items-center gap-1.5"><kbd class="px-1.5 py-0.5 bg-[#1a1f2c] border border-[#2c3345] rounded text-slate-300">Click Card</kbd> Inspect Details</span>
+    </div>
+
+    <!-- Pannable & Zoomable Transform Container -->
+    <div id="panContainer" class="absolute origin-top-left" style="transform: matrix(1, 0, 0, 1, 40, 30); will-change: transform;">
+      
+      <!-- Connectors SVG Overlay behind nodes -->
+      <svg id="connectorLines" class="absolute top-0 left-0 pointer-events-none z-0" width="2400" height="1500">
+        <defs>
+          <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8" />
+            <stop offset="50%" stop-color="#d4a359" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#34d399" stop-opacity="0.8" />
+          </linearGradient>
+          <linearGradient id="grad-sse" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#fb923c" stop-opacity="0.7" />
+            <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.9" />
+          </linearGradient>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#d4a359" />
+          </marker>
+        </defs>
+
+        <!-- Dynamic connecting curves -->
+        <!-- Backend to Bridge Flow -->
+        <path d="M 590 320 C 650 320, 670 320, 730 320" fill="none" stroke="url(#grad-gold)" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow)" />
+        <path d="M 590 480 C 650 480, 670 480, 730 480" fill="none" stroke="url(#grad-gold)" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow)" />
+        <path d="M 590 620 C 650 620, 670 620, 730 620" fill="none" stroke="url(#grad-sse)" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow)" />
+        <path d="M 590 740 C 660 740, 670 740, 730 740" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+
+        <!-- Bridge to Frontend Flow -->
+        <path d="M 1250 320 C 1310 320, 1330 320, 1390 320" fill="none" stroke="url(#grad-gold)" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow)" />
+        <path d="M 1250 480 C 1310 480, 1330 480, 1390 480" fill="none" stroke="url(#grad-gold)" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow)" />
+        <path d="M 1250 620 C 1310 620, 1330 620, 1390 620" fill="none" stroke="url(#grad-sse)" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow)" />
+        <path d="M 1250 740 C 1310 740, 1330 740, 1390 740" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+      </svg>
+
+      <!-- 3 Columns Architecture Grid -->
+      <div class="flex gap-16 relative z-10 pb-20">
+
+        <!-- ================= COLUMN 1: BACKEND ================= -->
+        <div id="tier-backend" class="w-[530px] flex flex-col gap-6 shrink-0 tier-block">
+          <div class="flex items-center justify-between border-b border-sky-500/30 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-3 h-3 rounded-full bg-sky-400 shadow-sm shadow-sky-400"></div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-sky-400 tier-header">1. Backend Infrastructure</h2>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400 bg-sky-950/40 border border-sky-800/40 px-2 py-0.5 rounded">Go (Gin) + PostgreSQL</span>
+          </div>
+
+          <!-- Section: Persistence -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Persistence & Data Tier</span>
+              <span class="text-[10px] text-slate-500">Relational & Object Store</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Node: PostgreSQL -->
+              <div onclick="showDetails('postgres')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-3 hover:border-sky-400/50">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-sky-300">PostgreSQL 16+</span>
+                  <span class="text-[9px] px-1.5 py-0.2 bg-sky-900/40 text-sky-300 rounded font-mono">SQL</span>
+                </div>
+                <p class="text-[11px] text-slate-400 line-clamp-2">Master records, users, posts, drafts, notes, social graphs & foreign keys.</p>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">BSB Bible</span>
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">pgvector</span>
+                </div>
+              </div>
+
+              <!-- Node: Cloudflare R2 -->
+              <div onclick="showDetails('r2')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-3 hover:border-sky-400/50">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-sky-300">Cloudflare R2 / S3</span>
+                  <span class="text-[9px] px-1.5 py-0.2 bg-amber-900/40 text-amber-300 rounded font-mono">BLOB</span>
+                </div>
+                <p class="text-[11px] text-slate-400 line-clamp-2">Direct asset bucket for cover images, passage panels, and audio tracks.</p>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">Presigned URLs</span>
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">Max 5MB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Asynchronous Workers -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Background Daemon Workers</span>
+              <span class="text-[10px] text-slate-500">Go Goroutines</span>
+            </div>
+            <div class="flex flex-col gap-2.5">
+              <div onclick="showDetails('embeddingWorker')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-2.5 flex items-center justify-between hover:border-sky-400/50">
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">Embedding & Search Worker</div>
+                  <div class="text-[11px] text-slate-400">Asynchronously calculates vector embeddings for newly published posts</div>
+                </div>
+                <span class="text-[10px] text-sky-400 font-mono bg-sky-950/40 px-2 py-0.5 rounded border border-sky-800/40">pgvector</span>
+              </div>
+
+              <div onclick="showDetails('engagementWorker')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-2.5 flex items-center justify-between hover:border-sky-400/50">
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">Engagement Telemetry Worker</div>
+                  <div class="text-[11px] text-slate-400">Refreshes materialized views using distinct Amen / Insightful / Thought-Provoking signals</div>
+                </div>
+                <span class="text-[10px] text-purple-400 font-mono bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/40">Cron</span>
+              </div>
+
+              <div onclick="showDetails('notifWorker')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-2.5 flex items-center justify-between hover:border-sky-400/50">
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">Notification Worker</div>
+                  <div class="text-[11px] text-slate-400">Fan-out broadcast channels, retention pruning, unread counter synchronization</div>
+                </div>
+                <span class="text-[10px] text-orange-400 font-mono bg-orange-950/40 px-2 py-0.5 rounded border border-orange-800/40">Channels</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Go Engine & Handlers -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Go HTTP Engine (Gin)</span>
+              <span class="text-[10px] text-slate-500">Router ➔ Service ➔ Repo</span>
+            </div>
+
+            <!-- Middleware pipeline -->
+            <div class="mb-3 p-2 bg-[#171b26] border border-[#283044] rounded-lg flex items-center justify-between text-[11px]">
+              <span class="text-slate-400 font-mono">Guards:</span>
+              <span onclick="showDetails('jwtGuard')" class="cursor-pointer text-amber-400 hover:underline">ValidateJWT(Secret)</span>
+              <span class="text-slate-600">➔</span>
+              <span onclick="showDetails('adminGuard')" class="cursor-pointer text-red-400 hover:underline">RequireRole("super_admin")</span>
+              <span class="text-slate-600">➔</span>
+              <span class="text-slate-300">CORS</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div onclick="showDetails('authHandler')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-sky-400/50">
+                <span class="font-semibold text-slate-200">Auth & Users</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">/auth/login, /register, /google</p>
+              </div>
+              <div onclick="showDetails('postHandler')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-sky-400/50">
+                <span class="font-semibold text-slate-200">Post & Draft</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Quill Delta JSONB, Versions</p>
+              </div>
+              <div onclick="showDetails('syncHandler')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-sky-400/50">
+                <span class="font-semibold text-slate-200">Sync Handler</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">GET /sync, POST /sync/push</p>
+              </div>
+              <div onclick="showDetails('bibleHandler')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-sky-400/50">
+                <span class="font-semibold text-slate-200">Public Bible</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Self-hosted BSB read path</p>
+              </div>
+              <div onclick="showDetails('socialHandler')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-sky-400/50">
+                <span class="font-semibold text-slate-200">Social Graph</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Reactions, Comments, Follow</p>
+              </div>
+              <div onclick="showDetails('mediaHandler')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-sky-400/50">
+                <span class="font-semibold text-slate-200">Media Gateway</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Presigned S3/R2 generation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ================= COLUMN 2: THE BRIDGE ================= -->
+        <div id="tier-bridge" class="w-[520px] flex flex-col gap-6 shrink-0 tier-block">
+          <div class="flex items-center justify-between border-b border-amber-500/30 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-3 h-3 rounded-full bg-amber-400 shadow-sm shadow-amber-400"></div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400 tier-header">2. The Bridge</h2>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded">Transport & Sync Layer</span>
+          </div>
+
+          <!-- Section: Transport Protocols -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Transport Protocols & Client</span>
+              <span class="text-[10px] text-slate-500">HTTP/2 & SSE</span>
+            </div>
+
+            <!-- Dio Client Card -->
+            <div onclick="showDetails('dioClient')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-3.5 mb-3 hover:border-amber-400/50">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-amber-300">Dio HTTP Client + Interceptors</span>
+                <span class="text-[9px] px-1.5 py-0.2 bg-amber-900/40 text-amber-300 rounded font-mono">core/network</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Centralized HTTP gateway with Bearer JWT injection, base URL control, timeout limits, and unified ApiException normalization.</p>
+              <div class="mt-2.5 flex items-center gap-2 text-[10px] text-slate-300">
+                <span class="bg-[#1e2436] px-2 py-0.5 rounded">Auto Bearer Header</span>
+                <span class="bg-[#1e2436] px-2 py-0.5 rounded">Retry Interceptor</span>
+                <span class="bg-[#1e2436] px-2 py-0.5 rounded">RFC 7807 Error Maps</span>
+              </div>
+            </div>
+
+            <!-- SSE Stream Card -->
+            <div onclick="showDetails('sseStream')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-3.5 hover:border-amber-400/50">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-orange-300">SSE Live Stream Pipe</span>
+                <span class="text-[9px] px-1.5 py-0.2 bg-orange-900/40 text-orange-300 rounded font-mono">Stream</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Persistent unidirectional pipe listening to <code class="text-orange-300 font-mono text-[10px]">GET /notifications/stream</code> with zero heartbeat polling overhead.</p>
+            </div>
+          </div>
+
+          <!-- Section: Offline Sync Engine -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Bidirectional Offline Sync Engine</span>
+              <span class="text-[10px] text-slate-500">Protocol Invariant</span>
+            </div>
+
+            <div class="flex flex-col gap-2.5">
+              <div onclick="showDetails('syncPull')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-2.5 hover:border-amber-400/50">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-slate-200">Pull Routine: <code class="text-amber-300 font-mono">GET /sync?seq=N</code></span>
+                  <span class="text-[9px] text-emerald-400 font-mono">PULL</span>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-1">Fetches all remote mutations committed after client sequence N with max_sequence watermark.</div>
+              </div>
+
+              <div onclick="showDetails('syncPush')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-2.5 hover:border-amber-400/50">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-slate-200">Batch Push: <code class="text-amber-300 font-mono">POST /sync/push</code></span>
+                  <span class="text-[9px] text-blue-400 font-mono">PUSH</span>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-1">Batches offline mutations locally; never fires per-keystroke REST calls. Server assigns sequence atomically via <code class="text-amber-300 font-mono text-[10px]">nextval('global_sequence')</code>.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Contract Normalization -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Serialization & Invariants</span>
+              <span class="text-[10px] text-slate-500">Contracts</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div onclick="showDetails('quillDelta')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2.5 rounded hover:border-amber-400/50">
+                <span class="font-semibold text-slate-200">Quill Delta JSONB</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Guards empty [] deltas with Document.basic() fallback.</p>
+              </div>
+              <div onclick="showDetails('reactionContract')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2.5 rounded hover:border-amber-400/50">
+                <span class="font-semibold text-slate-200">Distinct Reactions</span>
+                <p class="text-[10px] text-slate-400 mt-0.5">Amen, Insightful, Thought-Provoking kept uncollapsed.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ================= COLUMN 3: FRONTEND ================= -->
+        <div id="tier-frontend" class="w-[530px] flex flex-col gap-6 shrink-0 tier-block">
+          <div class="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400"></div>
+              <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400 tier-header">3. Frontend Infrastructure</h2>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400 bg-emerald-950/40 border border-emerald-800/40 px-2 py-0.5 rounded">Flutter + Drift + Riverpod</span>
+          </div>
+
+          <!-- Section: Local Storage -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Local-First Storage & Cache</span>
+              <span class="text-[10px] text-slate-500">Offline SQLite & Tokens</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Node: Drift -->
+              <div onclick="showDetails('driftDb')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-3 hover:border-emerald-400/50">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-emerald-300">Drift (SQLite Engine)</span>
+                  <span class="text-[9px] px-1.5 py-0.2 bg-emerald-900/40 text-emerald-300 rounded font-mono">Drift</span>
+                </div>
+                <p class="text-[11px] text-slate-400 line-clamp-2">Reactive local tables for Notes, Drafts, and cached Posts with sync status flags.</p>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">is_synced: bool</span>
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">Multiplatform</span>
+                </div>
+              </div>
+
+              <!-- Node: Secure Storage -->
+              <div onclick="showDetails('secureStorage')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] rounded-lg p-3 hover:border-emerald-400/50">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold text-emerald-300">Flutter Secure Storage</span>
+                  <span class="text-[9px] px-1.5 py-0.2 bg-purple-900/40 text-purple-300 rounded font-mono">Keystore</span>
+                </div>
+                <p class="text-[11px] text-slate-400 line-clamp-2">Encrypted JWT tokens & persistent device guest ID (<code class="text-emerald-300 font-mono text-[10px]">getOrCreateGuestId</code>).</p>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  <span class="text-[9px] px-1.5 py-0.5 bg-[#1d2233] text-slate-300 rounded font-mono">Guest Claiming</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Cache Optimization -->
+            <div onclick="showDetails('imageCache')" class="node-card cursor-pointer mt-3 bg-[#151824] border border-[#252b3d] rounded-lg p-2.5 flex items-center justify-between hover:border-emerald-400/50">
+              <div>
+                <span class="text-xs font-semibold text-slate-200">ScribesCacheManager (memCacheWidth: 800)</span>
+                <p class="text-[10px] text-slate-400">Forces in-memory image downsampling before painting to eliminate UI scroll stutter.</p>
+              </div>
+              <span class="text-[9px] text-emerald-400 font-mono bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">Zero-Jank</span>
+            </div>
+          </div>
+
+          <!-- Section: Riverpod State Architecture -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Riverpod State Management</span>
+              <span class="text-[10px] text-slate-500">AsyncNotifier & Isolation</span>
+            </div>
+            <div class="flex flex-col gap-2 text-xs">
+              <div onclick="showDetails('authNotifier')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2.5 rounded flex items-center justify-between hover:border-emerald-400/50">
+                <div>
+                  <span class="font-semibold text-slate-200">AuthNotifier & Account Claiming</span>
+                  <p class="text-[10px] text-slate-400">Atomic Drift transaction re-parents guest drafts to user ID on login.</p>
+                </div>
+                <span class="text-[9px] font-mono text-emerald-300 bg-[#1f2838] px-2 py-0.5 rounded">Tx Claim</span>
+              </div>
+
+              <div onclick="showDetails('feedNotifier')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2.5 rounded flex items-center justify-between hover:border-emerald-400/50">
+                <div>
+                  <span class="font-semibold text-slate-200">Feed & Detail Providers (.select())</span>
+                  <p class="text-[10px] text-slate-400">Watches only item-specific properties so entire lists don't rebuild on like.</p>
+                </div>
+                <span class="text-[9px] font-mono text-emerald-300 bg-[#1f2838] px-2 py-0.5 rounded">Granular</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Presentation Screens -->
+          <div class="bg-[#10121a]/90 backdrop-blur border border-[#1e2230] rounded-xl p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Presentation & Screens</span>
+              <span class="text-[10px] text-slate-500">GoRouter & Widgets</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+              <div onclick="showDetails('feedScreen')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-emerald-400/50">
+                <span class="font-semibold text-slate-200">Magazine Feed</span>
+                <p class="text-[9px] text-slate-400 mt-1">Author ➔ 16:9 Cover ➔ Excerpt ➔ Verse Chips</p>
+              </div>
+              <div onclick="showDetails('composeScreen')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-emerald-400/50">
+                <span class="font-semibold text-slate-200">Quill Canvas</span>
+                <p class="text-[9px] text-slate-400 mt-1">Rich-text authoring & offline draft autosave</p>
+              </div>
+              <div onclick="showDetails('exportScreen')" class="node-card cursor-pointer bg-[#151824] border border-[#252b3d] p-2 rounded hover:border-emerald-400/50">
+                <span class="font-semibold text-slate-200">PDF Manuscript</span>
+                <p class="text-[9px] text-slate-400 mt-1">Illuminated manuscript export pipeline</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Inspector Side Drawer -->
+  <aside id="inspectorDrawer" class="fixed top-14 right-0 bottom-0 w-96 bg-[#0f1118]/95 backdrop-blur-md border-l border-[#212636] z-40 p-5 shadow-2xl flex flex-col translate-x-full transition-transform duration-200 ease-out">
+    <div class="flex items-center justify-between border-b border-[#252c3f] pb-3 mb-4">
+      <div class="flex items-center gap-2">
+        <span id="drawerBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-900/40 text-sky-400 border border-sky-800/40">TIER</span>
+        <h3 id="drawerTitle" class="text-sm font-bold text-slate-100">Component Details</h3>
+      </div>
+      <button onclick="closeDetails()" class="text-slate-400 hover:text-white p-1 rounded hover:bg-[#1a1f2e] text-sm">✕</button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
+      <div>
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Architecture & Purpose</span>
+        <p id="drawerDesc" class="text-slate-300 leading-relaxed"></p>
+      </div>
+
+      <div>
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Key Endpoints / File Locations</span>
+        <div id="drawerPaths" class="bg-[#141722] border border-[#22283a] rounded-lg p-2.5 font-mono text-[11px] text-amber-300/90 break-all space-y-1"></div>
+      </div>
+
+      <div>
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">System Invariants & Safeguards</span>
+        <ul id="drawerInvariants" class="list-disc list-inside space-y-1 text-slate-300"></ul>
+      </div>
+
+      <div>
+        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Engineering Trade-offs</span>
+        <p id="drawerTradeoffs" class="text-slate-400 leading-relaxed bg-[#141722] p-2.5 rounded-lg border border-[#22283a]"></p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Interactive JavaScript Engine -->
+  <script>
+    // State management for Pan & Zoom
+    let scale = 0.9;
+    let pointX = 30;
+    let pointY = 20;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const panContainer = document.getElementById('panContainer');
+    const viewport = document.getElementById('viewport');
+    const zoomLevelEl = document.getElementById('zoomLevel');
+
+    function updateTransform() {
+      panContainer.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${pointX}, ${pointY})`;
+      zoomLevelEl.textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.node-card') || e.target.closest('button') || e.target.closest('input')) return;
+      isDragging = true;
+      startX = e.clientX - pointX;
+      startY = e.clientY - pointY;
+      viewport.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      pointX = e.clientX - startX;
+      pointY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      viewport.style.cursor = 'default';
+    });
+
+    // Mouse Wheel Zoom
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const xs = (e.clientX - pointX) / scale;
+      const ys = (e.clientY - pointY) / scale;
+      const delta = -e.deltaY;
+      
+      if (delta > 0) {
+        scale = Math.min(scale * 1.08, 2.5);
+      } else {
+        scale = Math.max(scale / 1.08, 0.4);
+      }
+      
+      pointX = e.clientX - xs * scale;
+      pointY = e.clientY - ys * scale;
+      updateTransform();
+    }, { passive: false });
+
+    function zoomBy(factor) {
+      scale = Math.min(Math.max(scale + factor, 0.4), 2.5);
+      updateTransform();
+    }
+
+    function resetZoom() {
+      scale = 0.9;
+      pointX = 30;
+      pointY = 20;
+      updateTransform();
+    }
+
+    // Filter by tier
+    function filterTier(tier) {
+      document.querySelectorAll('.tier-filter-btn').forEach(btn => {
+        if (btn.dataset.tier === tier) {
+          btn.classList.add('bg-[#222736]', 'text-white');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('bg-[#222736]', 'text-white');
+          btn.classList.add('text-slate-400');
+        }
+      });
+
+      const blocks = document.querySelectorAll('.tier-block');
+      blocks.forEach(block => {
+        if (tier === 'all' || block.id === `tier-${tier}`) {
+          block.style.opacity = '1';
+          block.style.pointerEvents = 'auto';
+        } else {
+          block.style.opacity = '0.2';
+          block.style.pointerEvents = 'none';
+        }
+      });
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.node-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        if (!term || text.includes(term)) {
+          card.style.opacity = '1';
+          card.style.borderColor = term ? 'rgba(212, 163, 89, 0.8)' : '';
+        } else {
+          card.style.opacity = '0.2';
+          card.style.borderColor = '';
+        }
+      });
+    });
+
+    // Inspector Drawer Database
+    const componentData = {
+      postgres: {
+        badge: "BACKEND · PERSISTENCE",
+        title: "PostgreSQL 16+ & pgvector",
+        desc: "The single authoritative truth for all relational models. Hosts core tables for users, posts, drafts, notes, versions, social reactions, and the complete self-hosted Berean Standard Bible (BSB) text.",
+        paths: ["backend/migrations/000001_users.up.sql", "backend/migrations/000002_content.up.sql", "backend/internal/bible/repository.go"],
+        invariants: [
+          "Never pass a zero-vector to pgvector during hybrid search; pass nil for fallback lexical scoring.",
+          "Prevent N+1 queries by using bulk IN statements and in-memory hash mappings.",
+          "Self-hosted scripture reads directly from bible_verses table with zero third-party API dependencies."
+        ],
+        tradeoffs: "High relational integrity and fast local scripture lookups at the expense of an upfront seed footprint (~31,000 verses)."
+      },
+      r2: {
+        badge: "BACKEND · OBJECT STORAGE",
+        title: "Cloudflare R2 / S3 Storage",
+        desc: "High-volume binary store handling cover images, passage panels, and audio accompaniment tracks. Files bypass the Go server directly.",
+        paths: ["backend/internal/storage/r2.go", "backend/internal/media/service.go"],
+        invariants: [
+          "Upload size strictly capped at 5MB per asset.",
+          "Files are only accepted in image/jpeg, image/png, or image/webp format.",
+          "No billing or tier gates; enforced by universal fair-use rate limiting."
+        ],
+        tradeoffs: "Requires a 2-step upload protocol (presign ➔ confirm) to maintain database metadata synchronization."
+      },
+      embeddingWorker: {
+        badge: "BACKEND · WORKER",
+        title: "Search & Embedding Worker",
+        desc: "Background Goroutine that picks up newly published or revised posts and calculates semantic embeddings asynchronously to ensure zero publish latency.",
+        paths: ["backend/internal/search/worker.go", "backend/cmd/api/main.go#L101"],
+        invariants: [
+          "Embeddings must never block the user's publication transaction.",
+          "Handles OpenAI / local embedding failures gracefully by falling back to full-text search."
+        ],
+        tradeoffs: "Post searchability has a minor eventual-consistency lag (~500ms to 2s) while the worker processes the queue."
+      },
+      engagementWorker: {
+        badge: "BACKEND · WORKER",
+        title: "Engagement Telemetry Worker",
+        desc: "Periodically refreshes materialized views that feed the Discover and For-You carousels, weighting interactions across distinct theological reaction types.",
+        paths: ["backend/internal/recommendation/worker.go", "backend/internal/recommendation/service.go"],
+        invariants: [
+          "Reactions are NEVER collapsed into a single generic 'like' counter.",
+          "Amen, Insightful, and Thought-Provoking reactions carry distinct analytical weight."
+        ],
+        tradeoffs: "Discover carousels refresh on a periodic cron cadence rather than instantly on every individual reaction."
+      },
+      notifWorker: {
+        badge: "BACKEND · WORKER",
+        title: "Notification Worker & Fan-Out",
+        desc: "Manages real-time event broadcasting channels and periodic pruning of expired notifications.",
+        paths: ["backend/internal/notification/worker.go", "backend/internal/notification/service.go"],
+        invariants: [
+          "Do NOT close() a subscriber channel on unsubscribe under an RLock to prevent panics on concurrent sends; simply delete from the subscriber map.",
+          "Bulk deletion endpoints must verify actor ownership."
+        ],
+        tradeoffs: "Channel maps are held in Go server memory; horizontal scaling across multiple instances requires a Redis pub/sub broker."
+      },
+      jwtGuard: {
+        badge: "BACKEND · SECURITY",
+        title: "ValidateJWT Middleware",
+        desc: "Inspects incoming Authorization Bearer headers, decodes HMAC-SHA256 tokens, and sets claims in the Gin context.",
+        paths: ["backend/internal/middleware/auth.go", "backend/pkg/token/jwt.go"],
+        invariants: [
+          "Public Bible endpoints (/bible/*) must remain strictly unprotected.",
+          "Session invalidation on client is reserved for 401/403 responses only, never network dropouts."
+        ],
+        tradeoffs: "Stateless tokens cannot be revoked before expiration without maintaining a token-denylist cache."
+      },
+      adminGuard: {
+        badge: "BACKEND · SECURITY",
+        title: "RequireRole('super_admin')",
+        desc: "Strict role barrier guarding category deprecation, user moderation, and audit review endpoints.",
+        paths: ["backend/internal/middleware/role.go", "backend/internal/server/router.go#L180"],
+        invariants: [
+          "All admin routes must be grouped under /admin and guarded with RequireRole('super_admin').",
+          "Never mount admin handlers directly to standard protected route groups."
+        ],
+        tradeoffs: "Hard-coded role strings require careful schema and code synchronization."
+      },
+      authHandler: {
+        badge: "BACKEND · HANDLER",
+        title: "Auth & Profile Service",
+        desc: "Handles user registration, password hashing (bcrypt), Google OAuth token verification, and user profile management.",
+        paths: ["backend/internal/auth/handler.go", "backend/internal/auth/service.go"],
+        invariants: [
+          "Passwords hashed with cost factor >= 12.",
+          "Guest claiming triggers account migration on the client."
+        ],
+        tradeoffs: "Bcrypt computation is CPU-intensive by design to resist brute-force attacks."
+      },
+      postHandler: {
+        badge: "BACKEND · HANDLER",
+        title: "Post & Content Engine",
+        desc: "Handles rich-text posts, drafts, immutable version history, and formal theological corrections.",
+        paths: ["backend/internal/post/handler.go", "backend/internal/post/service.go"],
+        invariants: [
+          "Passage posts are immutable once published; corrections must use the correction protocol.",
+          "PDF manuscript export is strictly reserved for standard posts, drafts, and notes."
+        ],
+        tradeoffs: "Version history creates duplicate JSONB rows over time in the database."
+      },
+      syncHandler: {
+        badge: "BACKEND · SYNC",
+        title: "Bidirectional Sync Handler",
+        desc: "Coordinates the pull and push synchronization endpoints, assigning server-side sequence watermarks.",
+        paths: ["backend/internal/sync/handler.go", "backend/internal/sync/service.go"],
+        invariants: [
+          "Sequence numbers MUST ALWAYS be assigned by the server via nextval('global_sequence').",
+          "Protocol MUST implement both GET /sync (pull) and POST /sync/push (push)."
+        ],
+        tradeoffs: "Offline clients cannot establish absolute global ordering until they connect and push to the central server."
+      },
+      bibleHandler: {
+        badge: "BACKEND · BIBLE",
+        title: "Public Bible Service",
+        desc: "Exposes self-hosted chapter, verse range, and text searches without authorization checks.",
+        paths: ["backend/internal/bible/handler.go", "backend/internal/bible/service.go"],
+        invariants: [
+          "All /bible/* GET endpoints must remain public.",
+          "Attribution caption ('Berean Standard Bible, public domain') must be rendered on all presentation surfaces."
+        ],
+        tradeoffs: "Only public domain translations (BSB) can be hosted without licensing fees and commercial API keys."
+      },
+      socialHandler: {
+        badge: "BACKEND · SOCIAL",
+        title: "Social Graph & Interaction Engine",
+        desc: "Manages comments, user followers, post bookmarks, and distinct reactions.",
+        paths: ["backend/internal/social/handler.go", "backend/internal/social/service.go"],
+        invariants: [
+          "Reactions are unique per user-post pair and maintain distinct counts (amen, insightful, thought_provoking).",
+          "Comment counts and reaction aggregates must be returned in the main feed query to prevent N+1 client calls."
+        ],
+        tradeoffs: "Feed queries require compound JOINs to aggregate counts."
+      },
+      mediaHandler: {
+        badge: "BACKEND · MEDIA",
+        title: "Media Gateway Service",
+        desc: "Generates signed upload tokens for direct client-to-R2 upload and confirms file registration.",
+        paths: ["backend/internal/media/handler.go", "backend/internal/media/service.go"],
+        invariants: [
+          "Files validated for image/jpeg, image/png, or image/webp and size <= 5MB.",
+          "No payment tiers or commercial usage limits."
+        ],
+        tradeoffs: "Requires clients to manage asynchronous multi-part upload states."
+      },
+      dioClient: {
+        badge: "BRIDGE · TRANSPORT",
+        title: "Dio HTTP Client & Gateway",
+        desc: "The client-side HTTP backbone. Automates JWT header injection, retries, and normalizes all HTTP 4xx/5xx into strongly typed ApiException objects.",
+        paths: ["client/lib/core/network/api_client.dart", "client/lib/core/network/api_exception.dart"],
+        invariants: [
+          "Must strictly verify endpoint path strings against backend contracts.",
+          "Do not wipe credentials on network disconnects; invalidation is strictly for 401/403."
+        ],
+        tradeoffs: "Dio's rich interceptor chain adds a small overhead compared to raw dart:io HttpClient."
+      },
+      sseStream: {
+        badge: "BRIDGE · STREAM",
+        title: "Server-Sent Events Subscriber",
+        desc: "Persistent single-connection stream listening to GET /notifications/stream for real-time notification drops.",
+        paths: ["client/lib/features/notification/data/notification_api.dart"],
+        invariants: [
+          "No polling or periodic REST calls allowed for notifications while stream is active.",
+          "Automatically reconnects with backoff if socket terminates."
+        ],
+        tradeoffs: "Unidirectional: client cannot push messages back over the same connection."
+      },
+      syncPull: {
+        badge: "BRIDGE · PROTOCOL",
+        title: "Sync Pull Routine",
+        desc: "Fetches remote mutations since the client's last acknowledged sequence watermark N.",
+        paths: ["client/lib/core/storage/sync_service.dart"],
+        invariants: [
+          "Payload includes max_sequence watermark to update client state.",
+          "Seeds the local Drift SQLite database in the background."
+        ],
+        tradeoffs: "Large gaps in sequence require paginated chunk reconciliation."
+      },
+      syncPush: {
+        badge: "BRIDGE · PROTOCOL",
+        title: "Batch Sync Push Routine",
+        desc: "Collects pending local modifications and pushes them in a single batch transaction.",
+        paths: ["client/lib/core/storage/sync_service.dart"],
+        invariants: [
+          "Never fire per-keystroke REST mutations.",
+          "Mutations remain flagged with is_synced = false until 200 OK server confirmation."
+        ],
+        tradeoffs: "Conflicts (e.g. edited simultaneously on two offline devices) require last-write-wins or branch reconciliation."
+      },
+      quillDelta: {
+        badge: "BRIDGE · CONTRACT",
+        title: "Quill Delta JSONB Serializer",
+        desc: "Guarantees cross-platform delta compatibility between the Flutter editor canvas and PostgreSQL JSONB columns.",
+        paths: ["client/lib/core/widgets/post_rich_text.dart", "backend/pkg/quill/"],
+        invariants: [
+          "Never invoke Document.fromJson without guarding against empty [] deltas.",
+          "Read-only views must set showCursor: false and readOnlyMouseCursor: basic."
+        ],
+        tradeoffs: "Quill deltas are more verbose than plain markdown strings."
+      },
+      reactionContract: {
+        badge: "BRIDGE · CONTRACT",
+        title: "Distinct 3-Type Reaction Contract",
+        desc: "Preserves individual counts for Amen, Insightful, and Thought-Provoking across all payload boundaries.",
+        paths: ["client/lib/features/social/domain/reaction.dart"],
+        invariants: [
+          "Never aggregate into a single 'like' counter on any card or detail view.",
+          "Telemetry feeds directly into recommendation materialized views."
+        ],
+        tradeoffs: "Requires 3 buttons and 3 counters per feed card instead of 1 simple heart icon."
+      },
+      driftDb: {
+        badge: "FRONTEND · STORAGE",
+        title: "Drift (Local SQLite Engine)",
+        desc: "Local-first database managing offline notes, drafts, and cached posts. Supports reactive streams via Dart watch() calls.",
+        paths: ["client/lib/core/storage/drift_database.dart", "client/lib/core/storage/daos/"],
+        invariants: [
+          "Logout must preserve unsynced notes and drafts (preserveUnsynced: true).",
+          "Notes support full offline creation with device guest ID when unauthenticated."
+        ],
+        tradeoffs: "Requires code generation (build_runner) and schema migrations across client app updates."
+      },
+      secureStorage: {
+        badge: "FRONTEND · SECURITY",
+        title: "Flutter Secure Storage",
+        desc: "Hardware-backed encrypted storage for user JWTs and the persistent device guest ID.",
+        paths: ["client/lib/core/storage/secure_storage.dart"],
+        invariants: [
+          "Guest ID must be generated once and persist until explicitly claimed.",
+          "Tokens preserved during offline network failures."
+        ],
+        tradeoffs: "Asynchronous read/write access is slightly slower than plain shared_preferences."
+      },
+      imageCache: {
+        badge: "FRONTEND · PERFORMANCE",
+        title: "ScribesCacheManager & memCacheWidth",
+        desc: "Custom image caching pipeline with aggressive memory downsampling.",
+        paths: ["client/lib/core/storage/scribes_cache_manager.dart"],
+        invariants: [
+          "Never use raw Image.network in scrollable lists.",
+          "Always specify memCacheWidth: 800 to prevent decoder UI jank."
+        ],
+        tradeoffs: "High-DPI displays do not show full-resolution images in feed list cards until opened in detail view."
+      },
+      authNotifier: {
+        badge: "FRONTEND · RIVERPOD",
+        title: "AuthNotifier & Account Claiming",
+        desc: "Manages user lifecycle and coordinates atomic Drift transactions to re-parent guest data on login.",
+        paths: ["client/lib/features/auth/application/auth_notifier.dart"],
+        invariants: [
+          "Atomic transaction re-parents notes from guest_id to user_id before cloud sync initiates.",
+          "Never discard local notes created while logged out."
+        ],
+        tradeoffs: "Adds transactional complexity during the login/registration sequence."
+      },
+      feedNotifier: {
+        badge: "FRONTEND · RIVERPOD",
+        title: "Granular Feed Notifiers (.select())",
+        desc: "Riverpod state controllers utilizing targeted selectors to isolate widget rebuilds.",
+        paths: ["client/lib/features/feed/application/feed_notifier.dart"],
+        invariants: [
+          "Never watch global collection providers directly inside item cards without .select().",
+          "Scroll listener isolation: use ValueNotifier instead of parent setState() to hide bars."
+        ],
+        tradeoffs: "Requires strict adherence to selector rules across the engineering team."
+      },
+      feedScreen: {
+        badge: "FRONTEND · UI",
+        title: "Hybrid Magazine Feed Card",
+        desc: "Standardized visual hierarchy: Author Header ➔ 16:9 Cover Image with Scrim ➔ Title & Excerpt ➔ Verse Tags ➔ ScribesOrnamentDivider ➔ Reaction Row.",
+        paths: ["client/lib/features/feed/presentation/widgets/scribes_post_card.dart"],
+        invariants: [
+          "Configure cacheExtent: 1500 to pre-decode images before entering viewport.",
+          "Prohibit heavy animation controllers on full cards; use lightweight InkWell."
+        ],
+        tradeoffs: "Strict card layout standard limits spontaneous visual variance."
+      },
+      composeScreen: {
+        badge: "FRONTEND · UI",
+        title: "Compose Editor Canvas",
+        desc: "Full-screen rich-text authoring surface backed by flutter_quill with offline auto-saving to Drift.",
+        paths: ["client/lib/features/compose/presentation/compose_screen.dart"],
+        invariants: [
+          "Autosaves to local drafts table before remote sync push.",
+          "Passage decks and standard posts follow distinct post_type schemas."
+        ],
+        tradeoffs: "Quill mobile keyboards require custom input accessory toolbars."
+      },
+      exportScreen: {
+        badge: "FRONTEND · UI",
+        title: "Illuminated PDF Manuscript Pipeline",
+        desc: "Generates high-resolution illuminated PDF manuscripts with classical borders, drop caps, and Scripture citations.",
+        paths: ["client/lib/features/export/presentation/manuscript_export_screen.dart"],
+        invariants: [
+          "Strictly reserved for standard posts, drafts, and notes; never allowed for passage decks or reflections.",
+          "Must render visible Berean Standard Bible attribution on all generated documents."
+        ],
+        tradeoffs: "PDF rendering engine consumes significant memory during document compilation."
+      }
+    };
+
+    function showDetails(key) {
+      const data = componentData[key];
+      if (!data) return;
+
+      document.getElementById('drawerBadge').textContent = data.badge;
+      document.getElementById('drawerTitle').textContent = data.title;
+      document.getElementById('drawerDesc').textContent = data.desc;
+      
+      const pathsContainer = document.getElementById('drawerPaths');
+      pathsContainer.innerHTML = data.paths.map(p => `<div>• ${p}</div>`).join('');
+
+      const invContainer = document.getElementById('drawerInvariants');
+      invContainer.innerHTML = data.invariants.map(inv => `<li class="leading-relaxed">${inv}</li>`).join('');
+
+      document.getElementById('drawerTradeoffs').textContent = data.tradeoffs;
+
+      document.getElementById('inspectorDrawer').classList.remove('translate-x-full');
+    }
+
+    function closeDetails() {
+      document.getElementById('inspectorDrawer').classList.add('translate-x-full');
+    }
+
+    // Initialize layout
+    updateTransform();
+  </script>
+</body>
+</html>

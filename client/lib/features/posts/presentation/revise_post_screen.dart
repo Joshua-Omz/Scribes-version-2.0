@@ -9,8 +9,9 @@ import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/scribes_quill_scripture_helper.dart';
 import '../../../core/widgets/scribes_toast.dart';
 import '../../../core/widgets/scribes_text_field.dart';
-import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/widgets/scribes_scripture_quick_dialog.dart';
+import '../../../core/theme/scribes_quill_auto_number_rule.dart';
+import '../../../core/widgets/scribes_quill_toolbar.dart';
 import '../domain/post.dart';
 import '../application/revise_post_provider.dart';
 
@@ -43,12 +44,16 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
     final content = widget.post.content;
     var bodyData = content['body'];
 
-    if (bodyData != null && bodyData is List) {
-      final doc = Document.fromJson(bodyData);
-      _controller = QuillController(
-        document: doc,
-        selection: const TextSelection.collapsed(offset: 0),
-      );
+    if (bodyData != null && bodyData is List && bodyData.isNotEmpty) {
+      try {
+        final doc = Document.fromJson(bodyData);
+        _controller = QuillController(
+          document: doc,
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      } catch (_) {
+        _controller = QuillController.basic();
+      }
     } else {
       _controller = QuillController.basic();
     }
@@ -263,6 +268,9 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
                       focusNode: _focusNode,
                       scrollController: _scrollController,
                       config: QuillEditorConfig(
+                        spaceShortcutEvents: standardSpaceShorcutEvents,
+                        characterShortcutEvents: standardCharactersShortcutEvents,
+                        onKeyPressed: (event, node) => handleAutoNumberOnEnter(event, _controller),
                         customStyleBuilder: (Attribute attribute) {
                           if (attribute.key == 'scripture') {
                             return ScribesQuillScriptureHelper
@@ -389,107 +397,9 @@ class _RevisePostScreenState extends ConsumerState<RevisePostScreen> {
               ),
             ),
           ),
-          Divider(height: 1, thickness: 1, color: colors.border),
-          QuillSimpleToolbar(
+          ScribesQuillToolbar(
             controller: _controller,
-            config: QuillSimpleToolbarConfig(
-              showDividers:true,
-              multiRowsDisplay: false,
-              color: colors.surfaceRaised,
-              showAlignmentButtons: false,
-              showFontFamily: false,
-              showFontSize: false,
-              showBackgroundColorButton: false,
-              showColorButton: false,
-              showStrikeThrough: false,
-              showInlineCode: false,
-              showClearFormat: false,
-              customButtons: [
-                QuillToolbarCustomButtonOptions(
-                  icon: HugeIcon(
-                    icon: HugeIcons.strokeRoundedBookOpen01,
-                    size: 18,
-                    color: colors.gold,
-                  ),
-                  tooltip: 'Tag as Scripture',
-                  onPressed: () {
-                    final selection = _controller.selection;
-                    if (!selection.isCollapsed) {
-                      ScribesScriptureSelector.show(
-                        context,
-                        colors: colors,
-                        onSelected: (book, chapter, verseStart, verseEnd) {
-                          String refStr = book;
-                          if (chapter != null) {
-                            refStr += ' $chapter';
-                            if (verseStart != null) {
-                              refStr += ':$verseStart';
-                              if (verseEnd != null && verseEnd != verseStart) {
-                                refStr += '-$verseEnd';
-                              }
-                            }
-                          }
-                          ScribesQuillScriptureHelper.applyScriptureAttribute(
-                            _controller,
-                            refStr,
-                          );
-                          ScribesToast.show(
-                            context,
-                            'Tagged as Scripture: $refStr',
-                            colors,
-                            icon: HugeIcons.strokeRoundedBookOpen01,
-                          );
-                        },
-                      );
-                    } else {
-                      ScribesScriptureSelector.show(
-                        context,
-                        colors: colors,
-                        onSelected: (book, chapter, verseStart, verseEnd) {
-                          String refStr = book;
-                          if (chapter != null) {
-                            refStr += ' $chapter';
-                            if (verseStart != null) {
-                              refStr += ':$verseStart';
-                              if (verseEnd != null && verseEnd != verseStart) {
-                                refStr += '-$verseEnd';
-                              }
-                            }
-                          }
-                          final offset = _controller.selection.baseOffset >= 0
-                              ? _controller.selection.baseOffset
-                              : _controller.document.length - 1;
-                          _controller.document.insert(offset, refStr);
-                          _controller.updateSelection(
-                            TextSelection(
-                              baseOffset: offset,
-                              extentOffset: offset + refStr.length,
-                            ),
-                            ChangeSource.local,
-                          );
-                          ScribesQuillScriptureHelper.applyScriptureAttribute(
-                            _controller,
-                            refStr,
-                          );
-                          _controller.updateSelection(
-                            TextSelection.collapsed(
-                              offset: offset + refStr.length,
-                            ),
-                            ChangeSource.local,
-                          );
-                          ScribesToast.show(
-                            context,
-                            'Inserted Scripture: $refStr',
-                            colors,
-                            icon: HugeIcons.strokeRoundedBookOpen01,
-                          );
-                        },
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
+            colors: colors,
           ),
         ],
       ),
