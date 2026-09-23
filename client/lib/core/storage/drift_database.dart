@@ -3,6 +3,7 @@ import 'connection/connection.dart' as connection;
 import 'daos/notes_dao.dart';
 import 'daos/drafts_dao.dart';
 import 'daos/posts_dao.dart';
+import 'daos/bible_dao.dart';
 part 'drift_database.g.dart';
 
 class Drafts extends Table {
@@ -79,6 +80,47 @@ class SyncMetadata extends Table {
   Set<Column> get primaryKey => {key};
 }
 
+class BibleReadingPositions extends Table {
+  TextColumn get userId => text()();
+  TextColumn get bookCode => text()();
+  IntColumn get chapter => integer()();
+  IntColumn get verse => integer().withDefault(const Constant(1))();
+  TextColumn get preferredTranslation => text().withDefault(const Constant('BSB'))();
+  DateTimeColumn get updatedAt => dateTime()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {userId};
+}
+
+class BibleHighlights extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  IntColumn get verseId => integer()();
+  TextColumn get bookCode => text()();
+  IntColumn get chapter => integer()();
+  IntColumn get verse => integer()();
+  TextColumn get colorHex => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class BibleDownloadedTranslations extends Table {
+  TextColumn get code => text()();
+  TextColumn get name => text()();
+  TextColumn get localPath => text()();
+  IntColumn get version => integer()();
+  IntColumn get sizeBytes => integer()();
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get installedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {code};
+}
+
 @DriftDatabase(
   tables: [
     Drafts,
@@ -86,14 +128,18 @@ class SyncMetadata extends Table {
     SyncMetadata,
     Notebooks,
     Notes,
+    BibleReadingPositions,
+    BibleHighlights,
+    BibleDownloadedTranslations,
   ],
-  daos: [NotesDao, DraftsDao, PostsDao],
+  daos: [NotesDao, DraftsDao, PostsDao, BibleDao],
 )
 class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase() : super(connection.openConnection());
+  ScribesDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration {
@@ -128,6 +174,11 @@ class ScribesDatabase extends _$ScribesDatabase {
           await m.addColumn(posts, posts.coverImageUrl);
           await m.addColumn(posts, posts.postType);
         }
+        if (from < 15) {
+          await m.createTable(bibleReadingPositions);
+          await m.createTable(bibleHighlights);
+          await m.createTable(bibleDownloadedTranslations);
+        }
       },
     );
   }
@@ -140,11 +191,16 @@ class ScribesDatabase extends _$ScribesDatabase {
         // Only delete synced cloud data, preserving local offline work
         await (delete(drafts)..where((t) => t.isSynced.equals(true))).go();
         await (delete(notes)..where((t) => t.isSynced.equals(true))).go();
+        await (delete(bibleHighlights)..where((t) => t.isSynced.equals(true))).go();
+        await (delete(bibleReadingPositions)..where((t) => t.isSynced.equals(true))).go();
       } else {
         await delete(drafts).go();
         await delete(notebooks).go();
         await delete(notes).go();
+        await delete(bibleHighlights).go();
+        await delete(bibleReadingPositions).go();
       }
     });
   }
 }
+

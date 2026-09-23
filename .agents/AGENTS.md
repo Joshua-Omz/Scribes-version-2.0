@@ -26,9 +26,12 @@
 * **Quill Delta Safety & Preview Isolation:** Never invoke `Document.fromJson` without guarding against empty deltas (`[]`) or malformed JSON; always wrap initialization in a safe fallback to `Document.basic()`. In all read-only preview surfaces (`PostRichText`), always set `showCursor: false`, `enableSelectionToolbar: false`, and `readOnlyMouseCursor: SystemMouseCursors.basic` to prevent caret blinking or pointer distraction.
 
 ### Scripture & Bible Feature Invariants
-* **Public Scripture Endpoints:** All `/bible/*` GET endpoints (`/bible/books`, `/bible/:book/:chapter`, `/bible/:book/:chapter/:verseRange`, `/bible/search`) must remain strictly public without requiring an `Authorization` header. Only personal reading position endpoints are protected.
+* **Zero-API Scripture Read Path:** Bible text, chapters, and books must NEVER be queried from backend application servers. All scripture reads and text searches run exclusively against local SQLite translation databases stored on the client device.
+* **Edge-Distributed Translation Artifacts:** Translation databases are pre-packaged, vacuumed SQLite artifacts with pre-indexed lookup tables and FTS5 search, distributed via static CDN edge storage (Cloudflare R2).
+* **Multi-Version File Isolation:** Each Bible translation is stored as an independent local SQLite file (`<code_v1>.sqlite3`). Adding or removing translations is an atomic filesystem operation without schema alterations.
+* **Universal Referencing Invariant:** Every translation SQLite database must adhere to the standard USFM/OSIS canonical book codes and numbering scheme so translation switching and parallel reading resolve instantly in-memory across local databases.
+* **Decoupled User Annotation Storage:** User annotations (highlights, bookmarks, notes) must reside strictly in the local Drift application database, referencing universal scripture coordinates `(book_code, chapter, verse)`. User data syncs via `/sync/push`, completely isolated from immutable scripture files.
 * **Inline Scripture Expansion:** `ScribesScriptureChip` must expand inline to show verse text and context. Never open a modal bottom sheet or route to a new screen for verse previews.
-* **Self-Hosted Scripture Read Path:** Verse text must always be queried from the local PostgreSQL `bible_verses` table (BSB in v1). Never introduce a runtime network dependency on third-party Bible APIs in the read path.
 * **Attribution Guarantee:** Wherever scripture verse text is rendered (in-app previews, Bible drawer, and exported PDFs/images), the translation attribution caption (e.g., "Berean Standard Bible, public domain") must be visibly displayed.
 
 ### Social & Recommendation Invariants

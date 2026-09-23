@@ -13,9 +13,3 @@ _PaginatedFeed _$PaginatedFeedFromJson(Map<String, dynamic> json) =>
           .toList(),
       nextCursor: json['next_cursor'] as String?,
     );
-
-Map<String, dynamic> _$PaginatedFeedToJson(_PaginatedFeed instance) =>
-    <String, dynamic>{
-      'posts': instance.posts,
-      'next_cursor': instance.nextCursor,
-    };

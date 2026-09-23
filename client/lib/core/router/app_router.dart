@@ -62,6 +62,19 @@ GoRouter appRouter(Ref ref) {
         return null; // wait on splash until auth resolves
       }
 
+      if (kIsWeb) {
+        final mobileOnlyPrefixes = ['/compose', '/notes'];
+        final isMobileOnly = mobileOnlyPrefixes.any(
+          (p) =>
+              state.matchedLocation == p ||
+              state.matchedLocation.startsWith('$p/'),
+        ) || state.matchedLocation.endsWith('/edit');
+
+        if (isMobileOnly) {
+          return '/';
+        }
+      }
+
       final isAuth = authState.value != null;
       final isGoingToAuth = state.matchedLocation == '/auth';
       final isGoingToSplash = state.matchedLocation == '/splash';
@@ -83,6 +96,7 @@ GoRouter appRouter(Ref ref) {
       final isPublicRoute =
           publicRoutes.contains(state.matchedLocation) ||
           state.matchedLocation.startsWith('/posts/') ||
+          state.matchedLocation.startsWith('/p/') ||
           state.matchedLocation.startsWith('/passage/') ||
           state.matchedLocation.startsWith('/tags/') ||
           state.matchedLocation.startsWith('/users/');
@@ -257,6 +271,10 @@ GoRouter appRouter(Ref ref) {
             child: PassageViewerScreen(postId: id),
           );
         },
+      ),
+      GoRoute(
+        path: '/p/:id',
+        redirect: (context, state) => '/posts/${state.pathParameters['id']}',
       ),
       GoRoute(
         path: '/posts/:id',

@@ -1,0 +1,18 @@
+{
+  "manifest_version": 1,
+  "translations": [
+    {
+      "code": "BSB",
+      "name": "Berean Standard Bible",
+      "language": "en",
+      "version": 1,
+      "attribution": "Berean Standard Bible, public domain (BSB). Holy Bible, Berean Standard Bible, BSB is produced in cooperation with Bible Hub, Discovery Bible, OpenBible.com, and the Berean Bible Translation Committee.",
+      "is_bundled": true,
+      "uncompressed_bytes": 8458240,
+      "compressed_bytes": 3891411,
+      "sha256": "9a882da61dc85c7e5896640ea539661139b62fc5fc3a140e9d8c0d80f0a716e6",
+      "gz_sha256": "b12838707c9915620ea287d6decda909ca3f6f958da076d7c8cd59b03bf6e616",
+      "download_url": "https://cdn.scribes.app/bible/bsb_v1.sqlite3.gz"
+    }
+  ]
+}

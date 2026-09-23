@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:scribes/main.dart';
+import '../../../core/storage/drift_database.dart';
 import '../data/bible_repository.dart';
 import '../domain/bible_models.dart';
 
@@ -77,11 +78,78 @@ final verseLookupProvider = FutureProvider.family<VerseRangeResult, String>((
   return repo.getVerseRange(book, chapter, range, translation: translation);
 });
 
-final bibleReadingPositionProvider = FutureProvider<BibleReadingPosition?>((
+final bibleReadingPositionProvider = FutureProvider<UserReadingPosition>((
   ref,
 ) async {
   final repo = ref.watch(bibleRepositoryProvider);
   return repo.getReadingPosition();
+});
+
+final bibleReadingPositionStreamProvider =
+    StreamProvider<UserReadingPosition?>((ref) {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.watchReadingPosition();
+});
+
+final chapterHighlightsProvider =
+    StreamProvider.family<List<BibleHighlight>, BibleChapterQuery>((
+  ref,
+  query,
+) {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.watchHighlightsForChapter(query.book, query.chapter);
+});
+
+final downloadedTranslationsProvider =
+    StreamProvider<List<BibleDownloadedTranslation>>((ref) {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.watchDownloadedTranslations();
+});
+
+class BibleVerseQuery {
+  final String book;
+  final int chapter;
+  final int verse;
+  final List<String>? translations;
+
+  const BibleVerseQuery({
+    required this.book,
+    required this.chapter,
+    required this.verse,
+    this.translations,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BibleVerseQuery &&
+          runtimeType == other.runtimeType &&
+          book.toLowerCase() == other.book.toLowerCase() &&
+          chapter == other.chapter &&
+          verse == other.verse;
+
+  @override
+  int get hashCode =>
+      book.toLowerCase().hashCode ^ chapter.hashCode ^ verse.hashCode;
+}
+
+final verseComparisonProvider = FutureProvider.family<
+    List<BibleComparisonResult>, BibleVerseQuery>((ref, query) async {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.compareVerse(
+    query.book,
+    query.chapter,
+    query.verse,
+    translations: query.translations,
+  );
+});
+
+final bibleSearchProvider =
+    FutureProvider.family<List<BibleSearchResult>, String>((ref, query) async {
+  if (query.trim().isEmpty) return const [];
+  final repo = ref.watch(bibleRepositoryProvider);
+  final translation = ref.watch(selectedTranslationProvider);
+  return repo.search(query, translation: translation);
 });
 
 class BibleNavigationState {
@@ -126,18 +194,19 @@ class BibleNavigationNotifier extends Notifier<BibleNavigationState> {
   Future<void> _initPosition() async {
     final repo = ref.read(bibleRepositoryProvider);
     final pos = await repo.getReadingPosition();
-    if (pos != null) {
-      final books = await repo.getBooks();
-      final matchedBook = books.firstWhere(
-        (b) => b.name.toLowerCase() == pos.book.toLowerCase(),
-        orElse: () => books.first,
-      );
-      state = state.copyWith(
-        currentBook: matchedBook.name,
-        currentChapter: pos.chapter,
-        totalChapters: matchedBook.chapterCount,
-      );
-    }
+    final books = await repo.getBooks();
+    final matchedBook = books.firstWhere(
+      (b) =>
+          (pos.bookCode.isNotEmpty &&
+              b.code.toLowerCase() == pos.bookCode.toLowerCase()) ||
+          b.name.toLowerCase() == pos.book.toLowerCase(),
+      orElse: () => books.first,
+    );
+    state = state.copyWith(
+      currentBook: matchedBook.name,
+      currentChapter: pos.chapter,
+      totalChapters: matchedBook.chapterCount,
+    );
   }
 
   void selectBook(BibleBook book) {

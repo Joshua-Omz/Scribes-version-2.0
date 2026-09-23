@@ -126,6 +126,7 @@ class _ScribesScriptureChipState extends ConsumerState<ScribesScriptureChip> {
                     Flexible(
                       child: Consumer(
                         builder: (context, ref, child) {
+                          final selectedTranslation = ref.watch(selectedTranslationProvider);
                           final translationsAsync = ref.watch(bibleTranslationsProvider);
                           final attribution = translationsAsync.maybeWhen(
                             data: (translations) {
@@ -134,13 +135,74 @@ class _ScribesScriptureChipState extends ConsumerState<ScribesScriptureChip> {
                             },
                             orElse: () => '${result.translation}, public domain',
                           );
-                          return Text(
-                            attribution,
-                            style: ScribesTextStyles.caption.copyWith(
-                              color: colors.secondaryText,
-                              fontSize: 10,
+
+                          return PopupMenuButton<String>(
+                            offset: const Offset(0, 30),
+                            color: colors.surfaceRaised,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(ScribesRadius.card),
+                              side: BorderSide(color: colors.border),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            onSelected: (code) {
+                              ref.read(selectedTranslationProvider.notifier).setTranslation(code);
+                            },
+                            itemBuilder: (context) {
+                              return translationsAsync.maybeWhen(
+                                data: (translations) {
+                                  return translations.map((t) {
+                                    final isSelected = t.code == selectedTranslation;
+                                    return PopupMenuItem<String>(
+                                      value: t.code,
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            t.name,
+                                            style: ScribesTextStyles.bodyMd.copyWith(
+                                              color: isSelected ? colors.gold : colors.primaryText,
+                                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                            ),
+                                          ),
+                                          if (isSelected) ...[
+                                            const Spacer(),
+                                            Icon(Icons.check, color: colors.gold, size: 18),
+                                          ],
+                                        ],
+                                      ),
+                                    );
+                                  }).toList();
+                                },
+                                orElse: () => [
+                                  PopupMenuItem<String>(
+                                    value: selectedTranslation,
+                                    child: Text(
+                                      selectedTranslation,
+                                      style: ScribesTextStyles.bodyMd.copyWith(
+                                        color: colors.gold,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    attribution,
+                                    style: ScribesTextStyles.caption.copyWith(
+                                      color: colors.secondaryText,
+                                      fontSize: 10,
+                                      decoration: TextDecoration.underline,
+                                      decorationStyle: TextDecorationStyle.dotted,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(Icons.keyboard_arrow_down, size: 12, color: colors.secondaryText),
+                              ],
+                            ),
                           );
                         },
                       ),

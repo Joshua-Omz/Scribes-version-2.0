@@ -155,26 +155,88 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
         ),
         centerTitle: true,
         actions: [
-          // Translation Tag
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 2),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: colors.gold.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: colors.gold.withValues(alpha: 0.3),
-                width: 0.5,
-              ),
-            ),
-            child: Text(
-              'BSB',
-              style: ScribesTextStyles.caption.copyWith(
-                color: colors.gold,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-            ),
+          Consumer(
+            builder: (context, ref, child) {
+              final selectedTranslation = ref.watch(selectedTranslationProvider);
+              final translationsAsync = ref.watch(bibleTranslationsProvider);
+
+              return PopupMenuButton<String>(
+                offset: const Offset(0, 40),
+                color: colors.surfaceRaised,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ScribesRadius.card),
+                  side: BorderSide(color: colors.border),
+                ),
+                onSelected: (code) {
+                  ref.read(selectedTranslationProvider.notifier).setTranslation(code);
+                },
+                itemBuilder: (context) {
+                  return translationsAsync.maybeWhen(
+                    data: (translations) {
+                      return translations.map((t) {
+                        final isSelected = t.code == selectedTranslation;
+                        return PopupMenuItem<String>(
+                          value: t.code,
+                          child: Row(
+                            children: [
+                              Text(
+                                t.name,
+                                style: ScribesTextStyles.bodyMd.copyWith(
+                                  color: isSelected ? colors.gold : colors.primaryText,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                ),
+                              ),
+                              if (isSelected) ...[
+                                const Spacer(),
+                                Icon(Icons.check, color: colors.gold, size: 18),
+                              ],
+                            ],
+                          ),
+                        );
+                      }).toList();
+                    },
+                    orElse: () => [
+                      PopupMenuItem<String>(
+                        value: selectedTranslation,
+                        child: Text(
+                          selectedTranslation,
+                          style: ScribesTextStyles.bodyMd.copyWith(
+                            color: colors.gold,
+                          ),
+                        ),
+                      )
+                    ],
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.gold.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: colors.gold.withValues(alpha: 0.3),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        selectedTranslation,
+                        style: ScribesTextStyles.caption.copyWith(
+                          color: colors.gold,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.keyboard_arrow_down, size: 12, color: colors.gold),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
 
           // Appearance / Aa Settings Button
@@ -405,6 +467,21 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
         ),
       ),
     );
+    final highlightsAsync = ref.watch(
+      chapterHighlightsProvider(
+        BibleChapterQuery(
+          book: navState.currentBook,
+          chapter: navState.currentChapter,
+        ),
+      ),
+    );
+    final highlightsMap = <int, String>{};
+    highlightsAsync.whenData((list) {
+      for (final h in list) {
+        highlightsMap[h.verse] = h.colorHex;
+      }
+    });
+
     final settings = ref.watch(bibleReaderSettingsProvider);
     final selection = ref.watch(verseSelectionProvider);
 
@@ -528,13 +605,20 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
 
                       // Scripture Reading Typesetting
                       if (settings.isVerseByVerse)
-                        _buildVerseByVerse(chapter, colors, settings, selection)
+                        _buildVerseByVerse(
+                          chapter,
+                          colors,
+                          settings,
+                          selection,
+                          highlightsMap,
+                        )
                       else
                         _buildContinuousParagraphs(
                           chapter,
                           colors,
                           settings,
                           selection,
+                          highlightsMap,
                         ),
 
                       const SizedBox(height: 48),
@@ -543,13 +627,29 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
 
                       // Translation Attribution Footer
                       Center(
-                        child: Text(
-                          'Berean Standard Bible, public domain',
-                          style: ScribesTextStyles.caption.copyWith(
-                            color: colors.secondaryText.withValues(alpha: 0.7),
-                            fontStyle: FontStyle.italic,
-                            letterSpacing: 0.3,
-                          ),
+                        child: Consumer(
+                          builder: (context, ref, child) {
+                            final selectedTranslation = ref.watch(selectedTranslationProvider);
+                            final translationsAsync = ref.watch(bibleTranslationsProvider);
+                            final attribution = translationsAsync.maybeWhen(
+                              data: (translations) {
+                                final match = translations
+                                    .where((t) => t.code.toUpperCase() == selectedTranslation.toUpperCase())
+                                    .firstOrNull;
+                                return match?.attributionText ?? '$selectedTranslation, public domain';
+                              },
+                              orElse: () => '$selectedTranslation, public domain',
+                            );
+                            return Text(
+                              attribution,
+                              style: ScribesTextStyles.caption.copyWith(
+                                color: colors.secondaryText.withValues(alpha: 0.7),
+                                fontStyle: FontStyle.italic,
+                                letterSpacing: 0.3,
+                              ),
+                              textAlign: TextAlign.center,
+                            );
+                          },
                         ),
                       ),
 
@@ -690,8 +790,9 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
     BibleChapter chapter,
     ScribesColors colors,
     BibleReaderSettings settings,
-    VerseSelection? selection,
-  ) {
+    VerseSelection? selection, [
+    Map<int, String> highlights = const {},
+  ]) {
     final fontSize = settings.fontSize;
     final lineHeight = settings.lineSpacing;
     final baseTextStyle = settings.isSerif
@@ -715,9 +816,16 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
         children: chapter.verses.expand((verse) {
           final cleanText = verse.text.trim();
           final isSelected = selection?.contains(verse.verse) ?? false;
+          final userHighlightHex = highlights[verse.verse];
+          final Color? highlightColor = userHighlightHex != null
+              ? Color(int.parse(userHighlightHex.replaceFirst('#', '0xFF')))
+              : null;
+
           final highlightBg = isSelected
-              ? colors.gold.withValues(alpha: 0.18)
-              : Colors.transparent;
+              ? colors.gold.withValues(alpha: 0.25)
+              : highlightColor != null
+                  ? highlightColor.withValues(alpha: 0.22)
+                  : Colors.transparent;
 
           return [
             // Elevated SuperScript Verse Numeral
@@ -765,8 +873,9 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
     BibleChapter chapter,
     ScribesColors colors,
     BibleReaderSettings settings,
-    VerseSelection? selection,
-  ) {
+    VerseSelection? selection, [
+    Map<int, String> highlights = const {},
+  ]) {
     final fontSize = settings.fontSize;
     final lineHeight = settings.lineSpacing;
     final verseTextStyle = settings.isSerif
@@ -789,6 +898,16 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: chapter.verses.map((verse) {
         final isSelected = selection?.contains(verse.verse) ?? false;
+        final userHighlightHex = highlights[verse.verse];
+        final Color? highlightColor = userHighlightHex != null
+            ? Color(int.parse(userHighlightHex.replaceFirst('#', '0xFF')))
+            : null;
+
+        final itemBg = isSelected
+            ? colors.gold.withValues(alpha: 0.18)
+            : highlightColor != null
+                ? highlightColor.withValues(alpha: 0.20)
+                : Colors.transparent;
 
         return InkWell(
           onTap: () {
@@ -803,10 +922,14 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             margin: const EdgeInsets.only(bottom: 8.0),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? colors.gold.withValues(alpha: 0.14)
-                  : Colors.transparent,
+              color: itemBg,
               borderRadius: BorderRadius.circular(8),
+              border: highlightColor != null && !isSelected
+                  ? Border.all(
+                      color: highlightColor.withValues(alpha: 0.45),
+                      width: 0.8,
+                    )
+                  : null,
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

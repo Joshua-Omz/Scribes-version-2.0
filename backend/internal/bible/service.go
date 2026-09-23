@@ -21,6 +21,10 @@ func (s *Service) GetTranslations(ctx context.Context) ([]Translation, error) {
 	return s.repo.GetTranslations(ctx)
 }
 
+func (s *Service) UploadTranslation(ctx context.Context, input BibleInput) error {
+	return s.repo.IngestTranslation(ctx, input)
+}
+
 func (s *Service) GetBooks(ctx context.Context, translationCode string) ([]Book, error) {
 	return s.repo.GetBooks(ctx, translationCode)
 }
@@ -47,9 +51,8 @@ func (s *Service) Search(ctx context.Context, translationCode, query string, lim
 	return s.repo.Search(ctx, translationCode, trimmed, limit)
 }
 
-func (s *Service) SaveReadingPosition(ctx context.Context, userID uuid.UUID, translationCode, book string, chapter int) error {
-	cleanBook := s.normalizeBookName(book)
-	return s.repo.SaveReadingPosition(ctx, userID, translationCode, cleanBook, chapter)
+func (s *Service) SaveReadingPosition(ctx context.Context, userID uuid.UUID, translationCode, bookCode string, chapter, verse int) error {
+	return s.repo.SaveReadingPosition(ctx, userID, translationCode, bookCode, chapter, verse)
 }
 
 func (s *Service) GetReadingPosition(ctx context.Context, userID uuid.UUID) (*ReadingPosition, error) {

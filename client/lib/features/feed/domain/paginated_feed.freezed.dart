@@ -22,8 +22,6 @@ mixin _$PaginatedFeed {
 @pragma('vm:prefer-inline')
 $PaginatedFeedCopyWith<PaginatedFeed> get copyWith => _$PaginatedFeedCopyWithImpl<PaginatedFeed>(this as PaginatedFeed, _$identity);
 
-  /// Serializes this PaginatedFeed to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -207,7 +205,7 @@ return $default(_that.posts,_that.nextCursor);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 
 class _PaginatedFeed implements PaginatedFeed {
   const _PaginatedFeed({required final  List<Post> posts, @JsonKey(name: 'next_cursor') this.nextCursor}): _posts = posts;
@@ -228,10 +226,7 @@ class _PaginatedFeed implements PaginatedFeed {
 @pragma('vm:prefer-inline')
 _$PaginatedFeedCopyWith<_PaginatedFeed> get copyWith => __$PaginatedFeedCopyWithImpl<_PaginatedFeed>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$PaginatedFeedToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {

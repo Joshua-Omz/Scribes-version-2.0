@@ -83,10 +83,10 @@ class BibleApi {
         .toList();
   }
 
-  Future<BibleReadingPosition?> getReadingPosition() async {
+  Future<UserReadingPosition?> getReadingPosition() async {
     try {
       final response = await _dio.get(Endpoints.bibleReadingPosition);
-      return BibleReadingPosition.fromJson(
+      return UserReadingPosition.fromJson(
         response.data as Map<String, dynamic>,
       );
     } catch (_) {
@@ -94,10 +94,22 @@ class BibleApi {
     }
   }
 
-  Future<void> saveReadingPosition(String book, int chapter) async {
+  Future<void> saveReadingPosition({
+    required String book,
+    String? bookCode,
+    required int chapter,
+    int verse = 1,
+    String translation = 'BSB',
+  }) async {
     await _dio.post(
       Endpoints.bibleReadingPosition,
-      data: {'book': book, 'chapter': chapter, 'translation': 'BSB'},
+      data: {
+        'book': book,
+        'book_code': bookCode ?? book,
+        'chapter': chapter,
+        'verse': verse,
+        'translation': translation,
+      },
     );
   }
 }

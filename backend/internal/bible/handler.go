@@ -33,6 +33,22 @@ func (h *Handler) GetTranslations(c *gin.Context) {
 	})
 }
 
+// POST /admin/bible/translations/upload (PROTECTED: super_admin)
+func (h *Handler) UploadTranslation(c *gin.Context) {
+	var input BibleInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		respond.Error(c, http.StatusBadRequest, "Invalid JSON structure: "+err.Error())
+		return
+	}
+
+	if err := h.service.UploadTranslation(c.Request.Context(), input); err != nil {
+		respond.Error(c, http.StatusInternalServerError, "Failed to ingest translation: "+err.Error())
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, gin.H{"message": "Translation uploaded and ingested successfully"})
+}
+
 // GET /bible/books
 func (h *Handler) GetBooks(c *gin.Context) {
 	translation := c.DefaultQuery("translation", "BSB")
@@ -133,8 +149,10 @@ func (h *Handler) Search(c *gin.Context) {
 }
 
 type saveReadingPositionInput struct {
-	Book        string `json:"book" binding:"required"`
+	Book        string `json:"book"`
+	BookCode    string `json:"book_code"`
 	Chapter     int    `json:"chapter" binding:"required"`
+	Verse       int    `json:"verse"`
 	Translation string `json:"translation"`
 }
 
@@ -167,12 +185,25 @@ func (h *Handler) SaveReadingPosition(c *gin.Context) {
 		return
 	}
 
+	bookIdentifier := input.BookCode
+	if bookIdentifier == "" {
+		bookIdentifier = input.Book
+	}
+	if bookIdentifier == "" {
+		respond.Error(c, http.StatusBadRequest, "book or book_code is required")
+		return
+	}
+
 	translation := input.Translation
 	if translation == "" {
 		translation = "BSB"
 	}
+	verse := input.Verse
+	if verse <= 0 {
+		verse = 1
+	}
 
-	if err := h.service.SaveReadingPosition(c.Request.Context(), userID, translation, input.Book, input.Chapter); err != nil {
+	if err := h.service.SaveReadingPosition(c.Request.Context(), userID, translation, bookIdentifier, input.Chapter, verse); err != nil {
 		if errors.Is(err, ErrNotFound) {
 			respond.Error(c, http.StatusNotFound, "Book not found")
 			return

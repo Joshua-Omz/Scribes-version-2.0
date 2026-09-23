@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   # Lucide Icons — modern, 1.5px stroke, 24×24 grid icon set
   google_fonts: ^8.1.0

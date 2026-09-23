@@ -4,7 +4,7 @@ import '../../posts/domain/post.dart';
 part 'paginated_feed.freezed.dart';
 part 'paginated_feed.g.dart';
 
-@freezed
+@Freezed(toJson: false)
 abstract class PaginatedFeed with _$PaginatedFeed {
   const factory PaginatedFeed({
     required List<Post> posts,

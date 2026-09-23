@@ -11,9 +11,11 @@ import '../../../../core/theme/scribes_text_styles.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../../core/widgets/scribes_bounce_button.dart';
 import '../../../../core/widgets/scribes_toast.dart';
+import '../../data/bible_repository.dart';
 import '../../domain/bible_models.dart';
 import '../../domain/verse_selection.dart';
 import '../../application/verse_selection_provider.dart';
+import 'bible_compare_sheet.dart';
 
 /// Contextual glass action bar displayed at the bottom of the Bible Drawer
 /// whenever a contiguous range of verses is selected.
@@ -65,6 +67,44 @@ class BibleSelectionActionBar extends ConsumerWidget {
 
     // 2. Open Reflection Composer pre-filled with the reference via GoRouter
     context.push('/compose/reflection', extra: reference);
+  }
+
+  void _openComparison(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BibleCompareSheet(
+        book: selection.book,
+        chapter: selection.chapter,
+        verse: selection.verseStart,
+      ),
+    );
+  }
+
+  Future<void> _highlightSelection(
+    BuildContext context,
+    WidgetRef ref,
+    ScribesColors colors,
+  ) async {
+    final repo = ref.read(bibleRepositoryProvider);
+    for (int v = selection.verseStart; v <= selection.verseEnd; v++) {
+      await repo.saveHighlight(
+        bookCode: selection.book,
+        chapter: selection.chapter,
+        verse: v,
+        colorHex: '#F5A623',
+      );
+    }
+    ref.read(verseSelectionProvider.notifier).clear();
+    if (context.mounted) {
+      ScribesToast.show(
+        context,
+        'Highlighted ${selection.displayLabel}',
+        colors,
+        icon: HugeIcons.strokeRoundedBookmark02,
+      );
+    }
   }
 
   @override
@@ -162,10 +202,10 @@ class BibleSelectionActionBar extends ConsumerWidget {
                     // Bottom Row: Action Buttons
                     Row(
                       children: [
-                        // Primary Action: Quote in Reflection (Glassmorphic with Gold Outline)
+                        // Highlight Action
                         Expanded(
                           child: ScribesBounceButton(
-                            onTap: () => _quoteInReflection(context, ref),
+                            onTap: () => _highlightSelection(context, ref, colors),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 11),
                               decoration: BoxDecoration(
@@ -182,13 +222,13 @@ class BibleSelectionActionBar extends ConsumerWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   HugeIcon(
-                                    icon: HugeIcons.strokeRoundedQuillWrite02,
+                                    icon: HugeIcons.strokeRoundedBookmark02,
                                     color: colors.gold,
                                     size: 15,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    'Quote',
+                                    'Highlight',
                                     style: ScribesTextStyles.labelSm.copyWith(
                                       color: colors.gold,
                                       fontWeight: FontWeight.w600,
@@ -199,11 +239,90 @@ class BibleSelectionActionBar extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 6),
 
-                        // Secondary Action: Copy Text
+                        // Compare Action (available when single verse is selected)
+                        if (selection.isSingleVerse) ...[
+                          Expanded(
+                            child: ScribesBounceButton(
+                              onTap: () => _openComparison(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 11),
+                                decoration: BoxDecoration(
+                                  color: colors.surfaceRaised.withValues(alpha: 0.7),
+                                  borderRadius: BorderRadius.circular(
+                                    ScribesRadius.button,
+                                  ),
+                                  border: Border.all(
+                                    color: colors.border.withValues(alpha: 0.7),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    HugeIcon(
+                                      icon: HugeIcons.strokeRoundedView,
+                                      color: colors.primaryText,
+                                      size: 15,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Compare',
+                                      style: ScribesTextStyles.labelSm.copyWith(
+                                        color: colors.primaryText,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+
+                        // Quote Action
                         Expanded(
-                          flex: 2,
+                          child: ScribesBounceButton(
+                            onTap: () => _quoteInReflection(context, ref),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceRaised.withValues(alpha: 0.7),
+                                borderRadius: BorderRadius.circular(
+                                  ScribesRadius.button,
+                                ),
+                                border: Border.all(
+                                  color: colors.border.withValues(alpha: 0.7),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  HugeIcon(
+                                    icon: HugeIcons.strokeRoundedQuillWrite02,
+                                    color: colors.primaryText,
+                                    size: 15,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Quote',
+                                    style: ScribesTextStyles.labelSm.copyWith(
+                                      color: colors.primaryText,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // Copy Action
+                        Expanded(
                           child: ScribesBounceButton(
                             onTap: () => _copyVerseText(context, colors),
                             child: Container(
@@ -226,9 +345,9 @@ class BibleSelectionActionBar extends ConsumerWidget {
                                     color: colors.primaryText,
                                     size: 15,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    'Copy Text',
+                                    'Copy',
                                     style: ScribesTextStyles.labelSm.copyWith(
                                       color: colors.primaryText,
                                       fontWeight: FontWeight.w600,

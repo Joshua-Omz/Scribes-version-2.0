@@ -183,6 +183,7 @@ func NewRouter(authHandler *auth.Handler, noteHandler *note.Handler, draftHandle
 		admin.POST("/reports/:id/status", adminHandler.UpdateReportStatus)
 		admin.POST("/categories", adminHandler.CreateCategory)
 		admin.PATCH("/categories/:id/deprecate", adminHandler.DeprecateCategory)
+		admin.POST("/bible/translations/upload", bibleHandler.UploadTranslation)
 	}
 
 	return r

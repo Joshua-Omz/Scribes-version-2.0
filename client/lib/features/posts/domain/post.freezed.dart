@@ -11,7 +11,6 @@ part of 'post.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$Post {
 
@@ -22,8 +21,6 @@ mixin _$Post {
 @pragma('vm:prefer-inline')
 $PostCopyWith<Post> get copyWith => _$PostCopyWithImpl<Post>(this as Post, _$identity);
 
-  /// Serializes this Post to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -31,7 +28,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is Post&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other.content, content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.currentVersion, currentVersion) || other.currentVersion == currentVersion)&&(identical(other.isCorrection, isCorrection) || other.isCorrection == isCorrection)&&(identical(other.correctsPostId, correctsPostId) || other.correctsPostId == correctsPostId)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other.scriptureRefs, scriptureRefs)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.reflectionImageUrl, reflectionImageUrl) || other.reflectionImageUrl == reflectionImageUrl)&&(identical(other.soundId, soundId) || other.soundId == soundId)&&(identical(other.sound, sound) || other.sound == sound)&&const DeepCollectionEquality().equals(other.panels, panels)&&(identical(other.postType, postType) || other.postType == postType)&&(identical(other.publishedAt, publishedAt) || other.publishedAt == publishedAt)&&(identical(other.authorHandle, authorHandle) || other.authorHandle == authorHandle)&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.authorAvatarUrl, authorAvatarUrl) || other.authorAvatarUrl == authorAvatarUrl)&&(identical(other.amenCount, amenCount) || other.amenCount == amenCount)&&(identical(other.insightCount, insightCount) || other.insightCount == insightCount)&&(identical(other.thoughtProvokingCount, thoughtProvokingCount) || other.thoughtProvokingCount == thoughtProvokingCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hashAll([runtimeType,id,authorId,const DeepCollectionEquality().hash(content),caption,visibility,currentVersion,isCorrection,correctsPostId,sermonSource,const DeepCollectionEquality().hash(scriptureRefs),const DeepCollectionEquality().hash(tags),isDeleted,coverImageUrl,reflectionImageUrl,soundId,sound,const DeepCollectionEquality().hash(panels),postType,publishedAt,authorHandle,authorName,authorAvatarUrl,amenCount,insightCount,thoughtProvokingCount,commentCount]);
 
@@ -255,11 +252,11 @@ return $default(_that.id,_that.authorId,_that.content,_that.caption,_that.visibi
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _Post implements Post {
   const _Post({required this.id, @JsonKey(name: 'author_id') required this.authorId, @JsonKey(fromJson: _contentFromJson) required final  Map<String, dynamic> content, this.caption, required this.visibility, @JsonKey(name: 'current_version') required this.currentVersion, @JsonKey(name: 'is_correction') required this.isCorrection, @JsonKey(name: 'corrects_post_id') this.correctsPostId, @JsonKey(name: 'sermon_source', fromJson: _sermonSourceFromJson) this.sermonSource, @JsonKey(name: 'scripture_refs') final  List<ScriptureRef> scriptureRefs = const [], final  List<String> tags = const [], @JsonKey(name: 'is_deleted') required this.isDeleted, @JsonKey(name: 'cover_image_url') this.coverImageUrl, @JsonKey(name: 'reflection_image_url') this.reflectionImageUrl, @JsonKey(name: 'sound_id') this.soundId, this.sound, final  List<PassagePanel> panels = const [], @JsonKey(name: 'post_type') this.postType = 'standard', @JsonKey(name: 'published_at') required this.publishedAt, @JsonKey(name: 'author_handle') required this.authorHandle, @JsonKey(name: 'author_name') required this.authorName, @JsonKey(name: 'author_avatar_url') this.authorAvatarUrl, @JsonKey(name: 'amen_count') this.amenCount = 0, @JsonKey(name: 'insight_count') this.insightCount = 0, @JsonKey(name: 'thought_provoking_count') this.thoughtProvokingCount = 0, @JsonKey(name: 'comment_count') this.commentCount = 0}): _content = content,_scriptureRefs = scriptureRefs,_tags = tags,_panels = panels;
-  factory _Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
+  
 
 @override final  String id;
 @override@JsonKey(name: 'author_id') final  String authorId;
@@ -318,17 +315,14 @@ class _Post implements Post {
 @pragma('vm:prefer-inline')
 _$PostCopyWith<_Post> get copyWith => __$PostCopyWithImpl<_Post>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$PostToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _Post&&(identical(other.id, id) || other.id == id)&&(identical(other.authorId, authorId) || other.authorId == authorId)&&const DeepCollectionEquality().equals(other._content, _content)&&(identical(other.caption, caption) || other.caption == caption)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.currentVersion, currentVersion) || other.currentVersion == currentVersion)&&(identical(other.isCorrection, isCorrection) || other.isCorrection == isCorrection)&&(identical(other.correctsPostId, correctsPostId) || other.correctsPostId == correctsPostId)&&(identical(other.sermonSource, sermonSource) || other.sermonSource == sermonSource)&&const DeepCollectionEquality().equals(other._scriptureRefs, _scriptureRefs)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.isDeleted, isDeleted) || other.isDeleted == isDeleted)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&(identical(other.reflectionImageUrl, reflectionImageUrl) || other.reflectionImageUrl == reflectionImageUrl)&&(identical(other.soundId, soundId) || other.soundId == soundId)&&(identical(other.sound, sound) || other.sound == sound)&&const DeepCollectionEquality().equals(other._panels, _panels)&&(identical(other.postType, postType) || other.postType == postType)&&(identical(other.publishedAt, publishedAt) || other.publishedAt == publishedAt)&&(identical(other.authorHandle, authorHandle) || other.authorHandle == authorHandle)&&(identical(other.authorName, authorName) || other.authorName == authorName)&&(identical(other.authorAvatarUrl, authorAvatarUrl) || other.authorAvatarUrl == authorAvatarUrl)&&(identical(other.amenCount, amenCount) || other.amenCount == amenCount)&&(identical(other.insightCount, insightCount) || other.insightCount == insightCount)&&(identical(other.thoughtProvokingCount, thoughtProvokingCount) || other.thoughtProvokingCount == thoughtProvokingCount)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hashAll([runtimeType,id,authorId,const DeepCollectionEquality().hash(_content),caption,visibility,currentVersion,isCorrection,correctsPostId,sermonSource,const DeepCollectionEquality().hash(_scriptureRefs),const DeepCollectionEquality().hash(_tags),isDeleted,coverImageUrl,reflectionImageUrl,soundId,sound,const DeepCollectionEquality().hash(_panels),postType,publishedAt,authorHandle,authorName,authorAvatarUrl,amenCount,insightCount,thoughtProvokingCount,commentCount]);
 

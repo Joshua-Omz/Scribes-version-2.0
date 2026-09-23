@@ -2829,6 +2829,1519 @@ class NotesCompanion extends UpdateCompanion<Note> {
   }
 }
 
+class $BibleReadingPositionsTable extends BibleReadingPositions
+    with TableInfo<$BibleReadingPositionsTable, BibleReadingPosition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BibleReadingPositionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bookCodeMeta = const VerificationMeta(
+    'bookCode',
+  );
+  @override
+  late final GeneratedColumn<String> bookCode = GeneratedColumn<String>(
+    'book_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _chapterMeta = const VerificationMeta(
+    'chapter',
+  );
+  @override
+  late final GeneratedColumn<int> chapter = GeneratedColumn<int>(
+    'chapter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _verseMeta = const VerificationMeta('verse');
+  @override
+  late final GeneratedColumn<int> verse = GeneratedColumn<int>(
+    'verse',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _preferredTranslationMeta =
+      const VerificationMeta('preferredTranslation');
+  @override
+  late final GeneratedColumn<String> preferredTranslation =
+      GeneratedColumn<String>(
+        'preferred_translation',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('BSB'),
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    userId,
+    bookCode,
+    chapter,
+    verse,
+    preferredTranslation,
+    updatedAt,
+    isSynced,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bible_reading_positions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BibleReadingPosition> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('book_code')) {
+      context.handle(
+        _bookCodeMeta,
+        bookCode.isAcceptableOrUnknown(data['book_code']!, _bookCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bookCodeMeta);
+    }
+    if (data.containsKey('chapter')) {
+      context.handle(
+        _chapterMeta,
+        chapter.isAcceptableOrUnknown(data['chapter']!, _chapterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_chapterMeta);
+    }
+    if (data.containsKey('verse')) {
+      context.handle(
+        _verseMeta,
+        verse.isAcceptableOrUnknown(data['verse']!, _verseMeta),
+      );
+    }
+    if (data.containsKey('preferred_translation')) {
+      context.handle(
+        _preferredTranslationMeta,
+        preferredTranslation.isAcceptableOrUnknown(
+          data['preferred_translation']!,
+          _preferredTranslationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {userId};
+  @override
+  BibleReadingPosition map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BibleReadingPosition(
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      bookCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}book_code'],
+      )!,
+      chapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chapter'],
+      )!,
+      verse: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}verse'],
+      )!,
+      preferredTranslation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}preferred_translation'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+    );
+  }
+
+  @override
+  $BibleReadingPositionsTable createAlias(String alias) {
+    return $BibleReadingPositionsTable(attachedDatabase, alias);
+  }
+}
+
+class BibleReadingPosition extends DataClass
+    implements Insertable<BibleReadingPosition> {
+  final String userId;
+  final String bookCode;
+  final int chapter;
+  final int verse;
+  final String preferredTranslation;
+  final DateTime updatedAt;
+  final bool isSynced;
+  const BibleReadingPosition({
+    required this.userId,
+    required this.bookCode,
+    required this.chapter,
+    required this.verse,
+    required this.preferredTranslation,
+    required this.updatedAt,
+    required this.isSynced,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['user_id'] = Variable<String>(userId);
+    map['book_code'] = Variable<String>(bookCode);
+    map['chapter'] = Variable<int>(chapter);
+    map['verse'] = Variable<int>(verse);
+    map['preferred_translation'] = Variable<String>(preferredTranslation);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['is_synced'] = Variable<bool>(isSynced);
+    return map;
+  }
+
+  BibleReadingPositionsCompanion toCompanion(bool nullToAbsent) {
+    return BibleReadingPositionsCompanion(
+      userId: Value(userId),
+      bookCode: Value(bookCode),
+      chapter: Value(chapter),
+      verse: Value(verse),
+      preferredTranslation: Value(preferredTranslation),
+      updatedAt: Value(updatedAt),
+      isSynced: Value(isSynced),
+    );
+  }
+
+  factory BibleReadingPosition.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BibleReadingPosition(
+      userId: serializer.fromJson<String>(json['userId']),
+      bookCode: serializer.fromJson<String>(json['bookCode']),
+      chapter: serializer.fromJson<int>(json['chapter']),
+      verse: serializer.fromJson<int>(json['verse']),
+      preferredTranslation: serializer.fromJson<String>(
+        json['preferredTranslation'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'userId': serializer.toJson<String>(userId),
+      'bookCode': serializer.toJson<String>(bookCode),
+      'chapter': serializer.toJson<int>(chapter),
+      'verse': serializer.toJson<int>(verse),
+      'preferredTranslation': serializer.toJson<String>(preferredTranslation),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'isSynced': serializer.toJson<bool>(isSynced),
+    };
+  }
+
+  BibleReadingPosition copyWith({
+    String? userId,
+    String? bookCode,
+    int? chapter,
+    int? verse,
+    String? preferredTranslation,
+    DateTime? updatedAt,
+    bool? isSynced,
+  }) => BibleReadingPosition(
+    userId: userId ?? this.userId,
+    bookCode: bookCode ?? this.bookCode,
+    chapter: chapter ?? this.chapter,
+    verse: verse ?? this.verse,
+    preferredTranslation: preferredTranslation ?? this.preferredTranslation,
+    updatedAt: updatedAt ?? this.updatedAt,
+    isSynced: isSynced ?? this.isSynced,
+  );
+  BibleReadingPosition copyWithCompanion(BibleReadingPositionsCompanion data) {
+    return BibleReadingPosition(
+      userId: data.userId.present ? data.userId.value : this.userId,
+      bookCode: data.bookCode.present ? data.bookCode.value : this.bookCode,
+      chapter: data.chapter.present ? data.chapter.value : this.chapter,
+      verse: data.verse.present ? data.verse.value : this.verse,
+      preferredTranslation: data.preferredTranslation.present
+          ? data.preferredTranslation.value
+          : this.preferredTranslation,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BibleReadingPosition(')
+          ..write('userId: $userId, ')
+          ..write('bookCode: $bookCode, ')
+          ..write('chapter: $chapter, ')
+          ..write('verse: $verse, ')
+          ..write('preferredTranslation: $preferredTranslation, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isSynced: $isSynced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    userId,
+    bookCode,
+    chapter,
+    verse,
+    preferredTranslation,
+    updatedAt,
+    isSynced,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BibleReadingPosition &&
+          other.userId == this.userId &&
+          other.bookCode == this.bookCode &&
+          other.chapter == this.chapter &&
+          other.verse == this.verse &&
+          other.preferredTranslation == this.preferredTranslation &&
+          other.updatedAt == this.updatedAt &&
+          other.isSynced == this.isSynced);
+}
+
+class BibleReadingPositionsCompanion
+    extends UpdateCompanion<BibleReadingPosition> {
+  final Value<String> userId;
+  final Value<String> bookCode;
+  final Value<int> chapter;
+  final Value<int> verse;
+  final Value<String> preferredTranslation;
+  final Value<DateTime> updatedAt;
+  final Value<bool> isSynced;
+  final Value<int> rowid;
+  const BibleReadingPositionsCompanion({
+    this.userId = const Value.absent(),
+    this.bookCode = const Value.absent(),
+    this.chapter = const Value.absent(),
+    this.verse = const Value.absent(),
+    this.preferredTranslation = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BibleReadingPositionsCompanion.insert({
+    required String userId,
+    required String bookCode,
+    required int chapter,
+    this.verse = const Value.absent(),
+    this.preferredTranslation = const Value.absent(),
+    required DateTime updatedAt,
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : userId = Value(userId),
+       bookCode = Value(bookCode),
+       chapter = Value(chapter),
+       updatedAt = Value(updatedAt);
+  static Insertable<BibleReadingPosition> custom({
+    Expression<String>? userId,
+    Expression<String>? bookCode,
+    Expression<int>? chapter,
+    Expression<int>? verse,
+    Expression<String>? preferredTranslation,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? isSynced,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (userId != null) 'user_id': userId,
+      if (bookCode != null) 'book_code': bookCode,
+      if (chapter != null) 'chapter': chapter,
+      if (verse != null) 'verse': verse,
+      if (preferredTranslation != null)
+        'preferred_translation': preferredTranslation,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BibleReadingPositionsCompanion copyWith({
+    Value<String>? userId,
+    Value<String>? bookCode,
+    Value<int>? chapter,
+    Value<int>? verse,
+    Value<String>? preferredTranslation,
+    Value<DateTime>? updatedAt,
+    Value<bool>? isSynced,
+    Value<int>? rowid,
+  }) {
+    return BibleReadingPositionsCompanion(
+      userId: userId ?? this.userId,
+      bookCode: bookCode ?? this.bookCode,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      preferredTranslation: preferredTranslation ?? this.preferredTranslation,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (bookCode.present) {
+      map['book_code'] = Variable<String>(bookCode.value);
+    }
+    if (chapter.present) {
+      map['chapter'] = Variable<int>(chapter.value);
+    }
+    if (verse.present) {
+      map['verse'] = Variable<int>(verse.value);
+    }
+    if (preferredTranslation.present) {
+      map['preferred_translation'] = Variable<String>(
+        preferredTranslation.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BibleReadingPositionsCompanion(')
+          ..write('userId: $userId, ')
+          ..write('bookCode: $bookCode, ')
+          ..write('chapter: $chapter, ')
+          ..write('verse: $verse, ')
+          ..write('preferredTranslation: $preferredTranslation, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BibleHighlightsTable extends BibleHighlights
+    with TableInfo<$BibleHighlightsTable, BibleHighlight> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BibleHighlightsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _verseIdMeta = const VerificationMeta(
+    'verseId',
+  );
+  @override
+  late final GeneratedColumn<int> verseId = GeneratedColumn<int>(
+    'verse_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bookCodeMeta = const VerificationMeta(
+    'bookCode',
+  );
+  @override
+  late final GeneratedColumn<String> bookCode = GeneratedColumn<String>(
+    'book_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _chapterMeta = const VerificationMeta(
+    'chapter',
+  );
+  @override
+  late final GeneratedColumn<int> chapter = GeneratedColumn<int>(
+    'chapter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _verseMeta = const VerificationMeta('verse');
+  @override
+  late final GeneratedColumn<int> verse = GeneratedColumn<int>(
+    'verse',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorHexMeta = const VerificationMeta(
+    'colorHex',
+  );
+  @override
+  late final GeneratedColumn<String> colorHex = GeneratedColumn<String>(
+    'color_hex',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    verseId,
+    bookCode,
+    chapter,
+    verse,
+    colorHex,
+    createdAt,
+    isSynced,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bible_highlights';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BibleHighlight> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('verse_id')) {
+      context.handle(
+        _verseIdMeta,
+        verseId.isAcceptableOrUnknown(data['verse_id']!, _verseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_verseIdMeta);
+    }
+    if (data.containsKey('book_code')) {
+      context.handle(
+        _bookCodeMeta,
+        bookCode.isAcceptableOrUnknown(data['book_code']!, _bookCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bookCodeMeta);
+    }
+    if (data.containsKey('chapter')) {
+      context.handle(
+        _chapterMeta,
+        chapter.isAcceptableOrUnknown(data['chapter']!, _chapterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_chapterMeta);
+    }
+    if (data.containsKey('verse')) {
+      context.handle(
+        _verseMeta,
+        verse.isAcceptableOrUnknown(data['verse']!, _verseMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_verseMeta);
+    }
+    if (data.containsKey('color_hex')) {
+      context.handle(
+        _colorHexMeta,
+        colorHex.isAcceptableOrUnknown(data['color_hex']!, _colorHexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorHexMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BibleHighlight map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BibleHighlight(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      verseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}verse_id'],
+      )!,
+      bookCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}book_code'],
+      )!,
+      chapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chapter'],
+      )!,
+      verse: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}verse'],
+      )!,
+      colorHex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color_hex'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+    );
+  }
+
+  @override
+  $BibleHighlightsTable createAlias(String alias) {
+    return $BibleHighlightsTable(attachedDatabase, alias);
+  }
+}
+
+class BibleHighlight extends DataClass implements Insertable<BibleHighlight> {
+  final String id;
+  final String userId;
+  final int verseId;
+  final String bookCode;
+  final int chapter;
+  final int verse;
+  final String colorHex;
+  final DateTime createdAt;
+  final bool isSynced;
+  const BibleHighlight({
+    required this.id,
+    required this.userId,
+    required this.verseId,
+    required this.bookCode,
+    required this.chapter,
+    required this.verse,
+    required this.colorHex,
+    required this.createdAt,
+    required this.isSynced,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['verse_id'] = Variable<int>(verseId);
+    map['book_code'] = Variable<String>(bookCode);
+    map['chapter'] = Variable<int>(chapter);
+    map['verse'] = Variable<int>(verse);
+    map['color_hex'] = Variable<String>(colorHex);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['is_synced'] = Variable<bool>(isSynced);
+    return map;
+  }
+
+  BibleHighlightsCompanion toCompanion(bool nullToAbsent) {
+    return BibleHighlightsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      verseId: Value(verseId),
+      bookCode: Value(bookCode),
+      chapter: Value(chapter),
+      verse: Value(verse),
+      colorHex: Value(colorHex),
+      createdAt: Value(createdAt),
+      isSynced: Value(isSynced),
+    );
+  }
+
+  factory BibleHighlight.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BibleHighlight(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      verseId: serializer.fromJson<int>(json['verseId']),
+      bookCode: serializer.fromJson<String>(json['bookCode']),
+      chapter: serializer.fromJson<int>(json['chapter']),
+      verse: serializer.fromJson<int>(json['verse']),
+      colorHex: serializer.fromJson<String>(json['colorHex']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'verseId': serializer.toJson<int>(verseId),
+      'bookCode': serializer.toJson<String>(bookCode),
+      'chapter': serializer.toJson<int>(chapter),
+      'verse': serializer.toJson<int>(verse),
+      'colorHex': serializer.toJson<String>(colorHex),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'isSynced': serializer.toJson<bool>(isSynced),
+    };
+  }
+
+  BibleHighlight copyWith({
+    String? id,
+    String? userId,
+    int? verseId,
+    String? bookCode,
+    int? chapter,
+    int? verse,
+    String? colorHex,
+    DateTime? createdAt,
+    bool? isSynced,
+  }) => BibleHighlight(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    verseId: verseId ?? this.verseId,
+    bookCode: bookCode ?? this.bookCode,
+    chapter: chapter ?? this.chapter,
+    verse: verse ?? this.verse,
+    colorHex: colorHex ?? this.colorHex,
+    createdAt: createdAt ?? this.createdAt,
+    isSynced: isSynced ?? this.isSynced,
+  );
+  BibleHighlight copyWithCompanion(BibleHighlightsCompanion data) {
+    return BibleHighlight(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      verseId: data.verseId.present ? data.verseId.value : this.verseId,
+      bookCode: data.bookCode.present ? data.bookCode.value : this.bookCode,
+      chapter: data.chapter.present ? data.chapter.value : this.chapter,
+      verse: data.verse.present ? data.verse.value : this.verse,
+      colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BibleHighlight(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('verseId: $verseId, ')
+          ..write('bookCode: $bookCode, ')
+          ..write('chapter: $chapter, ')
+          ..write('verse: $verse, ')
+          ..write('colorHex: $colorHex, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('isSynced: $isSynced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    verseId,
+    bookCode,
+    chapter,
+    verse,
+    colorHex,
+    createdAt,
+    isSynced,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BibleHighlight &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.verseId == this.verseId &&
+          other.bookCode == this.bookCode &&
+          other.chapter == this.chapter &&
+          other.verse == this.verse &&
+          other.colorHex == this.colorHex &&
+          other.createdAt == this.createdAt &&
+          other.isSynced == this.isSynced);
+}
+
+class BibleHighlightsCompanion extends UpdateCompanion<BibleHighlight> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<int> verseId;
+  final Value<String> bookCode;
+  final Value<int> chapter;
+  final Value<int> verse;
+  final Value<String> colorHex;
+  final Value<DateTime> createdAt;
+  final Value<bool> isSynced;
+  final Value<int> rowid;
+  const BibleHighlightsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.verseId = const Value.absent(),
+    this.bookCode = const Value.absent(),
+    this.chapter = const Value.absent(),
+    this.verse = const Value.absent(),
+    this.colorHex = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BibleHighlightsCompanion.insert({
+    required String id,
+    required String userId,
+    required int verseId,
+    required String bookCode,
+    required int chapter,
+    required int verse,
+    required String colorHex,
+    required DateTime createdAt,
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       verseId = Value(verseId),
+       bookCode = Value(bookCode),
+       chapter = Value(chapter),
+       verse = Value(verse),
+       colorHex = Value(colorHex),
+       createdAt = Value(createdAt);
+  static Insertable<BibleHighlight> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<int>? verseId,
+    Expression<String>? bookCode,
+    Expression<int>? chapter,
+    Expression<int>? verse,
+    Expression<String>? colorHex,
+    Expression<DateTime>? createdAt,
+    Expression<bool>? isSynced,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (verseId != null) 'verse_id': verseId,
+      if (bookCode != null) 'book_code': bookCode,
+      if (chapter != null) 'chapter': chapter,
+      if (verse != null) 'verse': verse,
+      if (colorHex != null) 'color_hex': colorHex,
+      if (createdAt != null) 'created_at': createdAt,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BibleHighlightsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<int>? verseId,
+    Value<String>? bookCode,
+    Value<int>? chapter,
+    Value<int>? verse,
+    Value<String>? colorHex,
+    Value<DateTime>? createdAt,
+    Value<bool>? isSynced,
+    Value<int>? rowid,
+  }) {
+    return BibleHighlightsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      verseId: verseId ?? this.verseId,
+      bookCode: bookCode ?? this.bookCode,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      colorHex: colorHex ?? this.colorHex,
+      createdAt: createdAt ?? this.createdAt,
+      isSynced: isSynced ?? this.isSynced,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (verseId.present) {
+      map['verse_id'] = Variable<int>(verseId.value);
+    }
+    if (bookCode.present) {
+      map['book_code'] = Variable<String>(bookCode.value);
+    }
+    if (chapter.present) {
+      map['chapter'] = Variable<int>(chapter.value);
+    }
+    if (verse.present) {
+      map['verse'] = Variable<int>(verse.value);
+    }
+    if (colorHex.present) {
+      map['color_hex'] = Variable<String>(colorHex.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BibleHighlightsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('verseId: $verseId, ')
+          ..write('bookCode: $bookCode, ')
+          ..write('chapter: $chapter, ')
+          ..write('verse: $verse, ')
+          ..write('colorHex: $colorHex, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BibleDownloadedTranslationsTable extends BibleDownloadedTranslations
+    with
+        TableInfo<
+          $BibleDownloadedTranslationsTable,
+          BibleDownloadedTranslation
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BibleDownloadedTranslationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sizeBytesMeta = const VerificationMeta(
+    'sizeBytes',
+  );
+  @override
+  late final GeneratedColumn<int> sizeBytes = GeneratedColumn<int>(
+    'size_bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
+    'isDefault',
+  );
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+    'is_default',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_default" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _installedAtMeta = const VerificationMeta(
+    'installedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> installedAt = GeneratedColumn<DateTime>(
+    'installed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    code,
+    name,
+    localPath,
+    version,
+    sizeBytes,
+    isDefault,
+    installedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bible_downloaded_translations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BibleDownloadedTranslation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('size_bytes')) {
+      context.handle(
+        _sizeBytesMeta,
+        sizeBytes.isAcceptableOrUnknown(data['size_bytes']!, _sizeBytesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sizeBytesMeta);
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(
+        _isDefaultMeta,
+        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
+      );
+    }
+    if (data.containsKey('installed_at')) {
+      context.handle(
+        _installedAtMeta,
+        installedAt.isAcceptableOrUnknown(
+          data['installed_at']!,
+          _installedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_installedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {code};
+  @override
+  BibleDownloadedTranslation map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BibleDownloadedTranslation(
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      sizeBytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size_bytes'],
+      )!,
+      isDefault: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_default'],
+      )!,
+      installedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}installed_at'],
+      )!,
+    );
+  }
+
+  @override
+  $BibleDownloadedTranslationsTable createAlias(String alias) {
+    return $BibleDownloadedTranslationsTable(attachedDatabase, alias);
+  }
+}
+
+class BibleDownloadedTranslation extends DataClass
+    implements Insertable<BibleDownloadedTranslation> {
+  final String code;
+  final String name;
+  final String localPath;
+  final int version;
+  final int sizeBytes;
+  final bool isDefault;
+  final DateTime installedAt;
+  const BibleDownloadedTranslation({
+    required this.code,
+    required this.name,
+    required this.localPath,
+    required this.version,
+    required this.sizeBytes,
+    required this.isDefault,
+    required this.installedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['local_path'] = Variable<String>(localPath);
+    map['version'] = Variable<int>(version);
+    map['size_bytes'] = Variable<int>(sizeBytes);
+    map['is_default'] = Variable<bool>(isDefault);
+    map['installed_at'] = Variable<DateTime>(installedAt);
+    return map;
+  }
+
+  BibleDownloadedTranslationsCompanion toCompanion(bool nullToAbsent) {
+    return BibleDownloadedTranslationsCompanion(
+      code: Value(code),
+      name: Value(name),
+      localPath: Value(localPath),
+      version: Value(version),
+      sizeBytes: Value(sizeBytes),
+      isDefault: Value(isDefault),
+      installedAt: Value(installedAt),
+    );
+  }
+
+  factory BibleDownloadedTranslation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BibleDownloadedTranslation(
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      version: serializer.fromJson<int>(json['version']),
+      sizeBytes: serializer.fromJson<int>(json['sizeBytes']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+      installedAt: serializer.fromJson<DateTime>(json['installedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'localPath': serializer.toJson<String>(localPath),
+      'version': serializer.toJson<int>(version),
+      'sizeBytes': serializer.toJson<int>(sizeBytes),
+      'isDefault': serializer.toJson<bool>(isDefault),
+      'installedAt': serializer.toJson<DateTime>(installedAt),
+    };
+  }
+
+  BibleDownloadedTranslation copyWith({
+    String? code,
+    String? name,
+    String? localPath,
+    int? version,
+    int? sizeBytes,
+    bool? isDefault,
+    DateTime? installedAt,
+  }) => BibleDownloadedTranslation(
+    code: code ?? this.code,
+    name: name ?? this.name,
+    localPath: localPath ?? this.localPath,
+    version: version ?? this.version,
+    sizeBytes: sizeBytes ?? this.sizeBytes,
+    isDefault: isDefault ?? this.isDefault,
+    installedAt: installedAt ?? this.installedAt,
+  );
+  BibleDownloadedTranslation copyWithCompanion(
+    BibleDownloadedTranslationsCompanion data,
+  ) {
+    return BibleDownloadedTranslation(
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      version: data.version.present ? data.version.value : this.version,
+      sizeBytes: data.sizeBytes.present ? data.sizeBytes.value : this.sizeBytes,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+      installedAt: data.installedAt.present
+          ? data.installedAt.value
+          : this.installedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BibleDownloadedTranslation(')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('localPath: $localPath, ')
+          ..write('version: $version, ')
+          ..write('sizeBytes: $sizeBytes, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('installedAt: $installedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    code,
+    name,
+    localPath,
+    version,
+    sizeBytes,
+    isDefault,
+    installedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BibleDownloadedTranslation &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.localPath == this.localPath &&
+          other.version == this.version &&
+          other.sizeBytes == this.sizeBytes &&
+          other.isDefault == this.isDefault &&
+          other.installedAt == this.installedAt);
+}
+
+class BibleDownloadedTranslationsCompanion
+    extends UpdateCompanion<BibleDownloadedTranslation> {
+  final Value<String> code;
+  final Value<String> name;
+  final Value<String> localPath;
+  final Value<int> version;
+  final Value<int> sizeBytes;
+  final Value<bool> isDefault;
+  final Value<DateTime> installedAt;
+  final Value<int> rowid;
+  const BibleDownloadedTranslationsCompanion({
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.version = const Value.absent(),
+    this.sizeBytes = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.installedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BibleDownloadedTranslationsCompanion.insert({
+    required String code,
+    required String name,
+    required String localPath,
+    required int version,
+    required int sizeBytes,
+    this.isDefault = const Value.absent(),
+    required DateTime installedAt,
+    this.rowid = const Value.absent(),
+  }) : code = Value(code),
+       name = Value(name),
+       localPath = Value(localPath),
+       version = Value(version),
+       sizeBytes = Value(sizeBytes),
+       installedAt = Value(installedAt);
+  static Insertable<BibleDownloadedTranslation> custom({
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<String>? localPath,
+    Expression<int>? version,
+    Expression<int>? sizeBytes,
+    Expression<bool>? isDefault,
+    Expression<DateTime>? installedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (localPath != null) 'local_path': localPath,
+      if (version != null) 'version': version,
+      if (sizeBytes != null) 'size_bytes': sizeBytes,
+      if (isDefault != null) 'is_default': isDefault,
+      if (installedAt != null) 'installed_at': installedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BibleDownloadedTranslationsCompanion copyWith({
+    Value<String>? code,
+    Value<String>? name,
+    Value<String>? localPath,
+    Value<int>? version,
+    Value<int>? sizeBytes,
+    Value<bool>? isDefault,
+    Value<DateTime>? installedAt,
+    Value<int>? rowid,
+  }) {
+    return BibleDownloadedTranslationsCompanion(
+      code: code ?? this.code,
+      name: name ?? this.name,
+      localPath: localPath ?? this.localPath,
+      version: version ?? this.version,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      isDefault: isDefault ?? this.isDefault,
+      installedAt: installedAt ?? this.installedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (sizeBytes.present) {
+      map['size_bytes'] = Variable<int>(sizeBytes.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    if (installedAt.present) {
+      map['installed_at'] = Variable<DateTime>(installedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BibleDownloadedTranslationsCompanion(')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('localPath: $localPath, ')
+          ..write('version: $version, ')
+          ..write('sizeBytes: $sizeBytes, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScribesDatabase extends GeneratedDatabase {
   _$ScribesDatabase(QueryExecutor e) : super(e);
   $ScribesDatabaseManager get managers => $ScribesDatabaseManager(this);
@@ -2837,9 +4350,17 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
   late final $SyncMetadataTable syncMetadata = $SyncMetadataTable(this);
   late final $NotebooksTable notebooks = $NotebooksTable(this);
   late final $NotesTable notes = $NotesTable(this);
+  late final $BibleReadingPositionsTable bibleReadingPositions =
+      $BibleReadingPositionsTable(this);
+  late final $BibleHighlightsTable bibleHighlights = $BibleHighlightsTable(
+    this,
+  );
+  late final $BibleDownloadedTranslationsTable bibleDownloadedTranslations =
+      $BibleDownloadedTranslationsTable(this);
   late final NotesDao notesDao = NotesDao(this as ScribesDatabase);
   late final DraftsDao draftsDao = DraftsDao(this as ScribesDatabase);
   late final PostsDao postsDao = PostsDao(this as ScribesDatabase);
+  late final BibleDao bibleDao = BibleDao(this as ScribesDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2850,6 +4371,9 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
     syncMetadata,
     notebooks,
     notes,
+    bibleReadingPositions,
+    bibleHighlights,
+    bibleDownloadedTranslations,
   ];
 }
 
@@ -4227,6 +5751,810 @@ typedef $$NotesTableProcessedTableManager =
       Note,
       PrefetchHooks Function()
     >;
+typedef $$BibleReadingPositionsTableCreateCompanionBuilder =
+    BibleReadingPositionsCompanion Function({
+      required String userId,
+      required String bookCode,
+      required int chapter,
+      Value<int> verse,
+      Value<String> preferredTranslation,
+      required DateTime updatedAt,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+typedef $$BibleReadingPositionsTableUpdateCompanionBuilder =
+    BibleReadingPositionsCompanion Function({
+      Value<String> userId,
+      Value<String> bookCode,
+      Value<int> chapter,
+      Value<int> verse,
+      Value<String> preferredTranslation,
+      Value<DateTime> updatedAt,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+
+class $$BibleReadingPositionsTableFilterComposer
+    extends Composer<_$ScribesDatabase, $BibleReadingPositionsTable> {
+  $$BibleReadingPositionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bookCode => $composableBuilder(
+    column: $table.bookCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chapter => $composableBuilder(
+    column: $table.chapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get verse => $composableBuilder(
+    column: $table.verse,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get preferredTranslation => $composableBuilder(
+    column: $table.preferredTranslation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BibleReadingPositionsTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $BibleReadingPositionsTable> {
+  $$BibleReadingPositionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bookCode => $composableBuilder(
+    column: $table.bookCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chapter => $composableBuilder(
+    column: $table.chapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get verse => $composableBuilder(
+    column: $table.verse,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get preferredTranslation => $composableBuilder(
+    column: $table.preferredTranslation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BibleReadingPositionsTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $BibleReadingPositionsTable> {
+  $$BibleReadingPositionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get bookCode =>
+      $composableBuilder(column: $table.bookCode, builder: (column) => column);
+
+  GeneratedColumn<int> get chapter =>
+      $composableBuilder(column: $table.chapter, builder: (column) => column);
+
+  GeneratedColumn<int> get verse =>
+      $composableBuilder(column: $table.verse, builder: (column) => column);
+
+  GeneratedColumn<String> get preferredTranslation => $composableBuilder(
+    column: $table.preferredTranslation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+}
+
+class $$BibleReadingPositionsTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $BibleReadingPositionsTable,
+          BibleReadingPosition,
+          $$BibleReadingPositionsTableFilterComposer,
+          $$BibleReadingPositionsTableOrderingComposer,
+          $$BibleReadingPositionsTableAnnotationComposer,
+          $$BibleReadingPositionsTableCreateCompanionBuilder,
+          $$BibleReadingPositionsTableUpdateCompanionBuilder,
+          (
+            BibleReadingPosition,
+            BaseReferences<
+              _$ScribesDatabase,
+              $BibleReadingPositionsTable,
+              BibleReadingPosition
+            >,
+          ),
+          BibleReadingPosition,
+          PrefetchHooks Function()
+        > {
+  $$BibleReadingPositionsTableTableManager(
+    _$ScribesDatabase db,
+    $BibleReadingPositionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BibleReadingPositionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$BibleReadingPositionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$BibleReadingPositionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> userId = const Value.absent(),
+                Value<String> bookCode = const Value.absent(),
+                Value<int> chapter = const Value.absent(),
+                Value<int> verse = const Value.absent(),
+                Value<String> preferredTranslation = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BibleReadingPositionsCompanion(
+                userId: userId,
+                bookCode: bookCode,
+                chapter: chapter,
+                verse: verse,
+                preferredTranslation: preferredTranslation,
+                updatedAt: updatedAt,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String userId,
+                required String bookCode,
+                required int chapter,
+                Value<int> verse = const Value.absent(),
+                Value<String> preferredTranslation = const Value.absent(),
+                required DateTime updatedAt,
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BibleReadingPositionsCompanion.insert(
+                userId: userId,
+                bookCode: bookCode,
+                chapter: chapter,
+                verse: verse,
+                preferredTranslation: preferredTranslation,
+                updatedAt: updatedAt,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BibleReadingPositionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $BibleReadingPositionsTable,
+      BibleReadingPosition,
+      $$BibleReadingPositionsTableFilterComposer,
+      $$BibleReadingPositionsTableOrderingComposer,
+      $$BibleReadingPositionsTableAnnotationComposer,
+      $$BibleReadingPositionsTableCreateCompanionBuilder,
+      $$BibleReadingPositionsTableUpdateCompanionBuilder,
+      (
+        BibleReadingPosition,
+        BaseReferences<
+          _$ScribesDatabase,
+          $BibleReadingPositionsTable,
+          BibleReadingPosition
+        >,
+      ),
+      BibleReadingPosition,
+      PrefetchHooks Function()
+    >;
+typedef $$BibleHighlightsTableCreateCompanionBuilder =
+    BibleHighlightsCompanion Function({
+      required String id,
+      required String userId,
+      required int verseId,
+      required String bookCode,
+      required int chapter,
+      required int verse,
+      required String colorHex,
+      required DateTime createdAt,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+typedef $$BibleHighlightsTableUpdateCompanionBuilder =
+    BibleHighlightsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<int> verseId,
+      Value<String> bookCode,
+      Value<int> chapter,
+      Value<int> verse,
+      Value<String> colorHex,
+      Value<DateTime> createdAt,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+
+class $$BibleHighlightsTableFilterComposer
+    extends Composer<_$ScribesDatabase, $BibleHighlightsTable> {
+  $$BibleHighlightsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get verseId => $composableBuilder(
+    column: $table.verseId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bookCode => $composableBuilder(
+    column: $table.bookCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chapter => $composableBuilder(
+    column: $table.chapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get verse => $composableBuilder(
+    column: $table.verse,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BibleHighlightsTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $BibleHighlightsTable> {
+  $$BibleHighlightsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get verseId => $composableBuilder(
+    column: $table.verseId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bookCode => $composableBuilder(
+    column: $table.bookCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chapter => $composableBuilder(
+    column: $table.chapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get verse => $composableBuilder(
+    column: $table.verse,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BibleHighlightsTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $BibleHighlightsTable> {
+  $$BibleHighlightsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<int> get verseId =>
+      $composableBuilder(column: $table.verseId, builder: (column) => column);
+
+  GeneratedColumn<String> get bookCode =>
+      $composableBuilder(column: $table.bookCode, builder: (column) => column);
+
+  GeneratedColumn<int> get chapter =>
+      $composableBuilder(column: $table.chapter, builder: (column) => column);
+
+  GeneratedColumn<int> get verse =>
+      $composableBuilder(column: $table.verse, builder: (column) => column);
+
+  GeneratedColumn<String> get colorHex =>
+      $composableBuilder(column: $table.colorHex, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+}
+
+class $$BibleHighlightsTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $BibleHighlightsTable,
+          BibleHighlight,
+          $$BibleHighlightsTableFilterComposer,
+          $$BibleHighlightsTableOrderingComposer,
+          $$BibleHighlightsTableAnnotationComposer,
+          $$BibleHighlightsTableCreateCompanionBuilder,
+          $$BibleHighlightsTableUpdateCompanionBuilder,
+          (
+            BibleHighlight,
+            BaseReferences<
+              _$ScribesDatabase,
+              $BibleHighlightsTable,
+              BibleHighlight
+            >,
+          ),
+          BibleHighlight,
+          PrefetchHooks Function()
+        > {
+  $$BibleHighlightsTableTableManager(
+    _$ScribesDatabase db,
+    $BibleHighlightsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BibleHighlightsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BibleHighlightsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BibleHighlightsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<int> verseId = const Value.absent(),
+                Value<String> bookCode = const Value.absent(),
+                Value<int> chapter = const Value.absent(),
+                Value<int> verse = const Value.absent(),
+                Value<String> colorHex = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BibleHighlightsCompanion(
+                id: id,
+                userId: userId,
+                verseId: verseId,
+                bookCode: bookCode,
+                chapter: chapter,
+                verse: verse,
+                colorHex: colorHex,
+                createdAt: createdAt,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required int verseId,
+                required String bookCode,
+                required int chapter,
+                required int verse,
+                required String colorHex,
+                required DateTime createdAt,
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BibleHighlightsCompanion.insert(
+                id: id,
+                userId: userId,
+                verseId: verseId,
+                bookCode: bookCode,
+                chapter: chapter,
+                verse: verse,
+                colorHex: colorHex,
+                createdAt: createdAt,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BibleHighlightsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $BibleHighlightsTable,
+      BibleHighlight,
+      $$BibleHighlightsTableFilterComposer,
+      $$BibleHighlightsTableOrderingComposer,
+      $$BibleHighlightsTableAnnotationComposer,
+      $$BibleHighlightsTableCreateCompanionBuilder,
+      $$BibleHighlightsTableUpdateCompanionBuilder,
+      (
+        BibleHighlight,
+        BaseReferences<
+          _$ScribesDatabase,
+          $BibleHighlightsTable,
+          BibleHighlight
+        >,
+      ),
+      BibleHighlight,
+      PrefetchHooks Function()
+    >;
+typedef $$BibleDownloadedTranslationsTableCreateCompanionBuilder =
+    BibleDownloadedTranslationsCompanion Function({
+      required String code,
+      required String name,
+      required String localPath,
+      required int version,
+      required int sizeBytes,
+      Value<bool> isDefault,
+      required DateTime installedAt,
+      Value<int> rowid,
+    });
+typedef $$BibleDownloadedTranslationsTableUpdateCompanionBuilder =
+    BibleDownloadedTranslationsCompanion Function({
+      Value<String> code,
+      Value<String> name,
+      Value<String> localPath,
+      Value<int> version,
+      Value<int> sizeBytes,
+      Value<bool> isDefault,
+      Value<DateTime> installedAt,
+      Value<int> rowid,
+    });
+
+class $$BibleDownloadedTranslationsTableFilterComposer
+    extends Composer<_$ScribesDatabase, $BibleDownloadedTranslationsTable> {
+  $$BibleDownloadedTranslationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sizeBytes => $composableBuilder(
+    column: $table.sizeBytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BibleDownloadedTranslationsTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $BibleDownloadedTranslationsTable> {
+  $$BibleDownloadedTranslationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sizeBytes => $composableBuilder(
+    column: $table.sizeBytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BibleDownloadedTranslationsTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $BibleDownloadedTranslationsTable> {
+  $$BibleDownloadedTranslationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get sizeBytes =>
+      $composableBuilder(column: $table.sizeBytes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$BibleDownloadedTranslationsTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $BibleDownloadedTranslationsTable,
+          BibleDownloadedTranslation,
+          $$BibleDownloadedTranslationsTableFilterComposer,
+          $$BibleDownloadedTranslationsTableOrderingComposer,
+          $$BibleDownloadedTranslationsTableAnnotationComposer,
+          $$BibleDownloadedTranslationsTableCreateCompanionBuilder,
+          $$BibleDownloadedTranslationsTableUpdateCompanionBuilder,
+          (
+            BibleDownloadedTranslation,
+            BaseReferences<
+              _$ScribesDatabase,
+              $BibleDownloadedTranslationsTable,
+              BibleDownloadedTranslation
+            >,
+          ),
+          BibleDownloadedTranslation,
+          PrefetchHooks Function()
+        > {
+  $$BibleDownloadedTranslationsTableTableManager(
+    _$ScribesDatabase db,
+    $BibleDownloadedTranslationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BibleDownloadedTranslationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$BibleDownloadedTranslationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$BibleDownloadedTranslationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> code = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int> sizeBytes = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+                Value<DateTime> installedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BibleDownloadedTranslationsCompanion(
+                code: code,
+                name: name,
+                localPath: localPath,
+                version: version,
+                sizeBytes: sizeBytes,
+                isDefault: isDefault,
+                installedAt: installedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String code,
+                required String name,
+                required String localPath,
+                required int version,
+                required int sizeBytes,
+                Value<bool> isDefault = const Value.absent(),
+                required DateTime installedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => BibleDownloadedTranslationsCompanion.insert(
+                code: code,
+                name: name,
+                localPath: localPath,
+                version: version,
+                sizeBytes: sizeBytes,
+                isDefault: isDefault,
+                installedAt: installedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BibleDownloadedTranslationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $BibleDownloadedTranslationsTable,
+      BibleDownloadedTranslation,
+      $$BibleDownloadedTranslationsTableFilterComposer,
+      $$BibleDownloadedTranslationsTableOrderingComposer,
+      $$BibleDownloadedTranslationsTableAnnotationComposer,
+      $$BibleDownloadedTranslationsTableCreateCompanionBuilder,
+      $$BibleDownloadedTranslationsTableUpdateCompanionBuilder,
+      (
+        BibleDownloadedTranslation,
+        BaseReferences<
+          _$ScribesDatabase,
+          $BibleDownloadedTranslationsTable,
+          BibleDownloadedTranslation
+        >,
+      ),
+      BibleDownloadedTranslation,
+      PrefetchHooks Function()
+    >;
 
 class $ScribesDatabaseManager {
   final _$ScribesDatabase _db;
@@ -4241,4 +6569,14 @@ class $ScribesDatabaseManager {
       $$NotebooksTableTableManager(_db, _db.notebooks);
   $$NotesTableTableManager get notes =>
       $$NotesTableTableManager(_db, _db.notes);
+  $$BibleReadingPositionsTableTableManager get bibleReadingPositions =>
+      $$BibleReadingPositionsTableTableManager(_db, _db.bibleReadingPositions);
+  $$BibleHighlightsTableTableManager get bibleHighlights =>
+      $$BibleHighlightsTableTableManager(_db, _db.bibleHighlights);
+  $$BibleDownloadedTranslationsTableTableManager
+  get bibleDownloadedTranslations =>
+      $$BibleDownloadedTranslationsTableTableManager(
+        _db,
+        _db.bibleDownloadedTranslations,
+      );
 }

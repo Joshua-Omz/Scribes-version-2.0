@@ -24,7 +24,7 @@ func NewRepository(db *sql.DB) *Repository {
 
 func (r *Repository) GetTranslations(ctx context.Context) ([]Translation, error) {
 	query := `
-		SELECT id, code, name, language, attribution_text, source, is_active, is_default
+		SELECT id, code, name, language, attribution_text, source, is_active, is_default, download_url, file_size_bytes, version
 		FROM bible_translations
 		WHERE is_active = true
 		ORDER BY is_default DESC, name ASC
@@ -38,7 +38,7 @@ func (r *Repository) GetTranslations(ctx context.Context) ([]Translation, error)
 	var translations []Translation
 	for rows.Next() {
 		var t Translation
-		if err := rows.Scan(&t.ID, &t.Code, &t.Name, &t.Language, &t.AttributionText, &t.Source, &t.IsActive, &t.IsDefault); err != nil {
+		if err := rows.Scan(&t.ID, &t.Code, &t.Name, &t.Language, &t.AttributionText, &t.Source, &t.IsActive, &t.IsDefault, &t.DownloadURL, &t.FileSizeBytes, &t.Version); err != nil {
 			return nil, err
 		}
 		translations = append(translations, t)
@@ -226,42 +226,118 @@ func (r *Repository) Search(ctx context.Context, translationCode, searchQuery st
 	return results, nil
 }
 
-func (r *Repository) SaveReadingPosition(ctx context.Context, userID uuid.UUID, translationCode, bookName string, chapter int) error {
+func (r *Repository) SaveReadingPosition(ctx context.Context, userID uuid.UUID, translationCode, bookCode string, chapter, verse int) error {
 	if translationCode == "" {
 		translationCode = "BSB"
 	}
+	if verse <= 0 {
+		verse = 1
+	}
 
 	query := `
-		INSERT INTO bible_reading_position (user_id, book_id, chapter, updated_at)
-		SELECT $1, b.id, $4, now()
-		FROM bible_books b
-		JOIN bible_translations t ON b.translation_id = t.id
-		WHERE t.code = $2 AND (LOWER(b.name) = LOWER($3) OR LOWER(b.short_name) = LOWER($3))
+		INSERT INTO bible_reading_positions (user_id, book_code, chapter, verse, preferred_translation, updated_at)
+		VALUES ($1, $2, $3, $4, $5, now())
 		ON CONFLICT (user_id) DO UPDATE
-		SET book_id = EXCLUDED.book_id,
+		SET book_code = EXCLUDED.book_code,
 		    chapter = EXCLUDED.chapter,
+		    verse = EXCLUDED.verse,
+		    preferred_translation = EXCLUDED.preferred_translation,
 		    updated_at = now()
 	`
-	res, err := r.db.ExecContext(ctx, query, userID, strings.ToUpper(translationCode), bookName, chapter)
+	_, err := r.db.ExecContext(ctx, query, userID, strings.ToUpper(bookCode), chapter, verse, strings.ToUpper(translationCode))
+	return err
+}
+
+func (r *Repository) IngestTranslation(ctx context.Context, input BibleInput) error {
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to start tx: %w", err)
 	}
-	rowsAffected, _ := res.RowsAffected()
-	if rowsAffected == 0 {
-		return ErrNotFound
+	defer tx.Rollback()
+
+	// 1. Insert Translation
+	var translationID uuid.UUID
+	err = tx.QueryRowContext(ctx, `
+		INSERT INTO bible_translations (code, name, language, attribution_text, source, is_active, is_default)
+		VALUES ($1, $2, $3, $4, 'self_hosted', true, false)
+		ON CONFLICT (code) DO UPDATE 
+		SET name = EXCLUDED.name, attribution_text = EXCLUDED.attribution_text
+		RETURNING id
+	`, input.Translation.Code, input.Translation.Name, input.Translation.Language, input.Translation.AttributionText).Scan(&translationID)
+	if err != nil {
+		return fmt.Errorf("failed to insert translation: %w", err)
 	}
+
+	// 2. Insert Books and Verses
+	for bIdx, book := range input.Books {
+		var bookID uuid.UUID
+		chapterCount := len(book.Chapters)
+		err = tx.QueryRowContext(ctx, `
+			INSERT INTO bible_books (translation_id, name, short_name, testament, book_order, chapter_count)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			ON CONFLICT (translation_id, name) DO UPDATE
+			SET short_name = EXCLUDED.short_name, chapter_count = EXCLUDED.chapter_count
+			RETURNING id
+		`, translationID, book.Name, book.ShortName, book.Testament, bIdx+1, chapterCount).Scan(&bookID)
+		if err != nil {
+			return fmt.Errorf("failed to insert book %s: %w", book.Name, err)
+		}
+
+		// Delete existing verses for this book to avoid duplicates on re-run
+		_, err = tx.ExecContext(ctx, `DELETE FROM bible_verses WHERE book_id = $1`, bookID)
+		if err != nil {
+			return fmt.Errorf("failed to clear old verses for book %s: %w", book.Name, err)
+		}
+
+		// Insert verses in batches
+		var valueStrings []string
+		var valueArgs []interface{}
+		argId := 1
+
+		for _, chapter := range book.Chapters {
+			for _, verse := range chapter.Verses {
+				valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d)", argId, argId+1, argId+2, argId+3))
+				valueArgs = append(valueArgs, bookID, chapter.Chapter, verse.Verse, verse.Text)
+				argId += 4
+
+				if len(valueStrings) >= 1000 {
+					stmt := fmt.Sprintf("INSERT INTO bible_verses (book_id, chapter, verse, text) VALUES %s", strings.Join(valueStrings, ","))
+					_, err := tx.ExecContext(ctx, stmt, valueArgs...)
+					if err != nil {
+						return fmt.Errorf("failed to insert verses batch: %w", err)
+					}
+					valueStrings = []string{}
+					valueArgs = []interface{}{}
+					argId = 1
+				}
+			}
+		}
+
+		// Insert remaining
+		if len(valueStrings) > 0 {
+			stmt := fmt.Sprintf("INSERT INTO bible_verses (book_id, chapter, verse, text) VALUES %s", strings.Join(valueStrings, ","))
+			_, err := tx.ExecContext(ctx, stmt, valueArgs...)
+			if err != nil {
+				return fmt.Errorf("failed to insert verses batch: %w", err)
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit tx: %w", err)
+	}
+
 	return nil
 }
 
 func (r *Repository) GetReadingPosition(ctx context.Context, userID uuid.UUID) (*ReadingPosition, error) {
 	query := `
-		SELECT b.name, p.chapter, p.updated_at
-		FROM bible_reading_position p
-		JOIN bible_books b ON p.book_id = b.id
-		WHERE p.user_id = $1
+		SELECT book_code, chapter, verse, preferred_translation, updated_at
+		FROM bible_reading_positions
+		WHERE user_id = $1
 	`
 	var pos ReadingPosition
-	err := r.db.QueryRowContext(ctx, query, userID).Scan(&pos.Book, &pos.Chapter, &pos.UpdatedAt)
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&pos.BookCode, &pos.Chapter, &pos.Verse, &pos.PreferredTranslation, &pos.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound

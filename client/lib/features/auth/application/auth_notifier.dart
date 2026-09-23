@@ -106,6 +106,9 @@ class AuthNotifier extends _$AuthNotifier {
           await (db.update(db.notebooks)
                 ..where((t) => t.ownerId.equals(guestId)))
               .write(NotebooksCompanion(ownerId: Value(newUserId)));
+
+          // Re-parent Bible reading position and highlights
+          await db.bibleDao.reparentGuestData(guestId, newUserId);
         });
       }
     } catch (e) {

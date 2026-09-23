@@ -32,6 +32,9 @@ class VerseSelection {
   /// Whether a specific verse number falls inside this selected range.
   bool contains(int verse) => verse >= verseStart && verse <= verseEnd;
 
+  /// Whether exactly one verse is selected.
+  bool get isSingleVerse => verseStart == verseEnd;
+
   /// Human-readable scripture reference string, e.g. "John 3:16" or "John 3:16-18".
   String get displayLabel {
     if (verseStart == verseEnd) {
