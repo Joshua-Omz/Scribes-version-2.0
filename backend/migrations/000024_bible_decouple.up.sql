@@ -1,4 +1,4 @@
--- 000022_bible_decouple.up.sql
+-- 000024_bible_decouple.up.sql
 
 -- 1. Drop heavy scripture text tables from PostgreSQL
 DROP TABLE IF EXISTS bible_verses CASCADE;

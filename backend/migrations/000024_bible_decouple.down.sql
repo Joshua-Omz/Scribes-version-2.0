@@ -1,4 +1,4 @@
--- 000022_bible_decouple.down.sql
+-- 000024_bible_decouple.down.sql
 
 DROP TABLE IF EXISTS bible_reading_positions;
 ALTER TABLE bible_translations DROP COLUMN IF EXISTS download_url;

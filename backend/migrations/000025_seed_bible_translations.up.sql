@@ -1,4 +1,4 @@
--- 000023_seed_bible_translations.up.sql
+-- 000025_seed_bible_translations.up.sql
 
 INSERT INTO bible_translations (
     code, name, language, attribution_text, source, is_active, is_default, download_url, file_size_bytes, version
