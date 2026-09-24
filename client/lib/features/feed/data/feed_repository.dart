@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/paginated_feed.dart';
 import 'feed_api.dart';
@@ -7,6 +8,67 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../core/storage/database_provider.dart';
 import '../../../core/storage/drift_database.dart';
+
+List<Map<String, dynamic>> _preparePostsForCache(List<dynamic> rawPosts) {
+  final result = <Map<String, dynamic>>[];
+  for (final item in rawPosts) {
+    if (item is! Map<String, dynamic>) continue;
+    final postId = item['id']?.toString();
+    if (postId == null || postId.isEmpty) continue;
+
+    final authorId = item['author_id']?.toString() ?? '';
+    final authorHandle = item['author_handle']?.toString() ?? '';
+    final authorName = item['author_name']?.toString() ?? '';
+    final caption = item['caption']?.toString();
+    final visibility = item['visibility']?.toString() ?? 'public';
+    final currentVersion = item['current_version'] is int
+        ? item['current_version'] as int
+        : 1;
+    final isCorrection = item['is_correction'] == true;
+    final correctsPostId = item['corrects_post_id']?.toString();
+    final isDeleted = item['is_deleted'] == true;
+    final coverImageUrl = item['cover_image_url']?.toString();
+    final postType = item['post_type']?.toString() ?? 'standard';
+    final publishedAtMillis =
+        (DateTime.tryParse(item['published_at']?.toString() ?? '') ??
+                DateTime.now()).millisecondsSinceEpoch;
+
+    final contentPayload = {
+      'body': item['content'] is Map
+          ? item['content']['body']
+          : item['content'],
+      'title': item['content'] is Map ? item['content']['title'] : '',
+      'excerpt': item['content'] is Map
+          ? item['content']['excerpt']
+          : '',
+      'reflection_image_url': item['reflection_image_url'],
+      'sound_id': item['sound_id'],
+      'sound': item['sound'],
+      'panels': item['panels'],
+      '_full_post': item,
+    };
+
+    result.add({
+      'id': postId,
+      'authorId': authorId,
+      'authorHandle': authorHandle,
+      'authorName': authorName,
+      'content': jsonEncode(contentPayload),
+      'caption': caption,
+      'visibility': visibility,
+      'currentVersion': currentVersion,
+      'isCorrection': isCorrection,
+      'correctsPostId': correctsPostId,
+      'sermonSource': item['sermon_source'] != null ? jsonEncode(item['sermon_source']) : null,
+      'scriptureTags': item['scripture_tags'] != null ? jsonEncode(item['scripture_tags']) : null,
+      'isDeleted': isDeleted,
+      'coverImageUrl': coverImageUrl,
+      'postType': postType,
+      'publishedAt': publishedAtMillis,
+    });
+  }
+  return result;
+}
 
 final feedRepositoryProvider = Provider<FeedRepository>((ref) {
   final dio = ref.watch(apiClientProvider);
@@ -94,71 +156,37 @@ class FeedRepository {
 
   void _cachePosts(dynamic rawPosts) {
     if (rawPosts is! List) return;
-    Future.microtask(() async {
+    Future(() async {
       try {
-        await _db.transaction(() async {
-          for (final item in rawPosts) {
-            if (item is! Map<String, dynamic>) continue;
-            final postId = item['id']?.toString();
-            if (postId == null || postId.isEmpty) continue;
+        // 1. Offload heavy JSON parsing/encoding to a background isolate
+        final preparedData = await compute(_preparePostsForCache, rawPosts);
+        if (preparedData.isEmpty) return;
 
-            final authorId = item['author_id']?.toString() ?? '';
-            final authorHandle = item['author_handle']?.toString() ?? '';
-            final authorName = item['author_name']?.toString() ?? '';
-            final caption = item['caption']?.toString();
-            final visibility = item['visibility']?.toString() ?? 'public';
-            final currentVersion = item['current_version'] is int
-                ? item['current_version'] as int
-                : 1;
-            final isCorrection = item['is_correction'] == true;
-            final correctsPostId = item['corrects_post_id']?.toString();
-            final isDeleted = item['is_deleted'] == true;
-            final coverImageUrl = item['cover_image_url']?.toString();
-            final postType = item['post_type']?.toString() ?? 'standard';
-            final publishedAt =
-                DateTime.tryParse(item['published_at']?.toString() ?? '') ??
-                DateTime.now();
+        // 2. Yield to ensure scrolling frame can paint before DB hit
+        await Future.delayed(const Duration(milliseconds: 50));
 
-            final contentPayload = {
-              'body': item['content'] is Map
-                  ? item['content']['body']
-                  : item['content'],
-              'title': item['content'] is Map ? item['content']['title'] : '',
-              'excerpt': item['content'] is Map
-                  ? item['content']['excerpt']
-                  : '',
-              '_full_post': item,
-            };
-
-            await _db.into(_db.posts).insertOnConflictUpdate(
-              PostsCompanion(
-                id: Value(postId),
-                authorId: Value(authorId),
-                authorHandle: Value(authorHandle),
-                authorName: Value(authorName),
-                content: Value(jsonEncode(contentPayload)),
-                caption: Value(caption),
-                visibility: Value(visibility),
-                currentVersion: Value(currentVersion),
-                isCorrection: Value(isCorrection),
-                correctsPostId: Value(correctsPostId),
-                sermonSource: Value(
-                  item['sermon_source'] != null
-                      ? jsonEncode(item['sermon_source'])
-                      : null,
-                ),
-                scriptureTags: Value(
-                  item['scripture_tags'] != null
-                      ? jsonEncode(item['scripture_tags'])
-                      : null,
-                ),
-                isDeleted: Value(isDeleted),
-                coverImageUrl: Value(coverImageUrl),
-                postType: Value(postType),
-                publishedAt: Value(publishedAt),
-              ),
-            );
-          }
+        // 3. Use Drift batch for fast, single-transaction write
+        await _db.batch((batch) {
+          final companions = preparedData.map((data) => PostsCompanion(
+            id: Value(data['id'] as String),
+            authorId: Value(data['authorId'] as String),
+            authorHandle: Value(data['authorHandle'] as String),
+            authorName: Value(data['authorName'] as String),
+            content: Value(data['content'] as String),
+            caption: Value(data['caption'] as String?),
+            visibility: Value(data['visibility'] as String),
+            currentVersion: Value(data['currentVersion'] as int),
+            isCorrection: Value(data['isCorrection'] as bool),
+            correctsPostId: Value(data['correctsPostId'] as String?),
+            sermonSource: Value(data['sermonSource'] as String?),
+            scriptureTags: Value(data['scriptureTags'] as String?),
+            isDeleted: Value(data['isDeleted'] as bool),
+            coverImageUrl: Value(data['coverImageUrl'] as String?),
+            postType: Value(data['postType'] as String),
+            publishedAt: Value(DateTime.fromMillisecondsSinceEpoch(data['publishedAt'] as int)),
+          )).toList();
+          
+          batch.insertAllOnConflictUpdate(_db.posts, companions);
         });
       } catch (err) {
         // Silent background caching error
@@ -209,6 +237,14 @@ class FeedRepository {
       'cover_image_url': record.coverImageUrl,
       'post_type': record.postType,
       'published_at': record.publishedAt.toIso8601String(),
+      'reflection_image_url': contentDecoded is Map
+          ? contentDecoded['reflection_image_url']
+          : null,
+      'panels': contentDecoded is Map && contentDecoded['panels'] is List
+          ? contentDecoded['panels']
+          : [],
+      'sound': contentDecoded is Map ? contentDecoded['sound'] : null,
+      'sound_id': contentDecoded is Map ? contentDecoded['sound_id'] : null,
     };
   }
 

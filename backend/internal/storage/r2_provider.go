@@ -74,6 +74,19 @@ func (r *r2Provider) DeleteObject(ctx context.Context, key string) error {
 	return nil
 }
 
+func (r *r2Provider) UploadFile(ctx context.Context, key string, filePath string, contentType string) error {
+	cleanKey := strings.TrimLeft(key, "/")
+	opts := minio.PutObjectOptions{
+		ContentType: contentType,
+	}
+
+	_, err := r.client.FPutObject(ctx, r.bucketName, cleanKey, filePath, opts)
+	if err != nil {
+		return fmt.Errorf("failed to upload %s to R2 (%s): %w", filePath, cleanKey, err)
+	}
+	return nil
+}
+
 func (r *r2Provider) GetPublicURL(key string) string {
 	// Clean the key
 	cleanKey := strings.TrimLeft(key, "/")

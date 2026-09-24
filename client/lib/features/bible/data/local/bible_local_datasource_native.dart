@@ -69,14 +69,37 @@ class BibleLocalDatasourceNative implements BibleLocalDatasource {
   }
 
   @override
+  Future<void> evictTranslation(String translationCode) async {
+    final code = translationCode.toUpperCase().trim();
+    if (_databases.containsKey(code)) {
+      try {
+        _databases[code]!.close();
+      } catch (_) {}
+      _databases.remove(code);
+    }
+  }
+
+  @override
   Future<List<BibleTranslation>> getTranslations() async {
     final List<BibleTranslation> results = [];
     final bibleDirPath = await _getBibleDirectory();
 
     try {
-      final manifestJson = await rootBundle.loadString(
-        'assets/bible/manifest.json',
-      );
+      String manifestJson;
+      final cachedManifest = File(p.join(bibleDirPath, 'manifest.json'));
+      if (cachedManifest.existsSync()) {
+        try {
+          manifestJson = await cachedManifest.readAsString();
+        } catch (_) {
+          manifestJson = await rootBundle.loadString(
+            'assets/bible/manifest.json',
+          );
+        }
+      } else {
+        manifestJson = await rootBundle.loadString(
+          'assets/bible/manifest.json',
+        );
+      }
       final decoded = jsonDecode(manifestJson) as Map<String, dynamic>;
       final list = decoded['translations'] as List<dynamic>? ?? [];
 

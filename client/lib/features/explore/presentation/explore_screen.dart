@@ -21,6 +21,7 @@ import '../../../core/widgets/scribes_error_state.dart';
 import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/theme/scribes_colors.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
+import '../../../core/widgets/scribes_keep_alive_item.dart';
 import 'topic_selection_screen.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -220,66 +221,81 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildFilteredTab(WidgetRef ref, dynamic colors) {
     final filteredState = ref.watch(exploreFilteredProvider);
-    return RefreshIndicator(
-      onRefresh: () => ref.read(exploreFilteredProvider.notifier).refresh(),
-      child: CustomScrollView(
-        scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
-        slivers: [
-          filteredState.when(
-            data: (posts) {
-              if (posts.isEmpty) {
-                return SliverFillRemaining(
-                  child: ScribesEmptyState(
-                    icon: HugeIcons.strokeRoundedBookOpen01,
-                    title: 'No posts found',
-                    subtitle: 'No scriptures have been referenced here yet.',
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent - 600) {
+          final notifier = ref.read(exploreFilteredProvider.notifier);
+          final currentState = ref.read(exploreFilteredProvider);
+          if (notifier.hasMore &&
+              !currentState.isLoading &&
+              !currentState.isRefreshing) {
+            notifier.loadMore();
+          }
+        }
+        return false;
+      },
+      child: RefreshIndicator(
+        onRefresh: () => ref.read(exploreFilteredProvider.notifier).refresh(),
+        child: CustomScrollView(
+          scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
+          slivers: [
+            filteredState.when(
+              data: (posts) {
+                if (posts.isEmpty) {
+                  return SliverFillRemaining(
+                    child: ScribesEmptyState(
+                      icon: HugeIcons.strokeRoundedBookOpen01,
+                      title: 'No posts found',
+                      subtitle: 'No scriptures have been referenced here yet.',
+                    ),
+                  );
+                }
+                final hasMore = ref
+                    .read(exploreFilteredProvider.notifier)
+                    .hasMore;
+                final postIndexMap = {
+                  for (var i = 0; i < posts.length; i++) posts[i].id: i,
+                };
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == posts.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: ScribesLoadingIndicator(),
+                          );
+                        }
+                        return Padding(
+                          key: ValueKey(posts[index].id),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: RepaintBoundary(
+                            child: ScribesConnectedPostCard(
+                              post: posts[index],
+                              isFeatured: false,
+                              isExploreScreen: true,
+                            ),
+                          ),
+                        );
+                      },
+                      childCount: posts.length + (hasMore ? 1 : 0),
+                      findChildIndexCallback: (Key key) {
+                        if (key is ValueKey<String>) {
+                          return postIndexMap[key.value];
+                        }
+                        return null;
+                      },
+                      addAutomaticKeepAlives: false,
+                      addRepaintBoundaries: true,
+                    ),
                   ),
                 );
-              }
-              final hasMore = ref
-                  .read(exploreFilteredProvider.notifier)
-                  .hasMore;
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index == posts.length) {
-                        ref.read(exploreFilteredProvider.notifier).loadMore();
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          child: ScribesLoadingIndicator(),
-                        );
-                      }
-                      return Padding(
-                        key: ValueKey(posts[index].id),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
-                        ),
-                        child: RepaintBoundary(
-                          child: ScribesConnectedPostCard(
-                            post: posts[index],
-                            isFeatured: false,
-                            isExploreScreen: true,
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: posts.length + (hasMore ? 1 : 0),
-                    findChildIndexCallback: (Key key) {
-                      if (key is ValueKey<String>) {
-                        final index = posts.indexWhere((p) => p.id == key.value);
-                        return index != -1 ? index : null;
-                      }
-                      return null;
-                    },
-                    addAutomaticKeepAlives: true,
-                    addRepaintBoundaries: true,
-                  ),
-                ),
-              );
-            },
+              },
             loading: () => SliverPadding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               sliver: SliverList(
@@ -314,8 +330,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _openTopicSelectionModal(
     BuildContext context,
@@ -481,65 +498,67 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             )
           else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: [
-                  _buildForYouFilterChip(
-                    id: 'all',
-                    label: 'All',
-                    colors: colors,
-                  ),
-                  const SizedBox(width: 6),
-                  ...selectedTags.map((tag) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: _buildForYouFilterChip(
-                        id: tag.toLowerCase(),
-                        label: tag,
-                        colors: colors,
-                      ),
-                    );
-                  }),
-                  GestureDetector(
-                    onTap: () =>
-                        _openTopicSelectionModal(context, ref, colors),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.surfaceRaised.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: colors.border.withValues(alpha: 0.5),
-                          width: 0.6,
+            RepaintBoundary(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
+                    _buildForYouFilterChip(
+                      id: 'all',
+                      label: 'All',
+                      colors: colors,
+                    ),
+                    const SizedBox(width: 6),
+                    ...selectedTags.map((tag) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6.0),
+                        child: _buildForYouFilterChip(
+                          id: tag.toLowerCase(),
+                          label: tag,
+                          colors: colors,
+                        ),
+                      );
+                    }),
+                    GestureDetector(
+                      onTap: () =>
+                          _openTopicSelectionModal(context, ref, colors),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceRaised.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: colors.border.withValues(alpha: 0.5),
+                            width: 0.6,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            HugeIcon(
+                              icon: HugeIcons.strokeRoundedEdit02,
+                              color: colors.secondaryText,
+                              size: 13,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Edit',
+                              style: ScribesTextStyles.caption.copyWith(
+                                color: colors.secondaryText,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          HugeIcon(
-                            icon: HugeIcons.strokeRoundedEdit02,
-                            color: colors.secondaryText,
-                            size: 13,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Edit',
-                            style: ScribesTextStyles.caption.copyWith(
-                              color: colors.secondaryText,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],
@@ -740,17 +759,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       padding:
                           const EdgeInsets.symmetric(horizontal: 16.0),
                       scrollDirection: Axis.horizontal,
+                      scrollCacheExtent: const ScrollCacheExtent.pixels(800),
                       physics: const BouncingScrollPhysics(),
                       itemCount: spotlightPosts.length,
                       separatorBuilder: (context, index) =>
                           const SizedBox(width: 14),
                       itemBuilder: (context, index) {
                         final post = spotlightPosts[index];
-                        return ScribesSpotlightCard(
-                          post: post,
-                          categoryLabel: post.tags.isNotEmpty
-                              ? post.tags.first.toUpperCase()
-                              : 'RECOMMENDED',
+                        return ScribesKeepAliveItem(
+                          key: ValueKey('for_you_spotlight_${post.id}'),
+                          child: RepaintBoundary(
+                            child: ScribesSpotlightCard(
+                              post: post,
+                              categoryLabel: post.tags.isNotEmpty
+                                  ? post.tags.first.toUpperCase()
+                                  : 'RECOMMENDED',
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -791,28 +816,49 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index == remainingPosts.length) {
-                      ref.read(exploreForYouProvider.notifier).loadMore();
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24.0),
-                        child: Center(child: ScribesLoadingIndicator()),
-                      );
-                    }
-                    final post = remainingPosts[index];
-                    return ScribesDiscoverTile(
-                      post: post,
-                      categoryLabel:
-                          post.tags.isNotEmpty ? post.tags.first : null,
-                    );
-                  },
-                  childCount: remainingPosts.length + (hasMore ? 1 : 0),
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final postIndexMap = {
+                  for (var i = 0; i < remainingPosts.length; i++)
+                    remainingPosts[i].id: i,
+                };
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == remainingPosts.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24.0),
+                            child: Center(child: ScribesLoadingIndicator()),
+                          );
+                        }
+                        final post = remainingPosts[index];
+                        return Padding(
+                          key: ValueKey(post.id),
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: RepaintBoundary(
+                            child: ScribesDiscoverTile(
+                              post: post,
+                              categoryLabel:
+                                  post.tags.isNotEmpty ? post.tags.first : null,
+                            ),
+                          ),
+                        );
+                      },
+                      childCount: remainingPosts.length + (hasMore ? 1 : 0),
+                      findChildIndexCallback: (Key key) {
+                        if (key is ValueKey<String>) {
+                          return postIndexMap[key.value];
+                        }
+                        return null;
+                      },
+                      addAutomaticKeepAlives: false,
+                      addRepaintBoundaries: true,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         );
@@ -853,9 +899,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     dynamic colors,
   ) {
     final forYouState = ref.watch(exploreForYouProvider);
-    return RefreshIndicator(
-      onRefresh: () => ref.read(exploreForYouProvider.notifier).refresh(),
-      child: CustomScrollView(
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent - 600) {
+          final notifier = ref.read(exploreForYouProvider.notifier);
+          final currentState = ref.read(exploreForYouProvider);
+          if (notifier.hasMore &&
+              !currentState.isLoading &&
+              !currentState.isRefreshing) {
+            notifier.loadMore();
+          }
+        }
+        return false;
+      },
+      child: RefreshIndicator(
+        onRefresh: () => ref.read(exploreForYouProvider.notifier).refresh(),
+        child: CustomScrollView(
         scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
         slivers: [
           // 1. Personalized Header & Interactive Topics
@@ -876,138 +936,154 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDiscoverTab(WidgetRef ref, dynamic colors) {
     final discoverState = ref.watch(exploreDiscoverProvider);
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(exploreInsightfulProvider);
-        ref.invalidate(explorePropheticProvider);
-        ref.invalidate(exploreAffirmedProvider);
-        await ref.read(exploreDiscoverProvider.notifier).refresh();
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent - 600) {
+          final notifier = ref.read(exploreDiscoverProvider.notifier);
+          final currentState = ref.read(exploreDiscoverProvider);
+          if (notifier.hasMore &&
+              !currentState.isLoading &&
+              !currentState.isRefreshing) {
+            notifier.loadMore();
+          }
+        }
+        return false;
       },
-      child: CustomScrollView(
-        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
-        slivers: [
-          // 1. Curated Spotlight Header & Filter Chips
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          HugeIcon(
-                            icon: HugeIcons.strokeRoundedSparkles,
-                            color: colors.gold,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'CURATED SPOTLIGHT',
-                            style: ScribesTextStyles.caption.copyWith(
-                              color: colors.secondaryText,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
+      child: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(exploreInsightfulProvider);
+          ref.invalidate(explorePropheticProvider);
+          ref.invalidate(exploreAffirmedProvider);
+          await ref.read(exploreDiscoverProvider.notifier).refresh();
+        },
+        child: CustomScrollView(
+          scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
+          slivers: [
+            // 1. Curated Spotlight Header & Filter Chips
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            HugeIcon(
+                              icon: HugeIcons.strokeRoundedSparkles,
+                              color: colors.gold,
+                              size: 16,
                             ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        'Theological Index',
-                        style: ScribesTextStyles.caption.copyWith(
-                          color: colors.secondaryText.withValues(alpha: 0.6),
-                          fontStyle: FontStyle.italic,
+                            const SizedBox(width: 8),
+                            Text(
+                              'CURATED SPOTLIGHT',
+                              style: ScribesTextStyles.caption.copyWith(
+                                color: colors.secondaryText,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Responsive Filter Chips Row (No horizontal scroll fight)
-                  Row(
-                    children: [
-                      _buildSpotlightFilterChip(
-                        id: 'all',
-                        label: 'Curated',
-                        colors: colors,
-                      ),
-                      const SizedBox(width: 6),
-                      _buildSpotlightFilterChip(
-                        id: 'insightful',
-                        label: 'Insightful',
-                        colors: colors,
-                      ),
-                      const SizedBox(width: 6),
-                      _buildSpotlightFilterChip(
-                        id: 'prophetic',
-                        label: 'Prophetic',
-                        colors: colors,
-                      ),
-                      const SizedBox(width: 6),
-                      _buildSpotlightFilterChip(
-                        id: 'affirmed',
-                        label: 'Affirmed',
-                        colors: colors,
-                      ),
-                    ],
-                  ),
-                ],
+                        Text(
+                          'Theological Index',
+                          style: ScribesTextStyles.caption.copyWith(
+                            color: colors.secondaryText.withValues(alpha: 0.6),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Responsive Filter Chips Row (No horizontal scroll fight)
+                    Row(
+                      children: [
+                        _buildSpotlightFilterChip(
+                          id: 'all',
+                          label: 'Curated',
+                          colors: colors,
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSpotlightFilterChip(
+                          id: 'insightful',
+                          label: 'Insightful',
+                          colors: colors,
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSpotlightFilterChip(
+                          id: 'prophetic',
+                          label: 'Prophetic',
+                          colors: colors,
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSpotlightFilterChip(
+                          id: 'affirmed',
+                          label: 'Affirmed',
+                          colors: colors,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // 2. The Single Hero Spotlight Carousel (215px instead of 1200px stack!)
-          SliverToBoxAdapter(
-            child: _buildSpotlightCarousel(ref, colors),
-          ),
+            // 2. The Single Hero Spotlight Carousel (215px instead of 1200px stack!)
+            SliverToBoxAdapter(
+              child: _buildSpotlightCarousel(ref, colors),
+            ),
 
-          // 3. Section Header for Recent Discoveries
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 6.0),
-              child: Row(
-                children: [
-                  HugeIcon(
-                    icon: HugeIcons.strokeRoundedBookOpen01,
-                    color: colors.primaryText,
-                    size: 16,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'RECENT DISCOVERIES',
-                    style: ScribesTextStyles.caption.copyWith(
-                      color: colors.secondaryText,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
+            // 3. Section Header for Recent Discoveries
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 6.0),
+                child: Row(
+                  children: [
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedBookOpen01,
+                      color: colors.primaryText,
+                      size: 16,
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Sacred Archive',
-                    style: ScribesTextStyles.caption.copyWith(
-                      color: colors.secondaryText.withValues(alpha: 0.6),
-                      fontStyle: FontStyle.italic,
+                    const SizedBox(width: 8),
+                    Text(
+                      'RECENT DISCOVERIES',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                  ),
-                ],
+                    const Spacer(),
+                    Text(
+                      'Sacred Archive',
+                      style: ScribesTextStyles.caption.copyWith(
+                        color: colors.secondaryText.withValues(alpha: 0.6),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // 4. True High-Performance Virtualized Slivers for Discoveries
-          _buildDiscoverTilesFeedSliver(discoverState, colors),
+            // 4. True High-Performance Virtualized Slivers for Discoveries
+            _buildDiscoverTilesFeedSliver(discoverState, colors),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
-        ],
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1094,13 +1170,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             scrollDirection: Axis.horizontal,
-            scrollCacheExtent: const ScrollCacheExtent.pixels(600),
+            scrollCacheExtent: const ScrollCacheExtent.pixels(800),
             itemCount: posts.length,
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
-              return ScribesSpotlightCard(
-                post: posts[index],
-                categoryLabel: categoryLabel,
+              final post = posts[index];
+              return ScribesKeepAliveItem(
+                key: ValueKey('discover_spotlight_${post.id}'),
+                child: RepaintBoundary(
+                  child: ScribesSpotlightCard(
+                    post: post,
+                    categoryLabel: categoryLabel,
+                  ),
+                ),
               );
             },
           );
@@ -1149,25 +1231,42 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           );
         }
         final hasMore = ref.read(exploreDiscoverProvider.notifier).hasMore;
+        final postIndexMap = {
+          for (var i = 0; i < posts.length; i++) posts[i].id: i,
+        };
         return SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 if (index == posts.length) {
-                  ref.read(exploreDiscoverProvider.notifier).loadMore();
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24.0),
                     child: Center(child: ScribesLoadingIndicator()),
                   );
                 }
                 final post = posts[index];
-                return ScribesDiscoverTile(
-                  post: post,
-                  categoryLabel: post.tags.isNotEmpty ? post.tags.first : null,
+                return Padding(
+                  key: ValueKey(post.id),
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: RepaintBoundary(
+                    child: ScribesDiscoverTile(
+                      post: post,
+                      categoryLabel:
+                          post.tags.isNotEmpty ? post.tags.first : null,
+                    ),
+                  ),
                 );
               },
               childCount: posts.length + (hasMore ? 1 : 0),
+              findChildIndexCallback: (Key key) {
+                if (key is ValueKey<String>) {
+                  return postIndexMap[key.value];
+                }
+                return null;
+              },
+              addAutomaticKeepAlives: false,
+              addRepaintBoundaries: true,
             ),
           ),
         );
@@ -1203,19 +1302,32 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _buildChurchesTab(WidgetRef ref, dynamic colors) {
     final churchesState = ref.watch(exploreChurchesProvider);
-    return RefreshIndicator(
-      onRefresh: () => ref.read(exploreChurchesProvider.notifier).refresh(),
-      child: CustomScrollView(
-        scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
-        slivers: [
-          _buildPostsFeedSliver(
-            churchesState,
-            colors,
-            onLoadMore: () =>
-                ref.read(exploreChurchesProvider.notifier).loadMore(),
-            hasMore: ref.read(exploreChurchesProvider.notifier).hasMore,
-          ),
-        ],
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification.metrics.pixels >=
+            notification.metrics.maxScrollExtent - 600) {
+          final notifier = ref.read(exploreChurchesProvider.notifier);
+          final currentState = ref.read(exploreChurchesProvider);
+          if (notifier.hasMore &&
+              !currentState.isLoading &&
+              !currentState.isRefreshing) {
+            notifier.loadMore();
+          }
+        }
+        return false;
+      },
+      child: RefreshIndicator(
+        onRefresh: () => ref.read(exploreChurchesProvider.notifier).refresh(),
+        child: CustomScrollView(
+          scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
+          slivers: [
+            _buildPostsFeedSliver(
+              churchesState,
+              colors,
+              hasMore: ref.read(exploreChurchesProvider.notifier).hasMore,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1223,7 +1335,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget _buildPostsFeedSliver(
     AsyncValue<List<Post>> postsState,
     dynamic colors, {
-    required VoidCallback onLoadMore,
     required bool hasMore,
   }) {
     return postsState.when(
@@ -1240,13 +1351,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           );
         }
 
+        final postIndexMap = {
+          for (var i = 0; i < posts.length; i++) posts[i].id: i,
+        };
+
         return SliverPadding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 if (index == posts.length) {
-                  onLoadMore();
                   return const Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Center(child: ScribesLoadingIndicator()),
@@ -1272,12 +1386,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               childCount: posts.length + (hasMore ? 1 : 0),
               findChildIndexCallback: (Key key) {
                 if (key is ValueKey<String>) {
-                  final index = posts.indexWhere((p) => p.id == key.value);
-                  return index != -1 ? index : null;
+                  return postIndexMap[key.value];
                 }
                 return null;
               },
-              addAutomaticKeepAlives: true,
+              addAutomaticKeepAlives: false,
               addRepaintBoundaries: true,
             ),
           ),

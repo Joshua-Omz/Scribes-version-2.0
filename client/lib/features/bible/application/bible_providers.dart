@@ -4,6 +4,7 @@ import 'package:scribes/main.dart';
 import '../../../core/storage/drift_database.dart';
 import '../data/bible_repository.dart';
 import '../domain/bible_models.dart';
+export 'bible_download_service.dart';
 
 const _kBibleTranslationKey = 'scribes_bible_selected_translation';
 

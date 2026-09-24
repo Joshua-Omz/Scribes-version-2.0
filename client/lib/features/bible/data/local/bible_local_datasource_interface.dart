@@ -32,4 +32,6 @@ abstract class BibleLocalDatasource {
   });
 
   Future<void> ensureTranslationAvailable(String translationCode);
+
+  Future<void> evictTranslation(String translationCode);
 }

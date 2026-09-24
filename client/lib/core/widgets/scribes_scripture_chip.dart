@@ -115,7 +115,7 @@ class _ScribesScriptureChipState extends ConsumerState<ScribesScriptureChip> {
                     color: colors.primaryText,
                     fontFamily: 'CormorantGaramond',
                     fontSize: 17,
-                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w600,
                     height: 1.6,
                   ),
                 ),

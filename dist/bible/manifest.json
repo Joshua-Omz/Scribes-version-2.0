@@ -13,6 +13,32 @@
       "sha256": "9a882da61dc85c7e5896640ea539661139b62fc5fc3a140e9d8c0d80f0a716e6",
       "gz_sha256": "b12838707c9915620ea287d6decda909ca3f6f958da076d7c8cd59b03bf6e616",
       "download_url": "https://cdn.scribes.app/bible/bsb_v1.sqlite3.gz"
+    },
+    {
+      "code": "KJV",
+      "name": "King James Version (1769)",
+      "language": "en",
+      "version": 1,
+      "attribution": "King James Version (KJV) 1769, Public Domain.",
+      "is_bundled": false,
+      "uncompressed_bytes": 8550000,
+      "compressed_bytes": 3950000,
+      "sha256": null,
+      "gz_sha256": null,
+      "download_url": "https://cdn.scribes.app/bible/kjv_v1.sqlite3.gz"
+    },
+    {
+      "code": "WEB",
+      "name": "World English Bible",
+      "language": "en",
+      "version": 1,
+      "attribution": "World English Bible (WEB), Public Domain.",
+      "is_bundled": false,
+      "uncompressed_bytes": 8700000,
+      "compressed_bytes": 4100000,
+      "sha256": null,
+      "gz_sha256": null,
+      "download_url": "https://cdn.scribes.app/bible/web_v1.sqlite3.gz"
     }
   ]
 }

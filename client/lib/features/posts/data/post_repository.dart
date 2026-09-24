@@ -27,26 +27,44 @@ class PostRepository {
 
   Future<Post> getPost(String id) async {
     // 1. Check local cache first so UI renders immediately without network request
+    db.Post? record;
     try {
-      final record = await (_db.select(_db.posts)..where((t) => t.id.equals(id)))
+      record = await (_db.select(_db.posts)..where((t) => t.id.equals(id)))
           .getSingleOrNull();
       if (record != null) {
         final mapped = _mapRecordToMap(record);
         final cachedPost = Post.fromJson(mapped);
-        // Revalidate in background
-        _revalidatePostInBackground(id);
-        return cachedPost;
+
+        // INVARIANT: Prevent shallow cache poisoning for passage posts.
+        // If it's a passage post but panels were never hydrated, do NOT treat this as a complete cache hit.
+        final isShallowPassage =
+            cachedPost.postType == 'passage' && cachedPost.panels.isEmpty;
+
+        if (!isShallowPassage) {
+          // Revalidate in background
+          _revalidatePostInBackground(id);
+          return cachedPost;
+        }
       }
     } catch (_) {}
 
     // 2. Fall back to network
-    final data = await _api.getPost(id);
-    final post = Post.fromJson(data);
+    try {
+      final data = await _api.getPost(id);
+      final post = Post.fromJson(data);
 
-    // 3. Cache retrieved post
-    _cacheSinglePost(data);
+      // 3. Cache retrieved post
+      _cacheSinglePost(data);
 
-    return post;
+      return post;
+    } catch (e) {
+      // 4. True offline fallback: if network fails and we had a cached record (even shallow),
+      // return what we have rather than crashing.
+      if (record != null) {
+        return Post.fromJson(_mapRecordToMap(record));
+      }
+      rethrow;
+    }
   }
 
   void _revalidatePostInBackground(String id) {
@@ -87,6 +105,10 @@ class PostRepository {
               : item['content'],
           'title': item['content'] is Map ? item['content']['title'] : '',
           'excerpt': item['content'] is Map ? item['content']['excerpt'] : '',
+          'reflection_image_url': item['reflection_image_url'],
+          'sound_id': item['sound_id'],
+          'sound': item['sound'],
+          'panels': item['panels'],
           '_full_post': item,
         };
 
@@ -165,6 +187,14 @@ class PostRepository {
       'cover_image_url': record.coverImageUrl,
       'post_type': record.postType,
       'published_at': record.publishedAt.toIso8601String(),
+      'reflection_image_url': contentDecoded is Map
+          ? contentDecoded['reflection_image_url']
+          : null,
+      'panels': contentDecoded is Map && contentDecoded['panels'] is List
+          ? contentDecoded['panels']
+          : [],
+      'sound': contentDecoded is Map ? contentDecoded['sound'] : null,
+      'sound_id': contentDecoded is Map ? contentDecoded['sound_id'] : null,
     };
   }
 

@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../storage/secure_storage.dart';
+import '../theme/theme_provider.dart';
 import 'api_exception.dart';
+import 'network_status_coordinator.dart';
 
 part 'api_client.g.dart';
 
@@ -34,9 +37,20 @@ Dio apiClient(Ref ref) {
         return handler.next(options);
       },
       onResponse: (response, handler) {
+        final colors = ref.read(themeProvider);
+        NetworkStatusCoordinator.instance.handleNetworkSuccess(colors);
         return handler.next(response);
       },
       onError: (DioException e, handler) {
+        final colors = ref.read(themeProvider);
+        final isConnectionIssue = e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.connectionTimeout ||
+            e.error is SocketException;
+
+        if (isConnectionIssue) {
+          NetworkStatusCoordinator.instance.handleNetworkFailure(colors);
+        }
+
         String message = 'An unexpected error occurred';
         if (e.response != null && e.response?.data is Map<String, dynamic>) {
           // print('API ERROR DATA: ${e.response?.data}');

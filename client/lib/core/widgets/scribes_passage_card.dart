@@ -58,24 +58,15 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
   late final PageController _pageController;
   int _currentPage = 0;
   final ScribesAudioPlayer _audioPlayer = ScribesAudioPlayer.instance;
-  List<PassagePanel>? _hydratedPanels;
+  List<PassagePanel> _hydratedPanels = [];
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-
-    // If panels are not included in the feed payload, asynchronously hydrate them
-    if (widget.post.panels.isEmpty && widget.post.postType == 'passage') {
+    _hydratedPanels = widget.post.panels;
+    if (_hydratedPanels.isEmpty && widget.post.postType == 'passage') {
       _hydratePanels();
-    }
-
-    // Auto-play ambient audio if present in the post
-    final audioUrl = widget.post.sound?.audioUrl;
-    if (audioUrl != null && audioUrl.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _audioPlayer.playLoop(audioUrl);
-      });
     }
   }
 
@@ -114,7 +105,7 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
         ? widget.post.plainTextBody
         : (widget.post.content['excerpt']?.toString().trim() ?? '');
 
-    final panels = _hydratedPanels ?? widget.post.panels;
+    final panels = _hydratedPanels.isNotEmpty ? _hydratedPanels : widget.post.panels;
     final totalPanels = panels.isNotEmpty ? panels.length : 1;
     final hasAudio = widget.post.sound != null || widget.post.soundId != null;
 

@@ -176,7 +176,7 @@ class ExploreDiscoverNotifier extends _$ExploreDiscoverNotifier {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 Future<List<Post>> exploreInsightful(Ref ref) async {
   final repo = ref.watch(exploreRepositoryProvider);
   final response = await repo.getRecommendations(
@@ -186,7 +186,7 @@ Future<List<Post>> exploreInsightful(Ref ref) async {
   return response.posts;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 Future<List<Post>> exploreProphetic(Ref ref) async {
   final repo = ref.watch(exploreRepositoryProvider);
   final response = await repo.getRecommendations(
@@ -196,7 +196,7 @@ Future<List<Post>> exploreProphetic(Ref ref) async {
   return response.posts;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 Future<List<Post>> exploreAffirmed(Ref ref) async {
   final repo = ref.watch(exploreRepositoryProvider);
   final response = await repo.getRecommendations(

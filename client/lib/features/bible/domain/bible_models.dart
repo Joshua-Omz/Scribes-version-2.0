@@ -9,6 +9,10 @@ class BibleTranslation {
   final bool isBundled;
   final bool isDownloaded;
   final int fileSizeBytes;
+  final int uncompressedBytes;
+  final int compressedBytes;
+  final String? sha256;
+  final String? gzSha256;
   final String? downloadUrl;
   final int version;
 
@@ -23,11 +27,20 @@ class BibleTranslation {
     this.isBundled = false,
     this.isDownloaded = false,
     this.fileSizeBytes = 0,
+    this.uncompressedBytes = 0,
+    this.compressedBytes = 0,
+    this.sha256,
+    this.gzSha256,
     this.downloadUrl,
     this.version = 1,
   });
 
   factory BibleTranslation.fromJson(Map<String, dynamic> json) {
+    final compBytes = (json['compressed_bytes'] as num?)?.toInt() ??
+        (json['file_size_bytes'] as num?)?.toInt() ??
+        0;
+    final uncompBytes = (json['uncompressed_bytes'] as num?)?.toInt() ?? compBytes;
+
     return BibleTranslation(
       id: json['id'] as String? ?? json['code'] as String? ?? '',
       code: (json['code'] as String? ?? '').toUpperCase(),
@@ -40,9 +53,11 @@ class BibleTranslation {
       isDefault: json['is_default'] as bool? ?? false,
       isBundled: json['is_bundled'] as bool? ?? false,
       isDownloaded: json['is_downloaded'] as bool? ?? false,
-      fileSizeBytes: (json['file_size_bytes'] as num?)?.toInt() ??
-          (json['compressed_bytes'] as num?)?.toInt() ??
-          0,
+      fileSizeBytes: compBytes > 0 ? compBytes : uncompBytes,
+      uncompressedBytes: uncompBytes,
+      compressedBytes: compBytes,
+      sha256: json['sha256'] as String?,
+      gzSha256: json['gz_sha256'] as String?,
       downloadUrl: json['download_url'] as String?,
       version: (json['version'] as num?)?.toInt() ?? 1,
     );
@@ -51,6 +66,12 @@ class BibleTranslation {
   BibleTranslation copyWith({
     bool? isDownloaded,
     bool? isDefault,
+    String? downloadUrl,
+    int? fileSizeBytes,
+    int? uncompressedBytes,
+    int? compressedBytes,
+    String? sha256,
+    String? gzSha256,
   }) {
     return BibleTranslation(
       id: id,
@@ -62,8 +83,12 @@ class BibleTranslation {
       isDefault: isDefault ?? this.isDefault,
       isBundled: isBundled,
       isDownloaded: isDownloaded ?? this.isDownloaded,
-      fileSizeBytes: fileSizeBytes,
-      downloadUrl: downloadUrl,
+      fileSizeBytes: fileSizeBytes ?? this.fileSizeBytes,
+      uncompressedBytes: uncompressedBytes ?? this.uncompressedBytes,
+      compressedBytes: compressedBytes ?? this.compressedBytes,
+      sha256: sha256 ?? this.sha256,
+      gzSha256: gzSha256 ?? this.gzSha256,
+      downloadUrl: downloadUrl ?? this.downloadUrl,
       version: version,
     );
   }

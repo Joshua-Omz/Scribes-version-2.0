@@ -694,7 +694,7 @@ class _PassageViewerScreenState extends ConsumerState<PassageViewerScreen> {
               style: ScribesTextStyles.displayMd.copyWith(
                 color: textColor,
                 fontSize: 24,
-                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
             );
@@ -706,7 +706,7 @@ class _PassageViewerScreenState extends ConsumerState<PassageViewerScreen> {
               style: ScribesTextStyles.displayMd.copyWith(
                 color: textColor,
                 fontSize: 22,
-                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w600,
                 height: 1.5,
               ),
             );
@@ -729,7 +729,7 @@ class _PassageViewerScreenState extends ConsumerState<PassageViewerScreen> {
       style: ScribesTextStyles.displayMd.copyWith(
         color: textColor,
         fontSize: 24,
-        fontStyle: FontStyle.italic,
+        fontWeight: FontWeight.w600,
         height: 1.5,
       ),
     );

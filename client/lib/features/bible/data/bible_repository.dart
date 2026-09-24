@@ -359,7 +359,11 @@ class BibleRepository {
     );
   }
 
-  Future<void> removeDownloadedTranslation(String code) {
-    return _bibleDao.removeDownloadedTranslation(code);
+  Future<void> removeDownloadedTranslation(String code) async {
+    final trans = code.toUpperCase();
+    await _local.evictTranslation(trans);
+    _booksCache.remove(trans);
+    _chapterCache.removeWhere((k, _) => k.startsWith('$trans:'));
+    return _bibleDao.removeDownloadedTranslation(trans);
   }
 }

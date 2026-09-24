@@ -267,7 +267,7 @@ final class ExploreInsightfulProvider
         argument: null,
         retry: null,
         name: r'exploreInsightfulProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -286,7 +286,7 @@ final class ExploreInsightfulProvider
   }
 }
 
-String _$exploreInsightfulHash() => r'2e588d119c5e4aa282c8571a183ba1e7459aaf83';
+String _$exploreInsightfulHash() => r'9060ceca6dc5ac61aeccbea3a8bbd74b5e94c81c';
 
 @ProviderFor(exploreProphetic)
 final explorePropheticProvider = ExplorePropheticProvider._();
@@ -305,7 +305,7 @@ final class ExplorePropheticProvider
         argument: null,
         retry: null,
         name: r'explorePropheticProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -324,7 +324,7 @@ final class ExplorePropheticProvider
   }
 }
 
-String _$explorePropheticHash() => r'feefe4a90744192d589529bf0c6381c214757168';
+String _$explorePropheticHash() => r'6424b64480b8469711027d53ec2f23ac698c0ee9';
 
 @ProviderFor(exploreAffirmed)
 final exploreAffirmedProvider = ExploreAffirmedProvider._();
@@ -343,7 +343,7 @@ final class ExploreAffirmedProvider
         argument: null,
         retry: null,
         name: r'exploreAffirmedProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -362,7 +362,7 @@ final class ExploreAffirmedProvider
   }
 }
 
-String _$exploreAffirmedHash() => r'e1493d3b3a94445e3cb98c8cbc0f6a89f0818506';
+String _$exploreAffirmedHash() => r'44e5aa8e5f68ab2829049739783d5aed9a922f0a';
 
 @ProviderFor(ExploreForYouNotifier)
 final exploreForYouProvider = ExploreForYouNotifierProvider._();

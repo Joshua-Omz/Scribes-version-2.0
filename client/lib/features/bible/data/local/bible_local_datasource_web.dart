@@ -20,6 +20,9 @@ class BibleLocalDatasourceWeb implements BibleLocalDatasource {
   Future<void> ensureTranslationAvailable(String translationCode) async {}
 
   @override
+  Future<void> evictTranslation(String translationCode) async {}
+
+  @override
   Future<List<BibleTranslation>> getTranslations() async {
     try {
       final manifestJson = await rootBundle.loadString('assets/bible/manifest.json');

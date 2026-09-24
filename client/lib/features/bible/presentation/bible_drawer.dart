@@ -16,6 +16,7 @@ import '../domain/bible_models.dart';
 import '../domain/verse_selection.dart';
 import 'bible_search_sheet.dart';
 import 'widgets/bible_selection_action_bar.dart';
+import 'widgets/bible_translations_sheet.dart';
 
 class BibleDrawerScreen extends ConsumerStatefulWidget {
   final String? initialBook;
@@ -158,56 +159,10 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
           Consumer(
             builder: (context, ref, child) {
               final selectedTranslation = ref.watch(selectedTranslationProvider);
-              final translationsAsync = ref.watch(bibleTranslationsProvider);
 
-              return PopupMenuButton<String>(
-                offset: const Offset(0, 40),
-                color: colors.surfaceRaised,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(ScribesRadius.card),
-                  side: BorderSide(color: colors.border),
-                ),
-                onSelected: (code) {
-                  ref.read(selectedTranslationProvider.notifier).setTranslation(code);
-                },
-                itemBuilder: (context) {
-                  return translationsAsync.maybeWhen(
-                    data: (translations) {
-                      return translations.map((t) {
-                        final isSelected = t.code == selectedTranslation;
-                        return PopupMenuItem<String>(
-                          value: t.code,
-                          child: Row(
-                            children: [
-                              Text(
-                                t.name,
-                                style: ScribesTextStyles.bodyMd.copyWith(
-                                  color: isSelected ? colors.gold : colors.primaryText,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                ),
-                              ),
-                              if (isSelected) ...[
-                                const Spacer(),
-                                Icon(Icons.check, color: colors.gold, size: 18),
-                              ],
-                            ],
-                          ),
-                        );
-                      }).toList();
-                    },
-                    orElse: () => [
-                      PopupMenuItem<String>(
-                        value: selectedTranslation,
-                        child: Text(
-                          selectedTranslation,
-                          style: ScribesTextStyles.bodyMd.copyWith(
-                            color: colors.gold,
-                          ),
-                        ),
-                      )
-                    ],
-                  );
-                },
+              return InkWell(
+                onTap: () => BibleTranslationsSheet.show(context, colors),
+                borderRadius: BorderRadius.circular(4),
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 14, horizontal: 2),
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -799,13 +754,15 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
         ? GoogleFonts.cormorantGaramond(
             fontSize: fontSize,
             height: lineHeight,
-            letterSpacing: 0.35,
+            letterSpacing: 0.25,
+            fontWeight: FontWeight.w600,
             color: colors.primaryText,
           )
         : GoogleFonts.dmSans(
             fontSize: fontSize,
             height: lineHeight,
             letterSpacing: 0.1,
+            fontWeight: FontWeight.w500,
             color: colors.primaryText,
           );
 
@@ -882,9 +839,9 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
         ? GoogleFonts.cormorantGaramond(
             fontSize: fontSize,
             height: lineHeight,
-            letterSpacing: 0.35,
+            letterSpacing: 0.25,
             color: colors.primaryText,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w600,
           )
         : GoogleFonts.dmSans(
             fontSize: fontSize,
