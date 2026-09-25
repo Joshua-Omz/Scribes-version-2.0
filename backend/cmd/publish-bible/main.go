@@ -14,10 +14,26 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	loadEnvFile(".env")
+	loadEnvFile("../.env")
+	loadEnvFile("backend/.env")
 
-	if cfg.R2Endpoint == "" || cfg.R2AccessKeyID == "" || cfg.R2SecretAccessKey == "" || cfg.R2BucketName == "" {
+	endpoint := os.Getenv("R2_ENDPOINT")
+	accessKey := os.Getenv("R2_ACCESS_KEY_ID")
+	secretKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	bucket := os.Getenv("R2_BUCKET")
+	cdnDomain := os.Getenv("R2_PUBLIC_URL")
+
+	if endpoint == "" || accessKey == "" || secretKey == "" || bucket == "" {
 		log.Fatalf("Missing Cloudflare R2 credentials in environment (R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET)")
+	}
+
+	cfg := config.Config{
+		R2Endpoint:        endpoint,
+		R2AccessKeyID:     accessKey,
+		R2SecretAccessKey: secretKey,
+		R2BucketName:      bucket,
+		CDNDomain:         cdnDomain,
 	}
 
 	storageProvider, err := storage.NewR2Provider(cfg)
@@ -96,4 +112,27 @@ func findDistBibleDir() string {
 	}
 
 	return ""
+}
+
+func loadEnvFile(path string) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			k := strings.TrimSpace(parts[0])
+			v := strings.TrimSpace(parts[1])
+			v = strings.Trim(v, `"'`)
+			if os.Getenv(k) == "" {
+				os.Setenv(k, v)
+			}
+		}
+	}
 }
