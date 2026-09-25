@@ -16,7 +16,7 @@ import '../../features/social/application/post_social_providers.dart';
 import '../../features/social/application/saved_posts_provider.dart';
 import '../../features/auth/application/auth_notifier.dart';
 
-class ScribesConnectedPostCard extends ConsumerWidget {
+class ScribesConnectedPostCard extends ConsumerStatefulWidget {
   final Post post;
   final bool isFeatured;
   final bool isExploreScreen;
@@ -31,20 +31,32 @@ class ScribesConnectedPostCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ScribesConnectedPostCard> createState() =>
+      _ScribesConnectedPostCardState();
+}
+
+class _ScribesConnectedPostCardState
+    extends ConsumerState<ScribesConnectedPostCard>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
 
     final colors = ref.watch(themeProvider);
     final isAuthenticated = ref.watch(
       authProvider.select((state) => state.value != null),
     );
     final isSaved = ref.watch(
-      savedPostIdsProvider.select((ids) => ids.contains(post.id)),
+      savedPostIdsProvider.select((ids) => ids.contains(widget.post.id)),
     );
 
     // In passive lists, read pre-aggregated counts directly from Post DTO.
     // Only subscribe to family provider rebuilds if the user performed an optimistic reaction on this card.
     final modifiedReactionsState = ref.watch(
-      postReactionsProvider(post.id).select((state) {
+      postReactionsProvider(widget.post.id).select((state) {
         final data = state.value;
         if (data != null && data.modifiedReaction) {
           return data;
@@ -55,9 +67,9 @@ class ScribesConnectedPostCard extends ConsumerWidget {
 
     final userReaction = modifiedReactionsState?.userReaction;
 
-    int amenCount = post.amenCount;
-    int insightCount = post.insightCount;
-    int thoughtProvokingCount = post.thoughtProvokingCount;
+    int amenCount = widget.post.amenCount;
+    int insightCount = widget.post.insightCount;
+    int thoughtProvokingCount = widget.post.thoughtProvokingCount;
 
     if (modifiedReactionsState != null && modifiedReactionsState.modifiedReaction) {
       final amens = modifiedReactionsState.counts.where((r) => r.type == 'amen');
@@ -77,7 +89,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
         thoughtProvokingCount = thoughts.fold(0, (sum, r) => sum + r.count);
       }
     }
-    final commentCount = post.commentCount;
+    final commentCount = widget.post.commentCount;
 
     void onSaveToggle() {
       if (!isAuthenticated) {
@@ -85,7 +97,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
         return;
       }
       if (isSaved) {
-        ref.read(savedPostsProvider.notifier).unsavePost(post.id);
+        ref.read(savedPostsProvider.notifier).unsavePost(widget.post.id);
         ScribesToast.show(
           context,
           'Post unsaved',
@@ -93,7 +105,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
           icon: HugeIcons.strokeRoundedRemove01,
         );
       } else {
-        ref.read(savedPostsProvider.notifier).savePost(post.id);
+        ref.read(savedPostsProvider.notifier).savePost(widget.post.id);
         ScribesToast.show(
           context,
           'Post saved',
@@ -103,17 +115,17 @@ class ScribesConnectedPostCard extends ConsumerWidget {
       }
     }
 
-    void onShare() => ScribesShareSheet.show(context, post.id, post: post);
+    void onShare() => ScribesShareSheet.show(context, widget.post.id, post: widget.post);
 
     void onTap() {
-      if (post.postType == 'passage') {
-        context.push('/passage/${post.id}');
+      if (widget.post.postType == 'passage') {
+        context.push('/passage/${widget.post.id}');
       } else {
-        context.push('/posts/${post.id}');
+        context.push('/posts/${widget.post.id}');
       }
     }
 
-    void onAuthorTap() => context.push('/users/${post.authorId}');
+    void onAuthorTap() => context.push('/users/${widget.post.authorId}');
 
     void onComment() {
       if (!isAuthenticated) {
@@ -122,8 +134,8 @@ class ScribesConnectedPostCard extends ConsumerWidget {
       }
       ScribesCommentSheet.show(
         context,
-        postId: post.id,
-        postAuthorId: post.authorId,
+        postId: widget.post.id,
+        postAuthorId: widget.post.authorId,
       );
     }
 
@@ -133,12 +145,12 @@ class ScribesConnectedPostCard extends ConsumerWidget {
         return;
       }
       ref
-          .read(postReactionsProvider(post.id).notifier)
+          .read(postReactionsProvider(widget.post.id).notifier)
           .react(
             type,
-            initialAmenCount: post.amenCount,
-            initialInsightCount: post.insightCount,
-            initialThoughtProvokingCount: post.thoughtProvokingCount,
+            initialAmenCount: widget.post.amenCount,
+            initialInsightCount: widget.post.insightCount,
+            initialThoughtProvokingCount: widget.post.thoughtProvokingCount,
             knownUserReaction: null,
           );
     }
@@ -146,7 +158,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
     return RepaintBoundary(
       child: Column(
         children: [
-          if (post.isDeleted)
+          if (widget.post.isDeleted)
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
@@ -181,17 +193,17 @@ class ScribesConnectedPostCard extends ConsumerWidget {
                 ),
               ),
             )
-          else if (post.postType == 'reflection')
+          else if (widget.post.postType == 'reflection')
             ScribesReflectionCard(
-              bodyText: post.plainTextBody,
-              authorName: post.authorName,
-              authorHandle: post.authorHandle,
-              authorAvatarUrl: post.authorAvatarUrl,
-              publishedAt: post.publishedAt,
-              imageUrl: post.reflectionImageUrl ??
-                  ScribesImageResolver.extractFirstImageUrl(post),
-              scriptureRefs: post.scriptureRefs,
-              tags: post.tags,
+              bodyText: widget.post.plainTextBody,
+              authorName: widget.post.authorName,
+              authorHandle: widget.post.authorHandle,
+              authorAvatarUrl: widget.post.authorAvatarUrl,
+              publishedAt: widget.post.publishedAt,
+              imageUrl: widget.post.reflectionImageUrl ??
+                  ScribesImageResolver.extractFirstImageUrl(widget.post),
+              scriptureRefs: widget.post.scriptureRefs,
+              tags: widget.post.tags,
               amenCount: amenCount,
               insightCount: insightCount,
               thoughtProvokingCount: thoughtProvokingCount,
@@ -204,11 +216,11 @@ class ScribesConnectedPostCard extends ConsumerWidget {
               onAuthorTap: onAuthorTap,
               onComment: onComment,
               onReact: onReact,
-              isExploreScreen: isExploreScreen,
+              isExploreScreen: widget.isExploreScreen,
             )
-          else if (post.postType == 'passage')
+          else if (widget.post.postType == 'passage')
             ScribesPassageCard(
-              post: post,
+              post: widget.post,
               amenCount: amenCount,
               insightCount: insightCount,
               thoughtProvokingCount: thoughtProvokingCount,
@@ -224,23 +236,23 @@ class ScribesConnectedPostCard extends ConsumerWidget {
             )
           else
             ScribesPostCard(
-              title: post.content['title'] ?? 'Untitled',
-              authorName: post.authorName,
-              authorHandle: post.authorHandle,
-              authorAvatarUrl: post.authorAvatarUrl,
-              bodyExcerpt: post.plainTextBody,
-              caption: post.caption,
-              sermonSource: post.sermonSource?.displayTitle,
-              isCorrection: post.isCorrection,
-              publishedAt: post.publishedAt,
-              postType: post.postType,
-              coverImageUrl: post.coverImageUrl ??
-                  ScribesImageResolver.extractFirstImageUrl(post),
-              scriptureRefs: post.scriptureRefs,
-              tags: post.tags,
-              isFeatured: isFeatured,
-              isExploreScreen: isExploreScreen,
-              isSearchScreen: isSearchScreen,
+              title: widget.post.content['title'] ?? 'Untitled',
+              authorName: widget.post.authorName,
+              authorHandle: widget.post.authorHandle,
+              authorAvatarUrl: widget.post.authorAvatarUrl,
+              bodyExcerpt: widget.post.plainTextBody,
+              caption: widget.post.caption,
+              sermonSource: widget.post.sermonSource?.displayTitle,
+              isCorrection: widget.post.isCorrection,
+              publishedAt: widget.post.publishedAt,
+              postType: widget.post.postType,
+              coverImageUrl: widget.post.coverImageUrl ??
+                  ScribesImageResolver.extractFirstImageUrl(widget.post),
+              scriptureRefs: widget.post.scriptureRefs,
+              tags: widget.post.tags,
+              isFeatured: widget.isFeatured,
+              isExploreScreen: widget.isExploreScreen,
+              isSearchScreen: widget.isSearchScreen,
               amenCount: amenCount,
               insightCount: insightCount,
               thoughtProvokingCount: thoughtProvokingCount,
@@ -254,7 +266,7 @@ class ScribesConnectedPostCard extends ConsumerWidget {
               onComment: onComment,
               onReact: onReact,
             ),
-          if (!isExploreScreen)
+          if (!widget.isExploreScreen)
             Divider(height: 1, thickness: 1, color: colors.border),
         ],
       ),

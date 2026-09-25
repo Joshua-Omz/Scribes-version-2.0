@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:scribes/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../core/storage/drift_database.dart';
 import '../data/bible_repository.dart';
 import '../domain/bible_models.dart';
@@ -11,12 +12,20 @@ const _kBibleTranslationKey = 'scribes_bible_selected_translation';
 class SelectedTranslationNotifier extends Notifier<String> {
   @override
   String build() {
-    return sharedPrefs.getString(_kBibleTranslationKey) ?? 'BSB';
+    SharedPreferences.getInstance().then((prefs) {
+      final saved = prefs.getString(_kBibleTranslationKey);
+      if (saved != null && saved.isNotEmpty && saved != state) {
+        state = saved;
+      }
+    });
+    return 'BSB';
   }
 
   void setTranslation(String translation) {
     state = translation;
-    sharedPrefs.setString(_kBibleTranslationKey, translation);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString(_kBibleTranslationKey, translation);
+    });
   }
 }
 
@@ -302,41 +311,57 @@ const _kBibleLineSpacingKey = 'scribes_bible_line_spacing';
 class BibleReaderSettingsNotifier extends Notifier<BibleReaderSettings> {
   @override
   BibleReaderSettings build() {
-    final fontSize = sharedPrefs.getDouble(_kBibleFontSizeKey) ?? 22.0;
-    final isSerif = sharedPrefs.getBool(_kBibleIsSerifKey) ?? true;
-    final isVerseByVerse =
-        sharedPrefs.getBool(_kBibleIsVerseByVerseKey) ?? false;
-    final lineSpacing = sharedPrefs.getDouble(_kBibleLineSpacingKey) ?? 1.9;
+    SharedPreferences.getInstance().then((prefs) {
+      final fontSize = prefs.getDouble(_kBibleFontSizeKey) ?? 22.0;
+      final isSerif = prefs.getBool(_kBibleIsSerifKey) ?? true;
+      final isVerseByVerse = prefs.getBool(_kBibleIsVerseByVerseKey) ?? false;
+      final lineSpacing = prefs.getDouble(_kBibleLineSpacingKey) ?? 1.9;
 
-    return BibleReaderSettings(
-      fontSize: fontSize,
-      isSerif: isSerif,
-      isVerseByVerse: isVerseByVerse,
-      lineSpacing: lineSpacing,
+      state = BibleReaderSettings(
+        fontSize: fontSize,
+        isSerif: isSerif,
+        isVerseByVerse: isVerseByVerse,
+        lineSpacing: lineSpacing,
+      );
+    });
+
+    return const BibleReaderSettings(
+      fontSize: 22.0,
+      isSerif: true,
+      isVerseByVerse: false,
+      lineSpacing: 1.9,
     );
   }
 
   void setFontSize(double size) {
     final clamped = size.clamp(16.0, 30.0);
     state = state.copyWith(fontSize: clamped);
-    sharedPrefs.setDouble(_kBibleFontSizeKey, clamped);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble(_kBibleFontSizeKey, clamped);
+    });
   }
 
   void toggleFontFamily() {
     final next = !state.isSerif;
     state = state.copyWith(isSerif: next);
-    sharedPrefs.setBool(_kBibleIsSerifKey, next);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool(_kBibleIsSerifKey, next);
+    });
   }
 
   void toggleLayout() {
     final next = !state.isVerseByVerse;
     state = state.copyWith(isVerseByVerse: next);
-    sharedPrefs.setBool(_kBibleIsVerseByVerseKey, next);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool(_kBibleIsVerseByVerseKey, next);
+    });
   }
 
   void setLineSpacing(double spacing) {
     state = state.copyWith(lineSpacing: spacing);
-    sharedPrefs.setDouble(_kBibleLineSpacingKey, spacing);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble(_kBibleLineSpacingKey, spacing);
+    });
   }
 }
 

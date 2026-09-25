@@ -13,7 +13,6 @@ import '../../../core/widgets/scribes_ornament_divider.dart';
 import '../application/bible_providers.dart';
 import '../application/verse_selection_provider.dart';
 import '../domain/bible_models.dart';
-import '../domain/verse_selection.dart';
 import 'bible_search_sheet.dart';
 import 'widgets/bible_selection_action_bar.dart';
 import 'widgets/bible_translations_sheet.dart';
@@ -438,7 +437,6 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
     });
 
     final settings = ref.watch(bibleReaderSettingsProvider);
-    final selection = ref.watch(verseSelectionProvider);
 
     return Column(
       children: [
@@ -507,18 +505,21 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
 
         // Chapter verse content with floating selection action bar
         Expanded(
-          child: Stack(
-            children: [
-              chapterAsync.when(
-                data: (chapter) => SingleChildScrollView(
-                  controller: _verseScrollController,
-                  padding: EdgeInsets.fromLTRB(
-                    24,
-                    28,
-                    24,
-                    selection != null ? 140 : 48,
-                  ),
-                  child: Column(
+          child: Consumer(
+            builder: (context, ref, _) {
+              final hasSelection = ref.watch(verseSelectionProvider.select((s) => s != null));
+              return Stack(
+                children: [
+                  chapterAsync.when(
+                    data: (chapter) => SingleChildScrollView(
+                      controller: _verseScrollController,
+                      padding: EdgeInsets.fromLTRB(
+                        24,
+                        28,
+                        24,
+                        hasSelection ? 140 : 48,
+                      ),
+                      child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Illuminated Chapter Header
@@ -564,7 +565,6 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
                           chapter,
                           colors,
                           settings,
-                          selection,
                           highlightsMap,
                         )
                       else
@@ -572,7 +572,6 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
                           chapter,
                           colors,
                           settings,
-                          selection,
                           highlightsMap,
                         ),
 
@@ -720,32 +719,37 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
               ),
 
               // Floating Contextual Glass Action Bar
-              if (selection != null)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: SafeArea(
-                    top: false,
-                    child: BibleSelectionActionBar(
-                      selection: selection,
-                      chapter: chapterAsync.value,
+              Consumer(
+                builder: (context, ref, child) {
+                  final selection = ref.watch(verseSelectionProvider);
+                  if (selection == null) return const SizedBox.shrink();
+                  return Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      top: false,
+                      child: BibleSelectionActionBar(
+                        selection: selection,
+                        chapter: chapterAsync.value,
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
+              ),
             ],
-          ),
-        ),
-      ],
-    );
+          );
+        },
+      ),
+    ),
+  ],
+);
   }
 
-  /// Modern Continuous Paragraph Layout with Elevated Verse Numerals
   Widget _buildContinuousParagraphs(
     BibleChapter chapter,
     ScribesColors colors,
-    BibleReaderSettings settings,
-    VerseSelection? selection, [
+    BibleReaderSettings settings, [
     Map<int, String> highlights = const {},
   ]) {
     final fontSize = settings.fontSize;
@@ -766,71 +770,74 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
             color: colors.primaryText,
           );
 
-    return RichText(
-      textAlign: TextAlign.start,
-      text: TextSpan(
-        style: baseTextStyle,
-        children: chapter.verses.expand((verse) {
-          final cleanText = verse.text.trim();
-          final isSelected = selection?.contains(verse.verse) ?? false;
-          final userHighlightHex = highlights[verse.verse];
-          final Color? highlightColor = userHighlightHex != null
-              ? Color(int.parse(userHighlightHex.replaceFirst('#', '0xFF')))
-              : null;
+    return Consumer(
+      builder: (context, ref, child) {
+        final selection = ref.watch(verseSelectionProvider);
+        return RichText(
+          textAlign: TextAlign.start,
+          text: TextSpan(
+            style: baseTextStyle,
+            children: chapter.verses.expand((verse) {
+              final cleanText = verse.text.trim();
+              final isSelected = selection?.contains(verse.verse) ?? false;
+              final userHighlightHex = highlights[verse.verse];
+              final Color? highlightColor = userHighlightHex != null
+                  ? Color(int.parse(userHighlightHex.replaceFirst('#', '0xFF')))
+                  : null;
 
-          final highlightBg = isSelected
-              ? colors.gold.withValues(alpha: 0.25)
-              : highlightColor != null
-                  ? highlightColor.withValues(alpha: 0.22)
-                  : Colors.transparent;
+              final highlightBg = isSelected
+                  ? colors.gold.withValues(alpha: 0.25)
+                  : highlightColor != null
+                      ? highlightColor.withValues(alpha: 0.22)
+                      : Colors.transparent;
 
-          return [
-            // Elevated SuperScript Verse Numeral
-            WidgetSpan(
-              alignment: PlaceholderAlignment.top,
-              child: GestureDetector(
-                onTap: () {
-                  ref
-                      .read(verseSelectionProvider.notifier)
-                      .toggleVerse(chapter.book, chapter.chapter, verse.verse);
-                },
-                child: Container(
-                  color: highlightBg,
-                  padding: const EdgeInsets.only(right: 5.0, left: 3.0),
-                  child: Text(
-                    '${verse.verse}',
-                    style: GoogleFonts.dmSans(
-                      fontSize: fontSize * 0.52,
-                      fontWeight: FontWeight.w700,
-                      color: colors.gold,
+              return [
+                // Elevated SuperScript Verse Numeral
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.top,
+                  child: GestureDetector(
+                    onTap: () {
+                      ref
+                          .read(verseSelectionProvider.notifier)
+                          .toggleVerse(chapter.book, chapter.chapter, verse.verse);
+                    },
+                    child: Container(
+                      color: highlightBg,
+                      padding: const EdgeInsets.only(right: 5.0, left: 3.0),
+                      child: Text(
+                        '${verse.verse}',
+                        style: GoogleFonts.dmSans(
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.bold,
+                          color: colors.gold,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            TextSpan(
-              text: '$cleanText ',
-              style: TextStyle(
-                backgroundColor: highlightBg,
-              ),
-              recognizer: _getOrCreateRecognizer(
-                chapter.book,
-                chapter.chapter,
-                verse.verse,
-              ),
-            ),
-          ];
-        }).toList(),
-      ),
+                TextSpan(
+                  text: '$cleanText ',
+                  style: TextStyle(
+                    backgroundColor: highlightBg,
+                  ),
+                  recognizer: _getOrCreateRecognizer(
+                    chapter.book,
+                    chapter.chapter,
+                    verse.verse,
+                  ),
+                ),
+              ];
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 
-  /// Modern Verse-by-Verse Layout for Clear Study & Exegesis
   Widget _buildVerseByVerse(
     BibleChapter chapter,
     ScribesColors colors,
-    BibleReaderSettings settings,
-    VerseSelection? selection, [
+    BibleReaderSettings settings, [
     Map<int, String> highlights = const {},
   ]) {
     final fontSize = settings.fontSize;
@@ -854,65 +861,73 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: chapter.verses.map((verse) {
-        final isSelected = selection?.contains(verse.verse) ?? false;
         final userHighlightHex = highlights[verse.verse];
         final Color? highlightColor = userHighlightHex != null
             ? Color(int.parse(userHighlightHex.replaceFirst('#', '0xFF')))
             : null;
 
-        final itemBg = isSelected
-            ? colors.gold.withValues(alpha: 0.18)
-            : highlightColor != null
-                ? highlightColor.withValues(alpha: 0.20)
-                : Colors.transparent;
+        return Consumer(
+          builder: (context, ref, child) {
+            // ONLY this specific verse will rebuild when it gets selected/deselected
+            final isSelected = ref.watch(
+              verseSelectionProvider.select((s) => s?.contains(verse.verse) ?? false),
+            );
 
-        return InkWell(
-          onTap: () {
-            ref
-                .read(verseSelectionProvider.notifier)
-                .toggleVerse(chapter.book, chapter.chapter, verse.verse);
-          },
-          borderRadius: BorderRadius.circular(8),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            margin: const EdgeInsets.only(bottom: 8.0),
-            decoration: BoxDecoration(
-              color: itemBg,
+            final itemBg = isSelected
+                ? colors.gold.withValues(alpha: 0.18)
+                : highlightColor != null
+                    ? highlightColor.withValues(alpha: 0.20)
+                    : Colors.transparent;
+
+            return InkWell(
+              onTap: () {
+                ref
+                    .read(verseSelectionProvider.notifier)
+                    .toggleVerse(chapter.book, chapter.chapter, verse.verse);
+              },
               borderRadius: BorderRadius.circular(8),
-              border: highlightColor != null && !isSelected
-                  ? Border.all(
-                      color: highlightColor.withValues(alpha: 0.45),
-                      width: 0.8,
-                    )
-                  : null,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column Verse Numeral
-                SizedBox(
-                  width: 32,
-                  child: Text(
-                    '${verse.verse}',
-                    style: GoogleFonts.dmSans(
-                      fontSize: fontSize * 0.58,
-                      fontWeight: FontWeight.w700,
-                      color: colors.gold,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeOut,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                margin: const EdgeInsets.only(bottom: 8.0),
+                decoration: BoxDecoration(
+                  color: itemBg,
+                  borderRadius: BorderRadius.circular(8),
+                  border: highlightColor != null && !isSelected
+                      ? Border.all(
+                          color: highlightColor.withValues(alpha: 0.45),
+                          width: 0.8,
+                        )
+                      : null,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left Column Verse Numeral
+                    SizedBox(
+                      width: 32,
+                      child: Text(
+                        '${verse.verse}',
+                        style: GoogleFonts.dmSans(
+                          fontSize: fontSize * 0.58,
+                          fontWeight: FontWeight.w700,
+                          color: colors.gold,
+                        ),
+                      ),
                     ),
-                  ),
+                    // Right Column Verse Text
+                    Expanded(
+                      child: Text(
+                        verse.text.trim(),
+                        style: verseTextStyle,
+                      ),
+                    ),
+                  ],
                 ),
-                // Right Column Verse Text
-                Expanded(
-                  child: Text(
-                    verse.text.trim(),
-                    style: verseTextStyle,
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       }).toList(),
     );

@@ -22,6 +22,7 @@ import '../../../core/widgets/scribes_scripture_selector.dart';
 import '../../../core/theme/scribes_colors.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
 import '../../../core/widgets/scribes_keep_alive_item.dart';
+import '../../../core/state/scroll_aware_state_mixin.dart';
 import 'topic_selection_screen.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -85,8 +86,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return Scaffold(
       backgroundColor: colors.background,
       bottomNavigationBar: const ScribesBottomNav(currentIndex: 1),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollStartNotification) {
+            ScrollAwareStateMixin.isScrolling.value = true;
+          } else if (notification is ScrollEndNotification) {
+            ScrollAwareStateMixin.isScrolling.value = false;
+          }
+          return false; // let the notification bubble up / continue
+        },
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
               backgroundColor: colors.background,
@@ -215,6 +225,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
               )
             : _buildFilteredTab(ref, colors),
+        ),
       ),
     );
   }

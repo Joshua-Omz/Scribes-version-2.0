@@ -27,6 +27,17 @@ class PostApi {
     return data as Map<String, dynamic>;
   }
 
+  Future<List<dynamic>> getPostsBatch(List<String> ids) async {
+    if (ids.isEmpty) return [];
+    final response = await _dio.get(
+      '${Endpoints.posts}/batch',
+      queryParameters: {'ids': ids.join(',')},
+    );
+    final data = response.data;
+    if (data == null || data is String && data.isEmpty) return [];
+    return data as List<dynamic>;
+  }
+
   Future<List<dynamic>> getPostVersions(String id) async {
     final response = await _dio.get('${Endpoints.posts}/$id/versions');
     final data = response.data;

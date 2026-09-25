@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 
+import '../../../core/state/scroll_aware_state_mixin.dart';
 import '../../../core/theme/scribes_colors.dart';
 import '../../../core/theme/scribes_radius.dart';
 import '../../../core/theme/scribes_text_styles.dart';
@@ -17,6 +19,7 @@ import '../../../core/widgets/scribes_post_card_skeleton.dart';
 import '../../../core/widgets/scribes_top_app_bar.dart';
 import '../../auth/application/auth_notifier.dart';
 import '../application/feed_notifier.dart';
+import 'feed_scroll_coordinator.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -26,6 +29,33 @@ class FeedScreen extends ConsumerStatefulWidget {
 }
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
+  late final FeedScrollCoordinator _scrollCoordinator;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCoordinator = FeedScrollCoordinator(
+      onNearEnd: () {
+        final notifier = ref.read(feedProvider.notifier);
+        final currentState = ref.read(feedProvider);
+        if (notifier.hasMore &&
+            !currentState.isLoading &&
+            !currentState.isRefreshing) {
+          notifier.loadMore();
+        }
+      },
+      onScrollStateChanged: (scrolling) {
+        ScrollAwareStateMixin.isScrolling.value = scrolling;
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollCoordinator.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = ref.watch(themeProvider);
@@ -36,100 +66,88 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          // Trigger pagination safely outside of build phase without calling setState
-          if (notification.metrics.pixels >=
-              notification.metrics.maxScrollExtent - 800) {
-            final notifier = ref.read(feedProvider.notifier);
-            final currentState = ref.read(feedProvider);
-            if (notifier.hasMore &&
-                !currentState.isLoading &&
-                !currentState.isRefreshing) {
-              notifier.loadMore();
-            }
-          }
-          return false;
-        },
-        child: RefreshIndicator(
-          onRefresh: () => ref.read(feedProvider.notifier).refresh(),
-          child: CustomScrollView(
-            key: const PageStorageKey<String>('unifiedFeed'),
-            scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
-            slivers: [
-              // Pinned, non-floating app bar maintains constant geometry,
-              // preventing viewport relayout invalidation on every scroll delta.
-              SliverAppBar(
-                automaticallyImplyLeading: false,
-                floating: false,
-                pinned: true,
-                snap: false,
-                elevation: 0,
-                backgroundColor: colors.background,
-                toolbarHeight: 56,
-                titleSpacing: 0,
-                title: const ScribesTopAppBar(showBottomBorder: false),
-              ),
-              feedState.when(
-                data: (posts) {
-                  if (posts.isEmpty) {
-                    return SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: isAuth
-                          ? _buildEmptyState(context, colors)
-                          : _buildGuestEmptyState(context, colors),
-                    );
-                  }
-
-                  // O(1) key-to-index lookup table for delegate diffing
-                  final postIndexMap = {
-                    for (var i = 0; i < posts.length; i++) posts[i].id: i,
-                  };
-                  final hasMore = ref.read(feedProvider.notifier).hasMore;
-
-                  return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index == posts.length) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: ScribesLoadingIndicator()),
-                          );
-                        }
-                        final post = posts[index];
-                        return ScribesConnectedPostCard(
-                          key: ValueKey(post.id),
-                          post: post,
-                          isFeatured: index == 0,
-                        );
-                      },
-                      childCount: posts.length + (hasMore ? 1 : 0),
-                      findChildIndexCallback: (Key key) {
-                        if (key is ValueKey<String>) {
-                          return postIndexMap[key.value];
-                        }
-                        return null;
-                      },
-                      addAutomaticKeepAlives: false,
-                      addRepaintBoundaries: true,
-                    ),
-                  );
-                },
-                loading: () => _buildShimmer(colors),
-                error: (e, st) => SliverFillRemaining(
-                  child: ScribesErrorState(
-                    title: 'Could not load sanctuary feed',
-                    subtitle: e.toString(),
-                    onRetry: () => ref.read(feedProvider.notifier).refresh(),
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 24),
-              ),
-            ],
-          ),
+      body: CustomScrollView(
+        key: const PageStorageKey<String>('unifiedFeed'),
+        controller: _scrollCoordinator.controller,
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
         ),
+        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
+        slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: () => ref.read(feedProvider.notifier).refresh(),
+          ),
+          // Pinned, non-floating app bar maintains constant geometry,
+          // preventing viewport relayout invalidation on every scroll delta.
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            floating: false,
+            pinned: true,
+            snap: false,
+            elevation: 0,
+            backgroundColor: colors.background,
+            toolbarHeight: 56,
+            titleSpacing: 0,
+            title: const ScribesTopAppBar(showBottomBorder: false),
+          ),
+          feedState.when(
+            data: (posts) {
+              if (posts.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: isAuth
+                      ? _buildEmptyState(context, colors)
+                      : _buildGuestEmptyState(context, colors),
+                );
+              }
+
+              // O(1) key-to-index lookup table for delegate diffing
+              final postIndexMap = {
+                for (var i = 0; i < posts.length; i++) posts[i].id: i,
+              };
+              final hasMore = ref.read(feedProvider.notifier).hasMore;
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index == posts.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(child: ScribesLoadingIndicator()),
+                      );
+                    }
+                    final post = posts[index];
+                    return ScribesConnectedPostCard(
+                      key: ValueKey(post.id),
+                      post: post,
+                      isFeatured: index == 0,
+                    );
+                  },
+                  childCount: posts.length + (hasMore ? 1 : 0),
+                  findChildIndexCallback: (Key key) {
+                    if (key is ValueKey<String>) {
+                      return postIndexMap[key.value];
+                    }
+                    return null;
+                  },
+                  addAutomaticKeepAlives: false,
+                  addRepaintBoundaries: true,
+                ),
+              );
+            },
+            loading: () => _buildShimmer(colors),
+            error: (e, st) => SliverFillRemaining(
+              child: ScribesErrorState(
+                title: 'Could not load sanctuary feed',
+                subtitle: e.toString(),
+                onRetry: () => ref.read(feedProvider.notifier).refresh(),
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 24),
+          ),
+        ],
       ),
       bottomNavigationBar: const ScribesBottomNav(currentIndex: 0),
     );

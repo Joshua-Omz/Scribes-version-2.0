@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../auth/application/auth_notifier.dart';
 import '../domain/notification_model.dart';
 import '../data/notification_repository.dart';
 
@@ -57,12 +58,31 @@ class NotificationNotifier extends _$NotificationNotifier {
 }
 
 // Separate lightweight provider for the badge dot
-// Polled on Feed screen open — does not fetch full list, but uses the same endpoint.
+// Caches state in memory; only fetches if authenticated; listens for real-time updates.
 @riverpod
 Future<bool> hasUnreadNotifications(Ref ref) async {
+  // Keep alive in memory to prevent redundant HTTP requests on every Feed mount
+  ref.keepAlive();
+
+  final isAuth = ref.watch(authProvider).value != null;
+  if (!isAuth) {
+    return false;
+  }
+
+  // Listen to real-time notification stream for reactive badge updates
+  ref.listen(notificationStreamProvider, (prev, next) {
+    if (next.hasValue) {
+      ref.invalidateSelf();
+    }
+  });
+
   final repo = ref.read(notificationRepositoryProvider);
-  final response = await repo.getNotifications();
-  return response.hasUnread;
+  try {
+    final response = await repo.getNotifications();
+    return response.hasUnread;
+  } catch (_) {
+    return false;
+  }
 }
 
 @riverpod

@@ -1,11 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../core/state/scroll_aware_state_mixin.dart';
 import '../../posts/domain/post.dart';
 import '../data/feed_repository.dart';
 
 part 'feed_notifier.g.dart';
 
 @riverpod
-class FeedNotifier extends _$FeedNotifier {
+class FeedNotifier extends _$FeedNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
@@ -24,20 +25,15 @@ class FeedNotifier extends _$FeedNotifier {
     // Prevent duplicate loads
     if (state.isLoading || state.isRefreshing) return;
 
-    // Using AsyncLoading will replace the previous list, which is bad for infinite scroll,
-    // so we handle it without setting state to loading if we want to keep current posts.
-    // Instead we just fetch and append.
     try {
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFeed(cursor: _nextCursor);
       _nextCursor = response.nextCursor;
 
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...response.posts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...response.posts]));
     } catch (e, stack) {
-      // Don't override state with error, just keep old posts or handle error in UI
-      // If we strictly follow riverpod best practices, we could keep previous state.
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -48,15 +44,15 @@ class FeedNotifier extends _$FeedNotifier {
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFeed();
       _nextCursor = response.nextCursor;
-      state = AsyncData(response.posts);
+      setStateWhenIdle(AsyncData(response.posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }
 
 @riverpod
-class FollowingFeedNotifier extends _$FollowingFeedNotifier {
+class FollowingFeedNotifier extends _$FollowingFeedNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
@@ -80,9 +76,9 @@ class FollowingFeedNotifier extends _$FollowingFeedNotifier {
       _nextCursor = response.nextCursor;
 
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...response.posts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...response.posts]));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -93,9 +89,9 @@ class FollowingFeedNotifier extends _$FollowingFeedNotifier {
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFollowingFeed();
       _nextCursor = response.nextCursor;
-      state = AsyncData(response.posts);
+      setStateWhenIdle(AsyncData(response.posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }

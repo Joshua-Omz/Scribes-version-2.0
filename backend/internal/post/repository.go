@@ -377,6 +377,17 @@ func (r *Repository) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error
 	return post, nil
 }
 
+func (r *Repository) GetPostsByIDs(ctx context.Context, ids []uuid.UUID) ([]Post, error) {
+	var posts []Post
+	for _, id := range ids {
+		post, err := r.GetPostByID(ctx, id)
+		if err == nil {
+			posts = append(posts, post)
+		}
+	}
+	return posts, nil
+}
+
 func (r *Repository) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]Post, error) {
 	dbPosts, err := r.q.ListPostsByAuthor(ctx, authorID)
 	if err != nil {

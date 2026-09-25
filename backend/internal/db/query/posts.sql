@@ -21,6 +21,14 @@ JOIN users u ON p.author_id = u.id
 LEFT JOIN sound_pool s ON p.sound_id = s.id
 WHERE p.id = $1 AND p.is_deleted = false LIMIT 1;
 
+-- name: GetPostsByIDs :many
+SELECT p.*, u.handle AS author_handle, u.display_name AS author_name,
+       s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
+FROM posts p
+JOIN users u ON p.author_id = u.id
+LEFT JOIN sound_pool s ON p.sound_id = s.id
+WHERE p.id = ANY($1::uuid[]) AND p.is_deleted = false;
+
 -- name: ListPostsByAuthor :many
 SELECT p.*, u.handle AS author_handle, u.display_name AS author_name,
        s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds

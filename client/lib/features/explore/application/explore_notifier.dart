@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../core/state/scroll_aware_state_mixin.dart';
 import '../../posts/domain/post.dart';
 
 import '../data/explore_repository.dart';
@@ -39,7 +40,7 @@ class ExploreScriptureFilter extends _$ExploreScriptureFilter {
 }
 
 @riverpod
-class ExploreFilteredNotifier extends _$ExploreFilteredNotifier {
+class ExploreFilteredNotifier extends _$ExploreFilteredNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
@@ -70,9 +71,9 @@ class ExploreFilteredNotifier extends _$ExploreFilteredNotifier {
     try {
       final newPosts = await _fetch(_nextCursor);
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...newPosts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...newPosts]));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -81,15 +82,15 @@ class ExploreFilteredNotifier extends _$ExploreFilteredNotifier {
     _nextCursor = null;
     try {
       final posts = await _fetch(null);
-      state = AsyncData(posts);
+      setStateWhenIdle(AsyncData(posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }
 
 @riverpod
-class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
+class ExploreTrendingNotifier extends _$ExploreTrendingNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
   bool get hasMore => _nextCursor != null;
 
@@ -115,9 +116,9 @@ class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
     try {
       final newPosts = await _fetch(_nextCursor);
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...newPosts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...newPosts]));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -126,15 +127,15 @@ class ExploreTrendingNotifier extends _$ExploreTrendingNotifier {
     _nextCursor = null;
     try {
       final posts = await _fetch(null);
-      state = AsyncData(posts);
+      setStateWhenIdle(AsyncData(posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }
 
 @riverpod
-class ExploreDiscoverNotifier extends _$ExploreDiscoverNotifier {
+class ExploreDiscoverNotifier extends _$ExploreDiscoverNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
@@ -158,9 +159,9 @@ class ExploreDiscoverNotifier extends _$ExploreDiscoverNotifier {
     try {
       final newPosts = await _fetch(_nextCursor);
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...newPosts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...newPosts]));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -169,9 +170,9 @@ class ExploreDiscoverNotifier extends _$ExploreDiscoverNotifier {
     _nextCursor = null;
     try {
       final posts = await _fetch(null);
-      state = AsyncData(posts);
+      setStateWhenIdle(AsyncData(posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }
@@ -207,7 +208,7 @@ Future<List<Post>> exploreAffirmed(Ref ref) async {
 }
 
 @riverpod
-class ExploreForYouNotifier extends _$ExploreForYouNotifier {
+class ExploreForYouNotifier extends _$ExploreForYouNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
@@ -231,9 +232,9 @@ class ExploreForYouNotifier extends _$ExploreForYouNotifier {
     try {
       final newPosts = await _fetch(_nextCursor);
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...newPosts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...newPosts]));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -242,15 +243,15 @@ class ExploreForYouNotifier extends _$ExploreForYouNotifier {
     _nextCursor = null;
     try {
       final posts = await _fetch(null);
-      state = AsyncData(posts);
+      setStateWhenIdle(AsyncData(posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }
 
 @riverpod
-class ExploreChurchesNotifier extends _$ExploreChurchesNotifier {
+class ExploreChurchesNotifier extends _$ExploreChurchesNotifier with ScrollAwareStateMixin<List<Post>> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
@@ -274,9 +275,9 @@ class ExploreChurchesNotifier extends _$ExploreChurchesNotifier {
     try {
       final newPosts = await _fetch(_nextCursor);
       final currentPosts = state.value ?? [];
-      state = AsyncData([...currentPosts, ...newPosts]);
+      setStateWhenIdle(AsyncData([...currentPosts, ...newPosts]));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 
@@ -285,9 +286,9 @@ class ExploreChurchesNotifier extends _$ExploreChurchesNotifier {
     _nextCursor = null;
     try {
       final posts = await _fetch(null);
-      state = AsyncData(posts);
+      setStateWhenIdle(AsyncData(posts));
     } catch (e, stack) {
-      state = AsyncError(e, stack);
+      setStateWhenIdle(AsyncError(e, stack));
     }
   }
 }
@@ -297,3 +298,4 @@ Future<List<User>> exploreSuggestedUsers(Ref ref) async {
   final repo = ref.read(authRepositoryProvider);
   return repo.getSuggestedUsers(limit: 10);
 }
+

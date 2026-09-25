@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -121,6 +122,32 @@ class BibleDownloadNotifier
     return digest.toString();
   }
 
+  String _resolveDownloadUrl(String rawUrl) {
+    final r2Public = dotenv.env['R2_PUBLIC_URL']?.trim() ??
+        dotenv.env['CDN_URL']?.trim();
+    if (r2Public == null || r2Public.isEmpty) {
+      return rawUrl;
+    }
+
+    final cleanBase = r2Public.endsWith('/')
+        ? r2Public.substring(0, r2Public.length - 1)
+        : r2Public;
+
+    // Relative path e.g. "/bible/kjv_v1.sqlite3.gz" or "bible/kjv_v1.sqlite3.gz"
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      final cleanPath = rawUrl.startsWith('/') ? rawUrl : '/$rawUrl';
+      return '$cleanBase$cleanPath';
+    }
+
+    // If pointing to placeholder domain, rewrite with the real R2 public dev URL
+    if (rawUrl.contains('cdn.scribes.app')) {
+      final uri = Uri.parse(rawUrl);
+      return '$cleanBase${uri.path}';
+    }
+
+    return rawUrl;
+  }
+
   void _updateState(String code, TranslationDownloadState newState) {
     state = {...state, code.toUpperCase(): newState};
   }
@@ -175,9 +202,11 @@ class BibleDownloadNotifier
       if (await tempGzFile.exists()) await tempGzFile.delete();
       if (await tempUncompressedFile.exists()) await tempUncompressedFile.delete();
 
+      final resolvedUrl = _resolveDownloadUrl(translation.downloadUrl!);
+
       // 2. Stream Download via Dio
       await _dio.download(
-        translation.downloadUrl!,
+        resolvedUrl,
         tempGzFile.path,
         cancelToken: cancelToken,
         onReceiveProgress: (received, total) {

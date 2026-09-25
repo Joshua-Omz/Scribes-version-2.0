@@ -7,7 +7,7 @@ import '../theme/theme_provider.dart';
 import '../theme/scribes_text_styles.dart';
 import '../theme/scribes_colors.dart';
 import '../../features/auth/application/auth_notifier.dart';
-import '../../features/notifications/application/notification_provider.dart';
+import 'scribes_notification_badge_button.dart';
 import 'scribes_brand_logo.dart';
 
 /// Modernized, liturgical top app bar for the Scribes Feed.
@@ -88,42 +88,7 @@ class ScribesTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         onPressed: () => context.push('/bible'),
                       ),
                       const SizedBox(width: 2),
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final hasUnread =
-                              ref.watch(hasUnreadNotificationsProvider).value ==
-                                  true;
-                          return Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.center,
-                            children: [
-                              _AppBarIconButton(
-                                icon: HugeIcons.strokeRoundedNotification01,
-                                color: colors.primaryText,
-                                tooltip: 'Notifications',
-                                onPressed: () => context.push('/notifications'),
-                              ),
-                              if (hasUnread)
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    width: 7.5,
-                                    height: 7.5,
-                                    decoration: BoxDecoration(
-                                      color: colors.gold,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: colors.background,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
+                      const ScribesNotificationBadgeButton(),
                     ],
                   ),
                 ),

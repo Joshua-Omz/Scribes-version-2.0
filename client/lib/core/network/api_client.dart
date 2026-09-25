@@ -27,6 +27,9 @@ Dio apiClient(Ref ref) {
     ),
   );
 
+  // Globally offload JSON decoding to a background isolate
+  dio.transformer = BackgroundTransformer();
+
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {

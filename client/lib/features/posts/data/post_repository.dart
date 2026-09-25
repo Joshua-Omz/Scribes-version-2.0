@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +43,7 @@ class PostRepository {
 
         if (!isShallowPassage) {
           // Revalidate in background
-          _revalidatePostInBackground(id);
+          _queueRevalidation(id);
           return cachedPost;
         }
       }
@@ -67,13 +68,34 @@ class PostRepository {
     }
   }
 
-  void _revalidatePostInBackground(String id) {
-    Future.microtask(() async {
-      try {
-        final data = await _api.getPost(id);
-        _cacheSinglePost(data);
-      } catch (_) {}
+  final Set<String> _pendingRevalidations = {};
+  Timer? _revalidationTimer;
+
+  void _queueRevalidation(String id) {
+    _pendingRevalidations.add(id);
+
+    _revalidationTimer?.cancel();
+    _revalidationTimer = Timer(const Duration(milliseconds: 500), () {
+      _flushRevalidations();
     });
+  }
+
+  Future<void> _flushRevalidations() async {
+    if (_pendingRevalidations.isEmpty) return;
+
+    final idsToFetch = _pendingRevalidations.toList();
+    _pendingRevalidations.clear();
+
+    try {
+      final postsData = await _api.getPostsBatch(idsToFetch);
+      for (final data in postsData) {
+        if (data is Map<String, dynamic>) {
+          _cacheSinglePost(data);
+        }
+      }
+    } catch (_) {
+      // Revalidation failure is non-critical.
+    }
   }
 
   void _cacheSinglePost(Map<String, dynamic> item) {

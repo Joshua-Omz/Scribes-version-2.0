@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"scribes-api/internal/middleware"
 	"scribes-api/pkg/respond"
@@ -54,6 +55,37 @@ func (h *Handler) Create(c *gin.Context) {
 	}
 
 	respond.JSON(c, http.StatusCreated, post)
+}
+
+// GetBatch is a PUBLIC endpoint that fetches multiple posts by their UUIDs.
+// It expects a comma-separated list of IDs in the 'ids' query parameter.
+func (h *Handler) GetBatch(c *gin.Context) {
+	idsParam := c.Query("ids")
+	if idsParam == "" {
+		respond.JSON(c, http.StatusOK, []interface{}{})
+		return
+	}
+
+	idStrings := strings.Split(idsParam, ",")
+	var postIDs []uuid.UUID
+	for _, idStr := range idStrings {
+		if id, err := uuid.Parse(idStr); err == nil {
+			postIDs = append(postIDs, id)
+		}
+	}
+
+	if len(postIDs) == 0 {
+		respond.JSON(c, http.StatusOK, []interface{}{})
+		return
+	}
+
+	posts, err := h.svc.GetBatch(c.Request.Context(), postIDs)
+	if err != nil {
+		respond.Error(c, http.StatusInternalServerError, "failed to fetch batch posts")
+		return
+	}
+
+	respond.JSON(c, http.StatusOK, posts)
 }
 
 // GetByID is the PUBLIC endpoint — no auth required.

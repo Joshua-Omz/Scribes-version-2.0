@@ -21,7 +21,6 @@ import 'package:scribes/features/bible/data/bible_repository.dart';
 import 'package:scribes/features/bible/data/local/bible_local_datasource_interface.dart';
 import 'package:scribes/features/bible/domain/bible_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:scribes/main.dart';
 
 class MockPathProviderPlatform extends Fake
     with MockPlatformInterfaceMixin
@@ -160,7 +159,7 @@ void main() {
     });
 
     SharedPreferences.setMockInitialValues({});
-    sharedPrefs = await SharedPreferences.getInstance();
+    await SharedPreferences.getInstance();
     FlutterSecureStorage.setMockInitialValues({});
 
     db = ScribesDatabase.forTesting(NativeDatabase.memory());

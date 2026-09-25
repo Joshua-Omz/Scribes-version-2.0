@@ -45,6 +45,27 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
     }
   }
 
+List<Map<String, dynamic>> _prepareMyPostsForCache(List<Post> activePosts) {
+  return activePosts.map((post) {
+    return {
+      'id': post.id,
+      'authorId': post.authorId,
+      'authorHandle': post.authorHandle,
+      'authorName': post.authorName,
+      'content': jsonEncode(post.content),
+      'caption': post.caption,
+      'visibility': post.visibility,
+      'currentVersion': post.currentVersion,
+      'isCorrection': post.isCorrection,
+      'correctsPostId': post.correctsPostId,
+      'sermonSource': post.sermonSource != null ? jsonEncode(post.sermonSource!.toJson()) : null,
+      'scriptureTags': jsonEncode(post.scriptureRefs.map((r) => r.toJson()).toList()),
+      'isDeleted': post.isDeleted,
+      'publishedAt': post.publishedAt.millisecondsSinceEpoch,
+    };
+  }).toList();
+}
+
   Future<void> _syncLocalDb(List<Post> activePosts, String userId) async {
     try {
       final db = ref.read(databaseProvider);
@@ -57,33 +78,31 @@ class MyPostsNotifier extends AsyncNotifier<List<Post>> {
 
       // Upsert current active posts
       if (activePosts.isNotEmpty) {
+        // Run heavy JSON encoding on background isolate
+        final preparedPosts = await compute(_prepareMyPostsForCache, activePosts);
+
+        // Yield back to the event loop before acquiring the database transaction
+        await Future.delayed(const Duration(milliseconds: 20));
+
         await db.batch((batch) {
-          for (final post in activePosts) {
+          for (final postMap in preparedPosts) {
             batch.insert(
               db.posts,
               PostsCompanion(
-                id: Value(post.id),
-                authorId: Value(post.authorId),
-                authorHandle: Value(post.authorHandle),
-                authorName: Value(post.authorName),
-                content: Value(jsonEncode(post.content)),
-                caption: Value(post.caption),
-                visibility: Value(post.visibility),
-                currentVersion: Value(post.currentVersion),
-                isCorrection: Value(post.isCorrection),
-                correctsPostId: Value(post.correctsPostId),
-                sermonSource: Value(
-                  post.sermonSource != null
-                      ? jsonEncode(post.sermonSource!.toJson())
-                      : null,
-                ),
-                scriptureTags: Value(
-                  jsonEncode(
-                    post.scriptureRefs.map((r) => r.toJson()).toList(),
-                  ),
-                ),
-                isDeleted: Value(post.isDeleted),
-                publishedAt: Value(post.publishedAt),
+                id: Value(postMap['id'] as String),
+                authorId: Value(postMap['authorId'] as String),
+                authorHandle: Value(postMap['authorHandle'] as String),
+                authorName: Value(postMap['authorName'] as String),
+                content: Value(postMap['content'] as String),
+                caption: Value(postMap['caption'] as String?),
+                visibility: Value(postMap['visibility'] as String),
+                currentVersion: Value(postMap['currentVersion'] as int),
+                isCorrection: Value(postMap['isCorrection'] as bool),
+                correctsPostId: Value(postMap['correctsPostId'] as String?),
+                sermonSource: Value(postMap['sermonSource'] as String?),
+                scriptureTags: Value(postMap['scriptureTags'] as String),
+                isDeleted: Value(postMap['isDeleted'] as bool),
+                publishedAt: Value(DateTime.fromMillisecondsSinceEpoch(postMap['publishedAt'] as int)),
               ),
               mode: InsertMode.insertOrReplace,
             );

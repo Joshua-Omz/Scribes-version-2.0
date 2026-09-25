@@ -161,6 +161,10 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 	})
 }
 
+func (s *Service) GetBatch(ctx context.Context, ids []uuid.UUID) ([]Post, error) {
+	return s.repo.GetPostsByIDs(ctx, ids)
+}
+
 func (s *Service) Get(ctx context.Context, id uuid.UUID) (Post, error) {
 	post, err := s.repo.GetPostByID(ctx, id)
 	if err != nil {

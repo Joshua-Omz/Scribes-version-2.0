@@ -15,17 +15,56 @@
       "download_url": "https://cdn.scribes.app/bible/bsb_v1.sqlite3.gz"
     },
     {
+      "code": "BBE",
+      "name": "Bible in Basic English",
+      "language": "en",
+      "version": 1,
+      "attribution": "Bible in Basic English (BBE), Public Domain.",
+      "is_bundled": false,
+      "uncompressed_bytes": 8851456,
+      "compressed_bytes": 3845922,
+      "sha256": "1b4bfaf79878acf9b5a10a7b50b9d73e7053171e38f99786a8198efae03d234c",
+      "gz_sha256": "f8a399c76e51c52888323d96166e1893e6e0d906641e6086eab44123cd9d77de",
+      "download_url": "https://cdn.scribes.app/bible/bbe_v1.sqlite3.gz"
+    },
+    {
       "code": "KJV",
       "name": "King James Version (1769)",
       "language": "en",
       "version": 1,
       "attribution": "King James Version (KJV) 1769, Public Domain.",
       "is_bundled": false,
-      "uncompressed_bytes": 8550000,
-      "compressed_bytes": 3950000,
-      "sha256": null,
-      "gz_sha256": null,
+      "uncompressed_bytes": 8814592,
+      "compressed_bytes": 3921887,
+      "sha256": "0ccb63ef52cf2a897f7cb91258d929f2c5dbd0decc9ef9ebea65cae6c475bb8b",
+      "gz_sha256": "c3c845a16d789e2d20bbd1665f83cc9548b3dd3575723ef03abc99707a2ed6db",
       "download_url": "https://cdn.scribes.app/bible/kjv_v1.sqlite3.gz"
+    },
+    {
+      "code": "NIV",
+      "name": "New International Version",
+      "language": "en",
+      "version": 1,
+      "attribution": "THE HOLY BIBLE, NEW INTERNATIONAL VERSION®, NIV® Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.® Used by permission. All rights reserved worldwide.",
+      "is_bundled": false,
+      "uncompressed_bytes": 8433664,
+      "compressed_bytes": 3875019,
+      "sha256": "85e485803b88a13c7d18580765d4b14094c6522d4e04cdf31d5e26dc14a405a9",
+      "gz_sha256": "beb9339d68bc3e7e86727c74ef99f3a03f96bd7f3060ff90200c30d3149b7dd2",
+      "download_url": "https://cdn.scribes.app/bible/niv_v1.sqlite3.gz"
+    },
+    {
+      "code": "NLT",
+      "name": "New Living Translation",
+      "language": "en",
+      "version": 1,
+      "attribution": "Holy Bible, New Living Translation, copyright © 1996, 2004, 2015 by Tyndale House Foundation. Used by permission of Tyndale House Publishers, Inc., Carol Stream, Illinois 60188. All rights reserved.",
+      "is_bundled": false,
+      "uncompressed_bytes": 8708096,
+      "compressed_bytes": 4036226,
+      "sha256": "9783719d9a3b329c57db6a4e9ec09bbe316c05e9256bd0a9b98548624a29a1c8",
+      "gz_sha256": "8d36403466f70e342ba0f22130655013c80a17dbb9382df87fc4c0a2116d499b",
+      "download_url": "https://cdn.scribes.app/bible/nlt_v1.sqlite3.gz"
     },
     {
       "code": "WEB",
@@ -34,10 +73,10 @@
       "version": 1,
       "attribution": "World English Bible (WEB), Public Domain.",
       "is_bundled": false,
-      "uncompressed_bytes": 8700000,
-      "compressed_bytes": 4100000,
-      "sha256": null,
-      "gz_sha256": null,
+      "uncompressed_bytes": 8708096,
+      "compressed_bytes": 3873198,
+      "sha256": "2f7c109677a91241632b20f7ecca3ab906176858939241a9cadc4192688b3b3b",
+      "gz_sha256": "d898498506d004543067c9c58962ac924d1bc46ea88a9f995f8c3f41fd0af988",
       "download_url": "https://cdn.scribes.app/bible/web_v1.sqlite3.gz"
     }
   ]

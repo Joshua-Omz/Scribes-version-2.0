@@ -280,6 +280,7 @@ class ScribesImageResolver {
     }
 
     return CachedNetworkImage(
+      key: ValueKey(resolved),
       imageUrl: resolved,
       cacheManager: ScribesCacheManager.instance,
       httpHeaders: const {'ngrok-skip-browser-warning': 'true'},
