@@ -334,7 +334,7 @@ class BibleReaderSettingsNotifier extends Notifier<BibleReaderSettings> {
   }
 
   void setFontSize(double size) {
-    final clamped = size.clamp(16.0, 30.0);
+    final clamped = size.clamp(18.0, 32.0);
     state = state.copyWith(fontSize: clamped);
     SharedPreferences.getInstance().then((prefs) {
       prefs.setDouble(_kBibleFontSizeKey, clamped);

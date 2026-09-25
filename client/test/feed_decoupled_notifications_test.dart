@@ -185,12 +185,12 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(platform: TargetPlatform.iOS),
           home: Scaffold(
             body: CustomScrollView(
               physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 CupertinoSliverRefreshControl(
-                  key: const ValueKey('refresh_control'),
                   onRefresh: () async {
                     refreshed = true;
                   },
@@ -207,10 +207,13 @@ void main() {
         ),
       );
 
-      expect(find.byKey(const ValueKey('refresh_control')), findsOneWidget);
+      expect(
+        find.byType(CupertinoSliverRefreshControl, skipOffstage: false),
+        findsOneWidget,
+      );
       expect(refreshed, isFalse);
 
-      // Drag down past the refreshTriggerPullDistance (default 100px)
+      // Overscroll past the 100px trigger distance
       await tester.drag(find.byType(CustomScrollView), const Offset(0, 200));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
