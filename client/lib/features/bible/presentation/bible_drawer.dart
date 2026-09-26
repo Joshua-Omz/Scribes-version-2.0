@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -511,194 +512,64 @@ class _BibleDrawerScreenState extends ConsumerState<BibleDrawerScreen> {
               return Stack(
                 children: [
                   chapterAsync.when(
-                    data: (chapter) => SingleChildScrollView(
+                    data: (chapter) => CustomScrollView(
                       controller: _verseScrollController,
-                      padding: EdgeInsets.fromLTRB(
-                        24,
-                        28,
-                        24,
-                        hasSelection ? 140 : 48,
+                      physics: const BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
                       ),
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Illuminated Chapter Header
-                      Center(
-                        child: Column(
-                          children: [
-                            Text(
-                              chapter.book,
-                              style: GoogleFonts.cormorantGaramond(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w600,
-                                color: colors.primaryText,
-                                letterSpacing: 0.5,
-                                height: 1.15,
+                      scrollCacheExtent: const ScrollCacheExtent.pixels(1500),
+                      slivers: [
+                        // 1. Illuminated Chapter Header
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                          sliver: SliverToBoxAdapter(
+                            child: _buildChapterHeader(chapter, colors),
+                          ),
+                        ),
+
+                        // 2. Scripture Reading Typesetting (Virtualized Slivers)
+                        if (settings.isVerseByVerse)
+                          _buildVerseByVerseSliver(
+                            chapter,
+                            colors,
+                            settings,
+                            highlightsMap,
+                          )
+                        else
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            sliver: SliverToBoxAdapter(
+                              child: RepaintBoundary(
+                                child: _buildContinuousParagraphs(
+                                  chapter,
+                                  colors,
+                                  settings,
+                                  highlightsMap,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'CHAPTER ${chapter.chapter}',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 3.5,
-                                color: colors.gold,
-                              ),
+                          ),
+
+                        // 3. Translation Attribution & Pagination Footer
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(
+                            24,
+                            36,
+                            24,
+                            hasSelection ? 140 : 48,
+                          ),
+                          sliver: SliverToBoxAdapter(
+                            child: _buildChapterFooter(
+                              context,
+                              ref,
+                              chapter,
+                              colors,
+                              navState,
                             ),
-                            const SizedBox(height: 16),
-                            const ScribesOrnamentDivider(),
-                            const SizedBox(height: 28),
-                          ],
+                          ),
                         ),
-                      ),
-
-                      // Scripture Reading Typesetting
-                      if (settings.isVerseByVerse)
-                        _buildVerseByVerse(
-                          chapter,
-                          colors,
-                          settings,
-                          highlightsMap,
-                        )
-                      else
-                        _buildContinuousParagraphs(
-                          chapter,
-                          colors,
-                          settings,
-                          highlightsMap,
-                        ),
-
-                      const SizedBox(height: 48),
-                      const ScribesOrnamentDivider(),
-                      const SizedBox(height: 16),
-
-                      // Translation Attribution Footer
-                      Center(
-                        child: Consumer(
-                          builder: (context, ref, child) {
-                            final selectedTranslation = ref.watch(selectedTranslationProvider);
-                            final translationsAsync = ref.watch(bibleTranslationsProvider);
-                            final attribution = translationsAsync.maybeWhen(
-                              data: (translations) {
-                                final match = translations
-                                    .where((t) => t.code.toUpperCase() == selectedTranslation.toUpperCase())
-                                    .firstOrNull;
-                                return match?.attributionText ?? '$selectedTranslation, public domain';
-                              },
-                              orElse: () => '$selectedTranslation, public domain',
-                            );
-                            return Text(
-                              attribution,
-                              style: ScribesTextStyles.caption.copyWith(
-                                color: colors.secondaryText.withValues(alpha: 0.7),
-                                fontStyle: FontStyle.italic,
-                                letterSpacing: 0.3,
-                              ),
-                              textAlign: TextAlign.center,
-                            );
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(height: 36),
-
-                      // Modern Chapter Pagination Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (navState.currentChapter > 1)
-                            InkWell(
-                              onTap: () {
-                                _clearRecognizers();
-                                ref.read(verseSelectionProvider.notifier).clear();
-                                ref
-                                    .read(bibleNavigationProvider.notifier)
-                                    .previousChapter();
-                                _scrollToTop();
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.surfaceRaised,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: colors.border.withValues(alpha: 0.5),
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    HugeIcon(
-                                      icon: HugeIcons.strokeRoundedArrowLeft01,
-                                      color: colors.gold,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Chapter ${navState.currentChapter - 1}',
-                                      style: ScribesTextStyles.labelLg.copyWith(
-                                        color: colors.primaryText,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          else
-                            const SizedBox.shrink(),
-                          if (navState.currentChapter < navState.totalChapters)
-                            InkWell(
-                              onTap: () {
-                                _clearRecognizers();
-                                ref.read(verseSelectionProvider.notifier).clear();
-                                ref
-                                    .read(bibleNavigationProvider.notifier)
-                                    .nextChapter();
-                                _scrollToTop();
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.gold,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'Chapter ${navState.currentChapter + 1}',
-                                      style: ScribesTextStyles.labelLg.copyWith(
-                                        color: colors.background,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    HugeIcon(
-                                      icon: HugeIcons.strokeRoundedArrowRight01,
-                                      color: colors.background,
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          else
-                            const SizedBox.shrink(),
-                        ],
-                      ),
-                      const SizedBox(height: 48),
-                    ],
-                  ),
-                ),
+                      ],
+                    ),
                 loading: () => const Center(child: ScribesLoadingIndicator()),
                 error: (e, _) => Center(
                   child: Padding(
