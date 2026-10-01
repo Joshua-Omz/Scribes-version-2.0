@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +40,11 @@ final bibleBooksProvider = FutureProvider<List<BibleBook>>((ref) async {
   final repo = ref.watch(bibleRepositoryProvider);
   final translation = ref.watch(selectedTranslationProvider);
   return repo.getBooks(translation: translation);
+});
+
+final canonicalBibleBooksProvider = Provider<List<BibleBook>>((ref) {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.getStaticCanonicalBooks();
 });
 
 class BibleChapterQuery {
@@ -110,6 +116,29 @@ final chapterHighlightsProvider =
   return repo.watchHighlightsForChapter(query.book, query.chapter);
 });
 
+/// Watches all verse notes for a given chapter. Returns a map of verse -> noteId
+/// so the Bible Drawer can show note indicators without N+1 queries.
+final chapterVerseNotesProvider =
+    StreamProvider.family<Map<int, String>, BibleChapterQuery>((
+  ref,
+  query,
+) {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.watchNotesForChapter(query.book, query.chapter).map((notes) {
+    final map = <int, String>{};
+    for (final n in notes) {
+      map[n.verse] = n.id;
+    }
+    return map;
+  });
+});
+
+/// Watches all verse notes for the current user (for the Highlights & Notes page).
+final allVerseNotesProvider = StreamProvider<List<VerseNote>>((ref) {
+  final repo = ref.watch(bibleRepositoryProvider);
+  return repo.watchAllVerseNotes();
+});
+
 final downloadedTranslationsProvider =
     StreamProvider<List<BibleDownloadedTranslation>>((ref) {
   final repo = ref.watch(bibleRepositoryProvider);
@@ -136,12 +165,78 @@ class BibleVerseQuery {
           runtimeType == other.runtimeType &&
           book.toLowerCase() == other.book.toLowerCase() &&
           chapter == other.chapter &&
-          verse == other.verse;
+          verse == other.verse &&
+          listEquals(translations, other.translations);
 
   @override
   int get hashCode =>
-      book.toLowerCase().hashCode ^ chapter.hashCode ^ verse.hashCode;
+      book.toLowerCase().hashCode ^
+      chapter.hashCode ^
+      verse.hashCode ^
+      (translations != null ? Object.hashAll(translations!) : 0);
 }
+
+const _kBibleCompareTranslationsKey = 'scribes_bible_compare_translations';
+
+class ComparisonSelectedTranslationsNotifier extends Notifier<List<String>> {
+  @override
+  List<String> build() {
+    SharedPreferences.getInstance().then((prefs) {
+      final saved = prefs.getStringList(_kBibleCompareTranslationsKey);
+      if (saved != null && saved.isNotEmpty) {
+        state = saved;
+      } else {
+        final current = ref.read(selectedTranslationProvider);
+        state = current == 'BSB' ? ['BSB'] : [current, 'BSB'];
+      }
+    });
+
+    final current = ref.read(selectedTranslationProvider);
+    return current == 'BSB' ? ['BSB'] : [current, 'BSB'];
+  }
+
+  void toggleTranslation(String code) {
+    final upper = code.toUpperCase().trim();
+    final current = List<String>.from(state);
+    if (current.contains(upper)) {
+      if (current.length > 1) {
+        current.remove(upper);
+        state = current;
+        _persist();
+      }
+    } else {
+      current.add(upper);
+      state = current;
+      _persist();
+    }
+  }
+
+  void addTranslation(String code) {
+    final upper = code.toUpperCase().trim();
+    if (!state.contains(upper)) {
+      state = [...state, upper];
+      _persist();
+    }
+  }
+
+  void setTranslations(List<String> translations) {
+    if (translations.isNotEmpty) {
+      state = translations.map((e) => e.toUpperCase().trim()).toList();
+      _persist();
+    }
+  }
+
+  void _persist() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setStringList(_kBibleCompareTranslationsKey, state);
+    });
+  }
+}
+
+final comparisonSelectedTranslationsProvider =
+    NotifierProvider<ComparisonSelectedTranslationsNotifier, List<String>>(
+  ComparisonSelectedTranslationsNotifier.new,
+);
 
 final verseComparisonProvider = FutureProvider.family<
     List<BibleComparisonResult>, BibleVerseQuery>((ref, query) async {

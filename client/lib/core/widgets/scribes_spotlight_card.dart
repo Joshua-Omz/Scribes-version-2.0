@@ -73,9 +73,9 @@ class ScribesSpotlightCard extends ConsumerWidget {
             color: colors.border.withValues(alpha: 0.5),
             width: 0.7,
           ),
-          color: colors.surfaceRaised,
+          color: hasImage ? Colors.transparent : colors.surfaceRaised,
         ),
-        clipBehavior: Clip.antiAlias,
+        clipBehavior: Clip.hardEdge,
         child: Stack(
           children: [
             // Background Image or Ambient Glow
@@ -83,7 +83,7 @@ class ScribesSpotlightCard extends ConsumerWidget {
               Positioned.fill(
                 child: ScribesImageResolver.buildImage(
                   imageUrl: displayImageUrl,
-                  memCacheWidth: 600,
+                  memCacheWidth: 380,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(color: colors.surfaceRaised),
                   errorWidget: (context, url, error) => Container(

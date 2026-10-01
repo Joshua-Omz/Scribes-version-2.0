@@ -8,9 +8,10 @@ INSERT INTO posts (
     cover_image_url,
     reflection_image_url,
     sound_id,
-    post_type
+    post_type,
+    quoted_post_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) RETURNING *;
 
 -- name: GetPostByID :one
@@ -73,9 +74,10 @@ INSERT INTO posts (
     is_correction,
     corrects_post_id,
     cover_image_url,
-    post_type
+    post_type,
+    quoted_post_id
 ) VALUES (
-    $1, $2, $3, $4, $5, true, $6, $7, $8
+    $1, $2, $3, $4, $5, true, $6, $7, $8, $9
 ) RETURNING *;
 
 -- name: ClearPostTags :exec

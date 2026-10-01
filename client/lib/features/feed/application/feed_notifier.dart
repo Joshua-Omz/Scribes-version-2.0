@@ -5,18 +5,27 @@ import '../data/feed_repository.dart';
 
 part 'feed_notifier.g.dart';
 
+class FeedState {
+  final List<String> postIds;
+  final Map<String, Post> posts;
+
+  FeedState({required this.postIds, required this.posts});
+}
+
 @riverpod
-class FeedNotifier extends _$FeedNotifier with ScrollAwareStateMixin<List<Post>> {
+class FeedNotifier extends _$FeedNotifier with ScrollAwareStateMixin<FeedState> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
 
   @override
-  FutureOr<List<Post>> build() async {
+  FutureOr<FeedState> build() async {
     final repo = ref.read(feedRepositoryProvider);
     final response = await repo.getFeed();
     _nextCursor = response.nextCursor;
-    return response.posts;
+    final postIds = response.posts.map((p) => p.id).toList();
+    final postsMap = {for (var p in response.posts) p.id: p};
+    return FeedState(postIds: postIds, posts: postsMap);
   }
 
   Future<void> loadMore() async {
@@ -30,8 +39,12 @@ class FeedNotifier extends _$FeedNotifier with ScrollAwareStateMixin<List<Post>>
       final response = await repo.getFeed(cursor: _nextCursor);
       _nextCursor = response.nextCursor;
 
-      final currentPosts = state.value ?? [];
-      setStateWhenIdle(AsyncData([...currentPosts, ...response.posts]));
+      final current = state.value;
+      if (current != null) {
+        final newPostIds = [...current.postIds, ...response.posts.map((p) => p.id)];
+        final newPostsMap = {...current.posts, for (var p in response.posts) p.id: p};
+        setStateWhenIdle(AsyncData(FeedState(postIds: newPostIds, posts: newPostsMap)));
+      }
     } catch (e, stack) {
       setStateWhenIdle(AsyncError(e, stack));
     }
@@ -44,7 +57,9 @@ class FeedNotifier extends _$FeedNotifier with ScrollAwareStateMixin<List<Post>>
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFeed();
       _nextCursor = response.nextCursor;
-      setStateWhenIdle(AsyncData(response.posts));
+      final postIds = response.posts.map((p) => p.id).toList();
+      final postsMap = {for (var p in response.posts) p.id: p};
+      setStateWhenIdle(AsyncData(FeedState(postIds: postIds, posts: postsMap)));
     } catch (e, stack) {
       setStateWhenIdle(AsyncError(e, stack));
     }
@@ -52,17 +67,19 @@ class FeedNotifier extends _$FeedNotifier with ScrollAwareStateMixin<List<Post>>
 }
 
 @riverpod
-class FollowingFeedNotifier extends _$FollowingFeedNotifier with ScrollAwareStateMixin<List<Post>> {
+class FollowingFeedNotifier extends _$FollowingFeedNotifier with ScrollAwareStateMixin<FeedState> {
   String? _nextCursor;
 
   bool get hasMore => _nextCursor != null;
 
   @override
-  FutureOr<List<Post>> build() async {
+  FutureOr<FeedState> build() async {
     final repo = ref.read(feedRepositoryProvider);
     final response = await repo.getFollowingFeed();
     _nextCursor = response.nextCursor;
-    return response.posts;
+    final postIds = response.posts.map((p) => p.id).toList();
+    final postsMap = {for (var p in response.posts) p.id: p};
+    return FeedState(postIds: postIds, posts: postsMap);
   }
 
   Future<void> loadMore() async {
@@ -75,8 +92,12 @@ class FollowingFeedNotifier extends _$FollowingFeedNotifier with ScrollAwareStat
       final response = await repo.getFollowingFeed(cursor: _nextCursor);
       _nextCursor = response.nextCursor;
 
-      final currentPosts = state.value ?? [];
-      setStateWhenIdle(AsyncData([...currentPosts, ...response.posts]));
+      final current = state.value;
+      if (current != null) {
+        final newPostIds = [...current.postIds, ...response.posts.map((p) => p.id)];
+        final newPostsMap = {...current.posts, for (var p in response.posts) p.id: p};
+        setStateWhenIdle(AsyncData(FeedState(postIds: newPostIds, posts: newPostsMap)));
+      }
     } catch (e, stack) {
       setStateWhenIdle(AsyncError(e, stack));
     }
@@ -89,7 +110,9 @@ class FollowingFeedNotifier extends _$FollowingFeedNotifier with ScrollAwareStat
       final repo = ref.read(feedRepositoryProvider);
       final response = await repo.getFollowingFeed();
       _nextCursor = response.nextCursor;
-      setStateWhenIdle(AsyncData(response.posts));
+      final postIds = response.posts.map((p) => p.id).toList();
+      final postsMap = {for (var p in response.posts) p.id: p};
+      setStateWhenIdle(AsyncData(FeedState(postIds: postIds, posts: postsMap)));
     } catch (e, stack) {
       setStateWhenIdle(AsyncError(e, stack));
     }

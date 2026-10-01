@@ -11,7 +11,7 @@ import '../../../core/theme/scribes_radius.dart';
 import '../../../core/theme/scribes_text_styles.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/widgets/scribes_bottom_nav.dart';
-import '../../../core/widgets/scribes_connected_post_card.dart';
+import '../../../core/widgets/scribes_light_post_tile.dart';
 import '../../../core/widgets/scribes_empty_state.dart';
 import '../../../core/widgets/scribes_error_state.dart';
 import '../../../core/widgets/scribes_loading_indicator.dart';
@@ -72,7 +72,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
-        scrollCacheExtent: const ScrollCacheExtent.pixels(1200),
+        scrollCacheExtent: const ScrollCacheExtent.pixels(3000),
         slivers: [
           CupertinoSliverRefreshControl(
             onRefresh: () => ref.read(feedProvider.notifier).refresh(),
@@ -91,8 +91,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             title: const ScribesTopAppBar(showBottomBorder: false),
           ),
           feedState.when(
-            data: (posts) {
-              if (posts.isEmpty) {
+            data: (feedState) {
+              if (feedState.postIds.isEmpty) {
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: isAuth
@@ -101,36 +101,32 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 );
               }
 
-              // O(1) key-to-index lookup table for delegate diffing
-              final postIndexMap = {
-                for (var i = 0; i < posts.length; i++) posts[i].id: i,
-              };
               final hasMore = ref.read(feedProvider.notifier).hasMore;
 
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    if (index == posts.length) {
+                    if (index == feedState.postIds.length) {
                       return const Padding(
                         padding: EdgeInsets.all(16.0),
                         child: Center(child: ScribesLoadingIndicator()),
                       );
                     }
-                    final post = posts[index];
-                    return ScribesConnectedPostCard(
-                      key: ValueKey(post.id),
-                      post: post,
-                      isFeatured: index == 0,
+                    final postId = feedState.postIds[index];
+                    return ScribesLightPostTile(
+                      key: ValueKey(postId),
+                      postId: postId,
+                      isExploreScreen: false,
                     );
                   },
-                  childCount: posts.length + (hasMore ? 1 : 0),
+                  childCount: feedState.postIds.length + (hasMore ? 1 : 0),
                   findChildIndexCallback: (Key key) {
                     if (key is ValueKey<String>) {
-                      return postIndexMap[key.value];
+                      return (!feedState.postIds.contains(key.value)) ? null : feedState.postIds.indexOf(key.value);
                     }
                     return null;
                   },
-                  addAutomaticKeepAlives: false,
+                  addAutomaticKeepAlives: true,
                   addRepaintBoundaries: true,
                 ),
               );

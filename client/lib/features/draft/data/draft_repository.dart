@@ -118,6 +118,11 @@ class DraftRepository {
   /// Delete draft locally
   Future<void> deleteDraftLocally(String id) async {
     await (_db.delete(_db.drafts)..where((t) => t.id.equals(id))).go();
+    await (deleteDraftOnline(id));
+  }
+
+  Future<void> deleteDraftOnline(String id) async {
+    await (_api.deleteDraft(id));
   }
 
   /// Loads all drafts from local SQLite

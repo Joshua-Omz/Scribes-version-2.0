@@ -58,8 +58,13 @@ func main() {
 	})
 	authHandler := auth.NewHandler(authSvc)
 
+	notificationRepo := notification.NewRepository(queries)
+	notificationWorker := notification.NewWorker(notificationRepo)
+	notificationSvc := notification.NewService(notificationRepo, notificationWorker)
+	notificationHandler := notification.NewHandler(notificationSvc)
+
 	postRepo := post.NewRepository(queries, db)
-	postSvc := post.NewService(postRepo)
+	postSvc := post.NewService(postRepo, notificationSvc)
 	postHandler := post.NewHandler(postSvc)
 
 	draftRepo := draft.NewRepository(queries)
@@ -74,11 +79,6 @@ func main() {
 	syncRepo := sync.NewRepository(queries, db)
 	syncSvc := sync.NewService(syncRepo)
 	syncHandler := sync.NewHandler(syncSvc)
-
-	notificationRepo := notification.NewRepository(queries)
-	notificationWorker := notification.NewWorker(notificationRepo)
-	notificationSvc := notification.NewService(notificationRepo, notificationWorker)
-	notificationHandler := notification.NewHandler(notificationSvc)
 
 	socialRepo := social.NewRepository(queries, db)
 	socialSvc := social.NewService(socialRepo, postRepo, notificationSvc)

@@ -56,6 +56,7 @@ type Post struct {
 	Sound              *SoundTrack                     `json:"sound,omitempty"`
 	Panels             []PassagePanel                  `json:"panels,omitempty"`
 	PostType           string                          `json:"post_type"`
+	QuotedPostID       *uuid.UUID                      `json:"quoted_post_id,omitempty"`
 }
 
 func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
@@ -106,6 +107,12 @@ func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
 		}
 	}
 
+	var quotedPostID *uuid.UUID
+	if dbPost.QuotedPostID.Valid {
+		qid := dbPost.QuotedPostID.UUID
+		quotedPostID = &qid
+	}
+
 	return Post{
 		ID:                 dbPost.ID,
 		AuthorID:           dbPost.AuthorID,
@@ -126,6 +133,7 @@ func mapGetPostByIDRow(dbPost generated.GetPostByIDRow) Post {
 		Sound:              sound,
 		Panels:             []PassagePanel{},
 		PostType:           string(dbPost.PostType),
+		QuotedPostID:       quotedPostID,
 		// ScriptureRefs are populated separately
 	}
 }
@@ -178,6 +186,12 @@ func mapListPostsByAuthorRow(dbPost generated.ListPostsByAuthorRow) Post {
 		}
 	}
 
+	var quotedPostID *uuid.UUID
+	if dbPost.QuotedPostID.Valid {
+		qid := dbPost.QuotedPostID.UUID
+		quotedPostID = &qid
+	}
+
 	return Post{
 		ID:                 dbPost.ID,
 		AuthorID:           dbPost.AuthorID,
@@ -198,6 +212,7 @@ func mapListPostsByAuthorRow(dbPost generated.ListPostsByAuthorRow) Post {
 		Sound:              sound,
 		Panels:             []PassagePanel{},
 		PostType:           string(dbPost.PostType),
+		QuotedPostID:       quotedPostID,
 		// ScriptureRefs are populated separately
 	}
 }
@@ -676,6 +691,7 @@ type CreatePostTxParams struct {
 	Tags               []string
 	ScriptureRefs      []generated.AddScriptureRefParams
 	Panels             []PassagePanel
+	QuotedPostID       *uuid.UUID
 }
 
 func (r *Repository) CreatePostTx(ctx context.Context, params CreatePostTxParams) (Post, error) {
@@ -708,6 +724,10 @@ func (r *Repository) CreatePostTx(ctx context.Context, params CreatePostTxParams
 	if params.SoundID != nil {
 		dbSoundID = uuid.NullUUID{UUID: *params.SoundID, Valid: true}
 	}
+	var dbQuotedPostID uuid.NullUUID
+	if params.QuotedPostID != nil {
+		dbQuotedPostID = uuid.NullUUID{UUID: *params.QuotedPostID, Valid: true}
+	}
 	postType := params.PostType
 	if postType == "" {
 		postType = "standard"
@@ -723,6 +743,7 @@ func (r *Repository) CreatePostTx(ctx context.Context, params CreatePostTxParams
 		ReflectionImageUrl: dbReflectionImageUrl,
 		SoundID:            dbSoundID,
 		PostType:           generated.PostType(postType),
+		QuotedPostID:       dbQuotedPostID,
 	})
 	if err != nil {
 		return Post{}, err
@@ -838,6 +859,7 @@ type CreateCorrectionPostTxParams struct {
 	PostType       string
 	Tags           []string
 	ScriptureRefs  []generated.AddScriptureRefParams
+	QuotedPostID   *uuid.UUID
 }
 
 func (r *Repository) CreateCorrectionPostTx(ctx context.Context, params CreateCorrectionPostTxParams) (Post, error) {
@@ -862,6 +884,10 @@ func (r *Repository) CreateCorrectionPostTx(ctx context.Context, params CreateCo
 	if params.CoverImageUrl != nil {
 		dbCoverImageUrl = sql.NullString{String: *params.CoverImageUrl, Valid: true}
 	}
+	var dbQuotedPostID uuid.NullUUID
+	if params.QuotedPostID != nil {
+		dbQuotedPostID = uuid.NullUUID{UUID: *params.QuotedPostID, Valid: true}
+	}
 	postType := params.PostType
 	if postType == "" {
 		postType = "standard"
@@ -876,6 +902,7 @@ func (r *Repository) CreateCorrectionPostTx(ctx context.Context, params CreateCo
 		CorrectsPostID: uuid.NullUUID{UUID: params.CorrectsPostID, Valid: true},
 		CoverImageUrl:  dbCoverImageUrl,
 		PostType:       generated.PostType(postType),
+		QuotedPostID:   dbQuotedPostID,
 	})
 	if err != nil {
 		return Post{}, err

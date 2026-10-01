@@ -7,9 +7,9 @@ class AppColors {
   static const Color nightSurfaceRaised = Color(0xFF1A1714);
   static const Color nightPrimaryText = Color(0xFFF0EDE6);
   static const Color nightSecondaryText = Color(0xFF8A8070);
-  static const Color nightGoldPrimary = Color(0xFFC9A84C);
-  static const Color nightGoldMuted = Color(0xFF7A6230);
-  static const Color nightOrangeAccent = Color(0xFFD4621A);
+  static const Color nightGoldPrimary = Color.fromARGB(137, 193, 110, 47);
+  static const Color nightGoldMuted = Color.fromARGB(219, 74, 51, 9);
+  static const Color nightOrangeAccent = Color.fromARGB(255, 121, 54, 13);
   static const Color nightOrangeSoft = Color(0xFF3D2010);
   static const Color nightBorder = Color(0x402A2520);
 

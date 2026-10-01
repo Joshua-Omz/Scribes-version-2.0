@@ -16,6 +16,7 @@ import '../../domain/bible_models.dart';
 import '../../domain/verse_selection.dart';
 import '../../application/verse_selection_provider.dart';
 import 'bible_compare_sheet.dart';
+import 'verse_note_editor_sheet.dart';
 
 /// Contextual glass action bar displayed at the bottom of the Bible Drawer
 /// whenever a contiguous range of verses is selected.
@@ -80,6 +81,44 @@ class BibleSelectionActionBar extends ConsumerWidget {
         verse: selection.verseStart,
       ),
     );
+  }
+
+  void _openNoteEditor(BuildContext context, WidgetRef ref) {
+    // Resolve verse text from chapter data if available
+    String verseText = '';
+    if (chapter != null) {
+      final selectedVerses = chapter!.verses.where(
+        (v) => selection.contains(v.verse),
+      ).toList();
+      if (selectedVerses.isNotEmpty) {
+        verseText = selectedVerses.map((v) => v.text.trim()).join(' ');
+      }
+    }
+
+    // Check for existing note on this verse
+    final repo = ref.read(bibleRepositoryProvider);
+    repo.getVerseNote(
+      bookCode: selection.book,
+      chapter: selection.chapter,
+      verse: selection.verseStart,
+    ).then((existingNote) {
+      if (!context.mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => VerseNoteEditorSheet(
+          bookCode: selection.book,
+          chapter: selection.chapter,
+          verse: selection.verseStart,
+          verseText: verseText,
+          displayLabel: selection.displayLabel,
+          existingNoteId: existingNote?.id,
+          existingContent: existingNote?.content,
+        ),
+      );
+    });
   }
 
   Future<void> _highlightSelection(
@@ -227,13 +266,7 @@ class BibleSelectionActionBar extends ConsumerWidget {
                                     size: 15,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    'Highlight',
-                                    style: ScribesTextStyles.labelSm.copyWith(
-                                      color: colors.gold,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                              
                                 ],
                               ),
                             ),
@@ -267,13 +300,7 @@ class BibleSelectionActionBar extends ConsumerWidget {
                                       size: 15,
                                     ),
                                     const SizedBox(width: 4),
-                                    Text(
-                                      'Compare',
-                                      style: ScribesTextStyles.labelSm.copyWith(
-                                        color: colors.primaryText,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                                 
                                   ],
                                 ),
                               ),
@@ -307,13 +334,40 @@ class BibleSelectionActionBar extends ConsumerWidget {
                                     size: 15,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    'Quote',
-                                    style: ScribesTextStyles.labelSm.copyWith(
-                                      color: colors.primaryText,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                 
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+
+                        // Note Action
+                        Expanded(
+                          child: ScribesBounceButton(
+                            onTap: () => _openNoteEditor(context, ref),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceRaised.withValues(alpha: 0.7),
+                                borderRadius: BorderRadius.circular(
+                                  ScribesRadius.button,
+                                ),
+                                border: Border.all(
+                                  color: colors.border.withValues(alpha: 0.7),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  HugeIcon(
+                                    icon: HugeIcons.strokeRoundedNotebook,
+                                    color: colors.primaryText,
+                                    size: 15,
                                   ),
+                                  const SizedBox(width: 4),
+                               
                                 ],
                               ),
                             ),
@@ -346,13 +400,7 @@ class BibleSelectionActionBar extends ConsumerWidget {
                                     size: 15,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text(
-                                    'Copy',
-                                    style: ScribesTextStyles.labelSm.copyWith(
-                                      color: colors.primaryText,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                               
                                 ],
                               ),
                             ),

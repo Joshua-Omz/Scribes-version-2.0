@@ -16,6 +16,7 @@ const (
 	NotifTypeFollow        NotifType = "follow"
 	NotifTypeAdminAlert    NotifType = "admin_alert"
 	NotifTypeDirectMessage NotifType = "direct_message"
+	NotifTypeQuote         NotifType = "quote"
 )
 
 // Map from our domain type to DB generated type

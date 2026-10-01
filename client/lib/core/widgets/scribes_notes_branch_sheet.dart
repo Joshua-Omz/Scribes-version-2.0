@@ -85,14 +85,7 @@ class ScribesNotesBranchSheet extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          'Select your journal space or publication manuscripts',
-                          style: ScribesTextStyles.bodyMd.copyWith(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                            height: 1.3,
-                          ),
-                        ),
+                     
                       ],
                     ),
                   ),
@@ -105,7 +98,7 @@ class ScribesNotesBranchSheet extends ConsumerWidget {
                     icon: HugeIcons.strokeRoundedBook01,
                     title: 'Study Notes',
                     subtitle:
-                        'Personal scripture journaling, study notes & notebooks',
+                        'Personal insights, tagged scriptures & journal entries',
                     onTap: () {
                       Navigator.pop(context);
                       context.go('/notes');

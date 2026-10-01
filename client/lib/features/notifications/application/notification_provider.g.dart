@@ -93,7 +93,7 @@ final class HasUnreadNotificationsProvider
 }
 
 String _$hasUnreadNotificationsHash() =>
-    r'cd36eca536779357bc83f279bdf1683758823973';
+    r'c9914383d7d32be63a5eddcf6ec5d3ba56980270';
 
 @ProviderFor(notificationStream)
 final notificationStreamProvider = NotificationStreamProvider._();

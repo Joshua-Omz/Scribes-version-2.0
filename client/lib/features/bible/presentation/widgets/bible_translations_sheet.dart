@@ -85,13 +85,7 @@ class BibleTranslationsSheet extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          'Zero-API offline translations read directly from device storage.',
-                          style: ScribesTextStyles.caption.copyWith(
-                            color: colors.secondaryText,
-                            fontSize: 12,
-                          ),
-                        ),
+            
                       ],
                     ),
                   ),

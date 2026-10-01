@@ -140,7 +140,7 @@ final class ExploreFilteredNotifierProvider
 }
 
 String _$exploreFilteredNotifierHash() =>
-    r'1809135a7c597e4bc3c261a81e84d813c25f3244';
+    r'4dfebf3d41c077121173658a8f79e89107ec82ef';
 
 abstract class _$ExploreFilteredNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();
@@ -185,7 +185,7 @@ final class ExploreTrendingNotifierProvider
 }
 
 String _$exploreTrendingNotifierHash() =>
-    r'b11cafea3fdd8728f57c47bfd5c88adcd5c282e0';
+    r'8a00e2646729e9c4bc79546cc000815cc5a4d34e';
 
 abstract class _$ExploreTrendingNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();
@@ -230,7 +230,7 @@ final class ExploreDiscoverNotifierProvider
 }
 
 String _$exploreDiscoverNotifierHash() =>
-    r'b093a9fd78bc45d550c87181ade72ee3e60d969b';
+    r'7e5d196141879d6b62bd4db6e5cab8140cd318eb';
 
 abstract class _$ExploreDiscoverNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();
@@ -389,7 +389,7 @@ final class ExploreForYouNotifierProvider
 }
 
 String _$exploreForYouNotifierHash() =>
-    r'6ecc3deb61f991435b8a9bb49d28720c899868f1';
+    r'faf9d0b57eb4968342543af8f1c2c44031691e7c';
 
 abstract class _$ExploreForYouNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();
@@ -434,7 +434,7 @@ final class ExploreChurchesNotifierProvider
 }
 
 String _$exploreChurchesNotifierHash() =>
-    r'2e562f25a0edc0830fa3aed244ebeb938e58dd58';
+    r'a72cb01a851bfb30dff742483e919519e0a3f499';
 
 abstract class _$ExploreChurchesNotifier extends $AsyncNotifier<List<Post>> {
   FutureOr<List<Post>> build();

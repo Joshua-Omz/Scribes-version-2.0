@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"scribes-api/internal/db/generated"
+	"scribes-api/internal/notification"
 	"scribes-api/pkg/quill"
 
 	"github.com/google/uuid"
@@ -47,14 +48,20 @@ type CreateInput struct {
 	SoundID            *uuid.UUID            `json:"sound_id,omitempty"`
 	Panels             []PassagePanelInput   `json:"panels,omitempty"`
 	PostType           string                `json:"post_type,omitempty"`
+	QuotedPostID       *uuid.UUID            `json:"quoted_post_id,omitempty"`
+}
+
+type NotificationQueue interface {
+	Enqueue(event notification.Event)
 }
 
 type Service struct {
-	repo *Repository
+	repo  *Repository
+	notif NotificationQueue
 }
 
-func NewService(repo *Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo *Repository, notif NotificationQueue) *Service {
+	return &Service{repo: repo, notif: notif}
 }
 
 func (s *Service) ListSounds(ctx context.Context) ([]SoundTrack, error) {
@@ -109,6 +116,19 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 		}
 	}
 
+	if input.QuotedPostID != nil {
+		if postType == "passage" {
+			return Post{}, errors.New("passage posts cannot quote other posts")
+		}
+		quotedPost, err := s.Get(ctx, *input.QuotedPostID)
+		if err != nil {
+			return Post{}, errors.New("quoted post does not exist")
+		}
+		if postType == "standard" && quotedPost.PostType != "standard" {
+			return Post{}, errors.New("standard posts can only quote other standard posts")
+		}
+	}
+
 	// Tag count validation (before any DB work)
 	if len(input.Tags) > 8 {
 		return Post{}, errors.New("maximum of 8 tags allowed")
@@ -145,7 +165,7 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 	}
 
 	// Single atomic transaction — all writes succeed or all roll back
-	return s.repo.CreatePostTx(ctx, CreatePostTxParams{
+	post, err := s.repo.CreatePostTx(ctx, CreatePostTxParams{
 		AuthorID:           authorID,
 		Content:            input.Content,
 		Caption:            input.Caption,
@@ -155,10 +175,28 @@ func (s *Service) Create(ctx context.Context, authorID uuid.UUID, input CreateIn
 		ReflectionImageUrl: input.ReflectionImageUrl,
 		SoundID:            input.SoundID,
 		PostType:           postType,
+		QuotedPostID:       input.QuotedPostID,
 		Tags:               input.Tags,
 		ScriptureRefs:      refsParams,
 		Panels:             panels,
 	})
+	if err != nil {
+		return Post{}, err
+	}
+
+	if post.QuotedPostID != nil && s.notif != nil {
+		quotedPost, err := s.Get(ctx, *post.QuotedPostID)
+		if err == nil {
+			s.notif.Enqueue(notification.Event{
+				Type:        notification.NotifTypeQuote,
+				RecipientID: quotedPost.AuthorID,
+				RefID:       post.ID,
+				ActorID:     authorID,
+			})
+		}
+	}
+
+	return post, nil
 }
 
 func (s *Service) GetBatch(ctx context.Context, ids []uuid.UUID) ([]Post, error) {
@@ -316,6 +354,20 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 	if len(input.ScriptureRefs) < 2 || len(input.ScriptureRefs) > 3 {
 		return Post{}, errors.New("must provide between 2 and 3 scripture tags")
 	}
+
+	if input.QuotedPostID != nil {
+		if postType == "passage" {
+			return Post{}, errors.New("passage posts cannot quote other posts")
+		}
+		quotedPost, err := s.Get(ctx, *input.QuotedPostID)
+		if err != nil {
+			return Post{}, errors.New("quoted post does not exist")
+		}
+		if postType == "standard" && quotedPost.PostType != "standard" {
+			return Post{}, errors.New("standard posts can only quote other standard posts")
+		}
+	}
+
 	if len(input.Tags) > 8 {
 		return Post{}, errors.New("maximum of 8 tags allowed")
 	}
@@ -335,7 +387,7 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 	}
 
 	// Single atomic transaction
-	return s.repo.CreateCorrectionPostTx(ctx, CreateCorrectionPostTxParams{
+	post, err := s.repo.CreateCorrectionPostTx(ctx, CreateCorrectionPostTxParams{
 		AuthorID:       authorID,
 		Content:        input.Content,
 		Caption:        input.Caption,
@@ -344,9 +396,16 @@ func (s *Service) CreateCorrection(ctx context.Context, authorID, correctsPostID
 		CorrectsPostID: correctsPostID,
 		CoverImageUrl:  input.CoverImageUrl,
 		PostType:       postType,
+		QuotedPostID:   input.QuotedPostID,
 		Tags:           input.Tags,
 		ScriptureRefs:  refsParams,
 	})
+	if err != nil {
+		return Post{}, err
+	}
+
+	return post, nil
+
 }
 
 func (s *Service) ListVersions(ctx context.Context, id uuid.UUID) ([]PostVersion, error) {

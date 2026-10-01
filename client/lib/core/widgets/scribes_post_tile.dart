@@ -19,11 +19,15 @@ import 'scribes_toast.dart';
 class ScribesPostTile extends ConsumerWidget {
   final Post post;
   final VoidCallback? onTap;
+  final VoidCallback? onAuthorTap;
+  final bool isExploreScreen;
 
   const ScribesPostTile({
     super.key,
     required this.post,
     this.onTap,
+    this.onAuthorTap,
+    this.isExploreScreen = false,
   });
 
   String _formatTimeAgo(DateTime dt) {
@@ -110,8 +114,26 @@ class ScribesPostTile extends ConsumerWidget {
     final displayImageUrl = ScribesImageResolver.extractFirstImageUrl(post);
     final hasImage = displayImageUrl != null && displayImageUrl.isNotEmpty;
 
+    void defaultOnTap() {
+      if (post.postType == 'passage') {
+        context.push('/passage/${post.id}');
+      } else {
+        context.push('/posts/${post.id}');
+      }
+    }
+
+    void defaultOnAuthorTap() {
+      final authState = ref.read(authProvider);
+      final currentUserId = authState.value?.id;
+      if (currentUserId != null && currentUserId == post.authorId) {
+        context.push('/profile');
+      } else {
+        context.push('/users/${post.authorId}');
+      }
+    }
+
     return InkWell(
-      onTap: onTap ?? () => context.push('/posts/${post.id}'),
+      onTap: onTap ?? defaultOnTap,
       child: Column(
         children: [
           Padding(
@@ -121,7 +143,7 @@ class ScribesPostTile extends ConsumerWidget {
               children: [
                 // 1. Author Avatar (Left Column)
                 GestureDetector(
-                  onTap: () => context.push('/profile/${post.authorId}'),
+                  onTap: onAuthorTap ?? defaultOnAuthorTap,
                   child: ScribesAvatar(
                     authorName: post.authorName,
                     imageUrl: post.authorAvatarUrl,
@@ -139,28 +161,34 @@ class ScribesPostTile extends ConsumerWidget {
                       Row(
                         children: [
                           Flexible(
-                            child: Text(
-                              post.authorName.isNotEmpty
-                                  ? post.authorName
-                                  : '@${post.authorHandle}',
-                              style: ScribesTextStyles.labelLg.copyWith(
-                                color: colors.primaryText,
-                                fontWeight: FontWeight.bold,
+                            child: GestureDetector(
+                              onTap: onAuthorTap ?? defaultOnAuthorTap,
+                              child: Text(
+                                post.authorName.isNotEmpty
+                                    ? post.authorName
+                                    : '@${post.authorHandle}',
+                                style: ScribesTextStyles.labelLg.copyWith(
+                                  color: colors.primaryText,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 4),
                           Flexible(
-                            child: Text(
-                              '@${post.authorHandle}',
-                              style: ScribesTextStyles.bodyMd.copyWith(
-                                color: colors.secondaryText,
-                                fontSize: 13,
+                            child: GestureDetector(
+                              onTap: onAuthorTap ?? defaultOnAuthorTap,
+                              child: Text(
+                                '@${post.authorHandle}',
+                                style: ScribesTextStyles.bodyMd.copyWith(
+                                  color: colors.secondaryText,
+                                  fontSize: 13,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Text(
@@ -241,36 +269,50 @@ class ScribesPostTile extends ConsumerWidget {
                           runSpacing: 4,
                           children: [
                             for (final refData in post.scriptureRefs.take(2))
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.gold.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: colors.goldMuted.withValues(alpha: 0.3),
-                                    width: 0.5,
+                              GestureDetector(
+                                onTap: () {
+                                  final encodedBook =
+                                      Uri.encodeComponent(refData.book);
+                                  context.push(
+                                    '/scripture/$encodedBook/${refData.chapter}',
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
                                   ),
-                                ),
-                                child: Text(
-                                  refData.verseEnd != null
-                                      ? '${refData.book} ${refData.chapter}:${refData.verseStart}-${refData.verseEnd}'
-                                      : '${refData.book} ${refData.chapter}:${refData.verseStart}',
-                                  style: ScribesTextStyles.caption.copyWith(
-                                    color: colors.gold,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11,
+                                  decoration: BoxDecoration(
+                                    color: colors.gold.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: colors.goldMuted.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    refData.verseEnd != null
+                                        ? '${refData.book} ${refData.chapter}:${refData.verseStart}-${refData.verseEnd}'
+                                        : '${refData.book} ${refData.chapter}:${refData.verseStart}',
+                                    style: ScribesTextStyles.caption.copyWith(
+                                      color: colors.gold,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ),
                               ),
                             for (final tag in post.tags.take(3))
-                              Text(
-                                '#$tag',
-                                style: ScribesTextStyles.caption.copyWith(
-                                  color: colors.secondaryText,
-                                  fontSize: 11,
+                              GestureDetector(
+                                onTap: () => context.push('/tags/$tag'),
+                                child: Text(
+                                  '#$tag',
+                                  style: ScribesTextStyles.caption.copyWith(
+                                    color: colors.secondaryText,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ),
                           ],
@@ -313,151 +355,158 @@ class ScribesPostTile extends ConsumerWidget {
                       ],
 
                       // Interaction Action Bar (Amen, Insight, Deep, Comments, Save, Share)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // 1. Amen button
-                          _buildActionButton(
-                            icon: userReaction == 'amen'
-                                ? HugeIcons.strokeRoundedSparkles
-                                : HugeIcons.strokeRoundedFire,
-                            label: amenCount > 0 ? '$amenCount' : '',
-                            color: userReaction == 'amen'
-                                ? colors.gold
-                                : colors.secondaryText,
-                            onTap: () {
-                              if (!isAuthenticated) {
-                                ScribesToast.show(
-                                  context,
-                                  'Sign in to react to posts',
-                                  colors,
-                                );
-                                return;
-                              }
-                              ref
-                                  .read(postReactionsProvider(post.id).notifier)
-                                  .react('amen');
-                            },
-                          ),
-
-                          // 2. Insight button
-                          _buildActionButton(
-                            icon: HugeIcons.strokeRoundedIdea01,
-                            label: insightCount > 0 ? '$insightCount' : '',
-                            color: userReaction == 'insightful'
-                                ? colors.gold
-                                : colors.secondaryText,
-                            onTap: () {
-                              if (!isAuthenticated) {
-                                ScribesToast.show(
-                                  context,
-                                  'Sign in to react to posts',
-                                  colors,
-                                );
-                                return;
-                              }
-                              ref
-                                  .read(postReactionsProvider(post.id).notifier)
-                                  .react('insightful');
-                            },
-                          ),
-
-                          // 3. Deep / Thought-provoking button
-                          _buildActionButton(
-                            icon: HugeIcons.strokeRoundedDroplet,
-                            label: thoughtProvokingCount > 0
-                                ? '$thoughtProvokingCount'
-                                : '',
-                            color: userReaction == 'thought_provoking'
-                                ? colors.gold
-                                : colors.secondaryText,
-                            onTap: () {
-                              if (!isAuthenticated) {
-                                ScribesToast.show(
-                                  context,
-                                  'Sign in to react to posts',
-                                  colors,
-                                );
-                                return;
-                              }
-                              ref
-                                  .read(postReactionsProvider(post.id).notifier)
-                                  .react('thought_provoking');
-                            },
-                          ),
-
-                          // 4. Comment button
-                          _buildActionButton(
-                            icon: HugeIcons.strokeRoundedBubbleChat,
-                            label: commentCount > 0 ? '$commentCount' : '',
-                            color: colors.secondaryText,
-                            onTap: () => ScribesCommentSheet.show(
-                              context,
-                              postId: post.id,
-                              postAuthorId: post.authorId,
-                            ),
-                          ),
-
-                          // 5. Save / Bookmark button
-                          _buildActionButton(
-                            icon: isSaved
-                                ? HugeIcons.strokeRoundedBookmark02
-                                : HugeIcons.strokeRoundedBookmark01,
-                            label: '',
-                            color: isSaved ? colors.gold : colors.secondaryText,
-                            onTap: () {
-                              if (!isAuthenticated) {
-                                ScribesToast.show(
-                                  context,
-                                  'Sign in to save posts',
-                                  colors,
-                                );
-                                return;
-                              }
-                              if (isSaved) {
+                      if (!isExploreScreen)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // 1. Amen button
+                            _buildActionButton(
+                              icon: userReaction == 'amen'
+                                  ? HugeIcons.strokeRoundedSparkles
+                                  : HugeIcons.strokeRoundedFire,
+                              label: amenCount > 0 ? '$amenCount' : '',
+                              color: userReaction == 'amen'
+                                  ? colors.gold
+                                  : colors.secondaryText,
+                              onTap: () {
+                                if (!isAuthenticated) {
+                                  ScribesToast.show(
+                                    context,
+                                    'Sign in to react to posts',
+                                    colors,
+                                  );
+                                  context.push('/auth');
+                                  return;
+                                }
                                 ref
-                                    .read(savedPostsProvider.notifier)
-                                    .unsavePost(post.id);
-                                ScribesToast.show(
-                                  context,
-                                  'Post unsaved',
-                                  colors,
-                                  icon: HugeIcons.strokeRoundedRemove01,
-                                );
-                              } else {
-                                ref
-                                    .read(savedPostsProvider.notifier)
-                                    .savePost(post.id);
-                                ScribesToast.show(
-                                  context,
-                                  'Post saved to manuscript collection',
-                                  colors,
-                                  icon: HugeIcons.strokeRoundedCheckmarkBadge01,
-                                );
-                              }
-                            },
-                          ),
-
-                          // 6. Share button
-                          _buildActionButton(
-                            icon: HugeIcons.strokeRoundedShare01,
-                            label: '',
-                            color: colors.secondaryText,
-                            onTap: () => ScribesShareSheet.show(
-                              context,
-                              post.id,
-                              post: post,
+                                    .read(postReactionsProvider(post.id).notifier)
+                                    .react('amen');
+                              },
                             ),
-                          ),
-                        ],
-                      ),
+
+                            // 2. Insight button
+                            _buildActionButton(
+                              icon: HugeIcons.strokeRoundedIdea01,
+                              label: insightCount > 0 ? '$insightCount' : '',
+                              color: userReaction == 'insightful'
+                                  ? colors.gold
+                                  : colors.secondaryText,
+                              onTap: () {
+                                if (!isAuthenticated) {
+                                  ScribesToast.show(
+                                    context,
+                                    'Sign in to react to posts',
+                                    colors,
+                                  );
+                                  context.push('/auth');
+                                  return;
+                                }
+                                ref
+                                    .read(postReactionsProvider(post.id).notifier)
+                                    .react('insightful');
+                              },
+                            ),
+
+                            // 3. Deep / Thought-provoking button
+                            _buildActionButton(
+                              icon: HugeIcons.strokeRoundedDroplet,
+                              label: thoughtProvokingCount > 0
+                                  ? '$thoughtProvokingCount'
+                                  : '',
+                              color: userReaction == 'thought_provoking'
+                                  ? colors.gold
+                                  : colors.secondaryText,
+                              onTap: () {
+                                if (!isAuthenticated) {
+                                  ScribesToast.show(
+                                    context,
+                                    'Sign in to react to posts',
+                                    colors,
+                                  );
+                                  context.push('/auth');
+                                  return;
+                                }
+                                ref
+                                    .read(postReactionsProvider(post.id).notifier)
+                                    .react('thought_provoking');
+                              },
+                            ),
+
+                            // 4. Comment button
+                            _buildActionButton(
+                              icon: HugeIcons.strokeRoundedBubbleChat,
+                              label: commentCount > 0 ? '$commentCount' : '',
+                              color: colors.secondaryText,
+                              onTap: () {
+                                if (!isAuthenticated) {
+                                  context.push('/auth');
+                                  return;
+                                }
+                                ScribesCommentSheet.show(
+                                  context,
+                                  postId: post.id,
+                                  postAuthorId: post.authorId,
+                                );
+                              },
+                            ),
+
+                            // 5. Save / Bookmark button
+                            _buildActionButton(
+                              icon: isSaved
+                                  ? HugeIcons.strokeRoundedBookmark02
+                                  : HugeIcons.strokeRoundedBookmark01,
+                              label: '',
+                              color: isSaved ? colors.gold : colors.secondaryText,
+                              onTap: () {
+                                if (!isAuthenticated) {
+                                  context.push('/auth');
+                                  return;
+                                }
+                                if (isSaved) {
+                                  ref
+                                      .read(savedPostsProvider.notifier)
+                                      .unsavePost(post.id);
+                                  ScribesToast.show(
+                                    context,
+                                    'Post unsaved',
+                                    colors,
+                                    icon: HugeIcons.strokeRoundedRemove01,
+                                  );
+                                } else {
+                                  ref
+                                      .read(savedPostsProvider.notifier)
+                                      .savePost(post.id);
+                                  ScribesToast.show(
+                                    context,
+                                    'Post saved to manuscript collection',
+                                    colors,
+                                    icon: HugeIcons.strokeRoundedCheckmarkBadge01,
+                                  );
+                                }
+                              },
+                            ),
+
+                            // 6. Share button
+                            _buildActionButton(
+                              icon: HugeIcons.strokeRoundedShare01,
+                              label: '',
+                              color: colors.secondaryText,
+                              onTap: () => ScribesShareSheet.show(
+                                context,
+                                post.id,
+                                post: post,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          Divider(height: 1, thickness: 0.5, color: colors.border),
+          if (!isExploreScreen)
+            Divider(height: 1, thickness: 0.5, color: colors.border),
         ],
       ),
     );

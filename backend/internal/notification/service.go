@@ -204,6 +204,11 @@ func (s *Service) generateBody(ntype NotifType, actor string, count int) string 
 		return fmt.Sprintf("%s commented on your post", actor)
 	case NotifTypeFollow:
 		return fmt.Sprintf("%s started following you", actor)
+	case NotifTypeQuote:
+		if count > 1 {
+			return fmt.Sprintf("%s and %d others quoted your post", actor, count-1)
+		}
+		return fmt.Sprintf("%s quoted your post", actor)
 	case NotifTypeDirectMessage:
 		return fmt.Sprintf("%s sent you a message", actor)
 	case NotifTypeAdminAlert:

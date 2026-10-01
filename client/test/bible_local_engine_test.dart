@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scribes/features/bible/domain/bible_models.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 void main() {
@@ -73,6 +74,52 @@ void main() {
       expect(rows.length, 3);
       expect(rows.first['verse'], 28);
       expect(rows.last['verse'], 30);
+    });
+
+    test('BibleBook correctly resolves testaments across variants (old, ot, OT, new, nt, NT)', () {
+      const bookOld = BibleBook(
+        id: 'GEN',
+        name: 'Genesis',
+        shortName: 'GEN',
+        testament: 'old',
+        order: 1,
+        chapterCount: 50,
+      );
+      expect(bookOld.isOldTestament, isTrue);
+      expect(bookOld.isNewTestament, isFalse);
+
+      const bookOT = BibleBook(
+        id: 'MAL',
+        name: 'Malachi',
+        shortName: 'MAL',
+        testament: 'OT',
+        order: 39,
+        chapterCount: 4,
+      );
+      expect(bookOT.isOldTestament, isTrue);
+      expect(bookOT.isNewTestament, isFalse);
+
+      const bookNew = BibleBook(
+        id: 'MAT',
+        name: 'Matthew',
+        shortName: 'MAT',
+        testament: 'new',
+        order: 40,
+        chapterCount: 28,
+      );
+      expect(bookNew.isNewTestament, isTrue);
+      expect(bookNew.isOldTestament, isFalse);
+
+      const bookNT = BibleBook(
+        id: 'REV',
+        name: 'Revelation',
+        shortName: 'REV',
+        testament: 'NT',
+        order: 66,
+        chapterCount: 22,
+      );
+      expect(bookNT.isNewTestament, isTrue);
+      expect(bookNT.isOldTestament, isFalse);
     });
   });
 }

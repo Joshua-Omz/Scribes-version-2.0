@@ -140,21 +140,32 @@ class BibleLocalDatasourceNative implements BibleLocalDatasource {
 
   @override
   Future<List<BibleBook>> getBooks({String translation = 'BSB'}) async {
-    final db = await _getDb(translation);
-    final ResultSet results = db.select(
-      'SELECT canonical_id, code, name, short_name, testament, book_order, chapter_count FROM books ORDER BY book_order ASC',
-    );
-
-    return results.map((row) {
-      return BibleBook(
-        id: row['code']?.toString() ?? row['canonical_id'].toString(),
-        name: row['name'] as String,
-        shortName: row['short_name'] as String,
-        testament: (row['testament'] as String).toLowerCase(),
-        order: row['book_order'] as int,
-        chapterCount: row['chapter_count'] as int,
+    try {
+      final db = await _getDb(translation);
+      final ResultSet results = db.select(
+        'SELECT canonical_id, code, name, short_name, testament, book_order, chapter_count FROM books ORDER BY book_order ASC',
       );
-    }).toList();
+
+      if (results.isNotEmpty) {
+        return results.map((row) {
+          return BibleBook(
+            id: row['code']?.toString() ?? row['canonical_id'].toString(),
+            name: row['name'] as String,
+            shortName: row['short_name'] as String,
+            testament: (row['testament'] as String).toLowerCase(),
+            order: row['book_order'] as int,
+            chapterCount: row['chapter_count'] as int,
+          );
+        }).toList();
+      }
+    } catch (_) {
+      // If the target translation is not installed locally or query fails,
+      // gracefully fall back to the bundled BSB database.
+      if (translation.toUpperCase().trim() != 'BSB') {
+        return getBooks(translation: 'BSB');
+      }
+    }
+    return [];
   }
 
   @override

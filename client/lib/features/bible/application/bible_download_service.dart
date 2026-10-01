@@ -123,8 +123,11 @@ class BibleDownloadNotifier
   }
 
   String _resolveDownloadUrl(String rawUrl) {
-    final r2Public = dotenv.env['R2_PUBLIC_URL']?.trim() ??
-        dotenv.env['CDN_URL']?.trim();
+    String? r2Public;
+    if (dotenv.isInitialized) {
+      r2Public = dotenv.env['R2_PUBLIC_URL']?.trim() ??
+          dotenv.env['CDN_URL']?.trim();
+    }
     if (r2Public == null || r2Public.isEmpty) {
       return rawUrl;
     }

@@ -37,6 +37,7 @@ import '../../features/bible/presentation/bible_drawer.dart';
 import '../../features/compose/presentation/passage_composer.dart';
 import '../../features/passage/presentation/passage_viewer_screen.dart';
 import '../../features/explore/presentation/tag_posts_screen.dart';
+import '../../features/explore/presentation/scripture_posts_screen.dart';
 import 'transitions.dart';
 
 part 'app_router.g.dart';
@@ -99,6 +100,7 @@ GoRouter appRouter(Ref ref) {
           state.matchedLocation.startsWith('/p/') ||
           state.matchedLocation.startsWith('/passage/') ||
           state.matchedLocation.startsWith('/tags/') ||
+          state.matchedLocation.startsWith('/scripture/') ||
           state.matchedLocation.startsWith('/users/');
 
       // Redirect away from splash once auth state is resolved
@@ -315,6 +317,10 @@ GoRouter appRouter(Ref ref) {
         ],
       ),
       GoRoute(
+        path: '/profile/:id',
+        redirect: (context, state) => '/users/${state.pathParameters['id']}',
+      ),
+      GoRoute(
         path: '/settings',
         pageBuilder: (context, state) => buildPageWithSlideRightTransition(
           context: context,
@@ -406,6 +412,19 @@ GoRouter appRouter(Ref ref) {
             context: context,
             state: state,
             child: TagPostsScreen(tag: tag),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/scripture/:book/:chapter',
+        pageBuilder: (context, state) {
+          final book = Uri.decodeComponent(state.pathParameters['book']!);
+          final chapter =
+              int.tryParse(state.pathParameters['chapter'] ?? '1') ?? 1;
+          return buildPageWithSlideRightTransition(
+            context: context,
+            state: state,
+            child: ScripturePostsScreen(book: book, chapter: chapter),
           );
         },
       ),

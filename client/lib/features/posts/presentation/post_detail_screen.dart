@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/scribes_anchor_scripture_block.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -297,15 +298,25 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: ScribesTextField(
-                          controller: _commentController,
-                          focusNode: _commentFocusNode,
-                          hintText: 'comment',
-                          minLines: 1,
-                          maxLines: 4,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: colors.surfaceRaised,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: TextField(
+                            controller: _commentController,
+                            focusNode: _commentFocusNode,
+                            minLines: 1,
+                            maxLines: 4,
+                            decoration: InputDecoration(
+                              hintText: 'Add a comment...',
+                              hintStyle: ScribesTextStyles.bodyMd.copyWith(color: colors.secondaryText),
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            style: ScribesTextStyles.bodyMd.copyWith(color: colors.primaryText),
                           ),
                         ),
                       ),
@@ -597,12 +608,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           },
                         ),
 
-                      if (post.reflectionImageUrl != null ||
-                          (post.postType == 'reflection' &&
-                              ScribesImageResolver.extractFirstImageUrl(post) !=
-                                  null)) ...[
+                      if (ScribesImageResolver.extractFirstImageUrl(post) != null && ScribesImageResolver.extractFirstImageUrl(post)!.trim().isNotEmpty) ...[
                         const SizedBox(height: 20),
                         Builder(builder: (context) {
+                          final displayImageUrl = ScribesImageResolver.extractFirstImageUrl(post)!;
                           final screenW = MediaQuery.sizeOf(context).width;
                           final displayW = screenW - 40;
                           final displayH = displayW * (9 / 16);
@@ -623,10 +632,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   children: [
                                     ColoredBox(color: colors.surfaceRaised),
                                     ScribesImageResolver.buildImage(
-                                      imageUrl: post.reflectionImageUrl ??
-                                          ScribesImageResolver.extractFirstImageUrl(
-                                            post,
-                                          ),
+                                      imageUrl: displayImageUrl,
                                       fit: BoxFit.cover,
                                       memCacheWidth: cacheW,
                                       placeholder: (context, url) => ColoredBox(

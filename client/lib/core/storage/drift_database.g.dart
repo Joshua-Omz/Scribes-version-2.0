@@ -4342,6 +4342,719 @@ class BibleDownloadedTranslationsCompanion
   }
 }
 
+class $VerseNotesTable extends VerseNotes
+    with TableInfo<$VerseNotesTable, VerseNote> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VerseNotesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bookCodeMeta = const VerificationMeta(
+    'bookCode',
+  );
+  @override
+  late final GeneratedColumn<String> bookCode = GeneratedColumn<String>(
+    'book_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _chapterMeta = const VerificationMeta(
+    'chapter',
+  );
+  @override
+  late final GeneratedColumn<int> chapter = GeneratedColumn<int>(
+    'chapter',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _verseMeta = const VerificationMeta('verse');
+  @override
+  late final GeneratedColumn<int> verse = GeneratedColumn<int>(
+    'verse',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _plainPreviewMeta = const VerificationMeta(
+    'plainPreview',
+  );
+  @override
+  late final GeneratedColumn<String> plainPreview = GeneratedColumn<String>(
+    'plain_preview',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _serverSequenceMeta = const VerificationMeta(
+    'serverSequence',
+  );
+  @override
+  late final GeneratedColumn<int> serverSequence = GeneratedColumn<int>(
+    'server_sequence',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    bookCode,
+    chapter,
+    verse,
+    content,
+    plainPreview,
+    isDeleted,
+    isSynced,
+    serverSequence,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'verse_notes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VerseNote> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('book_code')) {
+      context.handle(
+        _bookCodeMeta,
+        bookCode.isAcceptableOrUnknown(data['book_code']!, _bookCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bookCodeMeta);
+    }
+    if (data.containsKey('chapter')) {
+      context.handle(
+        _chapterMeta,
+        chapter.isAcceptableOrUnknown(data['chapter']!, _chapterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_chapterMeta);
+    }
+    if (data.containsKey('verse')) {
+      context.handle(
+        _verseMeta,
+        verse.isAcceptableOrUnknown(data['verse']!, _verseMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_verseMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('plain_preview')) {
+      context.handle(
+        _plainPreviewMeta,
+        plainPreview.isAcceptableOrUnknown(
+          data['plain_preview']!,
+          _plainPreviewMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    if (data.containsKey('server_sequence')) {
+      context.handle(
+        _serverSequenceMeta,
+        serverSequence.isAcceptableOrUnknown(
+          data['server_sequence']!,
+          _serverSequenceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VerseNote map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VerseNote(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      bookCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}book_code'],
+      )!,
+      chapter: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}chapter'],
+      )!,
+      verse: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}verse'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      plainPreview: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plain_preview'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+      serverSequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_sequence'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $VerseNotesTable createAlias(String alias) {
+    return $VerseNotesTable(attachedDatabase, alias);
+  }
+}
+
+class VerseNote extends DataClass implements Insertable<VerseNote> {
+  final String id;
+  final String userId;
+  final String bookCode;
+  final int chapter;
+  final int verse;
+  final String content;
+  final String plainPreview;
+  final bool isDeleted;
+  final bool isSynced;
+  final int? serverSequence;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const VerseNote({
+    required this.id,
+    required this.userId,
+    required this.bookCode,
+    required this.chapter,
+    required this.verse,
+    required this.content,
+    required this.plainPreview,
+    required this.isDeleted,
+    required this.isSynced,
+    this.serverSequence,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['book_code'] = Variable<String>(bookCode);
+    map['chapter'] = Variable<int>(chapter);
+    map['verse'] = Variable<int>(verse);
+    map['content'] = Variable<String>(content);
+    map['plain_preview'] = Variable<String>(plainPreview);
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || serverSequence != null) {
+      map['server_sequence'] = Variable<int>(serverSequence);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  VerseNotesCompanion toCompanion(bool nullToAbsent) {
+    return VerseNotesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      bookCode: Value(bookCode),
+      chapter: Value(chapter),
+      verse: Value(verse),
+      content: Value(content),
+      plainPreview: Value(plainPreview),
+      isDeleted: Value(isDeleted),
+      isSynced: Value(isSynced),
+      serverSequence: serverSequence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverSequence),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory VerseNote.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VerseNote(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      bookCode: serializer.fromJson<String>(json['bookCode']),
+      chapter: serializer.fromJson<int>(json['chapter']),
+      verse: serializer.fromJson<int>(json['verse']),
+      content: serializer.fromJson<String>(json['content']),
+      plainPreview: serializer.fromJson<String>(json['plainPreview']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      serverSequence: serializer.fromJson<int?>(json['serverSequence']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'bookCode': serializer.toJson<String>(bookCode),
+      'chapter': serializer.toJson<int>(chapter),
+      'verse': serializer.toJson<int>(verse),
+      'content': serializer.toJson<String>(content),
+      'plainPreview': serializer.toJson<String>(plainPreview),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'serverSequence': serializer.toJson<int?>(serverSequence),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  VerseNote copyWith({
+    String? id,
+    String? userId,
+    String? bookCode,
+    int? chapter,
+    int? verse,
+    String? content,
+    String? plainPreview,
+    bool? isDeleted,
+    bool? isSynced,
+    Value<int?> serverSequence = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => VerseNote(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    bookCode: bookCode ?? this.bookCode,
+    chapter: chapter ?? this.chapter,
+    verse: verse ?? this.verse,
+    content: content ?? this.content,
+    plainPreview: plainPreview ?? this.plainPreview,
+    isDeleted: isDeleted ?? this.isDeleted,
+    isSynced: isSynced ?? this.isSynced,
+    serverSequence: serverSequence.present
+        ? serverSequence.value
+        : this.serverSequence,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  VerseNote copyWithCompanion(VerseNotesCompanion data) {
+    return VerseNote(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      bookCode: data.bookCode.present ? data.bookCode.value : this.bookCode,
+      chapter: data.chapter.present ? data.chapter.value : this.chapter,
+      verse: data.verse.present ? data.verse.value : this.verse,
+      content: data.content.present ? data.content.value : this.content,
+      plainPreview: data.plainPreview.present
+          ? data.plainPreview.value
+          : this.plainPreview,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      serverSequence: data.serverSequence.present
+          ? data.serverSequence.value
+          : this.serverSequence,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VerseNote(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('bookCode: $bookCode, ')
+          ..write('chapter: $chapter, ')
+          ..write('verse: $verse, ')
+          ..write('content: $content, ')
+          ..write('plainPreview: $plainPreview, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('serverSequence: $serverSequence, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    bookCode,
+    chapter,
+    verse,
+    content,
+    plainPreview,
+    isDeleted,
+    isSynced,
+    serverSequence,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VerseNote &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.bookCode == this.bookCode &&
+          other.chapter == this.chapter &&
+          other.verse == this.verse &&
+          other.content == this.content &&
+          other.plainPreview == this.plainPreview &&
+          other.isDeleted == this.isDeleted &&
+          other.isSynced == this.isSynced &&
+          other.serverSequence == this.serverSequence &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class VerseNotesCompanion extends UpdateCompanion<VerseNote> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> bookCode;
+  final Value<int> chapter;
+  final Value<int> verse;
+  final Value<String> content;
+  final Value<String> plainPreview;
+  final Value<bool> isDeleted;
+  final Value<bool> isSynced;
+  final Value<int?> serverSequence;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const VerseNotesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.bookCode = const Value.absent(),
+    this.chapter = const Value.absent(),
+    this.verse = const Value.absent(),
+    this.content = const Value.absent(),
+    this.plainPreview = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.serverSequence = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VerseNotesCompanion.insert({
+    required String id,
+    required String userId,
+    required String bookCode,
+    required int chapter,
+    required int verse,
+    required String content,
+    this.plainPreview = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.serverSequence = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       bookCode = Value(bookCode),
+       chapter = Value(chapter),
+       verse = Value(verse),
+       content = Value(content),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<VerseNote> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? bookCode,
+    Expression<int>? chapter,
+    Expression<int>? verse,
+    Expression<String>? content,
+    Expression<String>? plainPreview,
+    Expression<bool>? isDeleted,
+    Expression<bool>? isSynced,
+    Expression<int>? serverSequence,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (bookCode != null) 'book_code': bookCode,
+      if (chapter != null) 'chapter': chapter,
+      if (verse != null) 'verse': verse,
+      if (content != null) 'content': content,
+      if (plainPreview != null) 'plain_preview': plainPreview,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (serverSequence != null) 'server_sequence': serverSequence,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VerseNotesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? bookCode,
+    Value<int>? chapter,
+    Value<int>? verse,
+    Value<String>? content,
+    Value<String>? plainPreview,
+    Value<bool>? isDeleted,
+    Value<bool>? isSynced,
+    Value<int?>? serverSequence,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return VerseNotesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      bookCode: bookCode ?? this.bookCode,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      content: content ?? this.content,
+      plainPreview: plainPreview ?? this.plainPreview,
+      isDeleted: isDeleted ?? this.isDeleted,
+      isSynced: isSynced ?? this.isSynced,
+      serverSequence: serverSequence ?? this.serverSequence,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (bookCode.present) {
+      map['book_code'] = Variable<String>(bookCode.value);
+    }
+    if (chapter.present) {
+      map['chapter'] = Variable<int>(chapter.value);
+    }
+    if (verse.present) {
+      map['verse'] = Variable<int>(verse.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (plainPreview.present) {
+      map['plain_preview'] = Variable<String>(plainPreview.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (serverSequence.present) {
+      map['server_sequence'] = Variable<int>(serverSequence.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VerseNotesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('bookCode: $bookCode, ')
+          ..write('chapter: $chapter, ')
+          ..write('verse: $verse, ')
+          ..write('content: $content, ')
+          ..write('plainPreview: $plainPreview, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('serverSequence: $serverSequence, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScribesDatabase extends GeneratedDatabase {
   _$ScribesDatabase(QueryExecutor e) : super(e);
   $ScribesDatabaseManager get managers => $ScribesDatabaseManager(this);
@@ -4357,6 +5070,7 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
   );
   late final $BibleDownloadedTranslationsTable bibleDownloadedTranslations =
       $BibleDownloadedTranslationsTable(this);
+  late final $VerseNotesTable verseNotes = $VerseNotesTable(this);
   late final NotesDao notesDao = NotesDao(this as ScribesDatabase);
   late final DraftsDao draftsDao = DraftsDao(this as ScribesDatabase);
   late final PostsDao postsDao = PostsDao(this as ScribesDatabase);
@@ -4374,6 +5088,7 @@ abstract class _$ScribesDatabase extends GeneratedDatabase {
     bibleReadingPositions,
     bibleHighlights,
     bibleDownloadedTranslations,
+    verseNotes,
   ];
 }
 
@@ -6555,6 +7270,343 @@ typedef $$BibleDownloadedTranslationsTableProcessedTableManager =
       BibleDownloadedTranslation,
       PrefetchHooks Function()
     >;
+typedef $$VerseNotesTableCreateCompanionBuilder =
+    VerseNotesCompanion Function({
+      required String id,
+      required String userId,
+      required String bookCode,
+      required int chapter,
+      required int verse,
+      required String content,
+      Value<String> plainPreview,
+      Value<bool> isDeleted,
+      Value<bool> isSynced,
+      Value<int?> serverSequence,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$VerseNotesTableUpdateCompanionBuilder =
+    VerseNotesCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> bookCode,
+      Value<int> chapter,
+      Value<int> verse,
+      Value<String> content,
+      Value<String> plainPreview,
+      Value<bool> isDeleted,
+      Value<bool> isSynced,
+      Value<int?> serverSequence,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$VerseNotesTableFilterComposer
+    extends Composer<_$ScribesDatabase, $VerseNotesTable> {
+  $$VerseNotesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bookCode => $composableBuilder(
+    column: $table.bookCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get chapter => $composableBuilder(
+    column: $table.chapter,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get verse => $composableBuilder(
+    column: $table.verse,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plainPreview => $composableBuilder(
+    column: $table.plainPreview,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$VerseNotesTableOrderingComposer
+    extends Composer<_$ScribesDatabase, $VerseNotesTable> {
+  $$VerseNotesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bookCode => $composableBuilder(
+    column: $table.bookCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get chapter => $composableBuilder(
+    column: $table.chapter,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get verse => $composableBuilder(
+    column: $table.verse,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plainPreview => $composableBuilder(
+    column: $table.plainPreview,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$VerseNotesTableAnnotationComposer
+    extends Composer<_$ScribesDatabase, $VerseNotesTable> {
+  $$VerseNotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get bookCode =>
+      $composableBuilder(column: $table.bookCode, builder: (column) => column);
+
+  GeneratedColumn<int> get chapter =>
+      $composableBuilder(column: $table.chapter, builder: (column) => column);
+
+  GeneratedColumn<int> get verse =>
+      $composableBuilder(column: $table.verse, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get plainPreview => $composableBuilder(
+    column: $table.plainPreview,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<int> get serverSequence => $composableBuilder(
+    column: $table.serverSequence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$VerseNotesTableTableManager
+    extends
+        RootTableManager<
+          _$ScribesDatabase,
+          $VerseNotesTable,
+          VerseNote,
+          $$VerseNotesTableFilterComposer,
+          $$VerseNotesTableOrderingComposer,
+          $$VerseNotesTableAnnotationComposer,
+          $$VerseNotesTableCreateCompanionBuilder,
+          $$VerseNotesTableUpdateCompanionBuilder,
+          (
+            VerseNote,
+            BaseReferences<_$ScribesDatabase, $VerseNotesTable, VerseNote>,
+          ),
+          VerseNote,
+          PrefetchHooks Function()
+        > {
+  $$VerseNotesTableTableManager(_$ScribesDatabase db, $VerseNotesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VerseNotesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VerseNotesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VerseNotesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> bookCode = const Value.absent(),
+                Value<int> chapter = const Value.absent(),
+                Value<int> verse = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String> plainPreview = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VerseNotesCompanion(
+                id: id,
+                userId: userId,
+                bookCode: bookCode,
+                chapter: chapter,
+                verse: verse,
+                content: content,
+                plainPreview: plainPreview,
+                isDeleted: isDeleted,
+                isSynced: isSynced,
+                serverSequence: serverSequence,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String bookCode,
+                required int chapter,
+                required int verse,
+                required String content,
+                Value<String> plainPreview = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int?> serverSequence = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => VerseNotesCompanion.insert(
+                id: id,
+                userId: userId,
+                bookCode: bookCode,
+                chapter: chapter,
+                verse: verse,
+                content: content,
+                plainPreview: plainPreview,
+                isDeleted: isDeleted,
+                isSynced: isSynced,
+                serverSequence: serverSequence,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$VerseNotesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ScribesDatabase,
+      $VerseNotesTable,
+      VerseNote,
+      $$VerseNotesTableFilterComposer,
+      $$VerseNotesTableOrderingComposer,
+      $$VerseNotesTableAnnotationComposer,
+      $$VerseNotesTableCreateCompanionBuilder,
+      $$VerseNotesTableUpdateCompanionBuilder,
+      (
+        VerseNote,
+        BaseReferences<_$ScribesDatabase, $VerseNotesTable, VerseNote>,
+      ),
+      VerseNote,
+      PrefetchHooks Function()
+    >;
 
 class $ScribesDatabaseManager {
   final _$ScribesDatabase _db;
@@ -6579,4 +7631,6 @@ class $ScribesDatabaseManager {
         _db,
         _db.bibleDownloadedTranslations,
       );
+  $$VerseNotesTableTableManager get verseNotes =>
+      $$VerseNotesTableTableManager(_db, _db.verseNotes);
 }

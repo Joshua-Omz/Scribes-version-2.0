@@ -9,6 +9,7 @@ mixin _$BibleDaoMixin on DatabaseAccessor<ScribesDatabase> {
   $BibleHighlightsTable get bibleHighlights => attachedDatabase.bibleHighlights;
   $BibleDownloadedTranslationsTable get bibleDownloadedTranslations =>
       attachedDatabase.bibleDownloadedTranslations;
+  $VerseNotesTable get verseNotes => attachedDatabase.verseNotes;
   BibleDaoManager get managers => BibleDaoManager(this);
 }
 
@@ -31,4 +32,6 @@ class BibleDaoManager {
         _db.attachedDatabase,
         _db.bibleDownloadedTranslations,
       );
+  $$VerseNotesTableTableManager get verseNotes =>
+      $$VerseNotesTableTableManager(_db.attachedDatabase, _db.verseNotes);
 }

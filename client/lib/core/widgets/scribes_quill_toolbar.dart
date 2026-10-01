@@ -175,13 +175,14 @@ class ScribesQuillToolbar extends StatelessWidget {
             _buildDivider(themeColors),
 
             // ── Headers: H1 / H2 ──
-            QuillToolbarToggleStyleButton(
-              attribute: Attribute.h1,
+            QuillToolbarSelectHeaderStyleButtons(
               controller: controller,
-            ),
-            QuillToolbarToggleStyleButton(
-              attribute: Attribute.h2,
-              controller: controller,
+              options: const QuillToolbarSelectHeaderStyleButtonsOptions(
+                attributes: [
+                  Attribute.h1,
+                  Attribute.h2,
+                ],
+              ),
             ),
 
             _buildDivider(themeColors),

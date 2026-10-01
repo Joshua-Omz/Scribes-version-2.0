@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,24 +64,18 @@ class ScribesBottomNav extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
         offset: isVisible ? Offset.zero : const Offset(0, 1.0),
-        child: ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: colors.glassBlur,
-              sigmaY: colors.glassBlur,
-            ),
-            child: Container(
-              height: 85,
-              decoration: BoxDecoration(
-                color: colors.glassFill,
-                border: Border(
-                  top: BorderSide(
-                    color: colors.goldEdge,
-                    width: 0.8,
-                  ),
-                ),
+        child: Container(
+          height: 85,
+          decoration: BoxDecoration(
+            color: colors.background.withValues(alpha: 0.94),
+            border: Border(
+              top: BorderSide(
+                color: colors.goldEdge,
+                width: 0.8,
               ),
-              child: SafeArea(
+            ),
+          ),
+          child: SafeArea(
                 bottom: true,
                 top: false,
                 child: Row(
@@ -127,9 +119,7 @@ class ScribesBottomNav extends ConsumerWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildNavItem(
@@ -216,13 +206,7 @@ class ScribesBottomNav extends ConsumerWidget {
                     color: colors.goldEdge,
                     width: 1.2,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colors.gold.withValues(alpha: 0.15),
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                    ),
-                  ],
+                
                 ),
                 child: Center(
                   child: HugeIcon(

@@ -29,6 +29,7 @@ type RecommendationResponse struct {
 	PublishedAt     time.Time   `json:"published_at"`
 	CoverImageUrl   *string     `json:"cover_image_url"`
 	PostType        string      `json:"post_type"`
+	QuotedPostID    *string     `json:"quoted_post_id,omitempty"`
 	AuthorName      string      `json:"author_name"`
 	AuthorHandle    string      `json:"author_handle"`
 	AuthorAvatarUrl *string     `json:"author_avatar_url"`
@@ -73,6 +74,12 @@ func (h *Handler) GetRecommendations(c *gin.Context) {
 		if p.AuthorAvatarUrl.Valid {
 			authorAvatarUrl = &p.AuthorAvatarUrl.String
 		}
+
+		var quotedPostID *string
+		if p.QuotedPostID.Valid {
+			qpID := p.QuotedPostID.UUID.String()
+			quotedPostID = &qpID
+		}
 		mapped = append(mapped, RecommendationResponse{
 			ID:              p.ID.String(),
 			AuthorID:        p.AuthorID.String(),
@@ -84,6 +91,7 @@ func (h *Handler) GetRecommendations(c *gin.Context) {
 			PublishedAt:     p.PublishedAt,
 			CoverImageUrl:   coverImageUrl,
 			PostType:        string(p.PostType),
+			QuotedPostID:    quotedPostID,
 			AuthorName:      p.AuthorName,
 			AuthorHandle:    p.AuthorHandle,
 			AuthorAvatarUrl: authorAvatarUrl,
@@ -137,6 +145,12 @@ func (h *Handler) GetSimilarPosts(c *gin.Context) {
 		if p.AuthorAvatarUrl.Valid {
 			authorAvatarUrl = &p.AuthorAvatarUrl.String
 		}
+
+		var quotedPostID *string
+		if p.QuotedPostID.Valid {
+			qpID := p.QuotedPostID.UUID.String()
+			quotedPostID = &qpID
+		}
 		mapped = append(mapped, RecommendationResponse{
 			ID:              p.ID.String(),
 			AuthorID:        p.AuthorID.String(),
@@ -148,6 +162,7 @@ func (h *Handler) GetSimilarPosts(c *gin.Context) {
 			PublishedAt:     p.PublishedAt,
 			CoverImageUrl:   coverImageUrl,
 			PostType:        string(p.PostType),
+			QuotedPostID:    quotedPostID,
 			AuthorName:      p.AuthorName,
 			AuthorHandle:    p.AuthorHandle,
 			AuthorAvatarUrl: authorAvatarUrl,

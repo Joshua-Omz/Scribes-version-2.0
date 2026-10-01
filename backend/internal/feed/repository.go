@@ -90,6 +90,7 @@ type FeedPost struct {
 	ReflectionImageUrl    *string                         `json:"reflection_image_url,omitempty"`
 	SoundID               *uuid.UUID                      `json:"sound_id,omitempty"`
 	PostType              generated.PostType              `json:"post_type"`
+	QuotedPostID          *uuid.UUID                      `json:"quoted_post_id,omitempty"`
 	AuthorAvatarUrl       *string                         `json:"author_avatar_url,omitempty"`
 	ScriptureRefs         []generated.GetScriptureRefsRow `json:"scripture_refs,omitempty"`
 	Tags                  []string                        `json:"tags,omitempty"`
@@ -113,6 +114,11 @@ func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -146,6 +152,7 @@ func mapFollowingFeedPost(row generated.GetFollowingFeedPostsRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -172,6 +179,11 @@ func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -205,6 +217,7 @@ func mapFeedPost(row generated.GetFeedPostsRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -232,6 +245,11 @@ func mapExplorePost(row generated.GetExplorePostsRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -265,6 +283,7 @@ func mapExplorePost(row generated.GetExplorePostsRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -292,6 +311,11 @@ func mapExploreTagPost(row generated.GetExplorePostsByTagRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -325,6 +349,7 @@ func mapExploreTagPost(row generated.GetExplorePostsByTagRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -352,6 +377,11 @@ func mapExploreScripturePost(row generated.GetExplorePostsByScriptureRow) FeedPo
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -385,6 +415,7 @@ func mapExploreScripturePost(row generated.GetExplorePostsByScriptureRow) FeedPo
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -412,6 +443,11 @@ func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -445,6 +481,7 @@ func mapSearchExplorePost(row generated.SearchExplorePostsRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -472,6 +509,11 @@ func mapChurchPost(row generated.GetChurchPostsRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -505,6 +547,7 @@ func mapChurchPost(row generated.GetChurchPostsRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String
@@ -532,6 +575,11 @@ func mapForYouPost(row generated.GetForYouPostsRow) FeedPost {
 		sermonSource = &row.SermonSource.String
 	}
 
+
+	var quotedPostID *uuid.UUID
+	if row.QuotedPostID.Valid {
+		quotedPostID = &row.QuotedPostID.UUID
+	}
 	return FeedPost{
 		ID:             row.ID,
 		AuthorID:       row.AuthorID,
@@ -565,6 +613,7 @@ func mapForYouPost(row generated.GetForYouPostsRow) FeedPost {
 			return nil
 		}(),
 		PostType: row.PostType,
+		QuotedPostID: quotedPostID,
 		AuthorAvatarUrl: func() *string {
 			if row.AuthorAvatarUrl.Valid {
 				return &row.AuthorAvatarUrl.String

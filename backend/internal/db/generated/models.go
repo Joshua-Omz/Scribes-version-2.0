@@ -68,6 +68,7 @@ const (
 	NotifTypeFollow        NotifType = "follow"
 	NotifTypeAdminAlert    NotifType = "admin_alert"
 	NotifTypeDirectMessage NotifType = "direct_message"
+	NotifTypeQuote         NotifType = "quote"
 )
 
 func (e *NotifType) Scan(src interface{}) error {
@@ -627,6 +628,7 @@ type Post struct {
 	CoverImageUrl      sql.NullString  `json:"cover_image_url"`
 	ReflectionImageUrl sql.NullString  `json:"reflection_image_url"`
 	SoundID            uuid.NullUUID   `json:"sound_id"`
+	QuotedPostID       uuid.NullUUID   `json:"quoted_post_id"`
 }
 
 type PostEngagementScore struct {

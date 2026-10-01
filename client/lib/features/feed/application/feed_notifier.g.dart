@@ -13,7 +13,7 @@ part of 'feed_notifier.dart';
 final feedProvider = FeedNotifierProvider._();
 
 final class FeedNotifierProvider
-    extends $AsyncNotifierProvider<FeedNotifier, List<Post>> {
+    extends $AsyncNotifierProvider<FeedNotifier, FeedState> {
   FeedNotifierProvider._()
     : super(
         from: null,
@@ -33,19 +33,19 @@ final class FeedNotifierProvider
   FeedNotifier create() => FeedNotifier();
 }
 
-String _$feedNotifierHash() => r'711c07c0807456a4e7ba0142a6efd04817c35d76';
+String _$feedNotifierHash() => r'89dfc5cb81625c6876512184f17c9ea6e4193078';
 
-abstract class _$FeedNotifier extends $AsyncNotifier<List<Post>> {
-  FutureOr<List<Post>> build();
+abstract class _$FeedNotifier extends $AsyncNotifier<FeedState> {
+  FutureOr<FeedState> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final ref = this.ref as $Ref<AsyncValue<FeedState>, FeedState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
-              AsyncValue<List<Post>>,
+              AnyNotifier<AsyncValue<FeedState>, FeedState>,
+              AsyncValue<FeedState>,
               Object?,
               Object?
             >;
@@ -57,7 +57,7 @@ abstract class _$FeedNotifier extends $AsyncNotifier<List<Post>> {
 final followingFeedProvider = FollowingFeedNotifierProvider._();
 
 final class FollowingFeedNotifierProvider
-    extends $AsyncNotifierProvider<FollowingFeedNotifier, List<Post>> {
+    extends $AsyncNotifierProvider<FollowingFeedNotifier, FeedState> {
   FollowingFeedNotifierProvider._()
     : super(
         from: null,
@@ -78,19 +78,19 @@ final class FollowingFeedNotifierProvider
 }
 
 String _$followingFeedNotifierHash() =>
-    r'3067d09c2dbc5cd092ce782ab2814ee8525dfcf2';
+    r'bc3bb3d44c0c985b4b94fdf119415c6e78aa51e4';
 
-abstract class _$FollowingFeedNotifier extends $AsyncNotifier<List<Post>> {
-  FutureOr<List<Post>> build();
+abstract class _$FollowingFeedNotifier extends $AsyncNotifier<FeedState> {
+  FutureOr<FeedState> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<Post>>, List<Post>>;
+    final ref = this.ref as $Ref<AsyncValue<FeedState>, FeedState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<Post>>, List<Post>>,
-              AsyncValue<List<Post>>,
+              AnyNotifier<AsyncValue<FeedState>, FeedState>,
+              AsyncValue<FeedState>,
               Object?,
               Object?
             >;

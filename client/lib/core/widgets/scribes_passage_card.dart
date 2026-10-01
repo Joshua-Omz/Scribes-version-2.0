@@ -7,6 +7,7 @@ import '../theme/scribes_text_styles.dart';
 import '../theme/theme_provider.dart';
 import '../theme/scribes_colors.dart';
 import '../audio/scribes_audio_player.dart';
+import '../state/scroll_aware_state_mixin.dart';
 import 'scribes_author_header.dart';
 import 'scribes_image_resolver.dart';
 import 'scribes_scripture_chip.dart';
@@ -74,10 +75,32 @@ class _ScribesPassageCardState extends ConsumerState<ScribesPassageCard> {
     try {
       final repo = ref.read(postRepositoryProvider);
       final fullPost = await repo.getPost(widget.post.id);
-      if (mounted && fullPost.panels.isNotEmpty) {
-        setState(() {
-          _hydratedPanels = fullPost.panels;
+      if (!mounted || fullPost.panels.isEmpty) return;
+
+      void applyPanels() {
+        if (mounted) {
+          setState(() {
+            _hydratedPanels = fullPost.panels;
+          });
+        }
+      }
+
+      if (ScrollAwareStateMixin.isScrolling.value) {
+        void onScrollEnd() {
+          if (!ScrollAwareStateMixin.isScrolling.value) {
+            ScrollAwareStateMixin.isScrolling.removeListener(onScrollEnd);
+            applyPanels();
+          }
+        }
+
+        ScrollAwareStateMixin.isScrolling.addListener(onScrollEnd);
+        // Fallback safety timeout so continuous drags do not starve update
+        Future.delayed(const Duration(milliseconds: 600), () {
+          ScrollAwareStateMixin.isScrolling.removeListener(onScrollEnd);
+          applyPanels();
         });
+      } else {
+        applyPanels();
       }
     } catch (_) {}
   }

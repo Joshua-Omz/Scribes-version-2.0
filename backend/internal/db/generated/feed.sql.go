@@ -17,7 +17,7 @@ import (
 const getChurchPosts = `-- name: GetChurchPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -55,6 +55,7 @@ type GetChurchPostsRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -89,6 +90,7 @@ func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) 
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -113,7 +115,7 @@ func (q *Queries) GetChurchPosts(ctx context.Context, arg GetChurchPostsParams) 
 const getExplorePosts = `-- name: GetExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -150,6 +152,7 @@ type GetExplorePostsRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -184,6 +187,7 @@ func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -208,7 +212,7 @@ func (q *Queries) GetExplorePosts(ctx context.Context, arg GetExplorePostsParams
 const getExplorePostsByScripture = `-- name: GetExplorePostsByScripture :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -250,6 +254,7 @@ type GetExplorePostsByScriptureRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -290,6 +295,7 @@ func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplore
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -314,7 +320,7 @@ func (q *Queries) GetExplorePostsByScripture(ctx context.Context, arg GetExplore
 const getExplorePostsByTag = `-- name: GetExplorePostsByTag :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -355,6 +361,7 @@ type GetExplorePostsByTagRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -394,6 +401,7 @@ func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsB
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -418,7 +426,7 @@ func (q *Queries) GetExplorePostsByTag(ctx context.Context, arg GetExplorePostsB
 const getFeedPosts = `-- name: GetFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -455,6 +463,7 @@ type GetFeedPostsRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -489,6 +498,7 @@ func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]G
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -513,7 +523,7 @@ func (q *Queries) GetFeedPosts(ctx context.Context, arg GetFeedPostsParams) ([]G
 const getFollowingFeedPosts = `-- name: GetFollowingFeedPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -553,6 +563,7 @@ type GetFollowingFeedPostsRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -592,6 +603,7 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -616,7 +628,7 @@ func (q *Queries) GetFollowingFeedPosts(ctx context.Context, arg GetFollowingFee
 const getForYouPosts = `-- name: GetForYouPosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -657,6 +669,7 @@ type GetForYouPostsRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -696,6 +709,7 @@ func (q *Queries) GetForYouPosts(ctx context.Context, arg GetForYouPostsParams) 
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,
@@ -783,7 +797,7 @@ func (q *Queries) GetSuggestedUsers(ctx context.Context, arg GetSuggestedUsersPa
 const searchExplorePosts = `-- name: SearchExplorePosts :many
 SELECT 
     p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, 
-    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type,
+    p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.cover_image_url, p.reflection_image_url, p.sound_id, p.post_type, p.quoted_post_id,
     u.handle AS author_handle, u.display_name AS author_name, u.avatar_url AS author_avatar_url,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'amen')::int AS amen_count,
     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = 'insightful')::int AS insight_count,
@@ -822,6 +836,7 @@ type SearchExplorePostsRow struct {
 	ReflectionImageUrl    sql.NullString  `json:"reflection_image_url"`
 	SoundID               uuid.NullUUID   `json:"sound_id"`
 	PostType              PostType        `json:"post_type"`
+	QuotedPostID          uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle          string          `json:"author_handle"`
 	AuthorName            string          `json:"author_name"`
 	AuthorAvatarUrl       sql.NullString  `json:"author_avatar_url"`
@@ -861,6 +876,7 @@ func (q *Queries) SearchExplorePosts(ctx context.Context, arg SearchExplorePosts
 			&i.ReflectionImageUrl,
 			&i.SoundID,
 			&i.PostType,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.AuthorAvatarUrl,

@@ -34,6 +34,7 @@ type SearchPostResponse struct {
 	KeywordScore   float64     `json:"keyword_score"`
 	SemanticScore  float64     `json:"semantic_score"`
 	RrfScore       float64     `json:"rrf_score"`
+	QuotedPostID   *string     `json:"quoted_post_id,omitempty"`
 }
 
 type SearchAuthorResponse struct {
@@ -86,7 +87,7 @@ func (h *Handler) SearchPosts(c *gin.Context) {
 		if p.SermonSource.Valid {
 			sermonSource = &p.SermonSource.String
 		}
-		mapped = append(mapped, SearchPostResponse{
+		mappedPost := SearchPostResponse{
 			ID:             p.ID.String(),
 			AuthorID:       p.AuthorID.String(),
 			Caption:        caption,
@@ -103,7 +104,12 @@ func (h *Handler) SearchPosts(c *gin.Context) {
 			KeywordScore:   p.KeywordScore,
 			SemanticScore:  p.SemanticScore,
 			RrfScore:       p.RrfScore,
-		})
+		}
+		if p.QuotedPostID.Valid {
+			qpID := p.QuotedPostID.UUID.String()
+			mappedPost.QuotedPostID = &qpID
+		}
+		mapped = append(mapped, mappedPost)
 	}
 	if mapped == nil {
 		mapped = []SearchPostResponse{}

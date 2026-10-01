@@ -38,8 +38,18 @@ class BibleLocalDatasourceWeb implements BibleLocalDatasource {
   }
 
   @override
-  Future<List<BibleBook>> getBooks({String translation = 'BSB'}) {
-    return _api.getBooks(translation: translation);
+  Future<List<BibleBook>> getBooks({String translation = 'BSB'}) async {
+    try {
+      final books = await _api.getBooks(translation: translation);
+      if (books.isNotEmpty) return books;
+    } catch (_) {}
+    if (translation.toUpperCase().trim() != 'BSB') {
+      try {
+        final bsbBooks = await _api.getBooks(translation: 'BSB');
+        if (bsbBooks.isNotEmpty) return bsbBooks;
+      } catch (_) {}
+    }
+    return [];
   }
 
   @override

@@ -190,7 +190,6 @@ class ScribesReflectionCard extends ConsumerWidget {
                               imageUrl: authorAvatarUrl,
                               fit: BoxFit.cover,
                               memCacheWidth: 120,
-                              memCacheHeight: 120,
                               fallback: _buildAvatarFallback(colors),
                             )
                           : _buildAvatarFallback(colors),

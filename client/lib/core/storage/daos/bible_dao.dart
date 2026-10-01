@@ -7,6 +7,7 @@ part 'bible_dao.g.dart';
   BibleReadingPositions,
   BibleHighlights,
   BibleDownloadedTranslations,
+  VerseNotes,
 ])
 class BibleDao extends DatabaseAccessor<ScribesDatabase> with _$BibleDaoMixin {
   BibleDao(super.db);
@@ -140,6 +141,93 @@ class BibleDao extends DatabaseAccessor<ScribesDatabase> with _$BibleDaoMixin {
           isSynced: const Value(false),
         ),
       );
+
+      // 3. Re-parent verse notes
+      await (update(verseNotes)..where((t) => t.userId.equals(guestId)))
+          .write(
+        VerseNotesCompanion(
+          userId: Value(newUserId),
+          isSynced: const Value(false),
+        ),
+      );
     });
+  }
+
+  // ── Verse Notes ──────────────────────────────────────────────
+
+  Future<VerseNote?> getVerseNote(String bookCode, int chapter, int verse, String userId) {
+    return (select(verseNotes)
+          ..where((t) =>
+              t.bookCode.equals(bookCode.toUpperCase()) &
+              t.chapter.equals(chapter) &
+              t.verse.equals(verse) &
+              t.userId.equals(userId) &
+              t.isDeleted.equals(false)))
+        .getSingleOrNull();
+  }
+
+  Stream<VerseNote?> watchVerseNote(String bookCode, int chapter, int verse, String userId) {
+    return (select(verseNotes)
+          ..where((t) =>
+              t.bookCode.equals(bookCode.toUpperCase()) &
+              t.chapter.equals(chapter) &
+              t.verse.equals(verse) &
+              t.userId.equals(userId) &
+              t.isDeleted.equals(false)))
+        .watchSingleOrNull();
+  }
+
+  Stream<List<VerseNote>> watchNotesForChapter(String bookCode, int chapter, String userId) {
+    return (select(verseNotes)
+          ..where((t) =>
+              t.bookCode.equals(bookCode.toUpperCase()) &
+              t.chapter.equals(chapter) &
+              t.userId.equals(userId) &
+              t.isDeleted.equals(false)))
+        .watch();
+  }
+
+  Future<List<VerseNote>> getAllVerseNotes(String userId) {
+    return (select(verseNotes)
+          ..where((t) =>
+              t.userId.equals(userId) &
+              t.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+        .get();
+  }
+
+  Stream<List<VerseNote>> watchAllVerseNotes(String userId) {
+    return (select(verseNotes)
+          ..where((t) =>
+              t.userId.equals(userId) &
+              t.isDeleted.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
+        .watch();
+  }
+
+  Future<void> upsertVerseNote(VerseNotesCompanion note) {
+    return into(verseNotes).insertOnConflictUpdate(note);
+  }
+
+  Future<void> softDeleteVerseNote(String id) {
+    return (update(verseNotes)..where((t) => t.id.equals(id))).write(
+      VerseNotesCompanion(
+        isDeleted: const Value(true),
+        isSynced: const Value(false),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<List<VerseNote>> getUnsyncedVerseNotes(String userId) {
+    return (select(verseNotes)
+          ..where((t) => t.userId.equals(userId) & t.isSynced.equals(false)))
+        .get();
+  }
+
+  Future<void> markVerseNoteSynced(String id) {
+    return (update(verseNotes)..where((t) => t.id.equals(id))).write(
+      const VerseNotesCompanion(isSynced: Value(true)),
+    );
   }
 }

@@ -113,6 +113,16 @@ class BibleBook {
 
   String get code => shortName;
 
+  bool get isOldTestament {
+    final t = testament.trim().toLowerCase();
+    return t == 'old' || t == 'ot' || order <= 39;
+  }
+
+  bool get isNewTestament {
+    final t = testament.trim().toLowerCase();
+    return t == 'new' || t == 'nt' || order >= 40;
+  }
+
   factory BibleBook.fromJson(Map<String, dynamic> json) {
     return BibleBook(
       id: json['id'] as String? ?? '',

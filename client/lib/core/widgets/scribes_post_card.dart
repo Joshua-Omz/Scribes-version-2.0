@@ -99,9 +99,7 @@ class ScribesPostCard extends ConsumerWidget {
                   color: colors.border.withValues(alpha: 0.5),
                 ),
               )
-            : BoxDecoration(
-                color: colors.background,
-              ),
+            : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,

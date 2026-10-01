@@ -63,15 +63,74 @@ class BibleRepository {
     return _local.getTranslations();
   }
 
+  /// Static canonical fallback to guarantee the 66 books are always resolvable
+  List<BibleBook> getStaticCanonicalBooks() {
+    final List<BibleBook> list = [];
+    int order = 1;
+    final codes = canonicalBookCodes.keys.toList();
+
+    for (final entry in oldTestamentBooks.entries) {
+      final code = (order - 1 < codes.length)
+          ? codes[order - 1]
+          : entry.key.substring(0, 3).toUpperCase();
+      list.add(BibleBook(
+        id: code,
+        name: entry.key,
+        shortName: code,
+        testament: 'old',
+        order: order,
+        chapterCount: entry.value,
+      ));
+      order++;
+    }
+
+    for (final entry in newTestamentBooks.entries) {
+      final code = (order - 1 < codes.length)
+          ? codes[order - 1]
+          : entry.key.substring(0, 3).toUpperCase();
+      list.add(BibleBook(
+        id: code,
+        name: entry.key,
+        shortName: code,
+        testament: 'new',
+        order: order,
+        chapterCount: entry.value,
+      ));
+      order++;
+    }
+
+    return list;
+  }
+
   /// Reading — always local and instant, zero network dependency
   Future<List<BibleBook>> getBooks({String translation = 'BSB'}) async {
-    final trans = translation.toUpperCase();
-    if (_booksCache.containsKey(trans)) {
+    final trans = translation.toUpperCase().trim();
+    if (_booksCache.containsKey(trans) && _booksCache[trans]!.isNotEmpty) {
       return _booksCache[trans]!;
     }
-    final books = await _local.getBooks(translation: trans);
-    _booksCache[trans] = books;
-    return books;
+    try {
+      final books = await _local.getBooks(translation: trans);
+      if (books.isNotEmpty) {
+        _booksCache[trans] = books;
+        return books;
+      }
+    } catch (_) {}
+
+    // Fall back to BSB if the requested translation is not available
+    if (trans != 'BSB') {
+      try {
+        final bsbBooks = await getBooks(translation: 'BSB');
+        if (bsbBooks.isNotEmpty) {
+          _booksCache[trans] = bsbBooks;
+          return bsbBooks;
+        }
+      } catch (_) {}
+    }
+
+    // Absolute fallback: static canonical 66 books from bible_data.dart
+    final staticBooks = getStaticCanonicalBooks();
+    _booksCache[trans] = staticBooks;
+    return staticBooks;
   }
 
   /// Reading chapter — always local
@@ -365,5 +424,69 @@ class BibleRepository {
     _booksCache.remove(trans);
     _chapterCache.removeWhere((k, _) => k.startsWith('$trans:'));
     return _bibleDao.removeDownloadedTranslation(trans);
+  }
+
+  // ── Verse Notes ──────────────────────────────────────────────────────
+
+  Future<VerseNote?> getVerseNote({
+    required String bookCode,
+    required int chapter,
+    required int verse,
+  }) async {
+    final userId = await _resolveUserId();
+    return _bibleDao.getVerseNote(bookCode, chapter, verse, userId);
+  }
+
+  Stream<VerseNote?> watchVerseNote({
+    required String bookCode,
+    required int chapter,
+    required int verse,
+  }) {
+    // Uses synchronous fallback for userId since streams can't easily await
+    final userId = _currentUserId ?? 'guest';
+    return _bibleDao.watchVerseNote(bookCode, chapter, verse, userId);
+  }
+
+  Stream<List<VerseNote>> watchNotesForChapter(String bookCode, int chapter) {
+    final userId = _currentUserId ?? 'guest';
+    return _bibleDao.watchNotesForChapter(bookCode, chapter, userId);
+  }
+
+  Stream<List<VerseNote>> watchAllVerseNotes() {
+    final userId = _currentUserId ?? 'guest';
+    return _bibleDao.watchAllVerseNotes(userId);
+  }
+
+  Future<void> saveVerseNote({
+    required String bookCode,
+    required int chapter,
+    required int verse,
+    required String content,
+    String plainPreview = '',
+    String? existingId,
+  }) async {
+    final userId = await _resolveUserId();
+    final now = DateTime.now().toUtc();
+    final id = existingId ?? const Uuid().v4();
+
+    await _bibleDao.upsertVerseNote(
+      VerseNotesCompanion(
+        id: Value(id),
+        userId: Value(userId),
+        bookCode: Value(bookCode.toUpperCase()),
+        chapter: Value(chapter),
+        verse: Value(verse),
+        content: Value(content),
+        plainPreview: Value(plainPreview),
+        isSynced: const Value(false),
+        isDeleted: const Value(false),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+  Future<void> deleteVerseNote(String id) {
+    return _bibleDao.softDeleteVerseNote(id);
   }
 }

@@ -121,6 +121,24 @@ class BibleDownloadedTranslations extends Table {
   Set<Column> get primaryKey => {code};
 }
 
+class VerseNotes extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get bookCode => text()();       // Universal OSIS code e.g. 'GEN', 'JHN'
+  IntColumn get chapter => integer()();
+  IntColumn get verse => integer()();
+  TextColumn get content => text()();         // Quill Delta JSON string
+  TextColumn get plainPreview => text().withDefault(const Constant(''))();  // Plain text preview for list display
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+  IntColumn get serverSequence => integer().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     Drafts,
@@ -131,6 +149,7 @@ class BibleDownloadedTranslations extends Table {
     BibleReadingPositions,
     BibleHighlights,
     BibleDownloadedTranslations,
+    VerseNotes,
   ],
   daos: [NotesDao, DraftsDao, PostsDao, BibleDao],
 )
@@ -139,7 +158,7 @@ class ScribesDatabase extends _$ScribesDatabase {
   ScribesDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration {
@@ -179,6 +198,9 @@ class ScribesDatabase extends _$ScribesDatabase {
           await m.createTable(bibleHighlights);
           await m.createTable(bibleDownloadedTranslations);
         }
+        if (from < 16) {
+          await m.createTable(verseNotes);
+        }
       },
     );
   }
@@ -193,12 +215,14 @@ class ScribesDatabase extends _$ScribesDatabase {
         await (delete(notes)..where((t) => t.isSynced.equals(true))).go();
         await (delete(bibleHighlights)..where((t) => t.isSynced.equals(true))).go();
         await (delete(bibleReadingPositions)..where((t) => t.isSynced.equals(true))).go();
+        await (delete(verseNotes)..where((t) => t.isSynced.equals(true))).go();
       } else {
         await delete(drafts).go();
         await delete(notebooks).go();
         await delete(notes).go();
         await delete(bibleHighlights).go();
         await delete(bibleReadingPositions).go();
+        await delete(verseNotes).go();
       }
     });
   }

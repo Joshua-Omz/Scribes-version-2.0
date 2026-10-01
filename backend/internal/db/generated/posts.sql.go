@@ -72,7 +72,7 @@ INSERT INTO posts (
     post_type
 ) VALUES (
     $1, $2, $3, $4, $5, true, $6, $7, $8
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id, quoted_post_id
 `
 
 type CreateCorrectionPostParams struct {
@@ -84,6 +84,7 @@ type CreateCorrectionPostParams struct {
 	CorrectsPostID uuid.NullUUID   `json:"corrects_post_id"`
 	CoverImageUrl  sql.NullString  `json:"cover_image_url"`
 	PostType       PostType        `json:"post_type"`
+	QuotedPostID   uuid.NullUUID   `json:"quoted_post_id"`
 }
 
 func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrectionPostParams) (Post, error) {
@@ -96,6 +97,7 @@ func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrection
 		arg.CorrectsPostID,
 		arg.CoverImageUrl,
 		arg.PostType,
+		arg.QuotedPostID,
 	)
 	var i Post
 	err := row.Scan(
@@ -117,6 +119,7 @@ func (q *Queries) CreateCorrectionPost(ctx context.Context, arg CreateCorrection
 		&i.CoverImageUrl,
 		&i.ReflectionImageUrl,
 		&i.SoundID,
+		&i.QuotedPostID,
 	)
 	return i, err
 }
@@ -134,7 +137,7 @@ INSERT INTO posts (
     post_type
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
+) RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id, quoted_post_id
 `
 
 type CreatePostParams struct {
@@ -147,6 +150,7 @@ type CreatePostParams struct {
 	ReflectionImageUrl sql.NullString  `json:"reflection_image_url"`
 	SoundID            uuid.NullUUID   `json:"sound_id"`
 	PostType           PostType        `json:"post_type"`
+	QuotedPostID       uuid.NullUUID   `json:"quoted_post_id"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
@@ -160,6 +164,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		arg.ReflectionImageUrl,
 		arg.SoundID,
 		arg.PostType,
+		arg.QuotedPostID,
 	)
 	var i Post
 	err := row.Scan(
@@ -181,6 +186,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.CoverImageUrl,
 		&i.ReflectionImageUrl,
 		&i.SoundID,
+		&i.QuotedPostID,
 	)
 	return i, err
 }
@@ -202,7 +208,7 @@ func (q *Queries) DeletePost(ctx context.Context, arg DeletePostParams) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, p.reflection_image_url, p.sound_id, u.handle AS author_handle, u.display_name AS author_name,
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, p.reflection_image_url, p.sound_id, p.quoted_post_id, u.handle AS author_handle, u.display_name AS author_name,
        s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -229,6 +235,7 @@ type GetPostByIDRow struct {
 	CoverImageUrl        sql.NullString  `json:"cover_image_url"`
 	ReflectionImageUrl   sql.NullString  `json:"reflection_image_url"`
 	SoundID              uuid.NullUUID   `json:"sound_id"`
+	QuotedPostID         uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle         string          `json:"author_handle"`
 	AuthorName           string          `json:"author_name"`
 	SoundTitle           sql.NullString  `json:"sound_title"`
@@ -259,6 +266,7 @@ func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (GetPostByIDRow
 		&i.CoverImageUrl,
 		&i.ReflectionImageUrl,
 		&i.SoundID,
+		&i.QuotedPostID,
 		&i.AuthorHandle,
 		&i.AuthorName,
 		&i.SoundTitle,
@@ -356,7 +364,7 @@ func (q *Queries) GetScriptureRefsForPosts(ctx context.Context, dollar_1 []uuid.
 }
 
 const listPostsByAuthor = `-- name: ListPostsByAuthor :many
-SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, p.reflection_image_url, p.sound_id, u.handle AS author_handle, u.display_name AS author_name,
+SELECT p.id, p.author_id, p.content, p.caption, p.visibility, p.current_version, p.is_correction, p.corrects_post_id, p.sermon_source, p.is_deleted, p.published_at, p.server_sequence, p.search_vector, p.embedding, p.post_type, p.cover_image_url, p.reflection_image_url, p.sound_id, p.quoted_post_id, u.handle AS author_handle, u.display_name AS author_name,
        s.title AS sound_title, s.category AS sound_category, s.audio_url AS sound_audio_url, s.duration_seconds AS sound_duration_seconds
 FROM posts p
 JOIN users u ON p.author_id = u.id
@@ -384,6 +392,7 @@ type ListPostsByAuthorRow struct {
 	CoverImageUrl        sql.NullString  `json:"cover_image_url"`
 	ReflectionImageUrl   sql.NullString  `json:"reflection_image_url"`
 	SoundID              uuid.NullUUID   `json:"sound_id"`
+	QuotedPostID         uuid.NullUUID   `json:"quoted_post_id"`
 	AuthorHandle         string          `json:"author_handle"`
 	AuthorName           string          `json:"author_name"`
 	SoundTitle           sql.NullString  `json:"sound_title"`
@@ -420,6 +429,7 @@ func (q *Queries) ListPostsByAuthor(ctx context.Context, authorID uuid.UUID) ([]
 			&i.CoverImageUrl,
 			&i.ReflectionImageUrl,
 			&i.SoundID,
+			&i.QuotedPostID,
 			&i.AuthorHandle,
 			&i.AuthorName,
 			&i.SoundTitle,
@@ -447,7 +457,7 @@ SET content = $2,
     current_version = current_version + 1,
     cover_image_url = $5
 WHERE id = $1 AND author_id = $4 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id, quoted_post_id
 `
 
 type RevisePostParams struct {
@@ -486,6 +496,7 @@ func (q *Queries) RevisePost(ctx context.Context, arg RevisePostParams) (Post, e
 		&i.CoverImageUrl,
 		&i.ReflectionImageUrl,
 		&i.SoundID,
+		&i.QuotedPostID,
 	)
 	return i, err
 }
@@ -499,7 +510,7 @@ SET content = $2,
     current_version = $6,
     cover_image_url = $8
 WHERE id = $1 AND author_id = $7 AND is_deleted = false
-RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id
+RETURNING id, author_id, content, caption, visibility, current_version, is_correction, corrects_post_id, sermon_source, is_deleted, published_at, server_sequence, search_vector, embedding, post_type, cover_image_url, reflection_image_url, sound_id, quoted_post_id
 `
 
 type UpdatePostParams struct {
@@ -544,6 +555,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		&i.CoverImageUrl,
 		&i.ReflectionImageUrl,
 		&i.SoundID,
+		&i.QuotedPostID,
 	)
 	return i, err
 }
