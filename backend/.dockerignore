@@ -1,0 +1,24 @@
+# Binaries and compiled executables
+*.exe
+api.exe
+server.exe
+scribes-api
+import-bible*
+seed_bible*
+tmp_server*
+
+# Directories
+bin/
+tmp/
+sqlc_bin/
+.git/
+.github/
+
+# Archives and large tools
+*.zip
+*.tar.gz
+*.dump
+
+# Local environments
+.env
+.env.local

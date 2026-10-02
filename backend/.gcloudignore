@@ -1,0 +1,22 @@
+# Ignore binaries and temporary directories
+.gcloudignore
+.git
+.gitignore
+
+*.exe
+api.exe
+server.exe
+scribes-api
+import-bible*
+seed_bible*
+tmp_server*
+
+bin/
+tmp/
+sqlc_bin/
+*.zip
+*.tar.gz
+*.dump
+
+.env
+.env.local
